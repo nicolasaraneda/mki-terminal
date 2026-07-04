@@ -306,9 +306,10 @@ def generar_resumen_dia(client) -> str:
         "Eres un analista financiero. Con base en este listado de titulares ya analizados "
         "del sector de semiconductores de hoy, escribe un resumen del día en español, de 3 a 5 "
         "frases, en lenguaje natural: qué está moviendo al sector y por qué. No repitas los "
-        "titulares palabra por palabra, sintetiza. Responde en texto plano, sin título, sin "
-        "encabezados markdown (nada de '#') y sin usar el símbolo '$' (escribe 'USD' en su lugar "
-        "si mencionas montos).\n\n" + contexto
+        "titulares palabra por palabra, sintetiza. Responde en texto plano puro, sin ningún "
+        "formato markdown: sin título, sin encabezados ('#'), sin negritas ni cursivas "
+        "('*', '**', '_'), y sin usar el símbolo '$' (escribe 'USD' en su lugar si mencionas "
+        "montos).\n\n" + contexto
     )
     response = client.messages.create(
         model=MODELO_IA, max_tokens=500, messages=[{"role": "user", "content": prompt}],
@@ -350,6 +351,56 @@ def obtener_titulares_analizados(limite: int = 200):
     columnas = ["Fecha", "Fuente", "Titular", "URL", "Sentimiento", "Tickers afectados",
                 "Impacto", "Explicación"]
     return [dict(zip(columnas, f)) for f in filas]
+
+
+def obtener_titulares_por_ticker(ticker: str, limite: int = 30) -> list:
+    """Titulares ya analizados donde la IA marcó este ticker específico como afectado."""
+    todos = obtener_titulares_analizados(limite=1000)
+    resultado = []
+    for fila in todos:
+        tickers_lista = [t.strip() for t in (fila["Tickers afectados"] or "").split(",") if t.strip()]
+        if ticker in tickers_lista:
+            resultado.append(fila)
+            if len(resultado) >= limite:
+                break
+    return resultado
+
+
+def explicar_accion(client, ticker: str, nombre_empresa: str, metricas: dict, titulares: list) -> str:
+    """Genera con Claude una explicación breve de por qué una acción está en su
+    situación actual, combinando sus métricas cuantitativas y sus noticias recientes."""
+    resumen_metricas = (
+        f"Retorno del período: {metricas.get('retorno_pct', 0):+.1f}%, "
+        f"Momentum 20 días: {metricas.get('momentum_pct', 0):+.1f}%, "
+        f"Volatilidad anual: {metricas.get('volatilidad_pct', 0):.1f}%, "
+        f"Puntaje v0 (ranking cuantitativo, 0 a 1): {metricas.get('puntaje_v0', 0):.2f}."
+    )
+    if metricas.get("sentimiento_ia") is not None:
+        resumen_metricas += (
+            f" Sentimiento IA de noticias: {metricas['sentimiento_ia']:+.2f} (de -1 a +1)."
+        )
+
+    if titulares:
+        lista_titulares = "\n".join(
+            f"- \"{t['Titular']}\" (sentimiento={t['Sentimiento']:+.2f}, impacto={t['Impacto']})"
+            for t in titulares[:8]
+        )
+    else:
+        lista_titulares = "(sin noticias analizadas recientes para esta acción)"
+
+    prompt = (
+        f"Eres un analista financiero. Con estos datos de {nombre_empresa} ({ticker}):\n"
+        f"{resumen_metricas}\n\nTitulares recientes:\n{lista_titulares}\n\n"
+        "Escribe una explicación breve (3 a 4 frases) en español de por qué esta acción "
+        "está en su situación actual, combinando los datos cuantitativos y el contexto "
+        "de noticias. Sé específico, evita frases genéricas. Responde en texto plano, "
+        "sin ningún formato markdown (nada de '#', '*', '**', '_') y sin usar el símbolo "
+        "'$' (escribe 'USD' en su lugar)."
+    )
+    response = client.messages.create(
+        model=MODELO_IA, max_tokens=400, messages=[{"role": "user", "content": prompt}],
+    )
+    return next(b.text for b in response.content if b.type == "text").strip()
 
 
 def sentimiento_promedio_por_ticker() -> dict:

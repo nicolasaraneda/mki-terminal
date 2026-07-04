@@ -3,4 +3,5 @@ __pycache__/
 *.pyc
 .env
 noticias.db
+senales.db
 .claude/
