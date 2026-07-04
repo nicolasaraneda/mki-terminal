@@ -1,11 +1,14 @@
 # ============================================================
-# Bot Comparador de Acciones - Etapa 4
-# Historial de señales y verificador de aciertos, vista de detalle por
-# acción, normalización a USD, y rediseño visual completo.
+# MKI Terminal - Etapa 4.5
+# Analista de la cadena de valor completa (roca→chip→data center):
+# régimen de mercado, panel macro, earnings, divergencias, índice
+# Roca→Chip, sentimiento con decaimiento, portada Hoy, alertas
+# Telegram y sistema visual "neon fintech".
 # Ejecutar con:  python -m streamlit run app.py
 # ============================================================
 
 import os
+from datetime import date, datetime
 
 import anthropic
 import pandas as pd
@@ -16,6 +19,7 @@ import streamlit as st
 import yfinance as yf
 from dotenv import load_dotenv
 
+import alertas
 import noticias
 import senales
 
@@ -36,38 +40,45 @@ def obtener_cliente_ia():
 
 
 # ------------------------------------------------------------
-# Sistema de diseño: paleta estricta, tipografía y gráficos
+# Sistema de diseño "neon fintech": terminal financiero del futuro.
 #
-# Dirección de arte: sobriedad de producto Apple + seriedad de terminal
-# financiero. Un solo verde para lo positivo, un solo rojo para lo negativo,
-# nada de arcoíris. Los heatmaps de correlación usan una escala monocromática
-# (no la escala divergente verde/rojo, que se reserva para señales direccionales).
+# Fondo azul-negro profundo, datos que brillan, sobriedad estructural con
+# acentos neón. CYAN y MAGENTA son colores de DATOS y protagonismo (series,
+# highlights, gradientes); el violeta es el tercer color de serie. La
+# semántica financiera es intocable: ganancia siempre verde, pérdida siempre
+# rojo — el neón jerarquiza, nunca reemplaza esa semántica.
+# Regla de oro: máximo 2 elementos con glow simultáneo por vista.
 # ------------------------------------------------------------
-FONDO = "#0A0A0B"
-SUPERFICIE = "#131316"
-BORDE = "#26262B"
-TEXTO_PRINCIPAL = "#F5F5F7"
-TEXTO_SECUNDARIO = "#8E8E93"
-COLOR_POSITIVO = "#30D158"   # verde sobrio: único color de acento para lo positivo
-COLOR_NEGATIVO = "#FF453A"   # rojo sobrio: único color de acento para lo negativo
+FONDO = "#0B0D12"
+SUPERFICIE = "#141826"
+BORDE = "#232A3D"
+TEXTO_PRINCIPAL = "#F2F4F8"
+TEXTO_SECUNDARIO = "#8A93A6"
+CYAN = "#22D3EE"             # acento neón principal: datos, highlights
+MAGENTA = "#F472B6"          # acento neón secundario: datos, contraste
+VIOLETA = "#818CF8"          # tercer color de serie
+COLOR_POSITIVO = "#34D399"   # semántica financiera: ganancia (intocable)
+COLOR_NEGATIVO = "#F87171"   # semántica financiera: pérdida (intocable)
 COLOR_NEUTRO = BORDE
-ACENTO = "#0A84FF"           # acento de interacción (botones, selección) — no es señal de dato
+GRIDLINE = "#1A2030"
 
-PALETA_CATEGORICA = ["#0A84FF", "#64D2FF", "#5E5CE6", "#BF5AF2",
-                     "#FF9F0A", "#30D158", "#FF453A", "#8E8E93"]
+PALETA_CATEGORICA = [CYAN, MAGENTA, VIOLETA, "#67E8F9", "#F9A8D4",
+                     "#A5B4FC", "#2DD4BF", "#8A93A6"]
+# Plotly Express asigna colores por traza desde su propia secuencia por defecto
+# (ignora layout.colorway), así que la paleta debe imponerse también aquí.
+px.defaults.color_discrete_sequence = PALETA_CATEGORICA
 ESCALA_DIVERGENTE = [[0, COLOR_NEGATIVO], [0.5, COLOR_NEUTRO], [1, COLOR_POSITIVO]]
-# Escala monocromática (un solo tono azul) para heatmaps de correlación:
-# de "casi invisible" en -1 a azul vívido en +1. Nunca verde/rojo ni arcoíris.
-ESCALA_MONOCROMATICA = [[0, "#101014"], [0.5, "#1C3A57"], [1, "#0A84FF"]]
+# Heatmaps: azul profundo → cyan neón. Nunca verde/rojo ni arcoíris.
+ESCALA_MONOCROMATICA = [[0, "#0B0D12"], [0.5, "#164E63"], [1, CYAN]]
 
 
 def template_grafico(fig, altura: int = 400, **layout_kwargs):
     """Aplica el estilo visual único de la app a un gráfico Plotly y lo muestra.
 
     Fondo transparente, sin gridlines verticales, gridlines horizontales sutiles,
-    tipografía Inter, sin barra de herramientas de Plotly, márgenes compactos.
-    Toda personalización adicional (títulos de ejes, rangos, etc.) se pasa por
-    layout_kwargs y se aplica encima de estos valores por defecto.
+    series con líneas de 2.5px, hover labels sobre superficie de tarjeta, sin
+    barra de herramientas de Plotly, márgenes compactos. Toda personalización
+    adicional se pasa por layout_kwargs encima de estos valores por defecto.
     """
     fig.update_layout(
         height=altura,
@@ -77,13 +88,45 @@ def template_grafico(fig, altura: int = 400, **layout_kwargs):
                   color=TEXTO_PRINCIPAL, size=13),
         colorway=PALETA_CATEGORICA,
         xaxis=dict(showgrid=False, zeroline=False, linecolor=BORDE),
-        yaxis=dict(showgrid=True, gridcolor="#1D1D20", zeroline=False, linecolor=BORDE),
+        yaxis=dict(showgrid=True, gridcolor=GRIDLINE, zeroline=False, linecolor=BORDE),
         legend=dict(bgcolor="rgba(0,0,0,0)"),
+        hoverlabel=dict(bgcolor=SUPERFICIE, bordercolor=BORDE,
+                        font=dict(family="Inter, sans-serif", color=TEXTO_PRINCIPAL)),
         margin=dict(t=30, l=10, r=10, b=10),
     )
+    fig.update_traces(line_width=2.5, selector=dict(type="scatter"))
     if layout_kwargs:
         fig.update_layout(**layout_kwargs)
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+
+def badge(texto: str, tono: str = "cyan") -> str:
+    """Pill de estado: fondo del acento al 12%, texto del acento, borde al 40%.
+    Tonos: cyan | magenta | violeta | pos | neg | neutro."""
+    colores = {"cyan": CYAN, "magenta": MAGENTA, "violeta": VIOLETA,
+               "pos": COLOR_POSITIVO, "neg": COLOR_NEGATIVO, "neutro": TEXTO_SECUNDARIO}
+    c = colores.get(tono, CYAN)
+    return (f'<span class="badge" style="color:{c};border-color:{c}66;'
+            f'background:{c}1F;">{texto}</span>')
+
+
+def sparkline_svg(valores, color: str = CYAN, ancho: int = 130, alto: int = 34) -> str:
+    """Mini-gráfico de línea inline (SVG puro, sin ejes) para tarjetas."""
+    serie = [float(v) for v in valores if v == v]  # descarta NaN
+    if len(serie) < 2:
+        return ""
+    mn, mx = min(serie), max(serie)
+    rango = (mx - mn) or 1.0
+    n = len(serie)
+    puntos = " ".join(
+        f"{i * ancho / (n - 1):.1f},{alto - 3 - (v - mn) / rango * (alto - 6):.1f}"
+        for i, v in enumerate(serie)
+    )
+    return (f'<svg class="spark" width="{ancho}" height="{alto}" '
+            f'viewBox="0 0 {ancho} {alto}" preserveAspectRatio="none">'
+            f'<polyline points="{puntos}" fill="none" stroke="{color}" '
+            f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+            f'opacity="0.9"/></svg>')
 
 
 st.markdown(f"""
@@ -96,47 +139,90 @@ html, body, [class*="css"] {{
     font-variant-numeric: tabular-nums;
 }}
 
-/* Oculta el menú hamburguesa, el footer "Made with Streamlit", el botón Deploy
-   y cualquier decoración del header — sin chrome de Streamlit visible. */
+/* Chrome de Streamlit completamente oculto */
 #MainMenu {{ visibility: hidden; }}
 footer {{ visibility: hidden; }}
 [data-testid="stToolbar"] {{ visibility: hidden; }}
 [data-testid="stDecoration"] {{ display: none; }}
+[data-testid="stStatusWidget"] {{ visibility: hidden; }}
 header[data-testid="stHeader"] {{ background: transparent; }}
 
-.block-container {{ padding-top: 2.5rem; padding-bottom: 3rem; max-width: 1200px; }}
+/* Scrollbar estilizada */
+::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+::-webkit-scrollbar-track {{ background: transparent; }}
+::-webkit-scrollbar-thumb {{ background: {BORDE}; border-radius: 4px; }}
+::-webkit-scrollbar-thumb:hover {{ background: #2E3750; }}
+* {{ scrollbar-width: thin; scrollbar-color: {BORDE} transparent; }}
+
+.block-container {{ padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1200px; }}
 
 h1, h2, h3, h4, h5 {{
     font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif !important;
     font-weight: 500 !important;
     letter-spacing: -0.02em;
 }}
-h1 {{ font-size: 2.75rem !important; font-weight: 600 !important; }}
 
-/* Widgets nativos de Streamlit: números tabulares también en métricas y tablas */
+/* Wordmark del producto */
+.wordmark {{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: {TEXTO_PRINCIPAL};
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}}
+.wordmark .punto {{ color: {CYAN}; }}
+.titulo-hero {{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: {TEXTO_PRINCIPAL};
+    line-height: 1.1;
+    margin: 0 0 4px 0;
+}}
+.subtitulo-hero {{
+    font-size: 0.85rem;
+    color: {TEXTO_SECUNDARIO};
+    margin-bottom: 6px;
+}}
+
+/* Widgets nativos: números tabulares también en métricas y tablas */
 [data-testid="stMetricValue"], [data-testid="stDataFrame"] {{
     font-feature-settings: "tnum" 1;
     font-variant-numeric: tabular-nums;
 }}
 
-/* Navegación por secciones (segmented control) sin decoración adicional */
 div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 
-/* Tarjetas de métricas del hero */
+/* Tarjetas de métricas: borde superior con gradiente cyan→magenta */
 .metric-grid {{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 16px;
-    margin: 28px 0 40px 0;
+    margin: 24px 0 36px 0;
 }}
 .metric-card {{
+    position: relative;
+    overflow: hidden;
     background: {SUPERFICIE};
     border: 1px solid {BORDE};
     border-radius: 12px;
-    padding: 26px 28px;
-    transition: border-color 0.15s ease;
+    padding: 24px 26px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }}
-.metric-card:hover {{ border-color: #3A3A40; }}
+.metric-card::before {{
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, {CYAN}, {MAGENTA});
+    opacity: 0.55;
+    transition: opacity 0.2s ease;
+}}
+.metric-card:hover {{ border-color: #2E3750; box-shadow: 0 0 22px rgba(34,211,238,0.07); }}
+.metric-card:hover::before {{ opacity: 1; }}
 .metric-label {{
     font-size: 0.72rem;
     color: {TEXTO_SECUNDARIO};
@@ -146,7 +232,7 @@ div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 }}
 .metric-value {{
     font-family: 'Space Grotesk', 'Inter', sans-serif;
-    font-size: 34px;
+    font-size: 33px;
     font-weight: 500;
     letter-spacing: -0.01em;
     color: {TEXTO_PRINCIPAL};
@@ -155,13 +241,71 @@ div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 }}
 .metric-value.positivo {{ color: {COLOR_POSITIVO}; }}
 .metric-value.negativo {{ color: {COLOR_NEGATIVO}; }}
+/* Glow: sal, no plato — máximo 2 elementos con glow por vista */
+.metric-value.glow-cyan {{ color: {CYAN}; text-shadow: 0 0 24px rgba(34,211,238,0.35); }}
+.metric-value.glow-magenta {{ color: {MAGENTA}; text-shadow: 0 0 24px rgba(244,114,182,0.35); }}
+.metric-value.glow-pos {{ color: {COLOR_POSITIVO}; text-shadow: 0 0 24px rgba(52,211,153,0.35); }}
+.metric-value.glow-neg {{ color: {COLOR_NEGATIVO}; text-shadow: 0 0 24px rgba(248,113,113,0.35); }}
 .metric-sub {{
     font-size: 0.78rem;
     color: {TEXTO_SECUNDARIO};
     margin-top: 6px;
 }}
+.metric-card .spark {{ display: block; margin-top: 10px; }}
+
+/* Badges pill (régimen, ZONA EARNINGS, ALTO BUZZ, divergencias) */
+.badge {{
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-right: 6px;
+}}
+
+/* Tarjetas de señal (portada Hoy) */
+.senal-card {{
+    position: relative;
+    overflow: hidden;
+    background: {SUPERFICIE};
+    border: 1px solid {BORDE};
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+}}
+.senal-card::before {{
+    content: "";
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 3px;
+}}
+.senal-card.senal-pos::before {{ background: {COLOR_POSITIVO}; }}
+.senal-card.senal-neg::before {{ background: {COLOR_NEGATIVO}; }}
+.senal-card.senal-neutra::before {{ background: {CYAN}; }}
+.senal-titulo {{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: {TEXTO_PRINCIPAL};
+    margin-bottom: 4px;
+}}
+.senal-porque {{
+    font-size: 0.84rem;
+    color: {TEXTO_SECUNDARIO};
+    line-height: 1.45;
+}}
+.senal-meta {{
+    font-size: 0.72rem;
+    color: {TEXTO_SECUNDARIO};
+    margin-top: 8px;
+}}
+
 .resumen-dia {{
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 400;
     line-height: 1.55;
     letter-spacing: -0.01em;
@@ -172,26 +316,61 @@ div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------
-# Universo de acciones: la cadena global de semiconductores
+# Universo: la cadena de valor completa, de la roca al data center.
+#
+# Cada entrada lleva su eslabón en la cadena ("nivel", 0→4) y su "tipo".
+# Las empresas de diseño fabless (NVIDIA, AMD, etc.) tienen nivel=None:
+# participan de rankings, anticipador y noticias como siempre, pero no
+# entran al flujo de la cadena (ver DECISIONES.md).
+# Commodities y ETF son solo contexto: nunca entran al ranking de acciones
+# ni al anticipador.
 # ------------------------------------------------------------
+NIVELES_CADENA = {
+    0: "Materias primas",
+    1: "Materiales",
+    2: "Equipos",
+    3: "Fabricación",
+    4: "Demanda final",
+}
+
 UNIVERSO = {
-    "NVDA": ("NVIDIA", "EE.UU. - GPUs / IA"),
-    "AMD": ("AMD", "EE.UU. - CPUs / GPUs"),
-    "INTC": ("Intel", "EE.UU. - CPUs / fundición"),
-    "QCOM": ("Qualcomm", "EE.UU. - chips móviles"),
-    "AVGO": ("Broadcom", "EE.UU. - redes / custom IA"),
-    "TXN": ("Texas Instruments", "EE.UU. - análogos"),
-    "ARM": ("Arm Holdings", "R.Unido - arquitecturas (ADR)"),
-    "MU": ("Micron", "EE.UU. - DRAM / NAND"),
-    "005930.KS": ("Samsung Electronics", "Corea - DRAM / fundición"),
-    "000660.KS": ("SK Hynix", "Corea - DRAM / HBM"),
-    "TSM": ("TSMC (ADR)", "Taiwán - fundición (cotiza en NY)"),
-    "2330.TW": ("TSMC (Taiwán)", "Taiwán - fundición (bolsa local)"),
-    "UMC": ("UMC (ADR)", "Taiwán - fundición"),
-    "ASML": ("ASML (ADR)", "Holanda - litografía EUV"),
-    "8035.T": ("Tokyo Electron", "Japón - equipos"),
-    "6857.T": ("Advantest", "Japón - testeo de chips"),
-    "IFX.DE": ("Infineon", "Alemania - potencia / autos"),
+    # Nivel 0 — materias primas
+    "HG=F": {"nombre": "Cobre (futuro)", "segmento": "Global - materia prima", "nivel": 0, "tipo": "commodity"},
+    "SI=F": {"nombre": "Plata (futuro)", "segmento": "Global - materia prima", "nivel": 0, "tipo": "commodity"},
+    "BHP": {"nombre": "BHP Group", "segmento": "Australia - minería (ADR)", "nivel": 0, "tipo": "accion"},
+    "FCX": {"nombre": "Freeport-McMoRan", "segmento": "EE.UU. - minería de cobre", "nivel": 0, "tipo": "accion"},
+    # Nivel 1 — materiales
+    "4063.T": {"nombre": "Shin-Etsu Chemical", "segmento": "Japón - obleas de silicio", "nivel": 1, "tipo": "accion"},
+    "3436.T": {"nombre": "SUMCO", "segmento": "Japón - obleas de silicio", "nivel": 1, "tipo": "accion"},
+    # Nivel 2 — equipos
+    "ASML": {"nombre": "ASML (ADR)", "segmento": "Holanda - litografía EUV", "nivel": 2, "tipo": "accion"},
+    "8035.T": {"nombre": "Tokyo Electron", "segmento": "Japón - equipos", "nivel": 2, "tipo": "accion"},
+    "6857.T": {"nombre": "Advantest", "segmento": "Japón - testeo de chips", "nivel": 2, "tipo": "accion"},
+    # Nivel 3 — fabricación
+    "TSM": {"nombre": "TSMC (ADR)", "segmento": "Taiwán - fundición (cotiza en NY)", "nivel": 3, "tipo": "accion"},
+    "2330.TW": {"nombre": "TSMC (Taiwán)", "segmento": "Taiwán - fundición (bolsa local)", "nivel": 3, "tipo": "accion"},
+    "005930.KS": {"nombre": "Samsung Electronics", "segmento": "Corea - DRAM / fundición", "nivel": 3, "tipo": "accion"},
+    "000660.KS": {"nombre": "SK Hynix", "segmento": "Corea - DRAM / HBM", "nivel": 3, "tipo": "accion"},
+    "MU": {"nombre": "Micron", "segmento": "EE.UU. - DRAM / NAND", "nivel": 3, "tipo": "accion"},
+    "INTC": {"nombre": "Intel", "segmento": "EE.UU. - CPUs / fundición", "nivel": 3, "tipo": "accion"},
+    "UMC": {"nombre": "UMC (ADR)", "segmento": "Taiwán - fundición", "nivel": 3, "tipo": "accion"},
+    # Nivel 4 — demanda final
+    "MSFT": {"nombre": "Microsoft", "segmento": "EE.UU. - proxy capex data centers", "nivel": 4, "tipo": "accion"},
+    "SMH": {"nombre": "SMH (ETF)", "segmento": "EE.UU. - ETF sectorial, termómetro", "nivel": 4, "tipo": "etf"},
+    # Diseño fabless — sin eslabón en la cadena (ver DECISIONES.md)
+    "NVDA": {"nombre": "NVIDIA", "segmento": "EE.UU. - GPUs / IA", "nivel": None, "tipo": "accion"},
+    "AMD": {"nombre": "AMD", "segmento": "EE.UU. - CPUs / GPUs", "nivel": None, "tipo": "accion"},
+    "QCOM": {"nombre": "Qualcomm", "segmento": "EE.UU. - chips móviles", "nivel": None, "tipo": "accion"},
+    "AVGO": {"nombre": "Broadcom", "segmento": "EE.UU. - redes / custom IA", "nivel": None, "tipo": "accion"},
+    "TXN": {"nombre": "Texas Instruments", "segmento": "EE.UU. - análogos", "nivel": None, "tipo": "accion"},
+    "ARM": {"nombre": "Arm Holdings", "segmento": "R.Unido - arquitecturas (ADR)", "nivel": None, "tipo": "accion"},
+    "IFX.DE": {"nombre": "Infineon", "segmento": "Alemania - potencia / autos", "nivel": None, "tipo": "accion"},
+}
+
+# Subconjuntos derivados: solo las acciones entran a rankings/anticipador/sidebar.
+ACCIONES = tuple(t for t, d in UNIVERSO.items() if d["tipo"] == "accion")
+TICKERS_POR_NIVEL = {
+    n: [t for t, d in UNIVERSO.items() if d["nivel"] == n] for n in NIVELES_CADENA
 }
 
 # Índices de referencia de cada mercado
@@ -206,17 +385,18 @@ INDICES = {
 }
 
 # Acciones que cotizan en bolsas que abren DESPUÉS del cierre de EE.UU.
-MERCADOS_POR_ABRIR = ["005930.KS", "000660.KS", "2330.TW", "8035.T", "6857.T", "IFX.DE"]
+MERCADOS_POR_ABRIR = ["005930.KS", "000660.KS", "2330.TW", "8035.T", "6857.T",
+                      "IFX.DE", "4063.T", "3436.T"]
 
 DEFAULT = ["NVDA", "AMD", "INTC", "MU", "TSM", "ASML", "005930.KS", "000660.KS"]
 PERIODOS = {"3 meses": "3mo", "6 meses": "6mo", "1 año": "1y", "2 años": "2y", "5 años": "5y"}
 
 # Acciones que NO cotizan en USD, y el par de yfinance para convertirlas.
-# El resto (EE.UU. y ADRs como TSM, UMC, ASML) ya cotiza en USD.
+# El resto (EE.UU. y ADRs como TSM, UMC, ASML, BHP) ya cotiza en USD.
 MONEDA_TICKER = {
     "005930.KS": "KRW=X", "000660.KS": "KRW=X",
     "2330.TW": "TWD=X",
-    "8035.T": "JPY=X", "6857.T": "JPY=X",
+    "8035.T": "JPY=X", "6857.T": "JPY=X", "4063.T": "JPY=X", "3436.T": "JPY=X",
     "IFX.DE": "EUR=X",
 }
 PARES_FX = tuple(sorted(set(MONEDA_TICKER.values())))
@@ -286,7 +466,7 @@ def descargar_ohlcv(ticker: str, periodo: str) -> pd.DataFrame:
 
 def nombre(t: str) -> str:
     if t in UNIVERSO:
-        return UNIVERSO[t][0]
+        return UNIVERSO[t]["nombre"]
     if t in INDICES:
         return INDICES[t][0]
     return t
@@ -303,7 +483,8 @@ def calcular_metricas(precios: pd.DataFrame) -> pd.DataFrame:
         vol_anual = retornos[t].std() * (252 ** 0.5) * 100
         dist_max = (serie.iloc[-1] / serie.max() - 1) * 100
         momentum = (serie.iloc[-1] / serie.iloc[-min(21, len(serie))] - 1) * 100
-        nom, desc = UNIVERSO.get(t, (t, ""))
+        info = UNIVERSO.get(t, {})
+        nom, desc = info.get("nombre", t), info.get("segmento", "")
         filas.append({"Ticker": t, "Empresa": nom, "Segmento": desc,
                       "Retorno período %": round(ret_total, 1),
                       "Volatilidad anual %": round(vol_anual, 1),
@@ -316,6 +497,74 @@ def calcular_metricas(precios: pd.DataFrame) -> pd.DataFrame:
                         + df["Retorno período %"].rank(pct=True) * 0.4
                         + (1 - df["Volatilidad anual %"].rank(pct=True)) * 0.2).round(2)
     return df.sort_values("Puntaje v0", ascending=False).reset_index(drop=True)
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def serie_sox_larga() -> pd.Series:
+    """Serie de 2 años del SOX para el régimen de mercado, independiente del
+    período elegido en el sidebar (las medias de 200 días necesitan historia)."""
+    data = yf.download("^SOX", period="2y", interval="1d", auto_adjust=True, progress=False)
+    if data.empty:
+        return pd.Series(dtype=float)
+    cierre = data["Close"]
+    if isinstance(cierre, pd.DataFrame):
+        cierre = cierre.iloc[:, 0]
+    return cierre.dropna()
+
+
+def calcular_regimen() -> dict | None:
+    """Régimen de mercado del SOX: tendencia (MA50 vs MA200, con banda lateral
+    de ±1%) × volatilidad (realizada 20d vs su mediana de 1 año)."""
+    sox = serie_sox_larga()
+    if len(sox) < 220:
+        return None
+    ma50 = sox.rolling(50).mean().iloc[-1]
+    ma200 = sox.rolling(200).mean().iloc[-1]
+    ratio = ma50 / ma200 - 1
+    if ratio > 0.01:
+        tendencia = "Alcista"
+    elif ratio < -0.01:
+        tendencia = "Bajista"
+    else:
+        tendencia = "Lateral"
+    vol20 = sox.pct_change().rolling(20).std() * (252 ** 0.5) * 100
+    vol_actual = vol20.iloc[-1]
+    vol_mediana = vol20.tail(252).median()
+    vol_label = "alta" if vol_actual > vol_mediana else "baja"
+    return {
+        "tendencia": tendencia,
+        "vol": vol_label,
+        "etiqueta": f"{tendencia} · vol {vol_label}",
+        "ratio_ma_pct": round(ratio * 100, 2),
+        "vol_actual": round(float(vol_actual), 1),
+        "vol_mediana": round(float(vol_mediana), 1),
+    }
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def dias_a_proximos_earnings(tickers: tuple) -> dict:
+    """Días calendario al próximo reporte de resultados por acción, vía
+    yfinance ticker.calendar. Cacheado 24 h (una consulta de red por acción).
+    Si Yahoo no publica fecha para una acción, simplemente no aparece."""
+    hoy = date.today()
+    resultado = {}
+    for t in tickers:
+        try:
+            cal = yf.Ticker(t).calendar
+            fechas = cal.get("Earnings Date") if isinstance(cal, dict) else None
+            if not fechas:
+                continue
+            futuras = []
+            for f in fechas:
+                if isinstance(f, datetime):
+                    f = f.date()
+                if isinstance(f, date) and f >= hoy:
+                    futuras.append(f)
+            if futuras:
+                resultado[t] = (min(futuras) - hoy).days
+        except Exception:
+            continue
+    return resultado
 
 
 def ultimo_movimiento_no_cero(retornos: pd.Series, umbral: float = 1e-6):
@@ -339,15 +588,20 @@ def ultimo_movimiento_no_cero(retornos: pd.Series, umbral: float = 1e-6):
 # ------------------------------------------------------------
 # Interfaz
 # ------------------------------------------------------------
-st.title("Comparador global de semiconductores")
-st.caption("Datos de Yahoo Finance (retraso ~15 min) + análisis de noticias con IA. "
-           "Herramienta de análisis, no constituye asesoría financiera.")
+st.markdown(
+    '<div class="wordmark">MKI Terminal<span class="punto">.</span></div>'
+    '<div class="titulo-hero">Cadena global de semiconductores</div>'
+    '<div class="subtitulo-hero">De la roca al data center — precios, contagio '
+    'entre mercados y noticias con IA. Datos de Yahoo Finance (retraso ~15 min). '
+    'Herramienta de análisis, no constituye asesoría financiera.</div>',
+    unsafe_allow_html=True,
+)
 
 with st.sidebar:
     st.header("Configuración")
-    opciones = {f"{v[0]} ({k})": k for k, v in UNIVERSO.items()}
+    opciones = {f"{UNIVERSO[t]['nombre']} ({t})": t for t in ACCIONES}
     seleccion = st.multiselect("Acciones a comparar", list(opciones.keys()),
-                               default=[f"{UNIVERSO[t][0]} ({t})" for t in DEFAULT])
+                               default=[f"{UNIVERSO[t]['nombre']} ({t})" for t in DEFAULT])
     tickers = tuple(opciones[s] for s in seleccion)
     periodo_label = st.selectbox(
         "Ventana de historia", list(PERIODOS.keys()), index=2,
@@ -405,6 +659,11 @@ else:
     ult_mov_apertura, ult_fecha_apertura = None, None
     feriado_hoy_apertura, fecha_reciente_apertura = False, None
 
+# Días al próximo reporte de resultados: cerca de earnings, la historia
+# estadística pierde valor (domina la noticia del reporte), así que el
+# anticipador degrada su confianza un nivel.
+dias_earnings = dias_a_proximos_earnings(ACCIONES)
+
 _filas_apertura = []
 if ult_mov_apertura is not None:
     for t in MERCADOS_POR_ABRIR:
@@ -418,18 +677,98 @@ if ult_mov_apertura is not None:
         r2 = x.corr(y) ** 2
         est = beta * (ult_mov_apertura / 100) * 100
         confianza = "Alta" if r2 > 0.25 else ("Media" if r2 > 0.10 else "Baja")
+        dias_e = dias_earnings.get(t)
+        zona_earnings = dias_e is not None and dias_e < 5
+        if zona_earnings:
+            confianza_degradada = {"Alta": "Media", "Media": "Baja", "Baja": "Baja"}[confianza]
+            etiqueta_conf = (f"{confianza_degradada} ({r2:.2f}, degradada: "
+                             f"earnings en {dias_e}d)")
+            confianza = confianza_degradada
+        else:
+            etiqueta_conf = f"{confianza} ({r2:.2f})"
         _filas_apertura.append({
             "Ticker": t,
             "Acción": nombre(t),
-            "Mercado": UNIVERSO.get(t, ("", ""))[1].split(" - ")[0],
+            "Mercado": UNIVERSO.get(t, {}).get("segmento", "").split(" - ")[0],
             "Beta de contagio": round(beta, 2),
             "Apertura estimada %": round(est, 2),
             "R2": round(r2, 4),
-            "Confianza (R²)": f"{confianza} ({r2:.2f})",
+            "Confianza": confianza,
+            "Confianza (R²)": etiqueta_conf,
+            "Earnings": f"{dias_e}d" if zona_earnings else "—",
         })
 df_ant = pd.DataFrame(_filas_apertura)
 if not df_ant.empty:
     df_ant = df_ant.sort_values("Apertura estimada %", ascending=False)
+
+# Régimen de mercado del SOX (badge permanente en el hero + snapshot diario)
+regimen = calcular_regimen()
+
+# ------------------------------------------------------------
+# Cadena de valor: precios del universo completo (siempre en USD, 1 año fijo),
+# índice Roca→Chip y divergencias entre competidores. Se calculan siempre
+# porque el snapshot diario y la portada Hoy los necesitan.
+# ------------------------------------------------------------
+precios_cadena = descargar_precios(tuple(UNIVERSO.keys()), "1y")
+tipos_cambio_1y = descargar_precios(PARES_FX, "1y")
+precios_cadena = convertir_a_usd(precios_cadena, tipos_cambio_1y)
+ret_cadena = precios_cadena.pct_change()
+mom20_cadena = precios_cadena / precios_cadena.shift(20) - 1
+
+# Momentum 20d y retornos diarios agregados por eslabón (promedio simple)
+series_nivel, ret_nivel = {}, {}
+for _nivel in NIVELES_CADENA:
+    _cols = [t for t in TICKERS_POR_NIVEL[_nivel] if t in precios_cadena.columns]
+    if _cols:
+        series_nivel[_nivel] = mom20_cadena[_cols].mean(axis=1)
+        ret_nivel[_nivel] = ret_cadena[_cols].mean(axis=1)
+
+# Índice Roca→Chip (0-100): momentum 20d promedio de los eslabones (peso igual
+# por eslabón), expresado como percentil dentro de su propio último año.
+# 50 = un día normal; 100 = la cadena más caliente del año; 0 = la más fría.
+indice_roca_chip = None
+if len(series_nivel) >= 3:
+    _serie_rc = pd.concat(series_nivel.values(), axis=1).mean(axis=1).dropna() * 100
+    if len(_serie_rc) > 60:
+        _percentil = float((_serie_rc.tail(252) <= _serie_rc.iloc[-1]).mean() * 100)
+        indice_roca_chip = {
+            "valor": round(_percentil),
+            "crudo_pct": round(float(_serie_rc.iloc[-1]), 2),
+            "historia": list(_serie_rc.tail(30)),
+            "serie": _serie_rc,
+        }
+
+# Divergencias entre competidores directos: spread de momentum 20d y su
+# z-score contra la historia del último año. |z| > 2 = divergencia activa.
+PARES_COMPETIDORES = [
+    ("Memoria", ["000660.KS", "MU", "005930.KS"]),
+    ("Fundición", ["TSM", "UMC"]),
+    ("Equipos", ["ASML", "8035.T"]),
+    ("Minería", ["BHP", "FCX"]),
+]
+analisis_pares = []
+for _grupo, _tickers_grupo in PARES_COMPETIDORES:
+    _presentes = [t for t in _tickers_grupo if t in mom20_cadena.columns]
+    for _i in range(len(_presentes)):
+        for _j in range(_i + 1, len(_presentes)):
+            _a, _b = _presentes[_i], _presentes[_j]
+            _spread = (mom20_cadena[_a] - mom20_cadena[_b]).dropna() * 100
+            if len(_spread) < 120 or _spread.std() == 0:
+                continue
+            _z = float((_spread.iloc[-1] - _spread.mean()) / _spread.std())
+            _delante, _detras = (_a, _b) if _spread.iloc[-1] > 0 else (_b, _a)
+            analisis_pares.append({
+                "par": f"{nombre(_a)} vs {nombre(_b)}",
+                "grupo": _grupo,
+                "spread": round(float(_spread.iloc[-1]), 2),
+                "z": round(_z, 2),
+                "activa": abs(_z) > 2,
+                "explicacion": (
+                    f"{nombre(_delante)} le saca {abs(_spread.iloc[-1]):.1f} pp de "
+                    f"rendimiento 20d a {nombre(_detras)} — brecha inusual contra "
+                    f"su propia historia (z={_z:+.1f})."),
+            })
+divergencias_activas = [p for p in analisis_pares if p["activa"]]
 
 # ------------------------------------------------------------
 # Historial de señales: snapshot diario (máx. 1x/día) y verificador de
@@ -440,13 +779,31 @@ if "verificacion_corrida" not in st.session_state:
     st.session_state.verificacion_corrida = True
 
 if not senales.ya_existe_snapshot_hoy():
-    precios_universo = descargar_precios(tuple(UNIVERSO.keys()), "6mo")
+    precios_universo = descargar_precios(ACCIONES, "6mo")
     tipos_cambio_universo = descargar_precios(PARES_FX, "6mo")
     precios_universo = convertir_a_usd(precios_universo, tipos_cambio_universo)  # siempre en USD
     metricas_universo = calcular_metricas(precios_universo)
     senales.guardar_snapshot_diario(
-        metricas_universo, noticias.sentimiento_promedio_por_ticker(), df_ant
+        metricas_universo, noticias.sentimiento_promedio_por_ticker(), df_ant,
+        regimen=regimen["etiqueta"] if regimen else None,
+        roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
+        divergencias=divergencias_activas,
     )
+
+# Alertas Telegram automáticas (1x por sesión; sin configurar, no hace nada;
+# el registro anti-duplicados evita repetir la misma alerta entre sesiones).
+if "alertas_evaluadas" not in st.session_state:
+    st.session_state.alertas_evaluadas = True
+    if alertas.esta_configurado():
+        alertas.alertar_si_corresponde(
+            regimen_actual=regimen["etiqueta"] if regimen else None,
+            regimen_anterior=senales.regimen_snapshot_anterior(),
+            divergencias=divergencias_activas,
+            sentimientos={t: v for t, v in noticias.sentimiento_promedio_por_ticker().items()
+                          if t in UNIVERSO},
+            buzz=noticias.buzz_por_ticker(),
+            nombres={t: d["nombre"] for t, d in UNIVERSO.items()},
+        )
 
 # ------------------------------------------------------------
 # Sección hero: métricas clave del día
@@ -465,17 +822,45 @@ if "^SOX" in indices.columns:
 lider_puntaje = metricas_df.iloc[0] if not metricas_df.empty else None
 
 
-def _tarjeta(label: str, valor: str, clase: str = "", sub: str = "") -> str:
+def _tarjeta(label: str, valor: str, clase: str = "", sub: str = "",
+             badges: str = "", spark: str = "") -> str:
+    """Tarjeta de métrica. `clase` acepta positivo/negativo o glow-cyan/glow-magenta/
+    glow-pos/glow-neg (glow con moderación: máx. 2 por vista). `badges` y `spark`
+    reciben HTML ya construido con badge() / sparkline_svg()."""
     sub_html = f'<div class="metric-sub">{sub}</div>' if sub else ""
+    badges_html = f'<div style="margin-top:8px">{badges}</div>' if badges else ""
     return (f'<div class="metric-card"><div class="metric-label">{label}</div>'
-            f'<div class="metric-value {clase}">{valor}</div>{sub_html}</div>')
+            f'<div class="metric-value {clase}">{valor}</div>{sub_html}'
+            f'{badges_html}{spark}</div>')
 
 
+# Fila hero global (visible en todas las secciones): régimen, Roca→Chip,
+# último SOX real, sentimiento del sector. Glow solo en régimen y Roca→Chip
+# (regla de oro: máximo 2 glows por vista).
 tarjetas = []
-if mejor_ticker is not None:
-    tarjetas.append(_tarjeta("Mejor acción del día", f"{nombre(mejor_ticker)}",
-                              "positivo" if mejor_valor >= 0 else "negativo",
-                              f"{mejor_valor:+.2f}% hoy"))
+if regimen is not None:
+    clase_regimen = {"Alcista": "glow-pos", "Bajista": "glow-neg"}.get(regimen["tendencia"], "")
+    tono_regimen = {"Alcista": "pos", "Bajista": "neg"}.get(regimen["tendencia"], "cyan")
+    tarjetas.append(_tarjeta(
+        "Régimen del SOX", regimen["tendencia"], clase_regimen,
+        f"MA50 vs MA200: {regimen['ratio_ma_pct']:+.1f}%",
+        badges=badge(f"VOL {regimen['vol'].upper()}", tono_regimen)))
+else:
+    tarjetas.append(_tarjeta("Régimen del SOX", "—", "", "sin historia suficiente"))
+
+if indice_roca_chip is not None:
+    tarjetas.append(_tarjeta(
+        "Salud de cadena Roca→Chip", f"{indice_roca_chip['valor']:.0f}", "glow-cyan",
+        "0 = cadena fría · 100 = cadena caliente",
+        spark=sparkline_svg(indice_roca_chip.get("historia", []), CYAN)))
+
+if sox_mov is not None:
+    sub_sox = f"sesión del {sox_fecha}"
+    if sox_feriado_hoy:
+        sub_sox = f"mercado cerrado el {sox_fecha_reciente} · último real: {sox_fecha}"
+    tarjetas.append(_tarjeta("Último movimiento del SOX", f"{sox_mov:+.2f}%",
+                              "positivo" if sox_mov >= 0 else "negativo", sub_sox))
+
 if sentimiento_sector is not None:
     tarjetas.append(_tarjeta("Sentimiento del sector (IA)", f"{sentimiento_sector:+.2f}",
                               "positivo" if sentimiento_sector >= 0 else "negativo",
@@ -483,19 +868,11 @@ if sentimiento_sector is not None:
 else:
     tarjetas.append(_tarjeta("Sentimiento del sector (IA)", "—", "",
                               "analiza noticias en la pestaña IA"))
-if sox_mov is not None:
-    sub_sox = f"sesión del {sox_fecha}"
-    if sox_feriado_hoy:
-        sub_sox = f"mercado cerrado el {sox_fecha_reciente} · último real: {sox_fecha}"
-    tarjetas.append(_tarjeta("Último movimiento del SOX", f"{sox_mov:+.2f}%",
-                              "positivo" if sox_mov >= 0 else "negativo", sub_sox))
-if lider_puntaje is not None:
-    tarjetas.append(_tarjeta("Líder del ranking cuantitativo", f"{lider_puntaje['Empresa']}",
-                              "", f"Puntaje v0 = {lider_puntaje['Puntaje v0']:.2f}"))
 
 st.markdown(f'<div class="metric-grid">{"".join(tarjetas)}</div>', unsafe_allow_html=True)
 
-SECCIONES = ["Comparador", "Mercados", "Aperturas", "Análisis IA", "Historial", "Detalle"]
+SECCIONES = ["Hoy", "Comparador", "Mercados", "Cadena", "Aperturas",
+             "Análisis IA", "Historial", "Detalle"]
 if "seccion_activa" not in st.session_state:
     st.session_state.seccion_activa = SECCIONES[0]
 _seccion_elegida = st.segmented_control(
@@ -505,10 +882,163 @@ _seccion_elegida = st.segmented_control(
 seccion = _seccion_elegida if _seccion_elegida is not None else st.session_state.seccion_activa
 st.session_state.seccion_activa = seccion
 
+def tarjeta_senal(titulo: str, direccion: str, magnitud: str, confianza: str,
+                  porque: str, regimen_str: str) -> str:
+    """Tarjeta estándar de señal para la portada Hoy: dirección (pos/neg/neutra),
+    magnitud, confianza, el porqué en una línea, y el régimen vigente como contexto."""
+    return (
+        f'<div class="senal-card senal-{direccion}">'
+        f'<div class="senal-titulo">{titulo}</div>'
+        f'<div class="senal-porque">{porque}</div>'
+        f'<div class="senal-meta">Magnitud: {magnitud} · Confianza: {confianza} · '
+        f'Régimen: {regimen_str}</div></div>')
+
+
+# ============================================================
+# SECCIÓN: Hoy (portada — síntesis en 30 segundos)
+# ============================================================
+if seccion == "Hoy":
+    st.subheader("Las 3 señales del día")
+    st.caption(
+        "Lo más fuerte que el terminal ve ahora mismo, entre divergencias entre "
+        "competidores, predicciones de apertura de alta confianza, sentimiento "
+        "extremo y volumen inusual de noticias. Las demás pestañas son las salas "
+        "de profundización.")
+
+    regimen_str = regimen["etiqueta"] if regimen else "sin datos"
+    candidatas = []  # (fuerza, tarjeta_html) — fuerza 1.0 = justo en el umbral
+
+    for p in divergencias_activas:
+        candidatas.append((abs(p["z"]) / 2, tarjeta_senal(
+            f"Divergencia: {p['par']}", "neutra",
+            f"{p['spread']:+.1f} pp de spread 20d (z={p['z']:+.1f})",
+            "Alta" if abs(p["z"]) > 3 else "Media",
+            p["explicacion"], regimen_str)))
+
+    if not df_ant.empty:
+        for _, fila_s in df_ant[df_ant["Confianza"] == "Alta"].iterrows():
+            est_s = fila_s["Apertura estimada %"]
+            candidatas.append((abs(est_s) / 2, tarjeta_senal(
+                f"Apertura estimada: {fila_s['Acción']} {est_s:+.2f}%",
+                "pos" if est_s >= 0 else "neg",
+                f"{est_s:+.2f}%", fila_s["Confianza (R²)"],
+                f"El SOX se movió {ult_mov_apertura:+.2f}% en su última sesión real y "
+                f"esta acción históricamente replica ese movimiento con beta "
+                f"{fila_s['Beta de contagio']:.2f} al día siguiente.", regimen_str)))
+
+    sentimientos_hoy = noticias.sentimiento_promedio_por_ticker()
+    for t_s, s_val in sentimientos_hoy.items():
+        if t_s in UNIVERSO and abs(s_val) > 0.6:
+            candidatas.append((abs(s_val) / 0.6, tarjeta_senal(
+                f"Sentimiento extremo: {nombre(t_s)} {s_val:+.2f}",
+                "pos" if s_val >= 0 else "neg",
+                f"{s_val:+.2f} (umbral ±0.60)", "Media (noticias)",
+                f"Las noticias recientes de {nombre(t_s)} tienen un sentimiento "
+                f"inusualmente {'positivo' if s_val > 0 else 'negativo'}, ponderado "
+                f"hacia lo más nuevo.", regimen_str)))
+
+    buzz_hoy = noticias.buzz_por_ticker()
+    for t_b, b_info in buzz_hoy.items():
+        if b_info["buzz"] and t_b in UNIVERSO:
+            ratio_b = (b_info["hoy"] / b_info["promedio_diario"]
+                       if b_info["promedio_diario"] > 0 else 3.0)
+            candidatas.append((ratio_b / 3, tarjeta_senal(
+                f"Alto buzz: {nombre(t_b)}", "neutra",
+                f"{b_info['hoy']} titulares hoy vs {b_info['promedio_diario']:.1f}/día",
+                "Media (volumen de noticias)",
+                f"El flujo de noticias de {nombre(t_b)} triplica su ritmo habitual: "
+                f"el mercado está hablando de esta acción.", regimen_str)))
+
+    if candidatas:
+        for _, html_senal in sorted(candidatas, key=lambda x: -x[0])[:3]:
+            st.markdown(html_senal, unsafe_allow_html=True)
+    else:
+        st.info(
+            "Hoy no hay señales fuertes: sin divergencias activas, sin predicciones "
+            "de alta confianza, sin sentimiento extremo ni buzz inusual. Eso también "
+            "es información — día de mantenimiento, no de acción.")
+
+    st.divider()
+    col_track, col_resumen = st.columns([2, 3])
+    with col_track:
+        st.subheader("Track record")
+        metricas_ap_hoy = senales.metricas_apertura(dias=30)
+        if metricas_ap_hoy["suficiente"]:
+            st.metric("Aciertos de dirección (30d)",
+                      f"{metricas_ap_hoy['pct_aciertos']:.1f}%",
+                      help=f"{metricas_ap_hoy['n']} predicciones evaluadas")
+            st.metric("Error promedio",
+                      f"{metricas_ap_hoy['error_promedio_pp']:.2f} pp")
+        else:
+            st.info(f"Datos insuficientes todavía ({metricas_ap_hoy['n']} "
+                    f"predicciones evaluadas — mínimo {senales.MINIMO_OBSERVACIONES}). "
+                    "El verificador acumula historia cada día que se abre el terminal.")
+        st.caption("El detalle completo vive en la pestaña Historial.")
+
+    with col_resumen:
+        st.subheader("Resumen IA del día")
+        resumen_hoy = noticias.obtener_resumen_guardado()
+        if resumen_hoy:
+            texto_hoy = "\n".join(
+                l for l in resumen_hoy.splitlines() if not l.strip().startswith("#")
+            ).strip()
+            texto_hoy = texto_hoy.replace("**", "").replace("*", "").replace("_", "")
+            texto_hoy = texto_hoy.replace("$", "＄")
+            st.markdown(
+                f'<div class="resumen-dia" style="font-size:17px">{texto_hoy}</div>',
+                unsafe_allow_html=True)
+        else:
+            st.info("Aún no hay resumen del día — genera uno en la pestaña Análisis IA.")
+
+    st.divider()
+    st.subheader("Alertas Telegram")
+    if alertas.esta_configurado():
+        st.caption(
+            "Alertas activas: cambio de régimen, divergencia nueva, sentimiento "
+            "extremo y alto buzz se envían solos (sin duplicados). El reporte "
+            "matinal es manual:")
+        if st.button("Enviar reporte matinal"):
+            sox_texto_alerta = (f"{ult_mov_apertura:+.2f}% (sesión del {ult_fecha_apertura})"
+                                if ult_mov_apertura is not None else "sin datos")
+            lineas_ap = []
+            if not df_ant.empty:
+                lineas_ap = [
+                    f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% ({f['Confianza']})"
+                    for _, f in df_ant.iterrows()]
+            ok_rep, detalle_rep = alertas.enviar_reporte_matinal(
+                regimen=regimen["etiqueta"] if regimen else None,
+                roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
+                sox_texto=sox_texto_alerta,
+                sentimiento_sector=sentimiento_sector,
+                lineas_apertura=lineas_ap,
+                divergencias=divergencias_activas,
+            )
+            if ok_rep:
+                st.success("Reporte matinal enviado a tu Telegram.")
+            else:
+                st.error(f"No se pudo enviar: {detalle_rep}")
+    else:
+        with st.expander("Configurar alertas por Telegram (opcional, gratis)"):
+            st.markdown(alertas.INSTRUCCIONES)
+
+
 # ============================================================
 # SECCIÓN: Comparador (Etapa 1)
 # ============================================================
 if seccion == "Comparador":
+    tarjetas_comp = []
+    if mejor_ticker is not None:
+        tarjetas_comp.append(_tarjeta("Mejor acción del día", f"{nombre(mejor_ticker)}",
+                                      "positivo" if mejor_valor >= 0 else "negativo",
+                                      f"{mejor_valor:+.2f}% hoy"))
+    if lider_puntaje is not None:
+        tarjetas_comp.append(_tarjeta("Líder del ranking cuantitativo",
+                                      f"{lider_puntaje['Empresa']}", "",
+                                      f"Puntaje v0 = {lider_puntaje['Puntaje v0']:.2f}"))
+    if tarjetas_comp:
+        st.markdown(f'<div class="metric-grid">{"".join(tarjetas_comp)}</div>',
+                    unsafe_allow_html=True)
+
     st.subheader("Rendimiento comparado (base 100)")
     st.caption("Todas parten en 100 al inicio del período elegido: si una línea "
                "termina en 200, esa acción duplicó su valor en la ventana mostrada.")
@@ -595,7 +1125,7 @@ if seccion == "Mercados":
                 c1 = par1.iloc[:, 0].corr(par1.iloc[:, 1])
                 filas.append({
                     "Acción": nombre(t),
-                    "Mercado": UNIVERSO.get(t, ("", ""))[1].split(" - ")[0],
+                    "Mercado": UNIVERSO.get(t, {}).get("segmento", "").split(" - ")[0],
                     "Corr. mismo día": round(c0, 2),
                     "Corr. con SOX del día anterior": round(c1, 2),
                     "¿Reacciona con desfase?": "Sí" if c1 > c0 + 0.05 else "—",
@@ -607,6 +1137,178 @@ if seccion == "Mercados":
             "correlacionar más con el SOX **del día anterior**: cuando Seúl abre, "
             "Nueva York ya cerró hace horas y esa información 'llega' a Asia recién "
             "en su apertura. Esta asimetría es la base del anticipador (pestaña 3).")
+
+    st.divider()
+    st.subheader("Panel macro: el viento de fondo")
+    st.caption(
+        "Hipótesis de trabajo: el contagio EE.UU.→Asia se amplifica según el viento "
+        "macro. Con la tasa de 10 años subiendo y las monedas asiáticas depreciándose, "
+        "un golpe del SOX suele pegar más fuerte en Seúl y Taipéi; con viento a favor, "
+        "el mismo golpe se amortigua. El cobre es el pulso de demanda industrial que "
+        "alimenta la cadena desde la roca.")
+
+    MACRO_TICKERS = {
+        "^TNX": "Bono 10 años EE.UU.",
+        "KRW=X": "Won coreano (KRW por USD)",
+        "TWD=X": "Dólar taiwanés (TWD por USD)",
+        "HG=F": "Cobre (futuro)",
+    }
+    precios_macro = descargar_precios(tuple(MACRO_TICKERS.keys()), "1y")
+    ret_sox_largo = serie_sox_larga().pct_change()
+
+    tarjetas_macro = []
+    for tk, nombre_macro in MACRO_TICKERS.items():
+        if tk not in precios_macro.columns:
+            continue
+        serie_m = precios_macro[tk].dropna()
+        if len(serie_m) < 66:
+            # Caso real observado con ^TNX: Yahoo a veces solo entrega el último
+            # dato del yield, sin histórico. Honestidad ante todo: se muestra el
+            # nivel actual y se dice explícitamente qué no se puede calcular.
+            if tk == "^TNX" and len(serie_m) >= 1:
+                tarjetas_macro.append(_tarjeta(
+                    nombre_macro, f"{serie_m.iloc[-1]:.2f}%", "",
+                    "Yahoo no entrega histórico del yield ahora mismo — sin "
+                    "variación 5d ni correlación disponibles"))
+            continue
+        valor_m = serie_m.iloc[-1]
+        ret_m = serie_m.pct_change()
+        par_m = pd.concat([ret_m, ret_sox_largo], axis=1).dropna()
+        corr60 = None
+        if len(par_m) >= 60:
+            corr60 = par_m.iloc[:, 0].rolling(60).corr(par_m.iloc[:, 1]).iloc[-1]
+        if tk == "^TNX":
+            # Verificado empíricamente: el ^TNX actual de Yahoo ya viene en puntos
+            # porcentuales directos (4.485 = 4.49%). La variación se expresa en
+            # puntos base, como se habla de bonos (1 pp = 100 pb).
+            valor_str = f"{valor_m:.2f}%"
+            delta_pb = (serie_m.iloc[-1] - serie_m.iloc[-6]) * 100
+            sub_m = f"{delta_pb:+.0f} pb en 5 días"
+        else:
+            valor_str = f"{valor_m:,.2f}"
+            var5 = (serie_m.iloc[-1] / serie_m.iloc[-6] - 1) * 100
+            sub_m = f"{var5:+.2f}% en 5 días"
+        badge_corr = ""
+        if corr60 is not None and corr60 == corr60:
+            badge_corr = badge(f"corr 60d SOX {corr60:+.2f}",
+                               "cyan" if abs(corr60) < 0.5 else "magenta")
+        tarjetas_macro.append(_tarjeta(
+            nombre_macro, valor_str, "", sub_m, badges=badge_corr,
+            spark=sparkline_svg(serie_m.tail(30), CYAN)))
+
+    if tarjetas_macro:
+        st.markdown(f'<div class="metric-grid">{"".join(tarjetas_macro)}</div>',
+                    unsafe_allow_html=True)
+    else:
+        st.info("No se pudieron descargar los datos macro. Intenta más tarde.")
+
+# ============================================================
+# SECCIÓN: Cadena (flujo roca→chip, divergencias, correlaciones con desfase)
+# ============================================================
+if seccion == "Cadena":
+    st.subheader("La cadena de valor, de la roca al data center")
+    st.caption(
+        "Cada eslabón muestra el rendimiento 20d promedio de sus integrantes "
+        "(en USD). Las empresas de diseño fabless (NVIDIA, AMD, etc.) no forman "
+        "parte del flujo físico de la cadena y se analizan en las demás pestañas.")
+
+    tarjetas_niveles = []
+    for nivel_c, nombre_nivel in NIVELES_CADENA.items():
+        if nivel_c not in series_nivel:
+            continue
+        mom_serie = series_nivel[nivel_c].dropna()
+        if mom_serie.empty:
+            continue
+        val_nivel = mom_serie.iloc[-1] * 100
+        cols_nivel = [t for t in TICKERS_POR_NIVEL[nivel_c] if t in precios_cadena.columns]
+        integrantes = " · ".join(nombre(t) for t in cols_nivel)
+        base_nivel = precios_cadena[cols_nivel].dropna(how="all")
+        prom_norm = (base_nivel / base_nivel.iloc[0]).mean(axis=1)
+        tarjetas_niveles.append(_tarjeta(
+            f"Nivel {nivel_c} · {nombre_nivel}", f"{val_nivel:+.1f}%",
+            "positivo" if val_nivel >= 0 else "negativo",
+            integrantes, spark=sparkline_svg(prom_norm.tail(30), CYAN)))
+    st.markdown(f'<div class="metric-grid">{"".join(tarjetas_niveles)}</div>',
+                unsafe_allow_html=True)
+
+    if indice_roca_chip is not None:
+        st.subheader("Índice Roca→Chip")
+        st.caption(
+            "Salud de la cadena completa en una cifra 0-100: momentum 20d promedio "
+            "de los eslabones (peso igual por eslabón), expresado como percentil "
+            "dentro de su propio último año. 50 = un día normal; 100 = la cadena "
+            "más caliente del año; 0 = la más fría.")
+        col_rc1, col_rc2 = st.columns([1, 3])
+        with col_rc1:
+            st.metric("Roca→Chip hoy", f"{indice_roca_chip['valor']:.0f}",
+                      help=f"Momentum 20d crudo de la cadena: {indice_roca_chip['crudo_pct']:+.1f}%")
+        with col_rc2:
+            df_rc = indice_roca_chip["serie"].reset_index()
+            df_rc.columns = ["Fecha", "Momentum de cadena %"]
+            fig_rc = px.line(df_rc, x="Fecha", y="Momentum de cadena %")
+            fig_rc.add_hline(y=0, line_dash="dot", line_color=TEXTO_SECUNDARIO)
+            template_grafico(fig_rc, altura=260, xaxis_title=None)
+
+    st.divider()
+    st.subheader("Divergencias entre competidores directos")
+    st.caption(
+        "Cuando dos competidores del mismo negocio se separan mucho más de lo "
+        "habitual (|z| > 2 contra su propia historia de 1 año), algo específico "
+        "está pasando en uno de los dos: o hay una historia real, o hay una "
+        "brecha que tiende a cerrarse.")
+    if not analisis_pares:
+        st.info("Sin datos suficientes para analizar pares de competidores.")
+    else:
+        for p in analisis_pares:
+            if p["activa"]:
+                st.markdown(
+                    f'<div class="senal-card senal-neutra">'
+                    f'<div class="senal-titulo">{p["par"]} '
+                    f'{badge("DIVERGENCIA ACTIVA", "magenta")}</div>'
+                    f'<div class="senal-porque">{p["explicacion"]}</div>'
+                    f'<div class="senal-meta">Grupo: {p["grupo"]} · spread 20d '
+                    f'{p["spread"]:+.1f} pp · z = {p["z"]:+.2f}</div></div>',
+                    unsafe_allow_html=True)
+        df_pares = pd.DataFrame([{
+            "Par": p["par"], "Grupo": p["grupo"], "Spread 20d (pp)": p["spread"],
+            "Z-score": p["z"], "Divergencia": "ACTIVA" if p["activa"] else "—",
+        } for p in analisis_pares]).sort_values("Z-score", key=abs, ascending=False)
+        st.dataframe(df_pares, use_container_width=True, hide_index=True)
+
+    st.divider()
+    st.subheader("¿Quién anticipa a quién? Correlaciones con desfase")
+    st.caption(
+        "Correlación entre el retorno de un eslabón HOY y el del eslabón siguiente "
+        "5, 10 o 20 días DESPUÉS. Si el cobre de hoy correlaciona con las obleas de "
+        "dentro de 10 días, la roca anticipa al chip. La última fila mira la cadena "
+        "al revés: la demanda final (Microsoft, SMH) como anticipador de las "
+        "fundiciones — el capex de data centers se anuncia antes de fabricarse.")
+    PARES_DESFASE = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 3)]
+    LAGS = [5, 10, 20]
+    filas_desfase, etiquetas_desfase = [], []
+    for niv_a, niv_b in PARES_DESFASE:
+        if niv_a not in ret_nivel or niv_b not in ret_nivel:
+            continue
+        fila_vals = []
+        for lag in LAGS:
+            par_lag = pd.concat([ret_nivel[niv_a].shift(lag), ret_nivel[niv_b]],
+                                axis=1).dropna()
+            fila_vals.append(round(par_lag.iloc[:, 0].corr(par_lag.iloc[:, 1]), 2)
+                             if len(par_lag) > 60 else None)
+        filas_desfase.append(fila_vals)
+        etiquetas_desfase.append(
+            f"{NIVELES_CADENA[niv_a]} → {NIVELES_CADENA[niv_b]}")
+    if filas_desfase:
+        fig_desfase = go.Figure(go.Heatmap(
+            z=filas_desfase,
+            x=[f"{lag} días" for lag in LAGS],
+            y=etiquetas_desfase,
+            zmin=-0.5, zmax=0.5, colorscale=ESCALA_MONOCROMATICA,
+            text=filas_desfase, texttemplate="%{text}"))
+        template_grafico(fig_desfase, altura=330)
+        st.caption(
+            "Con retornos diarios estas correlaciones suelen ser bajas: valores "
+            "sobre ~0.15 ya son señal de que el eslabón anterior lleva la batuta.")
 
 # ============================================================
 # SECCIÓN: Aperturas (anticipador)
@@ -647,7 +1349,13 @@ if seccion == "Aperturas":
                              text="Apertura estimada %")
             fig_ant.update_traces(texttemplate="%{text:+.2f}%", textposition="outside")
             template_grafico(fig_ant, altura=380, coloraxis_showscale=False, xaxis_title=None)
-            st.dataframe(df_ant.drop(columns=["Ticker", "R2"]), use_container_width=True, hide_index=True)
+            st.dataframe(df_ant.drop(columns=["Ticker", "R2", "Confianza"]),
+                         use_container_width=True, hide_index=True)
+            if (df_ant["Earnings"] != "—").any():
+                st.caption(
+                    "ZONA EARNINGS: cuando una acción reporta resultados en menos de 5 "
+                    "días, su confianza se degrada un nivel — cerca del reporte manda "
+                    "la noticia del reporte, no la estadística del contagio.")
             st.info(
                 "Cómo leerlo: 'Beta de contagio' = cuánto se mueve históricamente esa "
                 "acción por cada 1% que se movió el SOX el día anterior. 'Confianza (R²)' "
@@ -708,7 +1416,21 @@ if seccion == "Análisis IA":
 
         st.divider()
         st.subheader("Termómetro de sentimiento por acción")
-        st.caption("Sentimiento promedio de las noticias ya analizadas para cada acción, de -1 (muy negativo) a +1 (muy positivo).")
+        st.caption(
+            "Sentimiento con decaimiento temporal: cada noticia pesa según su edad "
+            "(hoy = 1.0, cada día le quita 30%, piso 0.1). Lo de esta mañana manda; "
+            "lo del mes pasado apenas suma. Escala de -1 (muy negativo) a +1 (muy positivo).")
+
+        buzz_info = noticias.buzz_por_ticker()
+        tickers_en_buzz = [t for t, b in buzz_info.items() if b["buzz"] and t in UNIVERSO]
+        if tickers_en_buzz:
+            badges_buzz = " ".join(
+                badge(f"ALTO BUZZ · {nombre(t)} ({buzz_info[t]['hoy']} titulares hoy)", "cyan")
+                for t in tickers_en_buzz)
+            st.markdown(badges_buzz, unsafe_allow_html=True)
+            st.caption(
+                "ALTO BUZZ = una acción con al menos el triple de titulares que su "
+                "promedio diario de dos semanas: el mercado está hablando de ella.")
         sentimientos = noticias.sentimiento_promedio_por_ticker()
         sentimientos_universo = {t: v for t, v in sentimientos.items() if t in UNIVERSO}
         sentimientos_otros = {t: v for t, v in sentimientos.items() if t not in UNIVERSO}
@@ -824,10 +1546,12 @@ if seccion == "Historial":
 # ============================================================
 if seccion == "Detalle":
     st.subheader("Ficha de la acción")
-    opciones_detalle = {f"{v[0]} ({k})": k for k, v in UNIVERSO.items()}
+    opciones_detalle = {f"{d['nombre']} ({t})": t for t, d in UNIVERSO.items()}
+    lista_detalle = list(opciones_detalle.keys())
+    indice_nvda = next((i for i, k in enumerate(lista_detalle) if "(NVDA)" in k), 0)
     seleccion_detalle = st.selectbox(
         "Elige una acción para ver su ficha completa",
-        list(opciones_detalle.keys()),
+        lista_detalle, index=indice_nvda,
     )
     ticker_d = opciones_detalle[seleccion_detalle]
     nombre_d = nombre(ticker_d)
@@ -841,24 +1565,39 @@ if seccion == "Detalle":
         precio_actual = datos_d["Close"].iloc[-1]
         retorno_dia_d = (datos_d["Close"].iloc[-1] / datos_d["Close"].iloc[-2] - 1) * 100 if len(datos_d) > 1 else 0.0
 
-        metricas_d_df = calcular_metricas(datos_d[["Close"]].rename(columns={"Close": ticker_d}))
-        fila_metricas = metricas_d_df.iloc[0] if not metricas_d_df.empty else None
+        # El Puntaje v0 es un percentil DENTRO del universo de acciones: hay que
+        # calcularlo contra todas las acciones, no con esta sola (el ranking de un
+        # universo de 1 elemento siempre daría el mismo número).
+        precios_universo_d = descargar_precios(ACCIONES, periodo)
+        if moneda_usd:
+            precios_universo_d = convertir_a_usd(precios_universo_d, tipos_cambio)
+        metricas_universo_d = calcular_metricas(precios_universo_d)
+        fila_universo = metricas_universo_d[metricas_universo_d["Ticker"] == ticker_d]
+        fila_metricas = fila_universo.iloc[0] if not fila_universo.empty else None
         sentimiento_d = noticias.sentimiento_promedio_por_ticker().get(ticker_d)
 
         par_moneda_d = MONEDA_TICKER.get(ticker_d)
         unidad_d = "USD" if (moneda_usd or par_moneda_d is None) else par_moneda_d.replace("=X", "")
+        dias_e_d = dias_earnings.get(ticker_d)
+        badge_earnings_d = (badge(f"ZONA EARNINGS · {dias_e_d}d", "magenta")
+                            if dias_e_d is not None and dias_e_d < 5 else "")
         tarjetas_d = [
             _tarjeta(f"Precio actual ({unidad_d})", f"{precio_actual:,.2f}",
-                     "positivo" if retorno_dia_d >= 0 else "negativo", f"{retorno_dia_d:+.2f}% hoy"),
+                     "positivo" if retorno_dia_d >= 0 else "negativo",
+                     f"{retorno_dia_d:+.2f}% hoy", badges=badge_earnings_d),
         ]
         if fila_metricas is not None:
-            tarjetas_d.append(_tarjeta("Puntaje v0", f"{fila_metricas['Puntaje v0']:.2f}", "",
-                                       f"Momentum 20d {fila_metricas['Momentum 20d %']:+.1f}%"))
+            tarjetas_d.append(_tarjeta("Puntaje v0", f"{fila_metricas['Puntaje v0']:.2f}",
+                                       "", f"Momentum 20d {fila_metricas['Momentum 20d %']:+.1f}%"))
             tarjetas_d.append(_tarjeta("Volatilidad anual", f"{fila_metricas['Volatilidad anual %']:.1f}%"))
         if sentimiento_d is not None:
+            buzz_d = noticias.buzz_por_ticker().get(ticker_d, {})
+            badge_buzz_d = (badge(f"ALTO BUZZ · {buzz_d.get('hoy', 0)} titulares hoy", "cyan")
+                            if buzz_d.get("buzz") else "")
             tarjetas_d.append(_tarjeta("Sentimiento IA", f"{sentimiento_d:+.2f}",
                                        "positivo" if sentimiento_d >= 0 else "negativo",
-                                       "de -1 a +1"))
+                                       "de -1 a +1, con decaimiento temporal",
+                                       badges=badge_buzz_d))
         st.markdown(f'<div class="metric-grid">{"".join(tarjetas_d)}</div>', unsafe_allow_html=True)
 
         st.subheader(f"{nombre_d} — precio y volumen")
@@ -878,7 +1617,7 @@ if seccion == "Detalle":
             fig_vela, altura=560, showlegend=False, xaxis_rangeslider_visible=False,
             yaxis_title="Precio", yaxis2_title="Volumen",
             xaxis2=dict(showgrid=False, zeroline=False, linecolor=BORDE),
-            yaxis2=dict(showgrid=True, gridcolor="#1D1D20", zeroline=False, linecolor=BORDE),
+            yaxis2=dict(showgrid=True, gridcolor=GRIDLINE, zeroline=False, linecolor=BORDE),
         )
 
         col_noticias, col_corr = st.columns([3, 2])
@@ -894,9 +1633,7 @@ if seccion == "Detalle":
 
         with col_corr:
             st.subheader("Correlaciones principales")
-            precios_universo_d = descargar_precios(tuple(UNIVERSO.keys()), periodo)
-            if moneda_usd:
-                precios_universo_d = convertir_a_usd(precios_universo_d, tipos_cambio)
+            # Reutiliza los precios del universo ya descargados para el Puntaje v0.
             retornos_universo_d = precios_universo_d.pct_change().dropna(how="all")
             if ticker_d in retornos_universo_d.columns and retornos_universo_d.shape[1] > 1:
                 corr_ticker = retornos_universo_d.corr()[ticker_d].drop(ticker_d).dropna()
@@ -946,5 +1683,6 @@ if seccion == "Detalle":
                        unsafe_allow_html=True)
 
 st.divider()
-st.caption("Etapa 4: historial de señales, vista de detalle por acción y normalización "
-           "a USD. Herramienta de análisis, no constituye asesoría financiera.")
+st.caption("Etapa 4.5: cadena de valor completa roca→chip→data center, régimen de "
+           "mercado, divergencias, portada Hoy y alertas Telegram. Herramienta de "
+           "análisis, no constituye asesoría financiera.")

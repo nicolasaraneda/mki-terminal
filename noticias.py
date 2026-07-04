@@ -8,6 +8,7 @@
 
 import json
 import os
+import re
 import sqlite3
 from datetime import date, datetime, timezone
 
@@ -42,6 +43,12 @@ EMPRESAS = {
     "8035.T": "Tokyo Electron",
     "6857.T": "Advantest",
     "IFX.DE": "Infineon",
+    # Etapa 4.5: cadena vertical (minería, materiales, demanda final)
+    "BHP": "BHP Group",
+    "FCX": "Freeport-McMoRan",
+    "4063.T": "Shin-Etsu Chemical",
+    "3436.T": "SUMCO",
+    "MSFT": "Microsoft",
 }
 
 # Búsquedas generales del sector, no atadas a un ticker específico
@@ -52,6 +59,44 @@ QUERIES_GENERALES = ["semiconductors DRAM", "semiconductor industry chip stocks"
 # titulares viejos (y no pagarle a la IA por analizarlos todos), nos quedamos solo con
 # los más recientes de cada fuente; el análisis de IA luego filtra cuáles son relevantes.
 LIMITE_POR_FEED = 15
+
+# ------------------------------------------------------------
+# Filtro de relevancia (Etapa 4.5): un titular solo entra a la base si menciona
+# una empresa del universo o un término del sector. Sin esto, el feed de Yahoo
+# mete titulares de P&G, XRP o SpaceX que solo gastan dinero al analizarse.
+# ------------------------------------------------------------
+KEYWORDS_SECTOR = [
+    "semiconductor", "semiconductors", "chip", "chips", "chipmaker", "chipmakers",
+    "dram", "hbm", "nand", "foundry", "foundries", "fab", "fabs", "lithography",
+    "euv", "wafer", "wafers", "silicon", "gpu", "gpus", "cpu", "cpus",
+    "data center", "data centers", "datacenter", "datacenters",
+    "copper", "silver", "smelter", "mining",
+]
+ALIAS_EMPRESAS = [
+    "nvidia", "amd", "intel", "qualcomm", "broadcom", "texas instruments",
+    "arm holdings", "micron", "samsung", "sk hynix", "hynix", "tsmc", "umc",
+    "asml", "tokyo electron", "advantest", "infineon", "bhp", "freeport",
+    "shin-etsu", "shin etsu", "sumco", "microsoft",
+]
+_PATRON_RELEVANCIA = re.compile(
+    r"\b(" + "|".join(re.escape(t) for t in KEYWORDS_SECTOR + ALIAS_EMPRESAS) + r")\b",
+    re.IGNORECASE,
+)
+
+# Sentimiento 2.0: decaimiento temporal. Una noticia de hoy pesa 1.0; cada día
+# le quita 30% de peso, con un piso de 0.1 (lo viejo nunca desaparece del todo,
+# pero pesa poco).
+DECAIMIENTO_DIARIO = 0.7
+PISO_PESO = 0.1
+
+# Alto buzz: una acción con 3x su promedio diario de titulares está "en boca de todos"
+FACTOR_BUZZ = 3.0
+MINIMO_TITULARES_BUZZ = 3
+
+
+def es_titular_relevante(titular: str) -> bool:
+    """True si el titular menciona una empresa del universo o un término del sector."""
+    return bool(_PATRON_RELEVANCIA.search(titular or ""))
 
 
 def _tickers_por_nombre() -> dict:
@@ -123,7 +168,11 @@ def _fecha_entrada(entrada) -> str:
 
 
 def _guardar_titular(conn, fecha, fuente, titular, url, tickers) -> bool:
-    """Devuelve True si el titular era nuevo (no estaba antes)."""
+    """Devuelve True si el titular era nuevo (no estaba antes). Los titulares
+    irrelevantes para el sector (filtro de keywords/empresas) no se guardan:
+    analizar ruido con IA cuesta dinero y ensucia el sentimiento."""
+    if not es_titular_relevante(titular):
+        return False
     try:
         conn.execute(
             "INSERT INTO titulares (fecha, fuente, titular, url, tickers) VALUES (?, ?, ?, ?, ?)",
@@ -132,6 +181,35 @@ def _guardar_titular(conn, fecha, fuente, titular, url, tickers) -> bool:
         return True
     except sqlite3.IntegrityError:
         return False
+
+
+def limpiar_titulares_irrelevantes() -> int:
+    """Limpieza retroactiva de la base: borra titulares ya guardados que no pasan
+    el filtro de relevancia — salvo los que la IA ya analizó marcando tickers del
+    universo como afectados (esos demostraron ser relevantes aunque el titular no
+    mencione keywords). Idempotente: correrla dos veces no borra nada nuevo.
+    Devuelve cuántos titulares se eliminaron."""
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT t.id, t.titular, a.tickers_afectados
+        FROM titulares t LEFT JOIN analisis a ON a.titular_id = t.id
+    """).fetchall()
+    universo = set(EMPRESAS.keys())
+    a_borrar = []
+    for id_, titular, tickers_afectados in filas:
+        if es_titular_relevante(titular):
+            continue
+        afectados = {x.strip() for x in (tickers_afectados or "").split(",") if x.strip()}
+        if afectados & universo:
+            continue  # la IA lo vinculó a empresas del universo: se queda
+        a_borrar.append(id_)
+    for id_ in a_borrar:
+        conn.execute("DELETE FROM analisis WHERE titular_id = ?", (id_,))
+        conn.execute("DELETE FROM titulares WHERE id = ?", (id_,))
+    conn.commit()
+    conn.close()
+    return len(a_borrar)
 
 
 def actualizar_titulares() -> int:
@@ -170,6 +248,8 @@ def actualizar_titulares() -> int:
 
     conn.commit()
     conn.close()
+    # Mantiene la base limpia también hacia atrás (idempotente y barato)
+    limpiar_titulares_irrelevantes()
     return nuevos
 
 
@@ -403,17 +483,90 @@ def explicar_accion(client, ticker: str, nombre_empresa: str, metricas: dict, ti
     return next(b.text for b in response.content if b.type == "text").strip()
 
 
+def _peso_por_antiguedad(fecha_titular: str) -> float:
+    """Peso de una noticia según su edad: hoy = 1.0, cada día resta 30%
+    (decaimiento 0.7^días), con piso de 0.1."""
+    try:
+        dias = (date.today() - date.fromisoformat(str(fecha_titular)[:10])).days
+    except (ValueError, TypeError):
+        dias = 7  # fecha ilegible: pesa como noticia de hace una semana
+    return max(PISO_PESO, DECAIMIENTO_DIARIO ** max(0, dias))
+
+
 def sentimiento_promedio_por_ticker() -> dict:
-    """Sentimiento promedio de los titulares analizados por ticker (últimos, ya cacheados)."""
+    """Sentimiento por ticker con decaimiento temporal: promedio de los titulares
+    analizados, ponderado por edad de cada noticia (hoy pesa 1.0; cada día le
+    quita 30%; piso 0.1). Lo de esta mañana manda; lo del mes pasado apenas suma."""
     init_db()
     conn = get_connection()
-    filas = conn.execute("SELECT tickers_afectados, sentimiento FROM analisis").fetchall()
+    filas = conn.execute("""
+        SELECT a.tickers_afectados, a.sentimiento, t.fecha
+        FROM analisis a JOIN titulares t ON t.id = a.titular_id
+    """).fetchall()
     conn.close()
-    acumulado: dict = {}
-    for tickers_str, sentimiento in filas:
+    suma: dict = {}
+    peso_total: dict = {}
+    for tickers_str, sentimiento, fecha_titular in filas:
+        peso = _peso_por_antiguedad(fecha_titular)
         for ticker in filter(None, tickers_str.split(",")):
-            acumulado.setdefault(ticker, []).append(sentimiento)
-    return {t: sum(v) / len(v) for t, v in acumulado.items()}
+            suma[ticker] = suma.get(ticker, 0.0) + sentimiento * peso
+            peso_total[ticker] = peso_total.get(ticker, 0.0) + peso
+    return {t: suma[t] / peso_total[t] for t in suma if peso_total[t] > 0}
+
+
+def buzz_por_ticker() -> dict:
+    """Detecta acciones con volumen inusual de noticias: si los titulares de las
+    últimas 24 horas son >= FACTOR_BUZZ x el promedio diario de los 14 días
+    anteriores (y al menos MINIMO_TITULARES_BUZZ), la acción está en ALTO BUZZ.
+
+    Honestidad estadística: si la base de noticias tiene menos de 7 días de
+    historia, el "promedio diario" no significa nada y NO se declara buzz
+    (de lo contrario, en una base recién creada todo aparecería en buzz).
+    Devuelve {ticker: {"hoy": n, "promedio_diario": x, "buzz": bool}}."""
+    init_db()
+    conn = get_connection()
+    # La edad de la base se mide por cuándo empezamos a CAPTURAR (analizado_en),
+    # no por la fecha de publicación de los titulares (el RSS trae noticias con
+    # fechas de semanas atrás el primer día, lo que haría parecer vieja una base
+    # recién creada).
+    fila_min = conn.execute("SELECT MIN(analizado_en) FROM analisis").fetchone()
+    filas = conn.execute("""
+        SELECT a.tickers_afectados, t.fecha
+        FROM analisis a JOIN titulares t ON t.id = a.titular_id
+        WHERE t.fecha >= datetime('now', '-15 days')
+    """).fetchall()
+    conn.close()
+
+    historia_suficiente = False
+    if fila_min and fila_min[0]:
+        try:
+            edad_base = (date.today() - date.fromisoformat(str(fila_min[0])[:10])).days
+            historia_suficiente = edad_base >= 7
+        except (ValueError, TypeError):
+            pass
+
+    hoy_conteo: dict = {}
+    historico_conteo: dict = {}
+    for tickers_str, fecha_titular in filas:
+        try:
+            dias = (date.today() - date.fromisoformat(str(fecha_titular)[:10])).days
+        except (ValueError, TypeError):
+            continue
+        for ticker in filter(None, tickers_str.split(",")):
+            if dias <= 1:
+                hoy_conteo[ticker] = hoy_conteo.get(ticker, 0) + 1
+            else:
+                historico_conteo[ticker] = historico_conteo.get(ticker, 0) + 1
+    resultado = {}
+    for ticker in set(hoy_conteo) | set(historico_conteo):
+        n_hoy = hoy_conteo.get(ticker, 0)
+        promedio = historico_conteo.get(ticker, 0) / 14
+        buzz = (historia_suficiente
+                and n_hoy >= MINIMO_TITULARES_BUZZ
+                and (promedio == 0 or n_hoy >= FACTOR_BUZZ * promedio))
+        resultado[ticker] = {"hoy": n_hoy, "promedio_diario": round(promedio, 2),
+                             "buzz": buzz}
+    return resultado
 
 
 def sentimiento_promedio_sector() -> float | None:

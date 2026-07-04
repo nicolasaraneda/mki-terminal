@@ -68,6 +68,24 @@ def init_db() -> None:
             UNIQUE(fecha_senal, ticker)
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS divergencias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TEXT NOT NULL,
+            par TEXT NOT NULL,
+            spread_20d_pct REAL NOT NULL,
+            z_score REAL NOT NULL,
+            explicacion TEXT NOT NULL DEFAULT '',
+            UNIQUE(fecha, par)
+        )
+    """)
+    # Migración suave (Etapa 4.5): columnas nuevas del snapshot. ALTER TABLE de
+    # SQLite no tiene IF NOT EXISTS, así que se consulta el esquema primero.
+    columnas_snapshot = {f[1] for f in conn.execute("PRAGMA table_info(snapshots)").fetchall()}
+    if "regimen" not in columnas_snapshot:
+        conn.execute("ALTER TABLE snapshots ADD COLUMN regimen TEXT")
+    if "roca_chip" not in columnas_snapshot:
+        conn.execute("ALTER TABLE snapshots ADD COLUMN roca_chip REAL")
     conn.commit()
     conn.close()
 
@@ -85,17 +103,29 @@ def ya_existe_snapshot_hoy() -> bool:
 
 
 def guardar_snapshot_diario(metricas_df: pd.DataFrame, sentimientos: dict,
-                            df_apertura: pd.DataFrame) -> bool:
+                            df_apertura: pd.DataFrame, regimen: str = None,
+                            roca_chip: float = None, divergencias: list = None) -> bool:
     """Guarda una foto del día (máximo 1 vez/día) con Puntaje v0, sentimiento IA,
-    Puntaje IA y la predicción del anticipador, por acción. `metricas_df` debe cubrir
-    TODO el universo (no solo la selección del sidebar). Devuelve True si guardó algo."""
+    Puntaje IA y la predicción del anticipador, por acción — más el contexto del día:
+    régimen de mercado, índice Roca→Chip y divergencias activas entre competidores.
+    `metricas_df` debe cubrir TODO el universo de acciones (no solo la selección del
+    sidebar). Devuelve True si guardó algo."""
     if ya_existe_snapshot_hoy() or metricas_df.empty:
         return False
     init_db()
     conn = get_connection()
     hoy = date.today().isoformat()
     ahora = datetime.now(timezone.utc).isoformat()
-    conn.execute("INSERT INTO snapshots (fecha, creado_en) VALUES (?, ?)", (hoy, ahora))
+    conn.execute(
+        "INSERT INTO snapshots (fecha, creado_en, regimen, roca_chip) VALUES (?, ?, ?, ?)",
+        (hoy, ahora, regimen, roca_chip),
+    )
+    for div in divergencias or []:
+        conn.execute(
+            """INSERT OR IGNORE INTO divergencias (fecha, par, spread_20d_pct, z_score, explicacion)
+               VALUES (?, ?, ?, ?, ?)""",
+            (hoy, div["par"], div["spread"], div["z"], div.get("explicacion", "")),
+        )
 
     apertura_por_ticker = {}
     if df_apertura is not None and not df_apertura.empty:
@@ -290,3 +320,43 @@ def analisis_puntaje_ia(dias: int = 90) -> dict:
         "retorno_tercio_bajo": round(tercio_bajo, 2),
         "correlacion": round(correlacion, 2) if correlacion is not None else None,
     }
+
+
+def regimen_snapshot_anterior() -> str | None:
+    """Régimen guardado en el snapshot más reciente ANTERIOR a hoy (para detectar
+    cambios de régimen entre un día y el siguiente)."""
+    init_db()
+    conn = get_connection()
+    fila = conn.execute("""
+        SELECT regimen FROM snapshots
+        WHERE fecha < date('now') AND regimen IS NOT NULL
+        ORDER BY fecha DESC LIMIT 1
+    """).fetchone()
+    conn.close()
+    return fila[0] if fila else None
+
+
+def divergencias_del_dia() -> pd.DataFrame:
+    """Divergencias activas guardadas en el snapshot de hoy."""
+    init_db()
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT par AS Par, spread_20d_pct AS "Spread 20d %", z_score AS "Z-score",
+               explicacion AS "Explicación"
+        FROM divergencias WHERE fecha = date('now') ORDER BY ABS(z_score) DESC
+    """, conn)
+    conn.close()
+    return df
+
+
+def historial_roca_chip(dias: int = 90) -> pd.DataFrame:
+    """Serie histórica del índice Roca→Chip guardado en los snapshots."""
+    init_db()
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT fecha AS Fecha, roca_chip AS "Roca→Chip" FROM snapshots
+        WHERE roca_chip IS NOT NULL AND fecha >= date('now', ?)
+        ORDER BY fecha
+    """, conn, params=(f"-{dias} days",))
+    conn.close()
+    return df

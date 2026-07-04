@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Streamlit dashboard that compares global semiconductor stocks (US, Korea, Taiwan, Japan, Netherlands, Germany), analyzes cross-market contagion, layers an AI news-analysis feature on top using the Claude API, tracks its own predictions against reality over time, and offers a per-stock detail view. Built incrementally in "Etapas" (stages) — commit messages and in-app captions reference "Etapa 1–4"; the README still describes Etapa 1 only, so trust the code/CLAUDE.md over the README for current scope.
+**MKI Terminal** — a Streamlit dashboard that analyzes the full semiconductor value chain, rock→chip→data center: raw materials (copper/silver futures, miners), wafer materials, equipment, fabrication, and final demand, plus fabless designers. It tracks cross-market contagion, market regime, competitor divergences, AI news sentiment, and its own prediction track record. Built incrementally in "Etapas" (currently **Etapa 4.5**); the README still describes Etapa 1 only — trust code/CLAUDE.md over the README. `DECISIONES.md` logs every autonomous design decision made during Etapa 4.5 with its rationale; consult it before "fixing" something that looks arbitrary.
 
 ## Commands
 
@@ -18,62 +18,72 @@ pip install -r requirements.txt
 streamlit run app.py            # or: python -m streamlit run app.py
 # Opens at http://localhost:8501
 
-# Exercise the RSS + SQLite layer without launching Streamlit
+# Exercise backend layers without launching Streamlit
 python -c "import noticias; print(noticias.actualizar_titulares())"
-
-# Exercise the signal-tracking layer without launching Streamlit
 python -c "import senales; senales.init_db(); print(senales.verificar_pendientes())"
+python -c "import alertas; print(alertas.esta_configurado())"
 ```
 
 There is no test suite, linter config, or build step in this repo — don't invent one.
 
 ## Architecture
 
-Three files carry all the logic:
+Four files carry all the logic:
 
-- **`app.py`** — the entire Streamlit UI: page config, design system (fonts/colors/CSS), navigation, and all chart/metric code. Runs top-to-bottom on every rerun (standard Streamlit execution model) — see the navigation gotcha below for what that actually means here.
-- **`noticias.py`** — a Streamlit-free module for news ingestion, SQLite persistence (`noticias.db`), and Claude analysis (including the single-stock "Explicación IA" call). Takes an already-constructed `anthropic.Anthropic` client as a parameter rather than reading the API key itself, so it stays independently testable and decoupled from `app.py`'s key/UI concerns.
-- **`senales.py`** — a Streamlit-free module for the signal-tracking/backtest layer (`senales.db`): saves one daily snapshot of every ticker's quantitative score, AI sentiment, and open-price prediction, then later checks each prediction against what `yfinance` says actually happened.
+- **`app.py`** — the entire Streamlit UI: design system, navigation, all top-level computation (regime, chain, divergences, anticipador), and all sections. Runs top-to-bottom on every rerun.
+- **`noticias.py`** — Streamlit-free: RSS ingestion with a relevance filter, SQLite persistence (`noticias.db`), Claude analysis, time-decayed sentiment, news-volume buzz detection. Takes an `anthropic.Anthropic` client as a parameter; never reads the API key itself.
+- **`senales.py`** — Streamlit-free: daily signal snapshots (scores, sentiment, anticipador prediction, **regime, Roca→Chip index, divergences**) in `senales.db`, plus the verifier that grades past predictions against reality via yfinance.
+- **`alertas.py`** — Streamlit-free: Telegram alerts (`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` from `.env`). Unconfigured = silent no-op; the UI shows BotFather setup instructions. Anti-duplicate registry in `alertas.db` keyed by `tipo:fecha:objeto`. The manual morning report deliberately has **no** anti-duplicate guard (explicit user action).
 
 ### Navigation: sections, not `st.tabs()` — read this before adding a new section
 
-The 6 top-level views (Comparador / Mercados / Aperturas / Análisis IA / Historial / Detalle) are **not** `st.tabs()`. They're driven by `st.segmented_control` plus `st.session_state`, and the body of each view is a plain `if seccion == "...":` block.
+The 8 top-level views (Hoy / Comparador / Mercados / Cadena / Aperturas / Análisis IA / Historial / Detalle) are **not** `st.tabs()` — they're `st.segmented_control` + `st.session_state`, each view a plain `if seccion == "...":` block. "Hoy" is the default landing view.
 
-This matters architecturally: **`st.tabs()` renders (and therefore executes) every tab's Python code on every rerun**, regardless of which tab is visually active. Plain `if` blocks do **not** — only the active section's code runs. Etapa 4 migrated off `st.tabs()` specifically because it doesn't persist the active tab across `st.rerun()` (clicking "Actualizar y analizar noticias" used to always bounce the user back to the first tab). The fix (`st.segmented_control` is a real stateful widget, so its selection survives reruns) introduced a real trap: **anything one section's code used to compute for a later section is no longer available unless it's hoisted above the `if` chain.** `ret_acc`, `ret_idx`, `df_ant` (the anticipador prediction), and the FX conversion all now live in a shared block *before* the section dispatch, precisely because Mercados/Aperturas/the daily snapshot all need them and can't rely on another section having "already run." If you add a new section that needs data another section computes, hoist the computation — don't assume it ran.
+Why this matters: **`st.tabs()` executes every tab's code on every rerun; plain `if` blocks only run the active section.** Etapa 4 migrated off `st.tabs()` because it reset the active tab after `st.rerun()`. The trap: anything a later section needs must be **hoisted above the `if` chain**. That's why a large shared block computes, on every rerun regardless of section: `ret_acc`/`ret_idx`, the anticipador (`df_ant`), `dias_earnings`, `regimen`, the whole chain block (`precios_cadena`, `series_nivel`, `ret_nivel`, `indice_roca_chip`, `analisis_pares`/`divergencias_activas`), then the daily snapshot and the one-shot Telegram alert evaluation. If you add a section that needs data another section computes, hoist the computation.
 
-### Data flow
+### The universe (`UNIVERSO` in app.py)
 
-1. **Prices**: `yfinance` via `descargar_precios()` (multi-ticker) / `descargar_ohlcv()` (single-ticker OHLCV for the Detalle candlestick), both cached 15 min with `@st.cache_data`. Closed-market gaps are forward-filled (`ffill()`) to align global series across time zones/holidays — "Supuesto básico #1," not a bug. `ultimo_movimiento_no_cero()` is the related helper for reading the *last real* index move on hero cards/Aperturas — a naive `.iloc[-1]` reads as a false `+0.00%` on a US holiday because ffill duplicates the prior close.
-2. **Currency**: `convertir_a_usd()` / `convertir_ohlc_a_usd()` — "Supuesto básico #2." Non-USD tickers (`MONEDA_TICKER` dict: Korea/Taiwan/Japan/Germany) are divided by the matching FX pair (`KRW=X`, `JPY=X`, `TWD=X`, `EUR=X`). **All four yfinance FX pairs use the same "units of that currency per 1 USD" convention** — including `EUR=X`, which is *not* the conventional EURUSD quote direction (verify empirically before assuming otherwise if this ever needs revisiting; division is correct for all four, there is no multiply-instead-of-divide special case). The sidebar toggle (`moneda_usd`, default on) controls conversion for the user-selected comparison set and the Detalle view; the anticipador (Aperturas) and the daily signal snapshot always convert to USD regardless of the toggle, so the contagion regression and the historical track record aren't contaminated by FX noise or by whatever a given viewer happened to have the toggle set to.
-3. **News**: `noticias.actualizar_titulares()` pulls RSS from Yahoo Finance (per ticker) and Google News (per company + a couple of sector-wide queries), dedupes by URL, stores in `noticias.db` (gitignored, created on first run).
-4. **AI news analysis**: `noticias.analizar_pendientes(client)` finds headlines with no row in `analisis` — a headline is never sent to Claude twice. Batches of 20 to Claude Haiku via `output_config: {format: json_schema}`. `noticias.generar_resumen_dia(client)` makes one more call over today's analyzed headlines, cached per date. `noticias.explicar_accion(client, ...)` is the single-stock version used by Detalle's "Explicación IA" button — same model, on-demand, one call per click.
-5. **Daily signal snapshot**: once per calendar day (`senales.ya_existe_snapshot_hoy()` guards it — checked once per Streamlit rerun, cheap), `app.py` independently downloads the **full** `UNIVERSO` (not whatever the sidebar happens to have selected) at a fixed 6-month window, computes Puntaje v0 / Puntaje IA / the anticipador prediction for every ticker, and calls `senales.guardar_snapshot_diario()`. This is what makes the Historial section's backtest meaningful — it tracks the whole universe every day, not a sample biased by whichever session happened to trigger it.
-6. **Signal verification**: once per browser session (`st.session_state.verificacion_corrida` guards it — not once per day, since a single session shouldn't hammer `yfinance` on every rerun either), `senales.verificar_pendientes()` checks any snapshot old enough to grade: the open-price prediction against the next session's real return, and Puntaje IA against the real 5-trading-day-forward return. Both verifiers **must** check `precios.empty` before touching `.index` — an empty yfinance download has a `RangeIndex`, not a `DatetimeIndex`, and `.strftime()` on it throws `AttributeError` (hit this once already; the empty-check is why it's there).
-7. **Dashboard reads**: Historial/Comparador read back through `senales.metricas_apertura()` / `evolucion_aciertos_apertura()` / `analisis_puntaje_ia()` and `noticias.sentimiento_promedio_por_ticker()` etc. — none of these call an external API; they only read what's already in SQLite. Both `metricas_apertura()` and `analisis_puntaje_ia()` return `{"suficiente": False, "n": ...}` below `senales.MINIMO_OBSERVACIONES` (5) instead of a percentage — **never backfill a fake number here**; the UI is expected to render "datos insuficientes" in that case.
+Dict of `ticker → {"nombre", "segmento", "nivel", "tipo"}`:
+- **`nivel`** (0–4 or None) = chain link: 0 raw materials (HG=F, SI=F, BHP, FCX), 1 materials (Shin-Etsu 4063.T, SUMCO 3436.T), 2 equipment (ASML, Tokyo Electron, Advantest), 3 fabrication (TSMC×2, Samsung, SK Hynix, Micron, Intel, UMC), 4 final demand (MSFT, SMH). **Fabless designers (NVDA, AMD, QCOM, AVGO, TXN, ARM, IFX.DE) have `nivel=None`** — they participate in rankings/anticipador/news but are deliberately excluded from the chain flow and Roca→Chip index (see DECISIONES.md).
+- **`tipo`** (`accion`/`commodity`/`etf`): only `accion` (the `ACCIONES` tuple) enters the sidebar, rankings, the anticipador, and daily snapshots. Commodities and SMH are context — Cadena tab, macro panel, Detalle ficha.
 
-All AI analysis is **manual and on-demand** (buttons in Análisis IA and Detalle), by design, to keep API spend visible and controlled — don't make it automatic/on-load.
+**Three registries must stay in sync** when adding a company: `UNIVERSO` (app.py), `EMPRESAS` (noticias.py — also feeds the relevance filter aliases `ALIAS_EMPRESAS`), and `MONEDA_TICKER` (app.py) if not USD-denominated.
 
-### Two ticker registries that must stay in sync
+### Key computations (all in app.py top-level shared block)
 
-`app.py`'s `UNIVERSO` dict (ticker → (name, segment)) and `noticias.py`'s `EMPRESAS` dict (ticker → name) describe the same set of companies but are maintained separately since `noticias.py` doesn't import `app.py`. When adding/removing a covered company, update both — and check `MONEDA_TICKER` in `app.py` too if it's not USD-denominated.
+- **Regime** (`calcular_regimen`): SOX MA50 vs MA200 (±1% band → Alcista/Bajista/Lateral) × realized 20d vol vs its 1y median (alta/baja). Uses `serie_sox_larga()` (fixed 2y download) so the sidebar period can't break the MAs. Saved in each snapshot; a regime *change* between snapshots triggers a Telegram alert.
+- **Earnings** (`dias_a_proximos_earnings`): days to next report per stock via `yf.Ticker(t).calendar`, cached 24h (`ttl=86400` — it's ~24 sequential network calls). Within 5 days: "ZONA EARNINGS" badge and the anticipador **degrades that stock's confidence one level** (Alta→Media→Baja), explaining why in the label.
+- **Roca→Chip index**: mean 20d momentum across chain levels (equal weight per level), expressed as a **percentile within its own trailing year** (0–100, 50 = normal day). Not an absolute scale — don't compare across long horizons.
+- **Divergences** (`analisis_pares`): for competitor groups (memoria trio, TSMC/UMC, ASML/TEL, BHP/FCX), 20d return spread z-scored against 1y history; |z|>2 = active, saved to `senales.db`, alerts via Telegram.
+- **Lagged chain correlations** (Cadena tab): corr(level-A returns shifted +5/10/20d, level-B returns) for consecutive links, plus the reverse 4→3 row (demand leads fabrication). Daily-return correlations are inherently small; the caption calls >~0.15 meaningful.
+- **Sentiment 2.0** (noticias.py): per-ticker average weighted by age — weight `max(0.1, 0.7^days)`. **Buzz**: today's headline count ≥3× the 14d daily average (min 3 headlines) → ALTO BUZZ — but only if the news DB itself is ≥7 days old, measured by `MIN(analizado_en)` (capture time), **not** `MIN(fecha)` (publication dates arrive weeks-old from RSS on day one and would fake a mature DB).
+- **Relevance filter** (noticias.py): headlines must match sector keywords or company aliases (regex with word boundaries) to be stored at all; `limpiar_titulares_irrelevantes()` retro-cleans but **keeps** headlines the AI already linked to universe tickers (paid-for judgment isn't discarded). It runs automatically at the end of every `actualizar_titulares()`.
 
-### API key handling
+### Data flow notes that survive from earlier stages
 
-`app.py` calls `load_dotenv()` (reads `.env` into the process env, local to this run only) and `obtener_cliente_ia()` returns `None` if `ANTHROPIC_API_KEY` isn't set — the IA tab then renders setup instructions instead of crashing the rest of the dashboard. The key must never be read from a global/system env var (intentional — the user runs Claude Code with a subscription and doesn't want a global `ANTHROPIC_API_KEY` affecting that billing).
+- Prices via `descargar_precios()` (cached 15 min), forward-filled across market holidays ("Supuesto básico #1"); `ultimo_movimiento_no_cero()` reads the last *real* index move (ffill makes holidays look like +0.00%).
+- USD normalization ("Supuesto básico #2"): all four FX pairs (`KRW=X`, `JPY=X`, `TWD=X`, `EUR=X`) are "units per 1 USD" — always divide. The sidebar toggle affects the comparison set and Detalle; the anticipador, chain computations, and snapshots are **always** USD.
+- **^TNX quirk**: Yahoo currently returns the 10y yield in direct percentage points (4.485 = 4.49%), *not* the historical ×10 convention — and sometimes returns no history at all (the macro panel then shows the level with an honest "no history available" note instead of a fake sparkline).
+- AI analysis is manual/on-demand only (buttons in Análisis IA and Detalle); a headline is never sent to Claude twice.
+- Daily snapshot: once per calendar day, full `ACCIONES` universe at fixed 6mo window; verification runs once per browser session. Verifiers must check `precios.empty` before touching `.index` (empty yfinance downloads have a `RangeIndex`).
+- Statistical honesty is a hard rule: below `senales.MINIMO_OBSERVACIONES` (5), UI shows "datos insuficientes" — never backfill numbers. Same for buzz (7-day DB age) and the "no strong signals today" empty state on Hoy.
 
-### Design system
+### Design system ("neon fintech", Etapa 4.5)
 
-Art direction is deliberately "Apple product sobriety + financial-terminal seriousness" — no emoji anywhere in tabs/titles/labels, no rainbow scales. `.streamlit/config.toml` sets the dark theme at the Streamlit level (native widgets theme automatically, no fragile CSS overrides needed for them). `app.py` additionally injects custom CSS (Space Grotesk for display/titles, Inter for body/UI, tabular `font-feature-settings` on numeric widgets) and defines **one function, `template_grafico(fig, altura=..., **kwargs)`**, that every chart must be displayed through instead of calling `st.plotly_chart` directly — it applies the transparent background, horizontal-only gridlines, font, and disables Plotly's modebar in one place. If a chart needs a non-default layout tweak (axis title, range, subplot axes like `xaxis2`/`yaxis2`), pass it as a kwarg to `template_grafico`, don't call `st.plotly_chart` separately.
+Deep blue-black `#0B0D12` background, card surface `#141826` with `#232A3D` border. **CYAN `#22D3EE` and MAGENTA `#F472B6` are data/hierarchy colors; VIOLETA `#818CF8` third series color. Financial semantics are untouchable: gains `#34D399`, losses `#F87171` — neon never replaces green/red meaning.** Space Grotesk (display) + Inter (UI), tabular numerals everywhere. Rules:
 
-Color constants (`app.py` top): `COLOR_POSITIVO` / `COLOR_NEGATIVO` are the *only* semantic colors for direction (sentiment, estimated moves, day's return) — never introduce a third. Two color scales exist and are **not interchangeable**:
-- `ESCALA_DIVERGENTE` (red → neutral → green) for directional bars: sentiment thermometer, apertura estimada.
-- `ESCALA_MONOCROMATICA` (near-black → mid-blue → vivid blue, single hue) for correlation heatmaps specifically — correlation is magnitude-of-relationship, not "good/bad," so it deliberately does *not* use the pos/neg scale.
-- `PALETA_CATEGORICA` for multi-series categorical charts (e.g. the multi-ticker performance line chart, the candlestick's implicit series).
+- Every chart goes through **`template_grafico(fig, altura=..., **kwargs)`** — never call `st.plotly_chart` directly. It also enforces 2.5px line width and styled hover labels. `px.defaults.color_discrete_sequence` is set globally because Plotly Express **ignores** `layout.colorway`.
+- `ESCALA_MONOCROMATICA` (deep blue→cyan) for correlation heatmaps; `ESCALA_DIVERGENTE` (red→green) only for directional signals.
+- `badge(texto, tono)` for pills (12% bg / 40% border opacity); `sparkline_svg(valores, color)` for inline card sparklines (pure SVG, no Plotly); `_tarjeta(...)` accepts `badges=`, `spark=`, and glow classes (`glow-cyan`, `glow-pos`, ...) — **max 2 glowing elements per view** (currently: régimen + Roca→Chip in the hero).
+- `tarjeta_senal()` renders the standardized signal cards on Hoy (direction, magnitude, confidence, one-line why, regime).
+- Wordmark: "MKI TERMINAL." with cyan dot (chosen over alternatives in DECISIONES.md). No emoji anywhere in UI.
+- The global hero row (all views) = régimen / Roca→Chip / last real SOX / sector sentiment. "Mejor acción" and "Líder ranking" live at the top of Comparador.
 
 ### Known gotchas (don't "fix" without re-reading context)
 
-- **Section dispatch, not tabs** — see the Navigation section above. This is the one most likely to bite: code that "used to just work" because `st.tabs()` ran every branch every time will now silently `NameError` if a variable's origin section isn't active.
-- Yahoo Finance's per-ticker RSS feed (`feeds.finance.yahoo.com/rss/2.0/headline?s=...`) does **not** actually filter by ticker — it returns Yahoo's general trending feed regardless of the `s=` parameter. Expected; relevance filtering happens downstream via Claude's `tickers_afectados` output. `LIMITE_POR_FEED` in `noticias.py` caps items per feed to control volume/cost.
-- Any `$` or `*`/`**` in Claude-generated text (dollar amounts, emphasis the model adds despite being told not to) breaks display if left raw: `$` gets read as LaTeX math delimiters by Streamlit's markdown renderer, and `**bold**` can render as literal asterisks depending on how the surrounding HTML is structured. Both the daily summary and the Detalle explanation strip `#`/`*`/`_` and swap `$` → the visually-identical fullwidth `＄` before rendering. A plain backslash-escape (`\$`) does **not** work here — it renders as a literal backslash, not an escaped dollar sign. The Claude prompts also ask for plain text as a first line of defense, but the display-side sanitization is the real safety net; don't remove it just because a prompt tweak seems to fix it in one sample.
-- `st.rerun()` (used after "Actualizar y analizar noticias" finishes) does **not** invalidate `st.segmented_control`'s session-state-backed selection — that's the whole point of having migrated to it. Don't reintroduce `st.tabs()` for navigation.
-- FX conversion direction: see Data flow §2. All four pairs divide; there is no EUR special case.
+- **Section dispatch, not tabs** — see Navigation above; the #1 source of `NameError`s when moving code.
+- Yahoo's per-ticker RSS doesn't filter by ticker (returns trending feed); the relevance filter + AI `tickers_afectados` do the real filtering. `LIMITE_POR_FEED` caps volume.
+- `$`, `*`, `_`, `#` in Claude-generated text are stripped/replaced before rendering (LaTeX/markdown breakage); `$` becomes fullwidth `＄`. Prompt asks for plain text too, but display-side sanitization is the safety net.
+- `st.rerun()` preserves `st.segmented_control` selection — don't reintroduce `st.tabs()`.
+- Detalle's Puntaje v0 must be computed against the full `ACCIONES` universe (a 1-element universe always yields 0.80 — this was a real bug, fixed in Etapa 4).
+- Signal scoring on Hoy: each signal family is scored as distance-to-its-own-threshold (1.0 = at threshold) so families are comparable; top 3 shown. See DECISIONES.md.
