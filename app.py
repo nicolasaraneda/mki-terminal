@@ -5,14 +5,127 @@
 # Ejecutar con:  python -m streamlit run app.py
 # ============================================================
 
+import os
+
+import anthropic
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 import yfinance as yf
+from dotenv import load_dotenv
+
+import noticias
+
+load_dotenv()  # lee la clave desde el archivo .env local, solo para este proceso
 
 st.set_page_config(page_title="Comparador de Semiconductores", layout="wide")
+
+
+def obtener_cliente_ia():
+    """Devuelve un cliente de la API de Claude, o None si no hay clave configurada."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return None
+    try:
+        return anthropic.Anthropic(api_key=api_key)
+    except Exception:
+        return None
+
+
+# ------------------------------------------------------------
+# Estilo visual: paleta, tipografía y plantilla de gráficos
+# ------------------------------------------------------------
+COLOR_POSITIVO = "#32D74B"   # verde: único color de acento para lo positivo
+COLOR_NEGATIVO = "#FF453A"   # rojo: único color de acento para lo negativo
+COLOR_NEUTRO = "#2c2c2e"
+PALETA_CATEGORICA = ["#0A84FF", "#64D2FF", "#5E5CE6", "#BF5AF2",
+                     "#FF9F0A", "#32D74B", "#FF453A", "#98989D"]
+ESCALA_DIVERGENTE = [[0, COLOR_NEGATIVO], [0.5, COLOR_NEUTRO], [1, COLOR_POSITIVO]]
+
+_plantilla = go.layout.Template()
+_plantilla.layout = go.Layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+              color="#f5f5f7", size=13),
+    colorway=PALETA_CATEGORICA,
+    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", zerolinecolor="rgba(255,255,255,0.12)",
+               linecolor="rgba(255,255,255,0.12)"),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.07)", zerolinecolor="rgba(255,255,255,0.12)",
+               linecolor="rgba(255,255,255,0.12)"),
+    legend=dict(bgcolor="rgba(0,0,0,0)"),
+    margin=dict(t=30, l=10, r=10, b=10),
+)
+pio.templates["apple_dark"] = _plantilla
+pio.templates.default = "apple_dark"
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+
+html, body, [class*="css"] { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+/* Oculta el menú hamburguesa, el footer "Made with Streamlit" y el botón Deploy */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+[data-testid="stToolbar"] { visibility: hidden; }
+
+.block-container { padding-top: 2.5rem; padding-bottom: 3rem; max-width: 1200px; }
+
+h1 { font-weight: 200 !important; letter-spacing: -0.02em; }
+h2, h3 { font-weight: 400 !important; letter-spacing: -0.01em; }
+
+/* Tarjetas de métricas del hero */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin: 28px 0 40px 0;
+}
+.metric-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    padding: 24px 22px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+}
+.metric-label {
+    font-size: 12px;
+    color: #98989D;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 10px;
+}
+.metric-value {
+    font-size: 34px;
+    font-weight: 200;
+    letter-spacing: -0.01em;
+    color: #f5f5f7;
+}
+.metric-value.positivo { color: #32D74B; }
+.metric-value.negativo { color: #FF453A; }
+.metric-sub {
+    font-size: 12.5px;
+    color: #98989D;
+    margin-top: 6px;
+}
+.resumen-dia {
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: #f5f5f7;
+    max-width: 900px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ------------------------------------------------------------
 # Universo de acciones: la cadena global de semiconductores
@@ -111,7 +224,7 @@ def calcular_metricas(precios: pd.DataFrame) -> pd.DataFrame:
 # Interfaz
 # ------------------------------------------------------------
 st.title("Comparador global de semiconductores")
-st.caption("Etapa 2 - Datos de Yahoo Finance (retraso ~15 min). "
+st.caption("Datos de Yahoo Finance (retraso ~15 min) + análisis de noticias con IA. "
            "Herramienta de análisis, no constituye asesoría financiera.")
 
 with st.sidebar:
@@ -136,8 +249,58 @@ if precios.empty:
     st.error("No se pudieron descargar datos. Revisa tu conexión o espera unos minutos.")
     st.stop()
 
-tab1, tab2, tab3 = st.tabs([
-    "📊 Comparador", "🌏 Relación entre mercados", "🌅 Anticipador de aperturas"])
+metricas_df = calcular_metricas(precios)
+
+# ------------------------------------------------------------
+# Sección hero: métricas clave del día
+# ------------------------------------------------------------
+retorno_diario = precios.pct_change().iloc[-1] * 100
+mejor_ticker = retorno_diario.idxmax() if not retorno_diario.empty else None
+mejor_valor = retorno_diario.max() if mejor_ticker is not None else 0.0
+
+sentimiento_sector = noticias.sentimiento_promedio_sector()
+
+sox_mov, sox_fecha = None, None
+if "^SOX" in indices.columns:
+    sox_ret = indices["^SOX"].pct_change().dropna()
+    if not sox_ret.empty:
+        sox_mov = sox_ret.iloc[-1] * 100
+        sox_fecha = sox_ret.index[-1].date()
+
+lider_puntaje = metricas_df.iloc[0] if not metricas_df.empty else None
+
+
+def _tarjeta(label: str, valor: str, clase: str = "", sub: str = "") -> str:
+    sub_html = f'<div class="metric-sub">{sub}</div>' if sub else ""
+    return (f'<div class="metric-card"><div class="metric-label">{label}</div>'
+            f'<div class="metric-value {clase}">{valor}</div>{sub_html}</div>')
+
+
+tarjetas = []
+if mejor_ticker is not None:
+    tarjetas.append(_tarjeta("Mejor acción del día", f"{nombre(mejor_ticker)}",
+                              "positivo" if mejor_valor >= 0 else "negativo",
+                              f"{mejor_valor:+.2f}% hoy"))
+if sentimiento_sector is not None:
+    tarjetas.append(_tarjeta("Sentimiento del sector (IA)", f"{sentimiento_sector:+.2f}",
+                              "positivo" if sentimiento_sector >= 0 else "negativo",
+                              "de -1 (negativo) a +1 (positivo)"))
+else:
+    tarjetas.append(_tarjeta("Sentimiento del sector (IA)", "—", "",
+                              "analiza noticias en la pestaña IA"))
+if sox_mov is not None:
+    tarjetas.append(_tarjeta("Último movimiento del SOX", f"{sox_mov:+.2f}%",
+                              "positivo" if sox_mov >= 0 else "negativo",
+                              f"sesión del {sox_fecha}"))
+if lider_puntaje is not None:
+    tarjetas.append(_tarjeta("Líder del ranking cuantitativo", f"{lider_puntaje['Empresa']}",
+                              "", f"Puntaje v0 = {lider_puntaje['Puntaje v0']:.2f}"))
+
+st.markdown(f'<div class="metric-grid">{"".join(tarjetas)}</div>', unsafe_allow_html=True)
+
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📊 Comparador", "🌏 Relación entre mercados", "🌅 Anticipador de aperturas",
+    "🧠 Análisis IA"])
 
 # ============================================================
 # TAB 1 - Comparador (Etapa 1)
@@ -160,13 +323,32 @@ with tab1:
     corr = retornos.corr().round(2)
     noms = [nombre(t) for t in corr.columns]
     fig_corr = go.Figure(go.Heatmap(z=corr.values, x=noms, y=noms, zmin=-1, zmax=1,
-                                    colorscale="RdBu_r", text=corr.values,
+                                    colorscale=ESCALA_DIVERGENTE, text=corr.values,
                                     texttemplate="%{text}"))
     fig_corr.update_layout(height=500)
     st.plotly_chart(fig_corr, use_container_width=True)
 
     st.subheader("Métricas y ranking preliminar")
-    st.dataframe(calcular_metricas(precios), use_container_width=True, hide_index=True)
+    tabla_metricas = metricas_df.copy()
+    sentimientos = noticias.sentimiento_promedio_por_ticker()
+    if not tabla_metricas.empty and sentimientos:
+        tabla_metricas["Sentimiento IA"] = tabla_metricas["Ticker"].map(sentimientos).round(2)
+        sentimiento_normalizado = (tabla_metricas["Sentimiento IA"].fillna(0) + 1) / 2
+        tabla_metricas["Puntaje IA"] = (
+            tabla_metricas["Puntaje v0"] * 0.7 + sentimiento_normalizado * 0.3
+        ).round(2)
+        tabla_metricas = tabla_metricas.sort_values("Puntaje IA", ascending=False).reset_index(drop=True)
+        st.dataframe(tabla_metricas, use_container_width=True, hide_index=True)
+        st.caption(
+            "💡 Puntaje IA = 70% Puntaje v0 (cuantitativo: momentum, retorno y volatilidad) + "
+            "30% sentimiento de noticias analizado por IA (de -1 a +1, normalizado a 0-1). "
+            "Si una acción no tiene noticias analizadas todavía, se asume sentimiento neutro. "
+            "Ve a la pestaña '🧠 Análisis IA' para generar estos datos.")
+    else:
+        st.dataframe(tabla_metricas, use_container_width=True, hide_index=True)
+        st.caption(
+            "💡 Aún no hay datos de sentimiento de noticias. Ve a la pestaña '🧠 Análisis IA' "
+            "y presiona 'Actualizar y analizar noticias' para sumar el Puntaje IA a esta tabla.")
 
 # ============================================================
 # TAB 2 - Relación entre mercados globales
@@ -191,7 +373,7 @@ with tab2:
         z=corr_cruzada.values,
         x=[nombre(i) for i in corr_cruzada.columns],
         y=[nombre(a) for a in corr_cruzada.index],
-        zmin=-1, zmax=1, colorscale="RdBu_r",
+        zmin=-1, zmax=1, colorscale=ESCALA_DIVERGENTE,
         text=corr_cruzada.values, texttemplate="%{text}"))
     fig_x.update_layout(height=480)
     st.plotly_chart(fig_x, use_container_width=True)
@@ -278,7 +460,10 @@ with tab3:
             df_ant = df_ant.sort_values("Apertura estimada %", ascending=False)
             fig_ant = px.bar(df_ant, x="Acción", y="Apertura estimada %",
                              color="Apertura estimada %",
-                             color_continuous_scale="RdYlGn", text="Apertura estimada %")
+                             color_continuous_scale=ESCALA_DIVERGENTE,
+                             range_color=[-df_ant["Apertura estimada %"].abs().max(),
+                                          df_ant["Apertura estimada %"].abs().max()],
+                             text="Apertura estimada %")
             fig_ant.update_traces(texttemplate="%{text:+.2f}%", textposition="outside")
             fig_ant.update_layout(height=380, coloraxis_showscale=False, xaxis_title=None)
             st.plotly_chart(fig_ant, use_container_width=True)
@@ -289,6 +474,84 @@ with tab3:
                 "= qué parte de sus movimientos se explica por EE.UU. (el resto es su "
                 "propia historia local). Con confianza Baja, tómalo como brisa, no viento.")
 
+# ============================================================
+# TAB 4 - Análisis IA (Etapa 3)
+# ============================================================
+with tab4:
+    st.subheader("🧠 Análisis de noticias con IA")
+    cliente_ia = obtener_cliente_ia()
+
+    if cliente_ia is None:
+        st.warning("No se encontró una clave de la API de Claude configurada.")
+        st.markdown(
+            "Para activar esta pestaña necesitas una clave (API key) de Anthropic:\n\n"
+            "1. Crea una cuenta y genera una clave gratis en "
+            "[console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys).\n"
+            "2. En la carpeta del proyecto, crea un archivo llamado **`.env`** "
+            "(puedes copiar `.env.example` y renombrarlo).\n"
+            "3. Dentro de ese archivo escribe: `ANTHROPIC_API_KEY=sk-ant-tu-clave-aqui`\n"
+            "4. Guarda el archivo y vuelve a correr `python -m streamlit run app.py`.\n\n"
+            "Esta clave solo se usa para pagar el análisis de noticias de este proyecto — "
+            "no afecta ninguna otra suscripción o herramienta que uses."
+        )
+    else:
+        resumen = noticias.obtener_resumen_guardado()
+        st.markdown("#### Resumen del día")
+        if resumen:
+            # Quita encabezados markdown que a veces agrega el modelo y escapa "$"
+            # para que Streamlit no lo confunda con una fórmula matemática (LaTeX).
+            texto_limpio = "\n".join(
+                l for l in resumen.splitlines() if not l.strip().startswith("#")
+            ).strip()
+            texto_seguro = texto_limpio.replace("$", "＄")  # símbolo visualmente igual, sin activar LaTeX
+            st.markdown(f'<div class="resumen-dia">{texto_seguro}</div>', unsafe_allow_html=True)
+        else:
+            st.info(
+                "Aún no hay un resumen del día. Presiona el botón de abajo para "
+                "descargar y analizar noticias."
+            )
+
+        if st.button("🔄 Actualizar y analizar noticias"):
+            with st.spinner("Descargando titulares nuevos (RSS)..."):
+                nuevos = noticias.actualizar_titulares()
+            with st.spinner("Analizando titulares nuevos con IA..."):
+                cantidad, costo = noticias.analizar_pendientes(cliente_ia)
+            with st.spinner("Generando resumen del día..."):
+                noticias.generar_resumen_dia(cliente_ia)
+            st.success(
+                f"Listo: {nuevos} titulares nuevos descargados, {cantidad} analizados "
+                f"con IA. Costo estimado de este análisis: ${costo:.4f} USD."
+            )
+            st.rerun()
+
+        st.divider()
+        st.subheader("Termómetro de sentimiento por acción")
+        st.caption("Sentimiento promedio de las noticias ya analizadas para cada acción, de -1 (muy negativo) a +1 (muy positivo).")
+        sentimientos = noticias.sentimiento_promedio_por_ticker()
+        if not sentimientos:
+            st.info("Sin datos de sentimiento todavía. Actualiza y analiza noticias primero.")
+        else:
+            df_sent = pd.DataFrame(
+                [{"Ticker": t, "Empresa": nombre(t), "Sentimiento": round(v, 2)}
+                 for t, v in sentimientos.items()]
+            ).sort_values("Sentimiento", ascending=False)
+            fig_sent = px.bar(
+                df_sent, x="Empresa", y="Sentimiento", color="Sentimiento",
+                color_continuous_scale=ESCALA_DIVERGENTE, range_color=[-1, 1], text="Sentimiento",
+            )
+            fig_sent.update_traces(texttemplate="%{text:+.2f}", textposition="outside")
+            fig_sent.update_layout(
+                height=380, coloraxis_showscale=False, xaxis_title=None, yaxis_range=[-1.2, 1.2]
+            )
+            st.plotly_chart(fig_sent, use_container_width=True)
+
+        st.subheader("Titulares recientes analizados")
+        titulares = noticias.obtener_titulares_analizados(limite=150)
+        if not titulares:
+            st.info("Sin titulares analizados todavía.")
+        else:
+            st.dataframe(pd.DataFrame(titulares), use_container_width=True, hide_index=True)
+
 st.divider()
-st.caption("Próxima etapa: capa de IA con análisis de noticias en tiempo real "
-           "y explicación en lenguaje natural de cada señal.")
+st.caption("Etapa 3: análisis de noticias con IA (Claude) integrado. "
+           "Herramienta de análisis, no constituye asesoría financiera.")
