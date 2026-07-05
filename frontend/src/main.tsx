@@ -6,6 +6,8 @@ import './index.css'
 import { Layout } from './Layout'
 import { EnConstruccion } from './vistas/EnConstruccion'
 import { Sistema } from './vistas/Sistema'
+import { Hoy } from './vistas/Hoy'
+import { Aperturas } from './vistas/Aperturas'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -16,8 +18,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: '/', element: <Navigate to="/hoy" replace /> },
-      { path: '/hoy', element: <EnConstruccion vista="Hoy" /> },
-      { path: '/aperturas', element: <EnConstruccion vista="Aperturas" /> },
+      { path: '/hoy', element: <Hoy /> },
+      { path: '/aperturas', element: <Aperturas /> },
       { path: '/cadena', element: <EnConstruccion vista="Cadena" /> },
       { path: '/mercados', element: <EnConstruccion vista="Mercados" /> },
       { path: '/comparador', element: <EnConstruccion vista="Comparador" /> },

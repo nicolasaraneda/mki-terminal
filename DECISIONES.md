@@ -343,3 +343,26 @@ SOLO con la API (:8000) vía proxy de Vite — jamás con yfinance ni las bases.
 Verificación: build TypeScript sin errores; capturas de /hoy (cinta con
 KRX/TSE pulsando como próximas, flecha magenta de contagio, marcador "ahora")
 y /sistema; hover de la cinta operativo tras el fix de carriles.
+
+## F3 — Vistas /hoy y /aperturas
+
+1. **/hoy como portal bento:** el estado del mundo en 4 cifras (régimen, SOX,
+   Roca→Chip con sparkline, sentimiento sector), la próxima apertura como
+   protagonista (con sus predicciones selladas y pie de emisión), track
+   record en maduración mostrado tal cual (0/5), señales del día y noticias.
+
+2. **/aperturas como tabla densa:** cada fila lleva estimado, ±80%, β, R²,
+   n, confianza (con degradación por earnings visible) y el estado de
+   emisión — "sellada {fecha hora} Chile" o "viva (sin sellar)" en ámbar.
+   El pie de la tabla explica la garantía anti look-ahead y qué significa
+   el intervalo del 80%.
+
+3. **Bug corregido — fechas de calendario:** un `YYYY-MM-DD` parseado como
+   `new Date()` es medianoche UTC, y mostrado en zona Chile retrocede un
+   día (el cierre del SOX del 02-jul aparecía como 01-jul). `fechaCorta`
+   ahora trata las fechas sin hora como fechas de calendario puras.
+
+Verificación: capturas de ambas vistas con datos vivos del snapshot
+sellado de hoy (8 predicciones, emitidas 06:06 UTC); los números de la
+tabla son los mismos que sirve /api/aperturas (paridad garantizada por
+tests de F1).

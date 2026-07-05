@@ -13,7 +13,16 @@ export function horaChile(iso: string): string {
   }).format(new Date(iso))
 }
 
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+               'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
 export function fechaCorta(iso: string): string {
+  // Una fecha sin hora (YYYY-MM-DD) es una fecha de calendario, no un
+  // instante: convertirla a zona Chile la correría un día hacia atrás.
+  const soloFecha = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (soloFecha) {
+    return `${soloFecha[3]} ${MESES[Number(soloFecha[2]) - 1]}`
+  }
   return new Intl.DateTimeFormat('es-CL', {
     day: '2-digit',
     month: 'short',
