@@ -194,3 +194,42 @@ IEF es PRECIO de bonos (sube cuando las tasas bajan) — la dirección opuesta
 al yield que mostraba ^TNX. La tarjeta lo dice explícitamente y el nivel
 puntual del yield se mantiene vía ^TNX cuando Yahoo lo entrega. No se invierte
 la serie artificialmente: los datos se muestran como son, con su leyenda.
+
+## P8 — Técnica del sidebar-rail y límites de Streamlit encontrados
+
+**Técnica que funcionó** (verificada con Playwright: 64px colapsado → 220px
+en hover): forzar el ancho de `section[data-testid="stSidebar"]` con
+`!important` (64px) y expandirlo en `:hover` (220px) con `transition 0.2s`;
+el contenedor interno queda fijo en 220px con `overflow: hidden`, así los
+labels no reflowan durante la transición. La navegación es un `st.radio`
+re-estilizado: círculos nativos ocultos, iconos SVG monocromos inyectados
+como `mask-image` (data-URI) vía `label:nth-of-type(k)::before`, ítem activo
+detectado con `label:has(input:checked)` (barra cyan 3px + icono/texto
+claros). El estado de la vista persiste porque el radio tiene `key` fijo.
+
+**Límites de Streamlit encontrados (documentados, no bloqueantes):**
+- La expansión del hover reflowa el contenido principal ~156px (el sidebar
+  participa del flex layout); es visible pero suave gracias a la transición.
+- `st.dataframe` renderiza en canvas (glide-data-grid): el tamaño de fuente
+  de las celdas NO es estilizable por CSS, así que la densidad "tipo
+  terminal" en tablas se logra por altura del contenedor y columnas, no por
+  tipografía.
+- `:has()` requiere navegadores 2022+ (Chrome 105+/Safari 15.4+); en un
+  navegador más viejo el ítem activo pierde su resaltado pero la navegación
+  sigue funcionando.
+
+## P8 — La configuración vive en un popover, no en el sidebar
+
+El sidebar pasó a ser exclusivamente navegación (el rail). El multiselect de
+acciones, la ventana de historia y el toggle de moneda se movieron a un
+popover "Ajustes" arriba a la derecha, visible en todas las vistas: la
+configuración se usa poco y no merece ancho de pantalla permanente en una
+interfaz at-a-glance.
+
+## P8 — Fila 1 de Hoy = hero global + tarjeta de track record
+
+El hero global (régimen, Roca→Chip, SOX, sentimiento) ya era exactamente la
+fila 1 pedida para Hoy; en vez de duplicarlo, la vista Hoy le agrega la 5ª
+tarjeta (track record del gap a 30 días, o "insuf." con el conteo de
+verificaciones) a la misma grilla. Verificado en 1440×900: la portada Hoy
+completa cabe sin scroll (contenido 900px = viewport 900px).

@@ -1,9 +1,9 @@
 # ============================================================
-# MKI Terminal - Etapa 4.5
-# Analista de la cadena de valor completa (roca→chip→data center):
-# régimen de mercado, panel macro, earnings, divergencias, índice
-# Roca→Chip, sentimiento con decaimiento, portada Hoy, alertas
-# Telegram y sistema visual "neon fintech".
+# MKI Terminal - Etapa 4.6
+# Integridad de medición (timestamps UTC y regla maestra de timing,
+# doble objetivo del anticipador, snapshot programado, versionado,
+# motor de funciones puras sin look-ahead) + interfaz at-a-glance
+# (sidebar rail, grilla bento, portada Hoy sin scroll).
 # Ejecutar con:  python -m streamlit run app.py
 # ============================================================
 
@@ -322,6 +322,199 @@ div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 </style>
 """, unsafe_allow_html=True)
 
+# ------------------------------------------------------------
+# CSS Etapa 4.6 — "at a glance": sidebar-rail de navegación con iconos SVG
+# (mask CSS por nth-of-type sobre el st.radio del sidebar), grilla bento y
+# densidad SaaS. Técnica del sidebar: ancho 64px forzado con !important y
+# expansión a 220px en :hover (transition 0.2s); el contenido interno tiene
+# ancho fijo 220px y se recorta con overflow hidden, así los labels no
+# reflowan durante la transición. Ítem activo vía :has(input:checked).
+# ------------------------------------------------------------
+_ICONOS_NAV = [
+    # 1 Hoy (casa)
+    "M3 10.5 12 3l9 7.5 M5 9.5V21h14V9.5",
+    # 2 Comparador (gráfico)
+    "M3 3v18h18 M7 14l4-4 4 3 5-6",
+    # 3 Mercados (globo)
+    "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M3 12h18 M12 3c3 3.5 3 14.5 0 18 M12 3c-3 3.5-3 14.5 0 18",
+    # 4 Cadena (eslabones)
+    "M10 14a4.5 4.5 0 0 0 6.4 0l2-2a4.5 4.5 0 0 0-6.4-6.4l-1.1 1.1 M14 10a4.5 4.5 0 0 0-6.4 0l-2 2a4.5 4.5 0 0 0 6.4 6.4l1.1-1.1",
+    # 5 Aperturas (amanecer)
+    "M12 3v5 M8 6.5l1.5 1.5 M16 6.5 14.5 8 M5.5 19a6.5 6.5 0 0 1 13 0 M3 19h18",
+    # 6 Análisis IA (destello)
+    "M12 3l2 5.5L20 10.5l-5.5 2L12 18l-2-5.5L4 10.5l6-2z",
+    # 7 Historial (reloj)
+    "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7.5V12l3 3",
+    # 8 Detalle (lupa)
+    "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M16.5 16.5 21 21",
+]
+
+
+def _icono_data_uri(path: str) -> str:
+    svg = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' "
+           f"fill='none' stroke='black' stroke-width='2' stroke-linecap='round' "
+           f"stroke-linejoin='round'><path d='{path}'/></svg>")
+    return "url(\"data:image/svg+xml;utf8," + svg.replace("<", "%3C").replace(">", "%3E").replace("#", "%23") + "\")"
+
+
+_css_iconos = "\n".join(
+    f'section[data-testid="stSidebar"] [role="radiogroup"] '
+    f'label:nth-of-type({i + 1})::before {{ -webkit-mask-image: {_icono_data_uri(p)}; '
+    f'mask-image: {_icono_data_uri(p)}; }}'
+    for i, p in enumerate(_ICONOS_NAV)
+)
+
+st.markdown(f"""
+<style>
+/* ---------- Sidebar rail de navegación ---------- */
+section[data-testid="stSidebar"] {{
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+    overflow: hidden !important;
+    background: #0E1119 !important;
+    border-right: 1px solid {BORDE};
+}}
+section[data-testid="stSidebar"]:hover {{
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+}}
+section[data-testid="stSidebar"] > div {{
+    width: 220px !important;
+    padding-top: 0.6rem;
+}}
+[data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {{ display: none !important; }}
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
+    padding: 0.4rem 0.6rem;
+}}
+
+/* Wordmark: "M." colapsado, "MKI TERMINAL." expandido (superpuestos) */
+.sidebar-wordmark {{
+    position: relative;
+    height: 34px;
+    margin: 4px 0 14px 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 1.0rem;
+    letter-spacing: 0.02em;
+    color: {TEXTO_PRINCIPAL};
+    text-transform: uppercase;
+    white-space: nowrap;
+}}
+.sidebar-wordmark .wm-mini, .sidebar-wordmark .wm-full {{
+    position: absolute; left: 0; top: 4px; transition: opacity 0.15s ease;
+}}
+.sidebar-wordmark .wm-full {{ opacity: 0; }}
+section[data-testid="stSidebar"]:hover .wm-full {{ opacity: 1; }}
+section[data-testid="stSidebar"]:hover .wm-mini {{ opacity: 0; }}
+.sidebar-wordmark .punto {{ color: {CYAN}; }}
+
+/* Radio de navegación → lista de ítems con icono + label */
+section[data-testid="stSidebar"] [role="radiogroup"] {{ gap: 2px; }}
+section[data-testid="stSidebar"] [role="radiogroup"] label {{
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 9px 10px 9px 14px;
+    margin: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}}
+section[data-testid="stSidebar"] [role="radiogroup"] label:hover {{
+    background: rgba(255,255,255,0.04);
+}}
+/* ocultar el círculo nativo del radio */
+section[data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {{
+    display: none;
+}}
+/* icono monocromo */
+section[data-testid="stSidebar"] [role="radiogroup"] label::before {{
+    content: "";
+    flex: 0 0 20px;
+    height: 20px;
+    margin-right: 12px;
+    background-color: {TEXTO_SECUNDARIO};
+    -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat; mask-position: center; mask-size: contain;
+    transition: background-color 0.15s ease;
+}}
+{_css_iconos}
+/* labels: invisibles colapsado, visibles al expandir */
+section[data-testid="stSidebar"] [role="radiogroup"] label p {{
+    color: {TEXTO_SECUNDARIO};
+    font-size: 0.88rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}}
+section[data-testid="stSidebar"]:hover [role="radiogroup"] label p {{ opacity: 1; }}
+section[data-testid="stSidebar"] [role="radiogroup"] label:hover p {{ color: {TEXTO_PRINCIPAL}; }}
+section[data-testid="stSidebar"] [role="radiogroup"] label:hover::before {{ background-color: {TEXTO_PRINCIPAL}; }}
+/* ítem activo: barra cyan de 3px + texto claro */
+section[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked)::after {{
+    content: "";
+    position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+    background: {CYAN}; border-radius: 2px;
+}}
+section[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {{
+    color: {TEXTO_PRINCIPAL};
+}}
+section[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked)::before {{
+    background-color: {CYAN};
+}}
+
+/* ---------- Densidad at-a-glance ---------- */
+.block-container {{
+    padding: 1.1rem 26px 2.2rem 26px !important;
+    max-width: none !important;
+}}
+h3 {{ font-size: 1.18rem !important; }}
+h4 {{ font-size: 1.0rem !important; }}
+.metric-grid {{ gap: 12px; margin: 14px 0 20px 0; }}
+.metric-card {{ padding: 16px 18px; }}
+.metric-value {{ font-size: 26px; }}
+.metric-label {{ margin-bottom: 6px; }}
+.metric-card .spark {{ margin-top: 6px; }}
+.senal-card {{ padding: 14px 16px; margin-bottom: 0; height: 100%; }}
+
+/* Título de vista + fila utilitaria */
+.vista-titulo {{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: {TEXTO_PRINCIPAL};
+    line-height: 1.15;
+}}
+.vista-sub {{ font-size: 0.78rem; color: {TEXTO_SECUNDARIO}; margin-top: 1px; }}
+
+/* Mini-encabezado de bloque (reemplaza subheaders en Hoy) */
+.mini-label {{
+    font-size: 0.72rem;
+    color: {TEXTO_SECUNDARIO};
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 10px 0 8px 0;
+}}
+
+/* Resumen IA recortado a ~4 líneas (el texto completo va en un expander) */
+.resumen-clamp {{
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: {TEXTO_PRINCIPAL};
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}}
+</style>
+""", unsafe_allow_html=True)
+
 # (El universo y sus subconjuntos viven en universo.py — fuente única de verdad.)
 
 
@@ -459,41 +652,58 @@ def ultimo_movimiento_no_cero(retornos: pd.Series, umbral: float = 1e-6):
 
 
 # ------------------------------------------------------------
-# Interfaz
+# Interfaz: navegación lateral (rail de iconos) + fila utilitaria.
+# El sidebar SOLO navega; la configuración vive en un popover arriba a la
+# derecha para no robarle ancho permanente a los datos.
 # ------------------------------------------------------------
-st.markdown(
-    '<div class="wordmark">MKI Terminal<span class="punto">.</span></div>'
-    '<div class="titulo-hero">Cadena global de semiconductores</div>'
-    '<div class="subtitulo-hero">De la roca al data center — precios, contagio '
-    'entre mercados y noticias con IA. Datos de Yahoo Finance (retraso ~15 min). '
-    'Herramienta de análisis, no constituye asesoría financiera.</div>',
-    unsafe_allow_html=True,
-)
+SECCIONES = ["Hoy", "Comparador", "Mercados", "Cadena", "Aperturas",
+             "Análisis IA", "Historial", "Detalle"]
+DESCRIPCION_SECCION = {
+    "Hoy": "Cabina de mando — el estado del día en un vistazo",
+    "Comparador": "Rendimiento, correlaciones y ranking de la selección",
+    "Mercados": "Contagio entre bolsas y viento macro",
+    "Cadena": "El flujo roca→chip→data center, divergencias y desfases",
+    "Aperturas": "Anticipador de aperturas de Asia y Europa",
+    "Análisis IA": "Noticias analizadas con Claude y sentimiento",
+    "Historial": "Track record verificado y auditoría de timing",
+    "Detalle": "Ficha completa por instrumento",
+}
 
 with st.sidebar:
-    st.header("Configuración")
-    opciones = {f"{UNIVERSO[t]['nombre']} ({t})": t for t in ACCIONES}
-    seleccion = st.multiselect("Acciones a comparar", list(opciones.keys()),
-                               default=[f"{UNIVERSO[t]['nombre']} ({t})" for t in DEFAULT])
-    tickers = tuple(opciones[s] for s in seleccion)
-    periodo_label = st.selectbox(
-        "Ventana de historia", list(PERIODOS.keys()), index=2,
-        help="Cuánto pasado quieres graficar. '1 año' = los últimos 12 meses hasta hoy.")
-    periodo = PERIODOS[periodo_label]
+    st.markdown(
+        '<div class="sidebar-wordmark">'
+        '<span class="wm-mini">M<span class="punto">.</span></span>'
+        '<span class="wm-full">MKI Terminal<span class="punto">.</span></span>'
+        '</div>', unsafe_allow_html=True)
+    seccion = st.radio("Navegación", SECCIONES, key="nav_radio",
+                       label_visibility="collapsed")
 
-    st.divider()
-    moneda_usd = st.toggle(
-        "Moneda: USD", value=True,
-        help="Convierte los precios de acciones que no cotizan en USD (Corea, Taiwán, "
-             "Japón, Alemania) usando el tipo de cambio del día. Desactívalo para ver "
-             "cada acción en su moneda local.")
-    st.caption(
-        "Supuesto básico #2: sin normalizar a USD, la depreciación de una moneda local "
-        "puede disfrazar el rendimiento real — ej. si Samsung sube 5% en wones pero el "
-        "won se deprecia 8% frente al dólar, el retorno real en USD es negativo.")
+col_titulo, col_conf = st.columns([6, 1])
+with col_titulo:
+    st.markdown(
+        f'<div class="vista-titulo">{seccion}</div>'
+        f'<div class="vista-sub">{DESCRIPCION_SECCION[seccion]} · Yahoo Finance '
+        f'(retraso ~15 min) · no constituye asesoría financiera</div>',
+        unsafe_allow_html=True)
+with col_conf:
+    with st.popover("Ajustes", use_container_width=True):
+        opciones = {f"{UNIVERSO[t]['nombre']} ({t})": t for t in ACCIONES}
+        seleccion = st.multiselect(
+            "Acciones a comparar", list(opciones.keys()),
+            default=[f"{UNIVERSO[t]['nombre']} ({t})" for t in DEFAULT])
+        periodo_label = st.selectbox(
+            "Ventana de historia", list(PERIODOS.keys()), index=2,
+            help="Cuánto pasado quieres graficar. '1 año' = los últimos 12 meses hasta hoy.")
+        moneda_usd = st.toggle(
+            "Moneda: USD", value=True,
+            help="Convierte a USD las acciones que no cotizan en dólares (Supuesto "
+                 "básico #2): sin normalizar, la depreciación de una moneda local "
+                 "puede disfrazar el rendimiento real.")
+tickers = tuple(opciones[s] for s in seleccion)
+periodo = PERIODOS[periodo_label]
 
 if len(tickers) < 2:
-    st.info("Selecciona al menos 2 acciones en la barra lateral.")
+    st.info("Selecciona al menos 2 acciones en Ajustes (arriba a la derecha).")
     st.stop()
 
 precios = descargar_precios(tickers, periodo)
@@ -674,18 +884,21 @@ else:
     tarjetas.append(_tarjeta("Sentimiento del sector (IA)", "—", "",
                               "analiza noticias en la pestaña IA"))
 
-st.markdown(f'<div class="metric-grid">{"".join(tarjetas)}</div>', unsafe_allow_html=True)
+if seccion == "Hoy":
+    metricas_ap_hero = senales.metricas_apertura(dias=30)
+    if metricas_ap_hero["suficiente"]:
+        tarjetas.append(_tarjeta(
+            "Track record gap (30d)",
+            f"{metricas_ap_hero['gap']['pct_aciertos']:.0f}%",
+            "positivo" if metricas_ap_hero["gap"]["pct_aciertos"] >= 50 else "negativo",
+            f"MAE {metricas_ap_hero['gap']['mae_pp']:.1f} pp · n={metricas_ap_hero['n']}"))
+    else:
+        tarjetas.append(_tarjeta(
+            "Track record", "insuf.", "",
+            f"{metricas_ap_hero['n']}/{senales.MINIMO_OBSERVACIONES} verificaciones — "
+            "acumulando historia"))
 
-SECCIONES = ["Hoy", "Comparador", "Mercados", "Cadena", "Aperturas",
-             "Análisis IA", "Historial", "Detalle"]
-if "seccion_activa" not in st.session_state:
-    st.session_state.seccion_activa = SECCIONES[0]
-_seccion_elegida = st.segmented_control(
-    "Navegación", SECCIONES, default=st.session_state.seccion_activa,
-    key="nav_principal", label_visibility="collapsed",
-)
-seccion = _seccion_elegida if _seccion_elegida is not None else st.session_state.seccion_activa
-st.session_state.seccion_activa = seccion
+st.markdown(f'<div class="metric-grid">{"".join(tarjetas)}</div>', unsafe_allow_html=True)
 
 def tarjeta_senal(titulo: str, direccion: str, magnitud: str, confianza: str,
                   porque: str, regimen_str: str) -> str:
@@ -703,12 +916,12 @@ def tarjeta_senal(titulo: str, direccion: str, magnitud: str, confianza: str,
 # SECCIÓN: Hoy (portada — síntesis en 30 segundos)
 # ============================================================
 if seccion == "Hoy":
-    st.subheader("Las 3 señales del día")
-    st.caption(
-        "Lo más fuerte que el terminal ve ahora mismo, entre divergencias entre "
-        "competidores, predicciones de apertura de alta confianza, sentimiento "
-        "extremo y volumen inusual de noticias. Las demás pestañas son las salas "
-        "de profundización.")
+    # ---- Fila 2 del bento: las 3 señales del día, lado a lado ----
+    st.markdown(
+        '<div class="mini-label" title="Lo más fuerte que el terminal ve ahora '
+        'mismo entre divergencias, aperturas de alta confianza, sentimiento '
+        'extremo y buzz. Las demás vistas son las salas de profundización.">'
+        'Las 3 señales del día</div>', unsafe_allow_html=True)
 
     regimen_str = regimen["etiqueta"] if regimen else "sin datos"
     candidatas = []  # (fuerza, tarjeta_html) — fuerza 1.0 = justo en el umbral
@@ -754,34 +967,27 @@ if seccion == "Hoy":
                 f"El flujo de noticias de {nombre(t_b)} triplica su ritmo habitual: "
                 f"el mercado está hablando de esta acción.", regimen_str)))
 
-    if candidatas:
-        for _, html_senal in sorted(candidatas, key=lambda x: -x[0])[:3]:
-            st.markdown(html_senal, unsafe_allow_html=True)
+    top3 = [html for _, html in sorted(candidatas, key=lambda x: -x[0])[:3]]
+    if top3:
+        cols_senales = st.columns(len(top3), gap="small")
+        for col_s, html_senal in zip(cols_senales, top3):
+            with col_s:
+                st.markdown(html_senal, unsafe_allow_html=True)
     else:
-        st.info(
-            "Hoy no hay señales fuertes: sin divergencias activas, sin predicciones "
-            "de alta confianza, sin sentimiento extremo ni buzz inusual. Eso también "
-            "es información — día de mantenimiento, no de acción.")
+        st.markdown(
+            '<div class="senal-card senal-neutra" style="height:auto">'
+            '<div class="senal-titulo">Sin señales fuertes hoy</div>'
+            '<div class="senal-porque">Sin divergencias activas, sin predicciones '
+            'de alta confianza, sin sentimiento extremo ni buzz inusual. Eso también '
+            'es información: día de mantenimiento, no de acción.</div></div>',
+            unsafe_allow_html=True)
 
-    st.divider()
-    col_track, col_resumen = st.columns([2, 3])
-    with col_track:
-        st.subheader("Track record")
-        metricas_ap_hoy = senales.metricas_apertura(dias=30)
-        if metricas_ap_hoy["suficiente"]:
-            st.metric("Aciertos de dirección (30d)",
-                      f"{metricas_ap_hoy['pct_aciertos']:.1f}%",
-                      help=f"{metricas_ap_hoy['n']} predicciones evaluadas")
-            st.metric("Error promedio",
-                      f"{metricas_ap_hoy['error_promedio_pp']:.2f} pp")
-        else:
-            st.info(f"Datos insuficientes todavía ({metricas_ap_hoy['n']} "
-                    f"predicciones evaluadas — mínimo {senales.MINIMO_OBSERVACIONES}). "
-                    "El verificador acumula historia cada día que se abre el terminal.")
-        st.caption("El detalle completo vive en la pestaña Historial.")
+    # ---- Fila 3 del bento: resumen IA (4 líneas) · estado del sistema · Telegram ----
+    col_resumen, col_estado, col_tg = st.columns([5, 3, 2], gap="small")
 
     with col_resumen:
-        st.subheader("Resumen IA del día")
+        st.markdown('<div class="mini-label">Resumen IA del día</div>',
+                    unsafe_allow_html=True)
         resumen_hoy = noticias.obtener_resumen_guardado()
         if resumen_hoy:
             texto_hoy = "\n".join(
@@ -789,42 +995,65 @@ if seccion == "Hoy":
             ).strip()
             texto_hoy = texto_hoy.replace("**", "").replace("*", "").replace("_", "")
             texto_hoy = texto_hoy.replace("$", "＄")
-            st.markdown(
-                f'<div class="resumen-dia" style="font-size:17px">{texto_hoy}</div>',
-                unsafe_allow_html=True)
+            st.markdown(f'<div class="resumen-clamp">{texto_hoy}</div>',
+                        unsafe_allow_html=True)
+            with st.expander("ver más"):
+                st.markdown(f'<div style="font-size:0.92rem;line-height:1.55">'
+                            f'{texto_hoy}</div>', unsafe_allow_html=True)
         else:
-            st.info("Aún no hay resumen del día — genera uno en la pestaña Análisis IA.")
+            st.caption("Aún no hay resumen del día — genera uno en Análisis IA.")
 
-    st.divider()
-    st.subheader("Alertas Telegram")
-    if alertas.esta_configurado():
-        st.caption(
-            "Alertas activas: cambio de régimen, divergencia nueva, sentimiento "
-            "extremo y alto buzz se envían solos (sin duplicados). El reporte "
-            "matinal es manual:")
-        if st.button("Enviar reporte matinal"):
-            sox_texto_alerta = (f"{ult_mov_apertura:+.2f}% (sesión del {ult_fecha_apertura})"
-                                if ult_mov_apertura is not None else "sin datos")
-            lineas_ap = []
-            if not df_ant.empty:
-                lineas_ap = [
-                    f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% ({f['Confianza']})"
-                    for _, f in df_ant.iterrows()]
-            ok_rep, detalle_rep = alertas.enviar_reporte_matinal(
-                regimen=regimen["etiqueta"] if regimen else None,
-                roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
-                sox_texto=sox_texto_alerta,
-                sentimiento_sector=sentimiento_sector,
-                lineas_apertura=lineas_ap,
-                divergencias=divergencias_activas,
-            )
-            if ok_rep:
-                st.success("Reporte matinal enviado a tu Telegram.")
-            else:
-                st.error(f"No se pudo enviar: {detalle_rep}")
-    else:
-        with st.expander("Configurar alertas por Telegram (opcional, gratis)"):
-            st.markdown(alertas.INSTRUCCIONES)
+    with col_estado:
+        st.markdown('<div class="mini-label" title="Trazabilidad: cuándo y desde '
+                    'dónde se emitió el snapshot del día, con qué versión del '
+                    'modelo, y si los datos pasaron los chequeos de integridad.">'
+                    'Estado del sistema</div>', unsafe_allow_html=True)
+        info_snap = senales.info_snapshot_hoy()
+        if info_snap:
+            hora_snap = (info_snap["timestamp_utc"] or "")[11:16]
+            linea_snap = (f"Snapshot de hoy: <b>{info_snap['origen']}</b> · "
+                          f"{hora_snap} UTC · modelo v{info_snap['modelo_version'] or '—'}")
+        else:
+            linea_snap = "Sin snapshot hoy todavía"
+        salud_txt = ("datos OK" if salud_datos["ok"]
+                     else f"{len(salud_datos['problemas'])} problema(s) de datos")
+        tono_salud = "pos" if salud_datos["ok"] else "neg"
+        st.markdown(
+            f'<div class="senal-card senal-neutra" style="height:auto">'
+            f'<div class="senal-porque">{linea_snap}</div>'
+            f'<div style="margin-top:8px">{badge(salud_txt, tono_salud)} '
+            f'{badge(f"v{MODELO_VERSION}", "violeta")}</div>'
+            f'<div class="senal-meta">Detalle completo en Historial → Salud de datos</div>'
+            f'</div>', unsafe_allow_html=True)
+
+    with col_tg:
+        st.markdown('<div class="mini-label">Telegram</div>', unsafe_allow_html=True)
+        if alertas.esta_configurado():
+            if st.button("Enviar reporte matinal", use_container_width=True):
+                sox_texto_alerta = (f"{ult_mov_apertura:+.2f}% (sesión del {ult_fecha_apertura})"
+                                    if ult_mov_apertura is not None else "sin datos")
+                lineas_ap = []
+                if not df_ant.empty:
+                    lineas_ap = [
+                        f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% ({f['Confianza']})"
+                        for _, f in df_ant.iterrows()]
+                ok_rep, detalle_rep = alertas.enviar_reporte_matinal(
+                    regimen=regimen["etiqueta"] if regimen else None,
+                    roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
+                    sox_texto=sox_texto_alerta,
+                    sentimiento_sector=sentimiento_sector,
+                    lineas_apertura=lineas_ap,
+                    divergencias=divergencias_activas,
+                )
+                if ok_rep:
+                    st.success("Reporte enviado.")
+                else:
+                    st.error(f"No se pudo enviar: {detalle_rep}")
+            st.caption("Alertas automáticas activas (régimen, divergencias, "
+                       "sentimiento, buzz).")
+        else:
+            with st.popover("Configurar", use_container_width=True):
+                st.markdown(alertas.INSTRUCCIONES)
 
 
 # ============================================================
@@ -1587,6 +1816,7 @@ if seccion == "Detalle":
                        unsafe_allow_html=True)
 
 st.divider()
-st.caption("Etapa 4.5: cadena de valor completa roca→chip→data center, régimen de "
-           "mercado, divergencias, portada Hoy y alertas Telegram. Herramienta de "
-           "análisis, no constituye asesoría financiera.")
+st.caption(f"Etapa 4.6 · modelo v{MODELO_VERSION}: integridad de medición (timestamps "
+           "UTC, doble objetivo del anticipador, snapshot programado, motor de "
+           "funciones puras) e interfaz at-a-glance. Herramienta de análisis, "
+           "no constituye asesoría financiera.")

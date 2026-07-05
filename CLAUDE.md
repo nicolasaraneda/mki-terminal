@@ -4,86 +4,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**MKI Terminal** — a Streamlit dashboard that analyzes the full semiconductor value chain, rock→chip→data center: raw materials (copper/silver futures, miners), wafer materials, equipment, fabrication, and final demand, plus fabless designers. It tracks cross-market contagion, market regime, competitor divergences, AI news sentiment, and its own prediction track record. Built incrementally in "Etapas" (currently **Etapa 4.5**); the README still describes Etapa 1 only — trust code/CLAUDE.md over the README. `DECISIONES.md` logs every autonomous design decision made during Etapa 4.5 with its rationale; consult it before "fixing" something that looks arbitrary.
+**MKI Terminal** — a Streamlit dashboard analyzing the full semiconductor value chain (rock→chip→data center) with market regime, competitor divergences, AI news sentiment, an openings anticipator, and a **verified, timestamp-sealed track record**. Built in "Etapas" (currently **4.6**). `DECISIONES.md` logs every autonomous design decision with rationale — consult it before "fixing" anything that looks arbitrary. The README describes Etapa 1 only; trust code/CLAUDE.md.
+
+## THE MASTER RULE (Etapa 4.6 — read before touching señales/verifier/motor)
+
+**A prediction is only verifiable if it was emitted BEFORE the event it tries to predict, provably via timestamps.** Every prediction row in `senales.db` carries `timestamp_utc` (emission), `exchange`, `sesion_objetivo` (the local session it anticipates), and `available_at` (when the input information became knowable — the UTC close of the SOX session used). The verifier only evaluates predictions whose `timestamp_utc` precedes the UTC open of their target session; late ones become `no_verificable_timing` (kept for audit, excluded from ALL metrics). Pre-4.6 rows are `legacy_pre_4.6` — same treatment. Metrics never mix `modelo_version`s. Never weaken any of this.
 
 ## Commands
 
 ```bash
-# Setup (one-time)
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+# Setup
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-# Run the dashboard
-streamlit run app.py            # or: python -m streamlit run app.py
-# Opens at http://localhost:8501
+# Dashboard
+streamlit run app.py
 
-# Exercise backend layers without launching Streamlit
+# Daily snapshot + verifier + CSV backups, WITHOUT Streamlit (what launchd runs)
+python snapshot.py --origen manual     # "programado" is the launchd default
+
+# Anti-look-ahead test of the signal engine (must stay green)
+python tests/test_motor.py
+
+# Backend layers standalone
 python -c "import noticias; print(noticias.actualizar_titulares())"
 python -c "import senales; senales.init_db(); print(senales.verificar_pendientes())"
-python -c "import alertas; print(alertas.esta_configurado())"
 ```
 
-There is no test suite, linter config, or build step in this repo — don't invent one.
+No test framework/linter beyond `tests/test_motor.py` (plain asserts) — don't invent one. The launchd job (Mon–Fri 18:15 Chile) lives in `launchd/` with beginner install instructions.
 
-## Architecture
+## Architecture (Etapa 4.6)
 
-Four files carry all the logic:
+- **`universo.py`** — single source of truth for constants: `UNIVERSO` (ticker → nombre/segmento/nivel/tipo/`duplicado_de`), `ACCIONES`, `TICKERS_POR_NIVEL` (chain excludes `duplicado_de` — TSM counts once via 2330.TW), `BENCHMARK` (= SMH, outside the chain: an own-sector ETF in "final demand" was circular), level 4 = MSFT+GOOGL+META, `MERCADOS_POR_ABRIR`, `MONEDA_TICKER`/`PARES_FX`, `PARES_COMPETIDORES` (Fundición pairs 2330.TW vs UMC, not the ADR), `EXCHANGE_POR_TICKER` (XNYS/XKRX/XTAI/XTKS/XETR; all US listings use XNYS — shared holidays/core hours), `INDICE_LOCAL_POR_EXCHANGE`/`FX_POR_EXCHANGE` (for residualization), `nombre()`. **Never re-declare universe constants elsewhere.** Adding a company touches: `UNIVERSO`, noticias' `EMPRESAS` + `ALIAS_POR_TICKER` + `ALIAS_EMPRESAS`, and `MONEDA_TICKER` if non-USD. Role changes bump `UNIVERSO_VERSION`.
 
-- **`app.py`** — the entire Streamlit UI: design system, navigation, all top-level computation (regime, chain, divergences, anticipador), and all sections. Runs top-to-bottom on every rerun.
-- **`noticias.py`** — Streamlit-free: RSS ingestion with a relevance filter, SQLite persistence (`noticias.db`), Claude analysis, time-decayed sentiment, news-volume buzz detection. Takes an `anthropic.Anthropic` client as a parameter; never reads the API key itself.
-- **`senales.py`** — Streamlit-free: daily signal snapshots (scores, sentiment, anticipador prediction, **regime, Roca→Chip index, divergences**) in `senales.db`, plus the verifier that grades past predictions against reality via yfinance.
-- **`alertas.py`** — Streamlit-free: Telegram alerts (`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` from `.env`). Unconfigured = silent no-op; the UI shows BotFather setup instructions. Anti-duplicate registry in `alertas.db` keyed by `tipo:fecha:objeto`. The manual morning report deliberately has **no** anti-duplicate guard (explicit user action).
+- **`motor.py`** — the signal engine as **pure functions parameterized by date**: `regimen_al`, `puntaje_v0_al`, `roca_chip_al`, `datos_cadena_al`, `divergencias_al` (residualized vs local index + FX by default, simple spread kept for comparison), `betas_al` (rolling window, default 120 trading days), `prediccion_apertura_al` (includes 80% central interval = ±1.2816 × regression-residual σ), `salud_datos_al`. **Guarantee: each `*_al(fecha)` uses ONLY data ≤ fecha.** All raw data flows through ONE point (`_datos_crudos`) so `tests/test_motor.py` can patch it and prove truncating future data changes nothing. Dashboard, snapshot.py, and the future backtest consume these same functions. No Streamlit imports here. If you add a signal, add it as `*_al(fecha)` + extend the test.
 
-### Navigation: sections, not `st.tabs()` — read this before adding a new section
+- **`calendarios.py`** — market-session timing via `exchange-calendars`: `proxima_sesion_despues_de(exchange, instante_utc)` (the target session of a prediction), `apertura_utc`/`cierre_utc`, `sesion_anterior`, `sesion_ya_cerro` (2h data-publication margin), `tabla_horarios()`. Date-crossing is inherent (Seoul's Monday session opens Sunday ~00:00 UTC).
 
-The 8 top-level views (Hoy / Comparador / Mercados / Cadena / Aperturas / Análisis IA / Historial / Detalle) are **not** `st.tabs()` — they're `st.segmented_control` + `st.session_state`, each view a plain `if seccion == "...":` block. "Hoy" is the default landing view.
+- **`senales.py`** — SQLite persistence + THE verifier. Schema migrations are additive (`_asegurar_columnas`). The verifier computes the **double objective** per prediction: `gap_pct` (open_obj/close_prev − 1: does the signal EXIST) and `retorno_real_pct` (close_obj/close_prev − 1: is it CAPTURABLE), each with own hit-rate and MAE; plus `calibracion_intervalos()` (empirical coverage of the 80% interval — "pendiente" below `MINIMO_OBSERVACIONES`). Queries filter `legacy = 0 AND modelo_version = current`. `conteo_por_estado()` and `historial_snapshots()` power the audit UI.
 
-Why this matters: **`st.tabs()` executes every tab's code on every rerun; plain `if` blocks only run the active section.** Etapa 4 migrated off `st.tabs()` because it reset the active tab after `st.rerun()`. The trap: anything a later section needs must be **hoisted above the `if` chain**. That's why a large shared block computes, on every rerun regardless of section: `ret_acc`/`ret_idx`, the anticipador (`df_ant`), `dias_earnings`, `regimen`, the whole chain block (`precios_cadena`, `series_nivel`, `ret_nivel`, `indice_roca_chip`, `analisis_pares`/`divergencias_activas`), then the daily snapshot and the one-shot Telegram alert evaluation. If you add a section that needs data another section computes, hoist the computation.
+- **`snapshot.py`** — importable + standalone. `ejecutar_snapshot(origen)` (idempotent; origins: programado/manual/dashboard) seals predictions with timestamps + sessions; `main()` also runs the verifier, exports CSV backups to `data/backups/` (**versioned in git** on purpose), and prints data health. The dashboard calls `ejecutar_snapshot("dashboard")` as fallback when no snapshot exists today — the verifier, not the dashboard, decides per-prediction verifiability (master rule lives in one place).
 
-### The universe (`UNIVERSO` in app.py)
+- **`version.py`** — `MODELO_VERSION`/`FEATURE_VERSION`/`UNIVERSO_VERSION` (manual bumps; sealed into every snapshot/prediction).
 
-Dict of `ticker → {"nombre", "segmento", "nivel", "tipo"}`:
-- **`nivel`** (0–4 or None) = chain link: 0 raw materials (HG=F, SI=F, BHP, FCX), 1 materials (Shin-Etsu 4063.T, SUMCO 3436.T), 2 equipment (ASML, Tokyo Electron, Advantest), 3 fabrication (TSMC×2, Samsung, SK Hynix, Micron, Intel, UMC), 4 final demand (MSFT, SMH). **Fabless designers (NVDA, AMD, QCOM, AVGO, TXN, ARM, IFX.DE) have `nivel=None`** — they participate in rankings/anticipador/news but are deliberately excluded from the chain flow and Roca→Chip index (see DECISIONES.md).
-- **`tipo`** (`accion`/`commodity`/`etf`): only `accion` (the `ACCIONES` tuple) enters the sidebar, rankings, the anticipador, and daily snapshots. Commodities and SMH are context — Cadena tab, macro panel, Detalle ficha.
+- **`noticias.py`** — RSS + Claude analysis. **Strict entity matching** (`tickers_estrictos`, alias list per ticker): a headline maps to a ticker only if the company is unambiguously mentioned; generic headlines go to the "sector" bucket (feed sector sentiment only). Per-stock sentiment weights = age decay (0.7^days, floor 0.1) × `relevancia` (0–1, from the Haiku JSON; pre-4.6 NULL = 1.0). Dedup on insert + retroactively (`migrar_noticias_v2`, idempotent, keeps the oldest). `obtener_titulares_por_ticker` double-checks strict matching live — an XRP headline in NVIDIA's ficha is structurally impossible.
 
-**Three registries must stay in sync** when adding a company: `UNIVERSO` (app.py), `EMPRESAS` (noticias.py — also feeds the relevance filter aliases `ALIAS_EMPRESAS`), and `MONEDA_TICKER` (app.py) if not USD-denominated.
+- **`senales.db` / `noticias.db` / `alertas.db`** — gitignored; CSV backups in `data/backups/` are the versioned safety net.
 
-### Key computations (all in app.py top-level shared block)
+- **`app.py`** — UI only + orchestration. Navigation is a **sidebar rail** (`st.radio` restyled: 64px icon rail → 220px on hover; see DECISIONES.md for the CSS technique and Streamlit limits — e.g. `st.dataframe` cell fonts are canvas-rendered and NOT CSS-stylable). Config lives in an "Ajustes" popover. Section dispatch is plain `if seccion == ...` blocks (NOT `st.tabs` — anything a section needs must be hoisted above the dispatch; the shared block calls the motor once via a cached wrapper). The **Hoy** view is the default and must fit 1440×900 without scroll (verified): hero row (+track-record card), 3 signal cards side-by-side, then resumen-IA (4-line clamp + expander) · system status · Telegram.
 
-- **Regime** (`calcular_regimen`): SOX MA50 vs MA200 (±1% band → Alcista/Bajista/Lateral) × realized 20d vol vs its 1y median (alta/baja). Uses `serie_sox_larga()` (fixed 2y download) so the sidebar period can't break the MAs. Saved in each snapshot; a regime *change* between snapshots triggers a Telegram alert.
-- **Earnings** (`dias_a_proximos_earnings`): days to next report per stock via `yf.Ticker(t).calendar`, cached 24h (`ttl=86400` — it's ~24 sequential network calls). Within 5 days: "ZONA EARNINGS" badge and the anticipador **degrades that stock's confidence one level** (Alta→Media→Baja), explaining why in the label.
-- **Roca→Chip index**: mean 20d momentum across chain levels (equal weight per level), expressed as a **percentile within its own trailing year** (0–100, 50 = normal day). Not an absolute scale — don't compare across long horizons.
-- **Divergences** (`analisis_pares`): for competitor groups (memoria trio, TSMC/UMC, ASML/TEL, BHP/FCX), 20d return spread z-scored against 1y history; |z|>2 = active, saved to `senales.db`, alerts via Telegram.
-- **Lagged chain correlations** (Cadena tab): corr(level-A returns shifted +5/10/20d, level-B returns) for consecutive links, plus the reverse 4→3 row (demand leads fabrication). Daily-return correlations are inherently small; the caption calls >~0.15 meaningful.
-- **Sentiment 2.0** (noticias.py): per-ticker average weighted by age — weight `max(0.1, 0.7^days)`. **Buzz**: today's headline count ≥3× the 14d daily average (min 3 headlines) → ALTO BUZZ — but only if the news DB itself is ≥7 days old, measured by `MIN(analizado_en)` (capture time), **not** `MIN(fecha)` (publication dates arrive weeks-old from RSS on day one and would fake a mature DB).
-- **Relevance filter** (noticias.py): headlines must match sector keywords or company aliases (regex with word boundaries) to be stored at all; `limpiar_titulares_irrelevantes()` retro-cleans but **keeps** headlines the AI already linked to universe tickers (paid-for judgment isn't discarded). It runs automatically at the end of every `actualizar_titulares()`.
+### Data conventions that keep biting
 
-### Data flow notes that survive from earlier stages
+- Prices ffilled across holidays ("Supuesto #1"); `ultimo_movimiento_no_cero()` reads the last *real* move (a holiday looks like +0.00%).
+- USD normalization ("Supuesto #2"): all FX pairs are "units per 1 USD" — always divide. Signals/snapshots are ALWAYS USD; the sidebar toggle only affects comparison views and Detalle.
+- Bond history uses **IEF as proxy** (price of bonds: rises when yields FALL — direction stated in the card); ^TNX gives the spot yield only (Yahoo returns no ^TNX history, and its current quote is direct percentage points, not the old ×10).
+- Empty yfinance downloads have a `RangeIndex` — check `.empty` before touching `.index`.
+- `$`/`*`/`_`/`#` in Claude-generated text are sanitized before rendering (LaTeX/markdown breakage); prompt asks for plain text but display-side sanitization is the safety net.
+- Statistical honesty is a hard rule: below thresholds, UI says "datos insuficientes"/"pendiente"/"insuf." — never backfill numbers.
+- AI analysis is manual/on-demand; a headline is never sent to Claude twice.
 
-- Prices via `descargar_precios()` (cached 15 min), forward-filled across market holidays ("Supuesto básico #1"); `ultimo_movimiento_no_cero()` reads the last *real* index move (ffill makes holidays look like +0.00%).
-- USD normalization ("Supuesto básico #2"): all four FX pairs (`KRW=X`, `JPY=X`, `TWD=X`, `EUR=X`) are "units per 1 USD" — always divide. The sidebar toggle affects the comparison set and Detalle; the anticipador, chain computations, and snapshots are **always** USD.
-- **^TNX quirk**: Yahoo currently returns the 10y yield in direct percentage points (4.485 = 4.49%), *not* the historical ×10 convention — and sometimes returns no history at all (the macro panel then shows the level with an honest "no history available" note instead of a fake sparkline).
-- AI analysis is manual/on-demand only (buttons in Análisis IA and Detalle); a headline is never sent to Claude twice.
-- Daily snapshot: once per calendar day, full `ACCIONES` universe at fixed 6mo window; verification runs once per browser session. Verifiers must check `precios.empty` before touching `.index` (empty yfinance downloads have a `RangeIndex`).
-- Statistical honesty is a hard rule: below `senales.MINIMO_OBSERVACIONES` (5), UI shows "datos insuficientes" — never backfill numbers. Same for buzz (7-day DB age) and the "no strong signals today" empty state on Hoy.
+### Design system
 
-### Design system ("neon fintech", Etapa 4.5)
-
-Deep blue-black `#0B0D12` background, card surface `#141826` with `#232A3D` border. **CYAN `#22D3EE` and MAGENTA `#F472B6` are data/hierarchy colors; VIOLETA `#818CF8` third series color. Financial semantics are untouchable: gains `#34D399`, losses `#F87171` — neon never replaces green/red meaning.** Space Grotesk (display) + Inter (UI), tabular numerals everywhere. Rules:
-
-- Every chart goes through **`template_grafico(fig, altura=..., **kwargs)`** — never call `st.plotly_chart` directly. It also enforces 2.5px line width and styled hover labels. `px.defaults.color_discrete_sequence` is set globally because Plotly Express **ignores** `layout.colorway`.
-- `ESCALA_MONOCROMATICA` (deep blue→cyan) for correlation heatmaps; `ESCALA_DIVERGENTE` (red→green) only for directional signals.
-- `badge(texto, tono)` for pills (12% bg / 40% border opacity); `sparkline_svg(valores, color)` for inline card sparklines (pure SVG, no Plotly); `_tarjeta(...)` accepts `badges=`, `spark=`, and glow classes (`glow-cyan`, `glow-pos`, ...) — **max 2 glowing elements per view** (currently: régimen + Roca→Chip in the hero).
-- `tarjeta_senal()` renders the standardized signal cards on Hoy (direction, magnitude, confidence, one-line why, regime).
-- Wordmark: "MKI TERMINAL." with cyan dot (chosen over alternatives in DECISIONES.md). No emoji anywhere in UI.
-- The global hero row (all views) = régimen / Roca→Chip / last real SOX / sector sentiment. "Mejor acción" and "Líder ranking" live at the top of Comparador.
-
-### Known gotchas (don't "fix" without re-reading context)
-
-- **Section dispatch, not tabs** — see Navigation above; the #1 source of `NameError`s when moving code.
-- Yahoo's per-ticker RSS doesn't filter by ticker (returns trending feed); the relevance filter + AI `tickers_afectados` do the real filtering. `LIMITE_POR_FEED` caps volume.
-- `$`, `*`, `_`, `#` in Claude-generated text are stripped/replaced before rendering (LaTeX/markdown breakage); `$` becomes fullwidth `＄`. Prompt asks for plain text too, but display-side sanitization is the safety net.
-- `st.rerun()` preserves `st.segmented_control` selection — don't reintroduce `st.tabs()`.
-- Detalle's Puntaje v0 must be computed against the full `ACCIONES` universe (a 1-element universe always yields 0.80 — this was a real bug, fixed in Etapa 4).
-- Signal scoring on Hoy: each signal family is scored as distance-to-its-own-threshold (1.0 = at threshold) so families are comparable; top 3 shown. See DECISIONES.md.
+Neon fintech (see Etapa 4.5 sections of DECISIONES.md): bg `#0B0D12`, surface `#141826`, border `#232A3D`; CYAN/MAGENTA/VIOLETA are data colors, green/red semantics untouchable; Space Grotesk + Inter, tabular numerals; every chart through `template_grafico()` (never bare `st.plotly_chart`); `badge()`, `sparkline_svg()`, `_tarjeta()` (glow max 2/view), `tarjeta_senal()`; monochrome cyan heatmaps for correlations, divergent red/green only for direction. Density (4.6): card padding 16-18px, `.mini-label` block headers on Hoy, long captions → tooltips (`title=`/`help=`).
