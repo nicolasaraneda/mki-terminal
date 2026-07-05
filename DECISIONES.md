@@ -306,3 +306,40 @@ escribe en las bases ni llama a la API de Anthropic (noticias solo de cache).
 **Paridad verificada:** 15 tests en tests/test_api.py comparan los números
 servidos contra motor.py y senales.py en vivo — betas, régimen, Roca→Chip,
 divergencias, predicciones, métricas y calibración idénticos por definición.
+
+## F2 — Base del frontend React
+
+**Stack montado:** Vite 8 + React 19 + TypeScript + Tailwind 4 (tokens vía
+`@theme` en `src/index.css`), TanStack Query (estado de servidor, cache 5
+min), react-router 7, lightweight-charts 5, Recharts, fuentes self-hosted
+via @fontsource (Space Grotesk / Inter / JetBrains Mono). El frontend habla
+SOLO con la API (:8000) vía proxy de Vite — jamás con yfinance ni las bases.
+
+**Decisiones autónomas de esta fase:**
+
+1. **Cinta de husos con un micro-carril por bolsa, no por región.** La ADENDA
+   pedía 3 carriles (Asia/Europa/EE.UU.), pero KRX, TSE y TWSE transan casi a
+   la misma hora: en un carril compartido los bloques se tapaban entre sí
+   (bug real detectado con Playwright: el hover de KRX era interceptado por
+   TWSE). Se pasó a 5 micro-carriles de 8px que siguen descendiendo
+   Asia → Europa → EE.UU. dentro de los 56px del presupuesto.
+
+2. **El eje del día global arranca en el cierre de NY más reciente que ya
+   pasó** (retrocediendo hasta 5 días por fines de semana), y "ahora" se
+   satura en el borde si el eje quedó viejo — un domingo la cinta sigue
+   siendo legible.
+
+3. **Tooltip de la cinta:** hora Chile de la sesión, cuánto falta para abrir
+   ("abre en 1h 35m"), qué cerró antes y la beta de contagio promedio del
+   exchange — la narrativa del contagio en un hover.
+
+4. **`/sistema`:** catálogo oculto (sin enlace en la nav) con los 9
+   componentes base y la regla que gobierna a cada uno; verificado con
+   captura a 1440px.
+
+5. Vistas de negocio como placeholder "migración en curso" hasta F3–F5;
+   Streamlit (:8501) sigue siendo el camino operativo.
+
+Verificación: build TypeScript sin errores; capturas de /hoy (cinta con
+KRX/TSE pulsando como próximas, flecha magenta de contagio, marcador "ahora")
+y /sistema; hover de la cinta operativo tras el fix de carriles.

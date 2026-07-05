@@ -1,0 +1,95 @@
+/* ============================================================
+   MKI Terminal — tokens de diseño (Etapa 4.7 F2)
+
+   Estándar: Linear (disciplina de espaciado), TradingView (gráficos
+   financieros serios), Bloomberg (densidad con propósito).
+   Jerarquía por NIVELES DE FONDO y BORDES — nunca glow, sombras de
+   color ni gradientes. Presupuesto de cian: máx 4 elementos por vista
+   (tab activa, marcador "ahora", próxima sesión, chip de estado).
+   ============================================================ */
+
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
+@import 'tailwindcss';
+
+@theme {
+  /* Niveles de fondo: la jerarquía se construye apilando estos, no con glow */
+  --color-bg-0: #0a0c10; /* página */
+  --color-bg-1: #10141c; /* tarjeta */
+  --color-bg-2: #161b26; /* elemento anidado / hover / skeleton */
+  --color-bg-3: #1d2330; /* activo / presionado */
+
+  --color-border: #222939;
+  --color-border-strong: #303a50;
+
+  --color-text-1: #e7eaf1; /* cifras y títulos */
+  --color-text-2: #9aa3b7; /* etiquetas y prosa */
+  --color-text-3: #5d6679; /* metadatos, incertidumbre, footers */
+
+  /* Presupuesto de acento — usar con avaricia */
+  --color-cyan: #22d3ee;
+  --color-cyan-dim: #164e5f;
+  --color-magenta: #e879f9; /* SOLO la flecha de contagio en la cinta */
+
+  --color-pos: #34d399;
+  --color-neg: #f87171;
+  --color-warn: #fbbf24;
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+html {
+  background: var(--color-bg-0);
+  color: var(--color-text-2);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Toda cifra es tabular y monoespaciada: las columnas de números alinean */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pulso lento de la próxima sesión en la cinta (nunca shimmer) */
+@keyframes pulso-lento {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.pulso-lento {
+  animation: pulso-lento 2.8s ease-in-out infinite;
+}
+
+/* Skeleton de carga: pulso sutil sobre bg-2, jamás shimmer */
+@keyframes pulso-carga {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.4; }
+}
+.cargando {
+  animation: pulso-carga 1.6s ease-in-out infinite;
+  background: var(--color-bg-2);
+  border-radius: 4px;
+}
+
+/* Desplazamiento de la flecha punteada de contagio (cinta) */
+@keyframes viaje-contagio {
+  to { stroke-dashoffset: -12; }
+}
+.flecha-contagio {
+  animation: viaje-contagio 1.2s linear infinite;
+}
+
+/* Foco visible por teclado, sin glow */
+:focus-visible {
+  outline: 1px solid var(--color-cyan);
+  outline-offset: 2px;
+}
