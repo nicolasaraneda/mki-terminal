@@ -262,3 +262,47 @@ con el sidebar expandido.
 Verificación: navegación entre 3+ vistas en ventana ancha (1440px, con hover
 64→220px), ventana angosta (700px) y colapso dinámico real (resize a 640px
 con aria-expanded="false" activo).
+
+---
+
+# Etapa 4.7 — "Fachada" (migración del frontend a React)
+
+## F1 — API FastAPI de solo lectura
+
+**Regla cero respetada:** `api/` solo IMPORTA funciones de motor.py y los
+helpers de consulta de senales.py/noticias.py, y LEE las bases. Ni una línea
+de motor.py, snapshot.py, noticias.py o alertas.py fue tocada. La API jamás
+escribe en las bases ni llama a la API de Anthropic (noticias solo de cache).
+
+**Decisiones autónomas de esta fase:**
+
+1. **Contrato primero** (`api/CONTRATO.md`): los 9 endpoints, el envelope
+   común `{meta, datos}` (meta lleva siempre timestamp, fecha de datos,
+   régimen vigente y snapshot del día) y el formato de errores quedaron
+   especificados antes de escribir main.py.
+
+2. **Predicciones "selladas" vs "vivas":** /api/aperturas sirve como número
+   vigente el SELLADO en senales.db (con su timestamp_utc real de emisión —
+   la garantía anti look-ahead llega hasta la UI), complementado con beta/
+   confianza/earnings de la salida viva del motor. Sin snapshot hoy:
+   se sirven las vivas con `"sellada": false`, explícito en el JSON.
+
+3. **NaN → null explícito:** los `.to_dict()` de pandas traen NaN (celdas
+   vacías del track record en maduración) y JSON no los admite; el envelope
+   pasa todo por un sanitizador recursivo. Una celda vacía es un null
+   honesto, no un error 500.
+
+4. **Empate real en la cinta:** KRX (09:00 KST) y TSE (09:00 JST) abren en
+   el MISMO instante UTC (00:00). Ambas se marcan "proxima" — es la
+   realidad, no un bug; el test de humo verifica que todo empate comparta
+   apertura_utc.
+
+5. **Cache TTL 5 min** por función del motor (presentación pura): datos
+   diarios no ameritan recomputar la regresión por request, pero el cache
+   nunca sobrevive más de 5 minutos por si llega un snapshot nuevo.
+
+6. **pytest** se agregó al venv (dependencia solo de tests).
+
+**Paridad verificada:** 15 tests en tests/test_api.py comparan los números
+servidos contra motor.py y senales.py en vivo — betas, régimen, Roca→Chip,
+divergencias, predicciones, métricas y calibración idénticos por definición.
