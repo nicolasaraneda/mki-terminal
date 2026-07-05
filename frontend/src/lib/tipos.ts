@@ -136,3 +136,71 @@ export interface DatosSalud {
   horarios_utc: Record<string, string>[]
   versiones: { modelo: string; feature: string; universo: string }
 }
+
+export interface DatosComparador {
+  base: 'usd' | 'local'
+  desde: string
+  series: Record<string, Serie>
+  benchmark: ({ ticker: string } & Serie) | null
+  tabla: {
+    ticker: string
+    nombre: string
+    segmento: string
+    ret_periodo_pct: number
+    vol_anual_pct: number
+    momentum_20d_pct: number
+    puntaje_v0: number | null
+  }[]
+}
+
+export interface DatosMercados {
+  betas: {
+    ticker: string
+    nombre: string
+    mercado: string
+    exchange: string | null
+    beta: number
+    r2_historico: number
+    n_muestra: number
+  }[]
+  correlaciones_desfase: {
+    lags: number[]
+    filas: { nombre: string; valores: (number | null)[] }[]
+  }
+  caso_destacado: {
+    ticker: string
+    nombre: string
+    corr_kospi_mismo_dia: number
+    corr_sox_mismo_dia: number
+    corr_sox_dia_anterior: number
+    n_sesiones: number
+  } | null
+}
+
+export interface Divergencia {
+  par: string
+  grupo: string
+  spread: number
+  z: number
+  spread_simple: number
+  z_simple: number
+  activa: boolean
+  explicacion: string
+}
+
+export interface DatosCadena {
+  niveles: {
+    nivel: number
+    nombre: string
+    momentum_20d_pct: number
+    sparkline: number[]
+    tickers: { ticker: string; nombre: string }[]
+  }[]
+  roca_chip: {
+    valor: number
+    crudo_pct: number
+    historia: number[]
+    serie: Serie
+  } | null
+  divergencias: Divergencia[]
+}

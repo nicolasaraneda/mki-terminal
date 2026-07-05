@@ -179,6 +179,13 @@ def test_noticias_solo_cache():
     assert "titulares" in datos and "sentimiento_por_ticker" in datos
 
 
+def test_universo_expuesto():
+    datos = cliente.get("/api/universo").json()["datos"]
+    assert len(datos["instrumentos"]) == len(UNIVERSO)
+    tickers = {i["ticker"] for i in datos["instrumentos"]}
+    assert {"NVDA", "AMD", "2330.TW"} <= tickers
+
+
 def test_husos_cinta():
     husos = cliente.get("/api/hoy").json()["datos"]["husos"]
     exchanges = {h["exchange"] for h in husos}

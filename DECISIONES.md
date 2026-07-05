@@ -366,3 +366,26 @@ Verificación: capturas de ambas vistas con datos vivos del snapshot
 sellado de hoy (8 predicciones, emitidas 06:06 UTC); los números de la
 tabla son los mismos que sirve /api/aperturas (paridad garantizada por
 tests de F1).
+
+## F4 — Vistas /cadena, /mercados y /comparador
+
+1. **/cadena:** 5 tarjetas de eslabón (momentum 20d + sparkline + tickers
+   enlazados al detalle), la serie completa del Roca→Chip (Recharts, area
+   sobria) y las divergencias como badges con AMBOS spreads (residual y
+   simple) — ● marca las activas (|z| > 2).
+
+2. **/mercados:** tabla de betas de contagio con lectura en prosa ("si el
+   SOX cayó 1%, la acción tiende a abrir −β%"), el caso Samsung como 3
+   StatTiles (KOSPI mismo día / SOX mismo día / SOX día anterior) y el
+   heatmap de correlaciones con desfase entre eslabones.
+
+3. **/comparador:** selección por chips, base USD/local con explicación de
+   qué significa cada una, períodos 3M–2A, líneas base 100 con paleta sobria
+   y SMH punteado gris como benchmark, tabla de métricas del período.
+
+4. **Endpoint añadido — GET /api/universo** (documentado en CONTRATO.md):
+   NVDA y AMD tienen `nivel: None` (los diseñadores cruzan eslabones) y por
+   eso no aparecen en /api/cadena; el selector del comparador necesita el
+   universo completo. Es exposición plana de universo.UNIVERSO — cero
+   lógica. Con test de paridad (16 tests en verde).
+

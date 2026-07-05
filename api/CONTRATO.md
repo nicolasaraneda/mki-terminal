@@ -217,3 +217,14 @@ entidad. **Solo cache** — nunca dispara análisis nuevo.
 las funciones de `motor.py` y los helpers de `senales.py` para la misma
 fecha. Si el dashboard Streamlit y la API difieren, el bug es de esta capa,
 por definición.
+
+### GET /api/universo  *(añadido en F4)*
+Lista plana de instrumentos seleccionables (para el comparador y navegación).
+Pura exposición de `universo.UNIVERSO` — sin lógica.
+```json
+"datos": {
+  "instrumentos": [{"ticker": "NVDA", "nombre": "NVIDIA",
+                     "segmento": "EE.UU. - GPUs / IA", "nivel": null,
+                     "tipo": "accion", "exchange": "XNYS"}]
+}
+```

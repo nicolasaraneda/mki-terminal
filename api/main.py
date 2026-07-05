@@ -284,6 +284,18 @@ def salud():
     })
 
 
+@app.get("/api/universo")
+def universo_endpoint():
+    """Exposición plana del universo (sin lógica): para selectores del front."""
+    return _envuelve({
+        "instrumentos": [{
+            "ticker": t, "nombre": info["nombre"], "segmento": info["segmento"],
+            "nivel": info["nivel"], "tipo": info["tipo"],
+            "exchange": EXCHANGE_POR_TICKER.get(t),
+        } for t, info in UNIVERSO.items()],
+    })
+
+
 @app.get("/api/hoy")
 def hoy():
     regimen = _regimen_hoy()

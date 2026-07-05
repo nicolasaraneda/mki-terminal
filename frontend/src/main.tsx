@@ -8,6 +8,9 @@ import { EnConstruccion } from './vistas/EnConstruccion'
 import { Sistema } from './vistas/Sistema'
 import { Hoy } from './vistas/Hoy'
 import { Aperturas } from './vistas/Aperturas'
+import { Cadena } from './vistas/Cadena'
+import { Mercados } from './vistas/Mercados'
+import { Comparador } from './vistas/Comparador'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -20,9 +23,9 @@ const router = createBrowserRouter([
       { path: '/', element: <Navigate to="/hoy" replace /> },
       { path: '/hoy', element: <Hoy /> },
       { path: '/aperturas', element: <Aperturas /> },
-      { path: '/cadena', element: <EnConstruccion vista="Cadena" /> },
-      { path: '/mercados', element: <EnConstruccion vista="Mercados" /> },
-      { path: '/comparador', element: <EnConstruccion vista="Comparador" /> },
+      { path: '/cadena', element: <Cadena /> },
+      { path: '/mercados', element: <Mercados /> },
+      { path: '/comparador', element: <Comparador /> },
       { path: '/analisis', element: <EnConstruccion vista="Análisis IA" /> },
       { path: '/historial', element: <EnConstruccion vista="Historial" /> },
       { path: '/detalle/:ticker', element: <EnConstruccion vista="Detalle" /> },
