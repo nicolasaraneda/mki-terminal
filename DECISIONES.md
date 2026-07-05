@@ -233,3 +233,32 @@ fila 1 pedida para Hoy; en vez de duplicarlo, la vista Hoy le agrega la 5ª
 tarjeta (track record del gap a 30 días, o "insuf." con el conteo de
 verificaciones) a la misma grilla. Verificado en 1440×900: la portada Hoy
 completa cabe sin scroll (contenido 900px = viewport 900px).
+
+## P8 — Fix del sidebar invisible (bug reportado post-4.6)
+
+**Síntoma:** la vista Hoy cargaba pero no había forma de navegar — ni rail de
+iconos ni control para expandir el menú.
+
+**Causa raíz (reproducida con Playwright):** bajo ~768px de ancho de ventana
+(o si Streamlit recuerda un estado colapsado), el sidebar recibe
+`aria-expanded="false"` y `transform: translateX(-300px)` — queda fuera de
+pantalla. El CSS de la 4.6 además ocultaba el control nativo de expandir
+(`stSidebarCollapsedControl`), así que no quedaba NINGUNA vía de navegación.
+En las pruebas originales no se detectó porque las sesiones de test partían
+con el sidebar expandido.
+
+**Fix en tres capas (todas verificadas):**
+1. `initial_sidebar_state="expanded"` en set_page_config — evita el colapso
+   inicial.
+2. El CSS del rail ahora incluye explícitamente el selector
+   `[aria-expanded="false"]` y anula `transform`/`visibility`/`margin-left`:
+   aunque Streamlit "colapse" el sidebar (p. ej. al achicar la ventana en
+   vivo, verificado con resize a 640px), el rail de 64px permanece en x=0 y
+   la navegación sigue operativa.
+3. El control nativo de EXPANDIR ya no se oculta (red de seguridad si una
+   versión futura de Streamlit escapa del override); el de COLAPSAR sigue
+   oculto — el rail no debe poder esconderse.
+
+Verificación: navegación entre 3+ vistas en ventana ancha (1440px, con hover
+64→220px), ventana angosta (700px) y colapso dinámico real (resize a 640px
+con aria-expanded="false" activo).

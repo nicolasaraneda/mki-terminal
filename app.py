@@ -32,7 +32,8 @@ from version import MODELO_VERSION
 
 load_dotenv()  # lee la clave desde el archivo .env local, solo para este proceso
 
-st.set_page_config(page_title="Comparador de Semiconductores", layout="wide")
+st.set_page_config(page_title="MKI Terminal", layout="wide",
+                   initial_sidebar_state="expanded")
 
 
 def obtener_cliente_ia():
@@ -366,11 +367,26 @@ _css_iconos = "\n".join(
 
 st.markdown(f"""
 <style>
-/* ---------- Sidebar rail de navegación ---------- */
-section[data-testid="stSidebar"] {{
+/* ---------- Sidebar rail de navegación ----------
+   El rail debe ser SIEMPRE visible: Streamlit "colapsa" el sidebar bajo
+   ~768px de ancho (o por estado recordado) poniéndole aria-expanded="false"
+   y transform: translateX(-300px) — lo saca de pantalla. Como además
+   ocultamos su control nativo de expandir, eso dejaba la app sin navegación
+   (bug reportado). Neutralizamos el estado colapsado por completo: el
+   selector incluye explícitamente [aria-expanded="false"] y anula el
+   transform. El botón de COLAPSAR interno sí se oculta (el rail no debe
+   poder esconderse), pero el control nativo de EXPANDIR queda como red de
+   seguridad por si alguna versión futura de Streamlit escapa del override. */
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"][aria-expanded="false"] {{
     width: 64px !important;
     min-width: 64px !important;
     max-width: 64px !important;
+    transform: none !important;
+    visibility: visible !important;
+    margin-left: 0 !important;
+    left: 0 !important;
+    display: block !important;
     transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
     overflow: hidden !important;
     background: #0E1119 !important;
@@ -385,8 +401,18 @@ section[data-testid="stSidebar"] > div {{
     width: 220px !important;
     padding-top: 0.6rem;
 }}
-[data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {{ display: none !important; }}
+/* Contenido interno visible incluso si Streamlit lo marcó colapsado */
+section[data-testid="stSidebar"][aria-expanded="false"] > div {{
+    visibility: visible !important;
+    opacity: 1 !important;
+}}
+/* Sin botón de colapsar (el rail no debe poder esconderse)... */
+[data-testid="stSidebarCollapseButton"] {{ display: none !important; }}
+/* ...pero el control de EXPANDIR del header queda visible como fallback. */
+[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {{
+    display: flex !important;
+    visibility: visible !important;
+}}
 section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
     padding: 0.4rem 0.6rem;
 }}
