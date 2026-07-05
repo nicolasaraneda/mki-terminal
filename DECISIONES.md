@@ -134,3 +134,63 @@ Se agregan a EMPRESAS de noticias.py: BHP, FCX, Shin-Etsu, SUMCO y MSFT.
 Los futuros (HG=F, SI=F) y el ETF SMH no tienen "empresa" que buscar por
 nombre — su contexto de noticias llega vía keywords del sector ("copper",
 "silver", etc.) del filtro de relevancia de la Parte D.
+
+---
+
+# Etapa 4.6 — Integridad de medición
+
+## P1 — available_at: el cierre de la sesión del SOX usada
+
+"Cuándo era conocible la información usada" se materializa como el cierre UTC
+de la sesión de NYSE cuyo movimiento del SOX alimenta la predicción (ej.: una
+predicción emitida el sábado usa el SOX del jueves si el viernes fue feriado →
+available_at = jueves 20:00 UTC). Es la cota inferior honesta: antes de ese
+instante, la señal era incomputable.
+
+## P1 — Exchange de los listados estadounidenses
+
+Todos los tickers listados en EE.UU. (NYSE y NASDAQ) usan el calendario XNYS:
+comparten feriados y horario core 9:30–16:00 ET, que es lo único que el
+verificador de timing necesita. Distinguir NASDAQ de NYSE no cambia ninguna
+decisión del sistema.
+
+## P3 — El fallback del dashboard siempre sella, el verificador decide
+
+La spec dice "si no existe snapshot del día y el timing es válido, se toma
+uno". Interpretación conservadora: el dashboard SIEMPRE toma el snapshot
+faltante (con origen 'dashboard' y su timestamp real), y es el verificador
+quien decide después, predicción por predicción, si fue emitida antes de la
+apertura de su sesión objetivo. Un "validador de timing" a priori en el
+dashboard duplicaría la regla maestra en dos lugares — y la regla debe vivir
+en un solo lugar.
+
+## P5 — universo.py nació con la estructura de la P7
+
+El orden pedido era 1→5→2→3→4→6→7, pero construir universo.py (P5) con la
+estructura vieja y reescribirlo en P7 habría duplicado trabajo y commits
+intermedios inconsistentes. universo.py se creó directamente con los cambios
+estructurales de la P7 (TSM duplicado_de, GOOGL/META en nivel 4, SMH como
+BENCHMARK fuera de la cadena). El test de no-contaminación es independiente
+de la composición del universo, así que la garantía de P5 no se ve afectada.
+
+## P6 — La relevancia pre-4.6 vale 1.0
+
+Los análisis antiguos no tienen campo relevancia (la IA no lo devolvía). Se
+tratan como 1.0 (sin castigo retroactivo) en vez de re-analizarlos pagando de
+nuevo: la limpieza de asignación (matching estricto) ya corrigió el problema
+grave (titulares mal atribuidos); la relevancia fina solo existirá hacia
+adelante.
+
+## P6 — La deduplicación conserva la entrada más antigua
+
+Mismo evento desde dos fuentes = una entrada; sobrevive la de fecha de
+publicación más antigua (la "primicia") y se borran las réplicas junto con su
+análisis. El orden es determinista (fecha ASC, id ASC), así que la migración
+es idempotente.
+
+## P7 — IEF como proxy del bono: dirección documentada
+
+IEF es PRECIO de bonos (sube cuando las tasas bajan) — la dirección opuesta
+al yield que mostraba ^TNX. La tarjeta lo dice explícitamente y el nivel
+puntual del yield se mantiene vía ^TNX cuando Yahoo lo entrega. No se invierte
+la serie artificialmente: los datos se muestran como son, con su leyenda.

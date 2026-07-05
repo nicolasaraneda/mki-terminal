@@ -6,3 +6,4 @@ noticias.db
 senales.db
 alertas.db
 .claude/
+data/snapshot.log

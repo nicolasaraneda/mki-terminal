@@ -49,6 +49,8 @@ EMPRESAS = {
     "4063.T": "Shin-Etsu Chemical",
     "3436.T": "SUMCO",
     "MSFT": "Microsoft",
+    "GOOGL": "Alphabet",
+    "META": "Meta Platforms",
 }
 
 # Búsquedas generales del sector, no atadas a un ticker específico
@@ -74,10 +76,64 @@ KEYWORDS_SECTOR = [
 ]
 ALIAS_EMPRESAS = [
     "nvidia", "amd", "intel", "qualcomm", "broadcom", "texas instruments",
-    "arm holdings", "micron", "samsung", "sk hynix", "hynix", "tsmc", "umc",
+    "arm holdings", "micron", "samsung", "sk hynix", "hynix", "tsmc",
+    "taiwan semiconductor", "umc", "united microelectronics",
     "asml", "tokyo electron", "advantest", "infineon", "bhp", "freeport",
-    "shin-etsu", "shin etsu", "sumco", "microsoft",
+    "shin-etsu", "shin etsu", "sumco", "microsoft", "alphabet", "google",
+    "meta platforms",
 ]
+
+# ------------------------------------------------------------
+# Matching estricto por entidad (Etapa 4.6): un titular se asigna a un
+# ticker SOLO si menciona a la empresa (o su ticker) de forma inequívoca.
+# Los titulares sectoriales genéricos van al bucket "sector": alimentan el
+# sentimiento sectorial, nunca el de una acción específica. Esta es la
+# única vía por la que un titular puede aparecer en la ficha de una acción
+# (el caso "XRP en la ficha de NVIDIA" queda estructuralmente imposible).
+# ------------------------------------------------------------
+ALIAS_POR_TICKER = {
+    "NVDA": ["nvidia", "nvda"],
+    "AMD": ["amd", "advanced micro devices"],
+    "INTC": ["intel", "intc"],
+    "QCOM": ["qualcomm", "qcom"],
+    "AVGO": ["broadcom", "avgo"],
+    "TXN": ["texas instruments"],
+    "ARM": ["arm holdings"],
+    "MU": ["micron"],
+    "005930.KS": ["samsung electronics", "samsung"],
+    "000660.KS": ["sk hynix", "hynix"],
+    "TSM": ["tsmc", "taiwan semiconductor"],
+    "2330.TW": ["tsmc", "taiwan semiconductor"],
+    "UMC": ["united microelectronics", "umc"],
+    "ASML": ["asml"],
+    "8035.T": ["tokyo electron"],
+    "6857.T": ["advantest"],
+    "IFX.DE": ["infineon"],
+    "BHP": ["bhp"],
+    "FCX": ["freeport-mcmoran", "freeport"],
+    "4063.T": ["shin-etsu", "shin etsu"],
+    "3436.T": ["sumco"],
+    "MSFT": ["microsoft", "msft"],
+    "GOOGL": ["alphabet", "google"],
+    "META": ["meta platforms", "facebook", "meta"],
+}
+_PATRONES_TICKER = {
+    t: re.compile(r"\b(" + "|".join(re.escape(a) for a in alias) + r")\b", re.IGNORECASE)
+    for t, alias in ALIAS_POR_TICKER.items()
+}
+
+
+def tickers_estrictos(titular: str) -> list:
+    """Tickers cuya empresa está mencionada de forma inequívoca en el titular.
+    Lista vacía = titular sectorial genérico (bucket 'sector')."""
+    texto = titular or ""
+    return [t for t, patron in _PATRONES_TICKER.items() if patron.search(texto)]
+
+
+def _normalizar_titular(titular: str) -> str:
+    """Normaliza para deduplicación: minúsculas, sin puntuación ni espacios extra."""
+    limpio = re.sub(r"[^a-z0-9 ]", " ", (titular or "").lower())
+    return re.sub(r"\s+", " ", limpio).strip()
 _PATRON_RELEVANCIA = re.compile(
     r"\b(" + "|".join(re.escape(t) for t in KEYWORDS_SECTOR + ALIAS_EMPRESAS) + r")\b",
     re.IGNORECASE,
@@ -145,6 +201,11 @@ def init_db() -> None:
             generado_en TEXT NOT NULL
         )
     """)
+    # Migración 4.6: relevancia (0-1) asignada por la IA por titular. Las filas
+    # antiguas quedan en NULL y se tratan como 1.0 (sin castigo retroactivo).
+    columnas_analisis = {f[1] for f in conn.execute("PRAGMA table_info(analisis)").fetchall()}
+    if "relevancia" not in columnas_analisis:
+        conn.execute("ALTER TABLE analisis ADD COLUMN relevancia REAL")
     conn.commit()
     conn.close()
 
@@ -167,20 +228,91 @@ def _fecha_entrada(entrada) -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _guardar_titular(conn, fecha, fuente, titular, url, tickers) -> bool:
-    """Devuelve True si el titular era nuevo (no estaba antes). Los titulares
-    irrelevantes para el sector (filtro de keywords/empresas) no se guardan:
-    analizar ruido con IA cuesta dinero y ensucia el sentimiento."""
+UMBRAL_SIMILITUD_DUP = 0.85  # difflib ratio sobre titulares normalizados
+
+
+def _es_duplicado(titular: str, titulares_recientes: list) -> bool:
+    """True si el titular es esencialmente el mismo evento que uno ya guardado
+    (mismo evento desde dos fuentes = una sola entrada)."""
+    import difflib
+    normalizado = _normalizar_titular(titular)
+    if not normalizado:
+        return False
+    for existente in titulares_recientes:
+        if difflib.SequenceMatcher(None, normalizado, existente).ratio() > UMBRAL_SIMILITUD_DUP:
+            return True
+    return False
+
+
+def _guardar_titular(conn, fecha, fuente, titular, url, tickers_hint,
+                     titulares_recientes=None) -> bool:
+    """Devuelve True si el titular era nuevo. Tres filtros de entrada:
+    (1) relevancia sectorial (keywords/empresas — el ruido no se guarda),
+    (2) deduplicación por similitud (mismo evento desde dos fuentes),
+    (3) la asignación a tickers es por MATCHING ESTRICTO de entidad en el
+        texto del titular — el hint del feed de origen se ignora (Yahoo mete
+        noticias ajenas en el feed de cualquier ticker). Sin match estricto,
+        el titular queda en el bucket 'sector' (tickers='')."""
     if not es_titular_relevante(titular):
         return False
+    if titulares_recientes is not None and _es_duplicado(titular, titulares_recientes):
+        return False
+    tickers = tickers_estrictos(titular)
     try:
         conn.execute(
             "INSERT INTO titulares (fecha, fuente, titular, url, tickers) VALUES (?, ?, ?, ?, ?)",
             (fecha, fuente, titular, url, ",".join(tickers)),
         )
+        if titulares_recientes is not None:
+            titulares_recientes.append(_normalizar_titular(titular))
         return True
     except sqlite3.IntegrityError:
         return False
+
+
+def migrar_noticias_v2() -> dict:
+    """Limpieza retroactiva Etapa 4.6 (idempotente):
+    1) Regraba la columna tickers de TODOS los titulares con matching estricto
+       de entidad (el hint del feed de origen deja de existir hacia atrás).
+    2) Deduplica por similitud de titular (difflib > 0.85 sobre normalizados),
+       conservando la entrada más antigua y borrando las réplicas con su análisis.
+    Devuelve {"retagueados": n, "duplicados_borrados": m}."""
+    import difflib
+    init_db()
+    conn = get_connection()
+
+    retagueados = 0
+    for id_, titular, tickers_viejos in conn.execute(
+            "SELECT id, titular, tickers FROM titulares").fetchall():
+        estrictos = ",".join(tickers_estrictos(titular))
+        if estrictos != (tickers_viejos or ""):
+            conn.execute("UPDATE titulares SET tickers = ? WHERE id = ?",
+                         (estrictos, id_))
+            retagueados += 1
+
+    filas = conn.execute(
+        "SELECT id, titular FROM titulares ORDER BY fecha ASC, id ASC").fetchall()
+    vistos = []  # titulares normalizados ya aceptados — el más antiguo sobrevive
+    duplicados = []
+    for id_, titular in filas:
+        normalizado = _normalizar_titular(titular)
+        if not normalizado:
+            continue
+        es_dup = any(
+            difflib.SequenceMatcher(None, normalizado, previo).ratio() > UMBRAL_SIMILITUD_DUP
+            for previo in vistos
+        )
+        if es_dup:
+            duplicados.append(id_)
+        else:
+            vistos.append(normalizado)
+    for id_ in duplicados:
+        conn.execute("DELETE FROM analisis WHERE titular_id = ?", (id_,))
+        conn.execute("DELETE FROM titulares WHERE id = ?", (id_,))
+
+    conn.commit()
+    conn.close()
+    return {"retagueados": retagueados, "duplicados_borrados": len(duplicados)}
 
 
 def limpiar_titulares_irrelevantes() -> int:
@@ -216,24 +348,34 @@ def actualizar_titulares() -> int:
     """Descarga RSS de Yahoo Finance (por ticker) y Google News (por empresa/sector).
     Guarda los titulares nuevos en SQLite. Devuelve cuántos titulares nuevos se agregaron."""
     init_db()
+    migrar_noticias_v2()  # idempotente: asegura matching estricto y dedup retroactivos
     conn = get_connection()
     nuevos = 0
+
+    # Titulares recientes normalizados (10 días) para deduplicar por similitud
+    recientes = [
+        _normalizar_titular(f[0]) for f in conn.execute(
+            "SELECT titular FROM titulares WHERE fecha >= datetime('now', '-10 days')"
+        ).fetchall()
+    ]
 
     for ticker in EMPRESAS:
         feed = feedparser.parse(_url_yahoo(ticker))
         for entrada in feed.entries[:LIMITE_POR_FEED]:
             if _guardar_titular(
                 conn, _fecha_entrada(entrada), "Yahoo Finance",
-                entrada.get("title", "").strip(), entrada.get("link", ""), [ticker],
+                entrada.get("title", "").strip(), entrada.get("link", ""), None,
+                titulares_recientes=recientes,
             ):
                 nuevos += 1
 
-    for nombre, tickers in _tickers_por_nombre().items():
+    for nombre, _tk in _tickers_por_nombre().items():
         feed = feedparser.parse(_url_google_news(nombre))
         for entrada in feed.entries[:LIMITE_POR_FEED]:
             if _guardar_titular(
                 conn, _fecha_entrada(entrada), "Google News",
-                entrada.get("title", "").strip(), entrada.get("link", ""), tickers,
+                entrada.get("title", "").strip(), entrada.get("link", ""), None,
+                titulares_recientes=recientes,
             ):
                 nuevos += 1
 
@@ -242,7 +384,8 @@ def actualizar_titulares() -> int:
         for entrada in feed.entries[:LIMITE_POR_FEED]:
             if _guardar_titular(
                 conn, _fecha_entrada(entrada), "Google News",
-                entrada.get("title", "").strip(), entrada.get("link", ""), [],
+                entrada.get("title", "").strip(), entrada.get("link", ""), None,
+                titulares_recientes=recientes,
             ):
                 nuevos += 1
 
@@ -268,9 +411,10 @@ _ESQUEMA_ANALISIS = {
                     "sentimiento": {"type": "number"},
                     "tickers_afectados": {"type": "array", "items": {"type": "string"}},
                     "impacto_estimado": {"type": "string", "enum": ["alto", "medio", "bajo"]},
+                    "relevancia": {"type": "number"},
                     "explicacion": {"type": "string"},
                 },
-                "required": ["id", "sentimiento", "tickers_afectados", "impacto_estimado", "explicacion"],
+                "required": ["id", "sentimiento", "tickers_afectados", "impacto_estimado", "relevancia", "explicacion"],
                 "additionalProperties": False,
             },
         }
@@ -308,7 +452,10 @@ def _analizar_lote(client, lote: list):
         f"{lista_titulares}\n\n"
         "Para cada titular, entrega: sentimiento (-1.0 muy negativo a +1.0 muy positivo), "
         "tickers_afectados (lista de tickers que consideres afectados, puede ser distinta a "
-        "la sugerida), impacto_estimado (alto/medio/bajo), y explicacion (1 línea en español)."
+        "la sugerida), impacto_estimado (alto/medio/bajo), relevancia (0.0 a 1.0: cuán "
+        "central es este titular para el sector de semiconductores y su cadena de valor — "
+        "1.0 = noticia de núcleo del sector, 0.2 = mención tangencial), y explicacion "
+        "(1 línea en español)."
     )
     response = client.messages.create(
         model=MODELO_IA,
@@ -324,8 +471,9 @@ def _analizar_lote(client, lote: list):
 def guardar_analisis(conn, resultado: dict) -> None:
     conn.execute(
         """INSERT OR REPLACE INTO analisis
-           (titular_id, sentimiento, tickers_afectados, impacto_estimado, explicacion, analizado_en)
-           VALUES (?, ?, ?, ?, ?, ?)""",
+           (titular_id, sentimiento, tickers_afectados, impacto_estimado, explicacion,
+            analizado_en, relevancia)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
         (
             resultado["id"],
             resultado["sentimiento"],
@@ -333,6 +481,7 @@ def guardar_analisis(conn, resultado: dict) -> None:
             resultado["impacto_estimado"],
             resultado["explicacion"],
             datetime.now(timezone.utc).isoformat(),
+            max(0.0, min(1.0, float(resultado.get("relevancia", 1.0)))),
         ),
     )
 
@@ -434,15 +583,34 @@ def obtener_titulares_analizados(limite: int = 200):
 
 
 def obtener_titulares_por_ticker(ticker: str, limite: int = 30) -> list:
-    """Titulares ya analizados donde la IA marcó este ticker específico como afectado."""
-    todos = obtener_titulares_analizados(limite=1000)
+    """Titulares para la ficha de una acción — SOLO por matching estricto de
+    entidad: el titular debe mencionar a la empresa de forma inequívoca.
+    (Regla 4.6: un titular de XRP jamás puede aparecer en la ficha de NVIDIA.)
+    Doble defensa: filtra por la columna tickers (regrabada con matching
+    estricto en la migración v2) Y re-verifica el matching en vivo."""
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT t.fecha, t.fuente, t.titular, t.url, a.sentimiento,
+               t.tickers, a.impacto_estimado, a.explicacion, a.relevancia
+        FROM analisis a JOIN titulares t ON t.id = a.titular_id
+        ORDER BY t.fecha DESC LIMIT 1000
+    """).fetchall()
+    conn.close()
     resultado = []
-    for fila in todos:
-        tickers_lista = [t.strip() for t in (fila["Tickers afectados"] or "").split(",") if t.strip()]
-        if ticker in tickers_lista:
-            resultado.append(fila)
-            if len(resultado) >= limite:
-                break
+    for f in filas:
+        tickers_col = {x.strip() for x in (f[5] or "").split(",") if x.strip()}
+        if ticker not in tickers_col:
+            continue
+        if ticker not in tickers_estrictos(f[2]):
+            continue  # defensa en vivo: la entidad DEBE estar en el texto
+        resultado.append({
+            "Fecha": f[0], "Fuente": f[1], "Titular": f[2], "URL": f[3],
+            "Sentimiento": f[4], "Tickers afectados": f[5],
+            "Impacto": f[6], "Explicación": f[7], "Relevancia": f[8],
+        })
+        if len(resultado) >= limite:
+            break
     return resultado
 
 
@@ -494,21 +662,28 @@ def _peso_por_antiguedad(fecha_titular: str) -> float:
 
 
 def sentimiento_promedio_por_ticker() -> dict:
-    """Sentimiento por ticker con decaimiento temporal: promedio de los titulares
-    analizados, ponderado por edad de cada noticia (hoy pesa 1.0; cada día le
-    quita 30%; piso 0.1). Lo de esta mañana manda; lo del mes pasado apenas suma."""
+    """Sentimiento POR ACCIÓN con doble ponderación: edad de la noticia
+    (decaimiento 0.7^días, piso 0.1) × relevancia asignada por la IA (0-1;
+    filas pre-4.6 sin relevancia pesan 1.0).
+
+    Regla 4.6 de asignación: un titular solo aporta al sentimiento de una
+    acción si menciona a la empresa de forma INEQUÍVOCA (columna tickers,
+    regrabada con matching estricto). Los titulares sectoriales genéricos
+    alimentan el sentimiento del sector, no el de acciones."""
     init_db()
     conn = get_connection()
     filas = conn.execute("""
-        SELECT a.tickers_afectados, a.sentimiento, t.fecha
+        SELECT t.tickers, a.sentimiento, t.fecha, a.relevancia
         FROM analisis a JOIN titulares t ON t.id = a.titular_id
     """).fetchall()
     conn.close()
     suma: dict = {}
     peso_total: dict = {}
-    for tickers_str, sentimiento, fecha_titular in filas:
-        peso = _peso_por_antiguedad(fecha_titular)
-        for ticker in filter(None, tickers_str.split(",")):
+    for tickers_str, sentimiento, fecha_titular, relevancia in filas:
+        peso = _peso_por_antiguedad(fecha_titular) * (relevancia if relevancia is not None else 1.0)
+        if peso <= 0:
+            continue
+        for ticker in filter(None, (tickers_str or "").split(",")):
             suma[ticker] = suma.get(ticker, 0.0) + sentimiento * peso
             peso_total[ticker] = peso_total.get(ticker, 0.0) + peso
     return {t: suma[t] / peso_total[t] for t in suma if peso_total[t] > 0}
@@ -570,7 +745,19 @@ def buzz_por_ticker() -> dict:
 
 
 def sentimiento_promedio_sector() -> float | None:
-    valores = sentimiento_promedio_por_ticker()
-    if not valores:
-        return None
-    return sum(valores.values()) / len(valores)
+    """Sentimiento del SECTOR: media ponderada (edad × relevancia) de TODOS los
+    titulares analizados — incluidos los del bucket 'sector' que no se asignan
+    a ninguna acción específica."""
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT a.sentimiento, t.fecha, a.relevancia
+        FROM analisis a JOIN titulares t ON t.id = a.titular_id
+    """).fetchall()
+    conn.close()
+    suma, peso_total = 0.0, 0.0
+    for sentimiento, fecha_titular, relevancia in filas:
+        peso = _peso_por_antiguedad(fecha_titular) * (relevancia if relevancia is not None else 1.0)
+        suma += sentimiento * peso
+        peso_total += peso
+    return suma / peso_total if peso_total > 0 else None

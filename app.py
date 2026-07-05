@@ -20,8 +20,15 @@ import yfinance as yf
 from dotenv import load_dotenv
 
 import alertas
+import calendarios
+import motor
 import noticias
 import senales
+import snapshot as snapshot_mod
+from universo import (ACCIONES, BENCHMARK, DEFAULT, INDICES, MERCADOS_POR_ABRIR,
+                      MONEDA_TICKER, NIVELES_CADENA, PARES_FX, PERIODOS,
+                      TICKERS_POR_NIVEL, UNIVERSO, nombre)
+from version import MODELO_VERSION
 
 load_dotenv()  # lee la clave desde el archivo .env local, solo para este proceso
 
@@ -315,91 +322,7 @@ div[data-testid="stApp"] [role="radiogroup"] p {{ font-weight: 500; }}
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------------
-# Universo: la cadena de valor completa, de la roca al data center.
-#
-# Cada entrada lleva su eslabón en la cadena ("nivel", 0→4) y su "tipo".
-# Las empresas de diseño fabless (NVIDIA, AMD, etc.) tienen nivel=None:
-# participan de rankings, anticipador y noticias como siempre, pero no
-# entran al flujo de la cadena (ver DECISIONES.md).
-# Commodities y ETF son solo contexto: nunca entran al ranking de acciones
-# ni al anticipador.
-# ------------------------------------------------------------
-NIVELES_CADENA = {
-    0: "Materias primas",
-    1: "Materiales",
-    2: "Equipos",
-    3: "Fabricación",
-    4: "Demanda final",
-}
-
-UNIVERSO = {
-    # Nivel 0 — materias primas
-    "HG=F": {"nombre": "Cobre (futuro)", "segmento": "Global - materia prima", "nivel": 0, "tipo": "commodity"},
-    "SI=F": {"nombre": "Plata (futuro)", "segmento": "Global - materia prima", "nivel": 0, "tipo": "commodity"},
-    "BHP": {"nombre": "BHP Group", "segmento": "Australia - minería (ADR)", "nivel": 0, "tipo": "accion"},
-    "FCX": {"nombre": "Freeport-McMoRan", "segmento": "EE.UU. - minería de cobre", "nivel": 0, "tipo": "accion"},
-    # Nivel 1 — materiales
-    "4063.T": {"nombre": "Shin-Etsu Chemical", "segmento": "Japón - obleas de silicio", "nivel": 1, "tipo": "accion"},
-    "3436.T": {"nombre": "SUMCO", "segmento": "Japón - obleas de silicio", "nivel": 1, "tipo": "accion"},
-    # Nivel 2 — equipos
-    "ASML": {"nombre": "ASML (ADR)", "segmento": "Holanda - litografía EUV", "nivel": 2, "tipo": "accion"},
-    "8035.T": {"nombre": "Tokyo Electron", "segmento": "Japón - equipos", "nivel": 2, "tipo": "accion"},
-    "6857.T": {"nombre": "Advantest", "segmento": "Japón - testeo de chips", "nivel": 2, "tipo": "accion"},
-    # Nivel 3 — fabricación
-    "TSM": {"nombre": "TSMC (ADR)", "segmento": "Taiwán - fundición (cotiza en NY)", "nivel": 3, "tipo": "accion"},
-    "2330.TW": {"nombre": "TSMC (Taiwán)", "segmento": "Taiwán - fundición (bolsa local)", "nivel": 3, "tipo": "accion"},
-    "005930.KS": {"nombre": "Samsung Electronics", "segmento": "Corea - DRAM / fundición", "nivel": 3, "tipo": "accion"},
-    "000660.KS": {"nombre": "SK Hynix", "segmento": "Corea - DRAM / HBM", "nivel": 3, "tipo": "accion"},
-    "MU": {"nombre": "Micron", "segmento": "EE.UU. - DRAM / NAND", "nivel": 3, "tipo": "accion"},
-    "INTC": {"nombre": "Intel", "segmento": "EE.UU. - CPUs / fundición", "nivel": 3, "tipo": "accion"},
-    "UMC": {"nombre": "UMC (ADR)", "segmento": "Taiwán - fundición", "nivel": 3, "tipo": "accion"},
-    # Nivel 4 — demanda final
-    "MSFT": {"nombre": "Microsoft", "segmento": "EE.UU. - proxy capex data centers", "nivel": 4, "tipo": "accion"},
-    "SMH": {"nombre": "SMH (ETF)", "segmento": "EE.UU. - ETF sectorial, termómetro", "nivel": 4, "tipo": "etf"},
-    # Diseño fabless — sin eslabón en la cadena (ver DECISIONES.md)
-    "NVDA": {"nombre": "NVIDIA", "segmento": "EE.UU. - GPUs / IA", "nivel": None, "tipo": "accion"},
-    "AMD": {"nombre": "AMD", "segmento": "EE.UU. - CPUs / GPUs", "nivel": None, "tipo": "accion"},
-    "QCOM": {"nombre": "Qualcomm", "segmento": "EE.UU. - chips móviles", "nivel": None, "tipo": "accion"},
-    "AVGO": {"nombre": "Broadcom", "segmento": "EE.UU. - redes / custom IA", "nivel": None, "tipo": "accion"},
-    "TXN": {"nombre": "Texas Instruments", "segmento": "EE.UU. - análogos", "nivel": None, "tipo": "accion"},
-    "ARM": {"nombre": "Arm Holdings", "segmento": "R.Unido - arquitecturas (ADR)", "nivel": None, "tipo": "accion"},
-    "IFX.DE": {"nombre": "Infineon", "segmento": "Alemania - potencia / autos", "nivel": None, "tipo": "accion"},
-}
-
-# Subconjuntos derivados: solo las acciones entran a rankings/anticipador/sidebar.
-ACCIONES = tuple(t for t, d in UNIVERSO.items() if d["tipo"] == "accion")
-TICKERS_POR_NIVEL = {
-    n: [t for t, d in UNIVERSO.items() if d["nivel"] == n] for n in NIVELES_CADENA
-}
-
-# Índices de referencia de cada mercado
-INDICES = {
-    "^SOX": ("SOX Semiconductores", "EE.UU."),
-    "^GSPC": ("S&P 500", "EE.UU."),
-    "^IXIC": ("Nasdaq", "EE.UU."),
-    "^KS11": ("KOSPI", "Corea"),
-    "^N225": ("Nikkei 225", "Japón"),
-    "^TWII": ("TAIEX", "Taiwán"),
-    "^GDAXI": ("DAX", "Alemania"),
-}
-
-# Acciones que cotizan en bolsas que abren DESPUÉS del cierre de EE.UU.
-MERCADOS_POR_ABRIR = ["005930.KS", "000660.KS", "2330.TW", "8035.T", "6857.T",
-                      "IFX.DE", "4063.T", "3436.T"]
-
-DEFAULT = ["NVDA", "AMD", "INTC", "MU", "TSM", "ASML", "005930.KS", "000660.KS"]
-PERIODOS = {"3 meses": "3mo", "6 meses": "6mo", "1 año": "1y", "2 años": "2y", "5 años": "5y"}
-
-# Acciones que NO cotizan en USD, y el par de yfinance para convertirlas.
-# El resto (EE.UU. y ADRs como TSM, UMC, ASML, BHP) ya cotiza en USD.
-MONEDA_TICKER = {
-    "005930.KS": "KRW=X", "000660.KS": "KRW=X",
-    "2330.TW": "TWD=X",
-    "8035.T": "JPY=X", "6857.T": "JPY=X", "4063.T": "JPY=X", "3436.T": "JPY=X",
-    "IFX.DE": "EUR=X",
-}
-PARES_FX = tuple(sorted(set(MONEDA_TICKER.values())))
+# (El universo y sus subconjuntos viven en universo.py — fuente única de verdad.)
 
 
 # ------------------------------------------------------------
@@ -464,14 +387,6 @@ def descargar_ohlcv(ticker: str, periodo: str) -> pd.DataFrame:
     return data.dropna(how="all")
 
 
-def nombre(t: str) -> str:
-    if t in UNIVERSO:
-        return UNIVERSO[t]["nombre"]
-    if t in INDICES:
-        return INDICES[t][0]
-    return t
-
-
 def calcular_metricas(precios: pd.DataFrame) -> pd.DataFrame:
     retornos = precios.pct_change().dropna(how="all")
     filas = []
@@ -497,48 +412,6 @@ def calcular_metricas(precios: pd.DataFrame) -> pd.DataFrame:
                         + df["Retorno período %"].rank(pct=True) * 0.4
                         + (1 - df["Volatilidad anual %"].rank(pct=True)) * 0.2).round(2)
     return df.sort_values("Puntaje v0", ascending=False).reset_index(drop=True)
-
-
-@st.cache_data(ttl=900, show_spinner=False)
-def serie_sox_larga() -> pd.Series:
-    """Serie de 2 años del SOX para el régimen de mercado, independiente del
-    período elegido en el sidebar (las medias de 200 días necesitan historia)."""
-    data = yf.download("^SOX", period="2y", interval="1d", auto_adjust=True, progress=False)
-    if data.empty:
-        return pd.Series(dtype=float)
-    cierre = data["Close"]
-    if isinstance(cierre, pd.DataFrame):
-        cierre = cierre.iloc[:, 0]
-    return cierre.dropna()
-
-
-def calcular_regimen() -> dict | None:
-    """Régimen de mercado del SOX: tendencia (MA50 vs MA200, con banda lateral
-    de ±1%) × volatilidad (realizada 20d vs su mediana de 1 año)."""
-    sox = serie_sox_larga()
-    if len(sox) < 220:
-        return None
-    ma50 = sox.rolling(50).mean().iloc[-1]
-    ma200 = sox.rolling(200).mean().iloc[-1]
-    ratio = ma50 / ma200 - 1
-    if ratio > 0.01:
-        tendencia = "Alcista"
-    elif ratio < -0.01:
-        tendencia = "Bajista"
-    else:
-        tendencia = "Lateral"
-    vol20 = sox.pct_change().rolling(20).std() * (252 ** 0.5) * 100
-    vol_actual = vol20.iloc[-1]
-    vol_mediana = vol20.tail(252).median()
-    vol_label = "alta" if vol_actual > vol_mediana else "baja"
-    return {
-        "tendencia": tendencia,
-        "vol": vol_label,
-        "etiqueta": f"{tendencia} · vol {vol_label}",
-        "ratio_ma_pct": round(ratio * 100, 2),
-        "vol_actual": round(float(vol_actual), 1),
-        "vol_mediana": round(float(vol_mediana), 1),
-    }
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
@@ -641,154 +514,86 @@ metricas_df = calcular_metricas(precios)
 ret_acc = precios.pct_change()
 ret_idx = indices.pct_change()
 
-# Predicción del anticipador de aperturas — se calcula siempre, sin importar qué
-# sección esté activa, porque el snapshot diario de señales.py también la necesita.
-# Siempre cubre TODOS los mercados por abrir, independiente de la selección del sidebar.
-precios_apertura = descargar_precios(tuple(MERCADOS_POR_ABRIR), periodo)
-# Siempre en USD (independiente del toggle): el contagio con el SOX debe medirse sin
-# ruido cambiario, y así el historial de señales queda consistente día a día.
-precios_apertura = convertir_a_usd(precios_apertura, tipos_cambio)
-ret_apertura = precios_apertura.pct_change()
+# ------------------------------------------------------------
+# Señales del día — TODAS salen de motor.py (funciones puras por fecha,
+# la misma fuente de verdad que snapshot.py y el futuro backtest).
+# ------------------------------------------------------------
+dias_earnings = dias_a_proximos_earnings(ACCIONES)
+
+
+@st.cache_data(ttl=900, show_spinner="Calculando señales del motor...")
+def senales_del_motor(hoy_iso: str, dias_earnings_: dict):
+    """Envoltorio cacheado de las funciones puras del motor para el día de hoy."""
+    hoy_f = date.fromisoformat(hoy_iso)
+    return {
+        "regimen": motor.regimen_al(hoy_f),
+        "cadena": motor.datos_cadena_al(hoy_f),
+        "roca_chip": motor.roca_chip_al(hoy_f),
+        "pares": motor.divergencias_al(hoy_f),
+        "prediccion": motor.prediccion_apertura_al(hoy_f, dias_earnings=dias_earnings_),
+        "salud": motor.salud_datos_al(hoy_f),
+    }
+
+
+_motor_hoy = senales_del_motor(date.today().isoformat(), dias_earnings)
+regimen = _motor_hoy["regimen"]
+indice_roca_chip = _motor_hoy["roca_chip"]
+analisis_pares = _motor_hoy["pares"]
+divergencias_activas = [p for p in analisis_pares if p["activa"]]
+salud_datos = _motor_hoy["salud"]
+series_nivel = _motor_hoy["cadena"]["series_nivel"]
+ret_nivel = _motor_hoy["cadena"]["ret_nivel"]
+precios_cadena = _motor_hoy["cadena"]["precios"]
+
+# Último movimiento real del SOX (para el hero y los textos de Aperturas)
 if "^SOX" in ret_idx.columns:
-    sox_apertura = ret_idx["^SOX"]
     ult_mov_apertura, ult_fecha_apertura, feriado_hoy_apertura, fecha_reciente_apertura = (
-        ultimo_movimiento_no_cero(sox_apertura)
+        ultimo_movimiento_no_cero(ret_idx["^SOX"])
     )
 else:
-    sox_apertura = pd.Series(dtype=float)
     ult_mov_apertura, ult_fecha_apertura = None, None
     feriado_hoy_apertura, fecha_reciente_apertura = False, None
 
-# Días al próximo reporte de resultados: cerca de earnings, la historia
-# estadística pierde valor (domina la noticia del reporte), así que el
-# anticipador degrada su confianza un nivel.
-dias_earnings = dias_a_proximos_earnings(ACCIONES)
-
+# df_ant: la predicción del motor + etiquetas de presentación.
+# "Confianza (R²)" pasa a mostrar la muestra y el R² histórico sin disfrazarlos
+# de certeza: la calibración real la dirá el verificador con el tiempo.
+pred_motor = _motor_hoy["prediccion"]
 _filas_apertura = []
-if ult_mov_apertura is not None:
-    for t in MERCADOS_POR_ABRIR:
-        if t not in ret_apertura.columns:
-            continue
-        par = pd.concat([ret_apertura[t], sox_apertura.shift(1)], axis=1).dropna()
-        if len(par) < 40:
-            continue
-        y, x = par.iloc[:, 0], par.iloc[:, 1]
-        beta = x.cov(y) / x.var() if x.var() > 0 else 0.0
-        r2 = x.corr(y) ** 2
-        est = beta * (ult_mov_apertura / 100) * 100
-        confianza = "Alta" if r2 > 0.25 else ("Media" if r2 > 0.10 else "Baja")
-        dias_e = dias_earnings.get(t)
-        zona_earnings = dias_e is not None and dias_e < 5
-        if zona_earnings:
-            confianza_degradada = {"Alta": "Media", "Media": "Baja", "Baja": "Baja"}[confianza]
-            etiqueta_conf = (f"{confianza_degradada} ({r2:.2f}, degradada: "
-                             f"earnings en {dias_e}d)")
-            confianza = confianza_degradada
-        else:
-            etiqueta_conf = f"{confianza} ({r2:.2f})"
+if pred_motor is not None and not pred_motor.empty:
+    for _, p in pred_motor.iterrows():
+        t = p["Ticker"]
+        etiqueta_muestra = f"muestra: {int(p['N muestra'])} sesiones · R² histórico: {p['R2']:.2f}"
+        if p["Zona earnings"]:
+            etiqueta_muestra += f" · degradada: earnings en {p['Dias earnings']}d"
         _filas_apertura.append({
             "Ticker": t,
             "Acción": nombre(t),
             "Mercado": UNIVERSO.get(t, {}).get("segmento", "").split(" - ")[0],
-            "Beta de contagio": round(beta, 2),
-            "Apertura estimada %": round(est, 2),
-            "R2": round(r2, 4),
-            "Confianza": confianza,
-            "Confianza (R²)": etiqueta_conf,
-            "Earnings": f"{dias_e}d" if zona_earnings else "—",
+            "Beta de contagio": p["Beta de contagio"],
+            "Apertura estimada %": p["Apertura estimada %"],
+            "Intervalo80 pp": p["Intervalo80 pp"],
+            "R2": p["R2"],
+            "Confianza": p["Confianza"],
+            "Muestra · R²": etiqueta_muestra,
+            "Earnings": f"{p['Dias earnings']}d" if p["Zona earnings"] else "—",
         })
 df_ant = pd.DataFrame(_filas_apertura)
 if not df_ant.empty:
     df_ant = df_ant.sort_values("Apertura estimada %", ascending=False)
 
-# Régimen de mercado del SOX (badge permanente en el hero + snapshot diario)
-regimen = calcular_regimen()
-
 # ------------------------------------------------------------
-# Cadena de valor: precios del universo completo (siempre en USD, 1 año fijo),
-# índice Roca→Chip y divergencias entre competidores. Se calculan siempre
-# porque el snapshot diario y la portada Hoy los necesitan.
-# ------------------------------------------------------------
-precios_cadena = descargar_precios(tuple(UNIVERSO.keys()), "1y")
-tipos_cambio_1y = descargar_precios(PARES_FX, "1y")
-precios_cadena = convertir_a_usd(precios_cadena, tipos_cambio_1y)
-ret_cadena = precios_cadena.pct_change()
-mom20_cadena = precios_cadena / precios_cadena.shift(20) - 1
-
-# Momentum 20d y retornos diarios agregados por eslabón (promedio simple)
-series_nivel, ret_nivel = {}, {}
-for _nivel in NIVELES_CADENA:
-    _cols = [t for t in TICKERS_POR_NIVEL[_nivel] if t in precios_cadena.columns]
-    if _cols:
-        series_nivel[_nivel] = mom20_cadena[_cols].mean(axis=1)
-        ret_nivel[_nivel] = ret_cadena[_cols].mean(axis=1)
-
-# Índice Roca→Chip (0-100): momentum 20d promedio de los eslabones (peso igual
-# por eslabón), expresado como percentil dentro de su propio último año.
-# 50 = un día normal; 100 = la cadena más caliente del año; 0 = la más fría.
-indice_roca_chip = None
-if len(series_nivel) >= 3:
-    _serie_rc = pd.concat(series_nivel.values(), axis=1).mean(axis=1).dropna() * 100
-    if len(_serie_rc) > 60:
-        _percentil = float((_serie_rc.tail(252) <= _serie_rc.iloc[-1]).mean() * 100)
-        indice_roca_chip = {
-            "valor": round(_percentil),
-            "crudo_pct": round(float(_serie_rc.iloc[-1]), 2),
-            "historia": list(_serie_rc.tail(30)),
-            "serie": _serie_rc,
-        }
-
-# Divergencias entre competidores directos: spread de momentum 20d y su
-# z-score contra la historia del último año. |z| > 2 = divergencia activa.
-PARES_COMPETIDORES = [
-    ("Memoria", ["000660.KS", "MU", "005930.KS"]),
-    ("Fundición", ["TSM", "UMC"]),
-    ("Equipos", ["ASML", "8035.T"]),
-    ("Minería", ["BHP", "FCX"]),
-]
-analisis_pares = []
-for _grupo, _tickers_grupo in PARES_COMPETIDORES:
-    _presentes = [t for t in _tickers_grupo if t in mom20_cadena.columns]
-    for _i in range(len(_presentes)):
-        for _j in range(_i + 1, len(_presentes)):
-            _a, _b = _presentes[_i], _presentes[_j]
-            _spread = (mom20_cadena[_a] - mom20_cadena[_b]).dropna() * 100
-            if len(_spread) < 120 or _spread.std() == 0:
-                continue
-            _z = float((_spread.iloc[-1] - _spread.mean()) / _spread.std())
-            _delante, _detras = (_a, _b) if _spread.iloc[-1] > 0 else (_b, _a)
-            analisis_pares.append({
-                "par": f"{nombre(_a)} vs {nombre(_b)}",
-                "grupo": _grupo,
-                "spread": round(float(_spread.iloc[-1]), 2),
-                "z": round(_z, 2),
-                "activa": abs(_z) > 2,
-                "explicacion": (
-                    f"{nombre(_delante)} le saca {abs(_spread.iloc[-1]):.1f} pp de "
-                    f"rendimiento 20d a {nombre(_detras)} — brecha inusual contra "
-                    f"su propia historia (z={_z:+.1f})."),
-            })
-divergencias_activas = [p for p in analisis_pares if p["activa"]]
-
-# ------------------------------------------------------------
-# Historial de señales: snapshot diario (máx. 1x/día) y verificador de
-# aciertos (máx. 1x por sesión del navegador, para no golpear yfinance de más).
+# Snapshot de respaldo al abrir el dashboard (P3.3): si el job programado no
+# corrió hoy (Mac apagado, launchd no instalado), se toma aquí con origen
+# "dashboard" y su timestamp real — el verificador de timing decidirá después,
+# predicción por predicción, si fue emitida a tiempo para ser evaluable.
+# El verificador corre 1x por sesión del navegador.
 # ------------------------------------------------------------
 if "verificacion_corrida" not in st.session_state:
     senales.verificar_pendientes()
     st.session_state.verificacion_corrida = True
 
 if not senales.ya_existe_snapshot_hoy():
-    precios_universo = descargar_precios(ACCIONES, "6mo")
-    tipos_cambio_universo = descargar_precios(PARES_FX, "6mo")
-    precios_universo = convertir_a_usd(precios_universo, tipos_cambio_universo)  # siempre en USD
-    metricas_universo = calcular_metricas(precios_universo)
-    senales.guardar_snapshot_diario(
-        metricas_universo, noticias.sentimiento_promedio_por_ticker(), df_ant,
-        regimen=regimen["etiqueta"] if regimen else None,
-        roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
-        divergencias=divergencias_activas,
-    )
+    snapshot_mod.ejecutar_snapshot("dashboard")
 
 # Alertas Telegram automáticas (1x por sesión; sin configurar, no hace nada;
 # el registro anti-duplicados evita repetir la misma alerta entre sesiones).
@@ -921,7 +726,7 @@ if seccion == "Hoy":
             candidatas.append((abs(est_s) / 2, tarjeta_senal(
                 f"Apertura estimada: {fila_s['Acción']} {est_s:+.2f}%",
                 "pos" if est_s >= 0 else "neg",
-                f"{est_s:+.2f}%", fila_s["Confianza (R²)"],
+                f"{est_s:+.2f}% (± {fila_s['Intervalo80 pp']:.1f} pp)", fila_s["Muestra · R²"],
                 f"El SOX se movió {ult_mov_apertura:+.2f}% en su última sesión real y "
                 f"esta acción históricamente replica ese movimiento con beta "
                 f"{fila_s['Beta de contagio']:.2f} al día siguiente.", regimen_str)))
@@ -1039,14 +844,42 @@ if seccion == "Comparador":
         st.markdown(f'<div class="metric-grid">{"".join(tarjetas_comp)}</div>',
                     unsafe_allow_html=True)
 
-    st.subheader("Rendimiento comparado (base 100)")
-    st.caption("Todas parten en 100 al inicio del período elegido: si una línea "
-               "termina en 200, esa acción duplicó su valor en la ventana mostrada.")
+    st.subheader("Rendimiento comparado")
+    col_vista, col_log = st.columns([3, 1])
+    with col_vista:
+        vista_comp = st.radio(
+            "Vista", ["Base 100", f"Relativo al benchmark ({BENCHMARK})"],
+            horizontal=True, label_visibility="collapsed")
+    with col_log:
+        escala_log = st.toggle("Escala log", value=False,
+                               help="Escala logarítmica: una duplicación ocupa la misma "
+                                    "distancia vertical en cualquier nivel de precio.")
+
     base100 = precios / precios.iloc[0] * 100
-    df_plot = base100.reset_index().melt(id_vars="Date", var_name="Ticker", value_name="Índice")
+    if vista_comp.startswith("Relativo"):
+        precios_bench = descargar_precios((BENCHMARK,), periodo)
+        if not precios_bench.empty and BENCHMARK in precios_bench.columns:
+            bench_alineado = precios_bench[BENCHMARK].reindex(precios.index).ffill()
+            bench100 = bench_alineado / bench_alineado.iloc[0] * 100
+            datos_plot = base100.div(bench100, axis=0) * 100
+            titulo_y = f"Relativo a {BENCHMARK} (100 = igual al ETF)"
+            st.caption(
+                f"100 = rinde igual que {BENCHMARK} (el ETF sectorial, benchmark "
+                "oficial del sistema). Sobre 100 le gana al sector; bajo 100, pierde "
+                "contra el sector aunque suba en términos absolutos.")
+        else:
+            datos_plot, titulo_y = base100, "Base 100"
+            st.warning(f"No se pudo descargar {BENCHMARK}; se muestra base 100.")
+    else:
+        datos_plot, titulo_y = base100, "Base 100"
+        st.caption("Todas parten en 100 al inicio del período elegido: si una línea "
+                   "termina en 200, esa acción duplicó su valor en la ventana mostrada.")
+    df_plot = datos_plot.reset_index().melt(id_vars="Date", var_name="Ticker", value_name="Índice")
     df_plot["Empresa"] = df_plot["Ticker"].map(nombre)
     fig = px.line(df_plot, x="Date", y="Índice", color="Empresa")
-    template_grafico(fig, altura=430, legend_title=None, xaxis_title=None, yaxis_title="Base 100")
+    template_grafico(fig, altura=430, legend_title=None, xaxis_title=None,
+                     yaxis_title=titulo_y,
+                     yaxis_type="log" if escala_log else "linear")
 
     st.subheader("Correlación entre acciones")
     st.caption("1.0 = se mueven idéntico. Ojo: acciones de la misma bolsa correlacionan "
@@ -1147,29 +980,35 @@ if seccion == "Mercados":
         "el mismo golpe se amortigua. El cobre es el pulso de demanda industrial que "
         "alimenta la cadena desde la roca.")
 
+    # El histórico del bono usa IEF (ETF de bonos del Tesoro 7-10 años) como
+    # proxy: Yahoo no entrega histórico confiable de ^TNX, pero sí de IEF.
+    # Ojo con la dirección: IEF es PRECIO de bonos — sube cuando las tasas BAJAN.
+    # El nivel puntual del yield sigue saliendo de ^TNX si está disponible.
     MACRO_TICKERS = {
-        "^TNX": "Bono 10 años EE.UU.",
+        "IEF": "Bonos 7-10 años EE.UU. (IEF)",
         "KRW=X": "Won coreano (KRW por USD)",
         "TWD=X": "Dólar taiwanés (TWD por USD)",
         "HG=F": "Cobre (futuro)",
     }
     precios_macro = descargar_precios(tuple(MACRO_TICKERS.keys()), "1y")
-    ret_sox_largo = serie_sox_larga().pct_change()
+    ret_sox_largo = motor._datos_crudos(('^SOX',)).iloc[:, 0].pct_change()
 
     tarjetas_macro = []
+
+    # Nivel puntual del yield 10 años (si Yahoo lo entrega): tarjeta aparte,
+    # porque ^TNX no trae histórico confiable — la serie histórica del bono
+    # es el proxy IEF de abajo.
+    tnx = descargar_precios(("^TNX",), "5d")
+    if not tnx.empty and "^TNX" in tnx.columns and tnx["^TNX"].dropna().size:
+        tarjetas_macro.append(_tarjeta(
+            "Yield 10 años EE.UU. (^TNX)", f"{tnx['^TNX'].dropna().iloc[-1]:.2f}%", "",
+            "nivel puntual — el histórico del bono usa el proxy IEF"))
+
     for tk, nombre_macro in MACRO_TICKERS.items():
         if tk not in precios_macro.columns:
             continue
         serie_m = precios_macro[tk].dropna()
         if len(serie_m) < 66:
-            # Caso real observado con ^TNX: Yahoo a veces solo entrega el último
-            # dato del yield, sin histórico. Honestidad ante todo: se muestra el
-            # nivel actual y se dice explícitamente qué no se puede calcular.
-            if tk == "^TNX" and len(serie_m) >= 1:
-                tarjetas_macro.append(_tarjeta(
-                    nombre_macro, f"{serie_m.iloc[-1]:.2f}%", "",
-                    "Yahoo no entrega histórico del yield ahora mismo — sin "
-                    "variación 5d ni correlación disponibles"))
             continue
         valor_m = serie_m.iloc[-1]
         ret_m = serie_m.pct_change()
@@ -1177,17 +1016,11 @@ if seccion == "Mercados":
         corr60 = None
         if len(par_m) >= 60:
             corr60 = par_m.iloc[:, 0].rolling(60).corr(par_m.iloc[:, 1]).iloc[-1]
-        if tk == "^TNX":
-            # Verificado empíricamente: el ^TNX actual de Yahoo ya viene en puntos
-            # porcentuales directos (4.485 = 4.49%). La variación se expresa en
-            # puntos base, como se habla de bonos (1 pp = 100 pb).
-            valor_str = f"{valor_m:.2f}%"
-            delta_pb = (serie_m.iloc[-1] - serie_m.iloc[-6]) * 100
-            sub_m = f"{delta_pb:+.0f} pb en 5 días"
-        else:
-            valor_str = f"{valor_m:,.2f}"
-            var5 = (serie_m.iloc[-1] / serie_m.iloc[-6] - 1) * 100
-            sub_m = f"{var5:+.2f}% en 5 días"
+        valor_str = f"{valor_m:,.2f}"
+        var5 = (serie_m.iloc[-1] / serie_m.iloc[-6] - 1) * 100
+        sub_m = f"{var5:+.2f}% en 5 días"
+        if tk == "IEF":
+            sub_m += " · precio de bonos: sube cuando las tasas BAJAN"
         badge_corr = ""
         if corr60 is not None and corr60 == corr60:
             badge_corr = badge(f"corr 60d SOX {corr60:+.2f}",
@@ -1338,6 +1171,20 @@ if seccion == "Aperturas":
             st.caption(f"Mercado cerrado el {fecha_reciente_apertura} (feriado EE.UU.). "
                        f"Se usa el último movimiento real, del {ult_fecha_apertura}.")
 
+        # Badge de calibración: qué dice el verificador sobre los intervalos.
+        calib = senales.calibracion_intervalos()
+        if calib["suficiente"]:
+            st.markdown(badge(
+                f"CALIBRACIÓN: {calib['cobertura_pct']:.0f}% de los gaps reales "
+                f"cayó dentro del intervalo 80% (n={calib['n']})",
+                "pos" if 70 <= calib["cobertura_pct"] <= 90 else "magenta"),
+                unsafe_allow_html=True)
+        else:
+            st.markdown(badge(
+                f"CALIBRACIÓN: PENDIENTE ({calib['n']} de "
+                f"{senales.MINIMO_OBSERVACIONES} verificaciones mínimas)", "neutro"),
+                unsafe_allow_html=True)
+
         if df_ant.empty:
             st.warning("Sin datos suficientes para estimar. Prueba con período de 1 año o más.")
         else:
@@ -1346,9 +1193,16 @@ if seccion == "Aperturas":
                              color_continuous_scale=ESCALA_DIVERGENTE,
                              range_color=[-df_ant["Apertura estimada %"].abs().max(),
                                           df_ant["Apertura estimada %"].abs().max()],
+                             error_y="Intervalo80 pp",
                              text="Apertura estimada %")
-            fig_ant.update_traces(texttemplate="%{text:+.2f}%", textposition="outside")
-            template_grafico(fig_ant, altura=380, coloraxis_showscale=False, xaxis_title=None)
+            fig_ant.update_traces(texttemplate="%{text:+.2f}%", textposition="outside",
+                                  error_y_color=TEXTO_SECUNDARIO)
+            template_grafico(fig_ant, altura=400, coloraxis_showscale=False, xaxis_title=None)
+            st.caption(
+                "Las barras de error muestran el intervalo central del 80%: si el modelo "
+                "está bien calibrado, 8 de cada 10 gaps reales deberían caer dentro de la "
+                "barra (±1.28 × la desviación de los residuos históricos de cada regresión). "
+                "Un intervalo que cruza el cero significa que la dirección misma es incierta.")
             st.dataframe(df_ant.drop(columns=["Ticker", "R2", "Confianza"]),
                          use_container_width=True, hide_index=True)
             if (df_ant["Earnings"] != "—").any():
@@ -1358,9 +1212,11 @@ if seccion == "Aperturas":
                     "la noticia del reporte, no la estadística del contagio.")
             st.info(
                 "Cómo leerlo: 'Beta de contagio' = cuánto se mueve históricamente esa "
-                "acción por cada 1% que se movió el SOX el día anterior. 'Confianza (R²)' "
-                "= qué parte de sus movimientos se explica por EE.UU. (el resto es su "
-                "propia historia local). Con confianza Baja, tómalo como brisa, no viento.")
+                "acción por cada 1% que se movió el SOX el día anterior. 'Muestra · R²' "
+                "= con cuántas sesiones se estimó la beta (ventana rodante de "
+                f"{motor.VENTANA_BETAS_DEFAULT} días hábiles) y qué parte de los "
+                "movimientos explica históricamente EE.UU. La calibración REAL del "
+                "intervalo la dicta el verificador, no el R².")
 
 # ============================================================
 # SECCIÓN: Análisis IA
@@ -1473,52 +1329,85 @@ if seccion == "Análisis IA":
 if seccion == "Historial":
     st.subheader("Historial de señales y verificador de aciertos")
     st.caption(
-        "Cada día que se abre el dashboard se guarda una foto de las señales del "
-        "universo completo (Puntaje v0, sentimiento IA, Puntaje IA y la predicción "
-        "del anticipador). Más adelante se compara automáticamente contra lo que "
-        "realmente pasó. Ningún número aquí se inventa: con pocas observaciones, "
-        "se indica explícitamente 'datos insuficientes'.")
+        f"Track record limpio desde la Etapa 4.6 (modelo v{MODELO_VERSION}): cada "
+        "predicción queda sellada con su timestamp UTC de emisión y solo se evalúa "
+        "si fue emitida ANTES de la apertura de su sesión objetivo. Lo emitido tarde "
+        "queda como 'no verificable' (auditable, fuera de métricas), y lo anterior a "
+        "la 4.6 quedó como legacy. Las métricas nunca mezclan versiones del modelo. "
+        "Con pocas observaciones se dice 'datos insuficientes' — nada se inventa.")
 
     metricas_ap = senales.metricas_apertura(dias=30)
     tarjetas_hist = []
     if metricas_ap["suficiente"]:
+        g, r = metricas_ap["gap"], metricas_ap["retorno_sesion"]
         tarjetas_hist.append(_tarjeta(
-            "Aciertos de dirección (30d)", f"{metricas_ap['pct_aciertos']:.1f}%",
-            "positivo" if metricas_ap["pct_aciertos"] >= 50 else "negativo",
-            f"{metricas_ap['n']} predicciones evaluadas"))
+            "Aciertos GAP de apertura (30d)", f"{g['pct_aciertos']:.1f}%",
+            "positivo" if g["pct_aciertos"] >= 50 else "negativo",
+            f"MAE {g['mae_pp']:.2f} pp · {metricas_ap['n']} predicciones"))
         tarjetas_hist.append(_tarjeta(
-            "Error promedio", f"{metricas_ap['error_promedio_pp']:.2f} pp", "",
-            "diferencia absoluta vs. lo real"))
+            "Aciertos RETORNO de sesión (30d)", f"{r['pct_aciertos']:.1f}%",
+            "positivo" if r["pct_aciertos"] >= 50 else "negativo",
+            f"MAE {r['mae_pp']:.2f} pp · {metricas_ap['n']} predicciones"))
     else:
         tarjetas_hist.append(_tarjeta(
-            "Aciertos de dirección (30d)", "Datos insuficientes", "",
-            f"{metricas_ap['n']} predicción(es) evaluada(s) — se necesitan "
-            f"al menos {senales.MINIMO_OBSERVACIONES}"))
-        tarjetas_hist.append(_tarjeta("Error promedio", "—", "", "datos insuficientes"))
+            "Aciertos GAP de apertura (30d)", "Datos insuficientes", "",
+            f"{metricas_ap['n']} evaluada(s) — mínimo {senales.MINIMO_OBSERVACIONES}"))
+        tarjetas_hist.append(_tarjeta(
+            "Aciertos RETORNO de sesión (30d)", "—", "", "datos insuficientes"))
+    calib_h = senales.calibracion_intervalos()
+    if calib_h["suficiente"]:
+        tarjetas_hist.append(_tarjeta(
+            "Cobertura del intervalo 80%", f"{calib_h['cobertura_pct']:.0f}%",
+            "", f"objetivo: ~80% · n={calib_h['n']}"))
+    else:
+        tarjetas_hist.append(_tarjeta(
+            "Cobertura del intervalo 80%", "Pendiente", "",
+            f"{calib_h['n']} de {senales.MINIMO_OBSERVACIONES} verificaciones mínimas"))
     st.markdown(f'<div class="metric-grid">{"".join(tarjetas_hist)}</div>', unsafe_allow_html=True)
     st.caption(
-        "Las predicciones se verifican con un pequeño rezago: recién puede evaluarse "
-        "una vez que pasó la sesión que el anticipador intentaba anticipar.")
+        "El GAP (apertura vs cierre anterior) mide si la señal EXISTE; el RETORNO de "
+        "sesión (cierre vs cierre anterior) ayuda a saber si es CAPTURABLE operando "
+        "en la apertura. Un anticipador puede acertar el gap y aún así no ser "
+        "operable si el gap ya se comió todo el movimiento.")
 
     st.subheader("Evolución del % de aciertos en el tiempo")
     evolucion = senales.evolucion_aciertos_apertura()
     if len(evolucion) < 2:
         st.info("Todavía no hay suficientes días verificados para graficar una tendencia.")
     else:
-        fig_evol = px.line(evolucion, x="Fecha", y="% Aciertos", markers=True)
+        df_evol = evolucion.melt(id_vars=["Fecha", "N"], var_name="Métrica",
+                                 value_name="% Aciertos")
+        fig_evol = px.line(df_evol, x="Fecha", y="% Aciertos", color="Métrica", markers=True)
         fig_evol.add_hline(y=50, line_dash="dot", line_color=TEXTO_SECUNDARIO,
                            annotation_text="azar (50%)", annotation_position="bottom right")
-        template_grafico(fig_evol, altura=350, yaxis_range=[0, 100], xaxis_title=None)
+        template_grafico(fig_evol, altura=350, yaxis_range=[0, 100], xaxis_title=None,
+                         legend_title=None)
 
     st.subheader("Últimas predicciones vs. realidad")
     ultimas = senales.ultimas_predicciones_apertura(limite=50)
     if ultimas.empty:
-        st.info("Todavía no hay predicciones verificadas.")
+        st.info("Todavía no hay predicciones verificadas con el modelo actual "
+                f"(v{MODELO_VERSION}). El track record limpio empieza a acumularse "
+                "desde hoy: cada sesión asiática/europea que cierre irá sumando filas.")
     else:
         ultimas_mostrar = ultimas.copy()
         ultimas_mostrar["Ticker"] = ultimas_mostrar["Ticker"].map(nombre)
-        ultimas_mostrar["Acierto"] = ultimas_mostrar["Acierto"].map({1: "Sí", 0: "No"})
+        for col in ["Acierto gap", "Acierto sesión"]:
+            ultimas_mostrar[col] = ultimas_mostrar[col].map({1: "Sí", 0: "No"})
         st.dataframe(ultimas_mostrar, use_container_width=True, hide_index=True)
+
+    st.subheader("Snapshots y auditoría de timing")
+    col_snap, col_estados = st.columns([3, 2])
+    with col_snap:
+        st.caption("Origen y hora de emisión de cada snapshot (programado = launchd, "
+                   "manual = snapshot.py a mano, dashboard = respaldo al abrir la app).")
+        st.dataframe(senales.historial_snapshots(30), use_container_width=True,
+                     hide_index=True, height=240)
+    with col_estados:
+        st.caption("Estados de las predicciones: lo no verificable y lo legacy se "
+                   "conserva para auditoría pero jamás entra a las métricas.")
+        st.dataframe(senales.conteo_por_estado(), use_container_width=True,
+                     hide_index=True, height=240)
 
     st.divider()
     st.subheader("Puntaje IA: ¿anticipa rendimiento a 5 días?")
@@ -1540,6 +1429,21 @@ if seccion == "Historial":
                                    "retorno": "Retorno real a 5 días %"})
         template_grafico(fig_pi, altura=380)
         st.caption(f"Basado en {analisis_pi['n']} observaciones de los últimos 90 días.")
+
+    st.divider()
+    with st.expander("Salud de datos"):
+        st.caption(
+            "Chequeos automáticos de integridad: saltos diarios anómalos (>40% sin "
+            "split conocido), cobertura del mapeo de monedas y auto_adjust activo. "
+            "También la tabla de horarios UTC vigentes por bolsa que usa el "
+            "verificador de timing.")
+        if salud_datos["ok"]:
+            st.success(f"Sin problemas detectados en {salud_datos['tickers_revisados']} "
+                       f"tickers (auto_adjust=True en todas las descargas).")
+        else:
+            for p in salud_datos["problemas"]:
+                st.warning(p)
+        st.dataframe(calendarios.tabla_horarios(), use_container_width=True, hide_index=True)
 
 # ============================================================
 # SECCIÓN: Detalle (ficha completa por acción)

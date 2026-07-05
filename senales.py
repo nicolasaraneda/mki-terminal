@@ -1,9 +1,20 @@
 # ============================================================
-# Etapa 4 - Historial de señales y verificador de aciertos
-#   1) Cada día (máx. 1 vez), guarda una foto: Puntaje v0, sentimiento IA,
-#      Puntaje IA y la predicción del anticipador por acción.
-#   2) Al día siguiente (o 5 sesiones después, según corresponda), compara
-#      cada predicción contra lo que realmente pasó, usando yfinance.
+# Historial de señales y verificador de aciertos (Etapa 4.6)
+#
+# REGLA MAESTRA: una predicción solo es verificable si fue emitida ANTES
+# de la apertura de la sesión que intenta anticipar, demostrable con
+# timestamps UTC. Toda fila nueva lleva timestamp_utc (emisión), exchange,
+# sesion_objetivo (la sesión local que intenta anticipar) y available_at
+# (cuándo era conocible la información usada). El verificador descarta
+# como "no_verificable_timing" lo emitido tarde, y las filas anteriores a
+# la Etapa 4.6 quedan como "legacy_pre_4.6": se conservan para auditoría
+# pero NUNCA entran a las métricas. El track record limpio empieza con la
+# 4.6.
+#
+# Doble objetivo por predicción:
+#   gap_apertura   = open(sesión objetivo) / close(sesión anterior) - 1
+#   retorno_sesion = close(sesión objetivo) / close(sesión anterior) - 1
+# El gap mide si la señal EXISTE; el retorno de sesión, si es CAPTURABLE.
 # ============================================================
 
 import os
@@ -13,14 +24,32 @@ from datetime import date, datetime, timezone
 import pandas as pd
 import yfinance as yf
 
+import calendarios
+from version import FEATURE_VERSION, MODELO_VERSION, UNIVERSO_VERSION
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "senales.db")
 
-DIAS_FORWARD_PUNTAJE = 5  # sesiones hábiles para evaluar el Puntaje IA
-MINIMO_OBSERVACIONES = 5  # bajo este umbral, mostramos "datos insuficientes"
+DIAS_FORWARD_PUNTAJE = 5   # sesiones hábiles para evaluar el Puntaje IA
+MINIMO_OBSERVACIONES = 5   # bajo este umbral: "datos insuficientes"
+
+# Estados de una predicción de apertura
+ESTADO_PENDIENTE = "pendiente"
+ESTADO_VERIFICADA = "verificada"
+ESTADO_NO_VERIFICABLE = "no_verificable_timing"
+ESTADO_LEGACY = "legacy_pre_4.6"
 
 
 def get_connection() -> sqlite3.Connection:
     return sqlite3.connect(DB_PATH)
+
+
+def _asegurar_columnas(conn, tabla: str, columnas: dict) -> None:
+    """Agrega columnas que falten (migración suave; ALTER TABLE de SQLite no
+    tiene IF NOT EXISTS)."""
+    existentes = {f[1] for f in conn.execute(f"PRAGMA table_info({tabla})").fetchall()}
+    for columna, tipo in columnas.items():
+        if columna not in existentes:
+            conn.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo}")
 
 
 def init_db() -> None:
@@ -79,13 +108,44 @@ def init_db() -> None:
             UNIQUE(fecha, par)
         )
     """)
-    # Migración suave (Etapa 4.5): columnas nuevas del snapshot. ALTER TABLE de
-    # SQLite no tiene IF NOT EXISTS, así que se consulta el esquema primero.
-    columnas_snapshot = {f[1] for f in conn.execute("PRAGMA table_info(snapshots)").fetchall()}
-    if "regimen" not in columnas_snapshot:
-        conn.execute("ALTER TABLE snapshots ADD COLUMN regimen TEXT")
-    if "roca_chip" not in columnas_snapshot:
-        conn.execute("ALTER TABLE snapshots ADD COLUMN roca_chip REAL")
+
+    # --- Migraciones Etapa 4.5 → 4.6 ---
+    _asegurar_columnas(conn, "snapshots", {
+        "regimen": "TEXT", "roca_chip": "REAL",
+        "timestamp_utc": "TEXT", "origen": "TEXT",
+        "modelo_version": "TEXT", "feature_version": "TEXT",
+        "universo_version": "TEXT", "ventana_betas": "INTEGER",
+    })
+    _asegurar_columnas(conn, "senales_ticker", {
+        "timestamp_utc": "TEXT",       # momento exacto de emisión (UTC)
+        "exchange": "TEXT",            # bolsa del activo (XKRX, XTKS, ...)
+        "sesion_objetivo": "TEXT",     # sesión local que la predicción anticipa
+        "available_at": "TEXT",        # cuándo era conocible la info usada
+        "estado": "TEXT",              # pendiente/verificada/no_verificable_timing/legacy
+        "intervalo80_pp": "REAL",      # ± del intervalo central del 80%
+        "n_muestra": "INTEGER",        # sesiones usadas en la regresión
+        "modelo_version": "TEXT",
+    })
+    _asegurar_columnas(conn, "verificacion_apertura", {
+        "gap_pct": "REAL",             # open(obj)/close(ant) - 1
+        "acierto_gap": "INTEGER",
+        "error_gap_pp": "REAL",
+        "modelo_version": "TEXT",
+        "legacy": "INTEGER",
+    })
+    _asegurar_columnas(conn, "divergencias", {
+        "spread_simple_pct": "REAL", "z_simple": "REAL",
+    })
+    # Filas históricas sin timestamp confiable → legacy: se conservan para
+    # auditoría, pero quedan fuera de todas las métricas.
+    conn.execute(f"""
+        UPDATE senales_ticker SET estado = '{ESTADO_LEGACY}'
+        WHERE timestamp_utc IS NULL AND (estado IS NULL OR estado = '')
+    """)
+    conn.execute("""
+        UPDATE verificacion_apertura SET legacy = 1
+        WHERE modelo_version IS NULL AND (legacy IS NULL)
+    """)
     conn.commit()
     conn.close()
 
@@ -96,42 +156,57 @@ def init_db() -> None:
 def ya_existe_snapshot_hoy() -> bool:
     init_db()
     conn = get_connection()
-    hoy = date.today().isoformat()
-    existe = conn.execute("SELECT 1 FROM snapshots WHERE fecha = ?", (hoy,)).fetchone()
+    existe = conn.execute("SELECT 1 FROM snapshots WHERE fecha = ?",
+                          (date.today().isoformat(),)).fetchone()
     conn.close()
     return existe is not None
 
 
-def guardar_snapshot_diario(metricas_df: pd.DataFrame, sentimientos: dict,
-                            df_apertura: pd.DataFrame, regimen: str = None,
-                            roca_chip: float = None, divergencias: list = None) -> bool:
-    """Guarda una foto del día (máximo 1 vez/día) con Puntaje v0, sentimiento IA,
-    Puntaje IA y la predicción del anticipador, por acción — más el contexto del día:
-    régimen de mercado, índice Roca→Chip y divergencias activas entre competidores.
-    `metricas_df` debe cubrir TODO el universo de acciones (no solo la selección del
-    sidebar). Devuelve True si guardó algo."""
-    if ya_existe_snapshot_hoy() or metricas_df.empty:
-        return False
+def info_snapshot_hoy() -> dict | None:
+    """Metadatos del snapshot de hoy (para la tarjeta de estado del sistema)."""
     init_db()
     conn = get_connection()
-    hoy = date.today().isoformat()
-    ahora = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        "INSERT INTO snapshots (fecha, creado_en, regimen, roca_chip) VALUES (?, ?, ?, ?)",
-        (hoy, ahora, regimen, roca_chip),
-    )
+    fila = conn.execute("""
+        SELECT fecha, creado_en, timestamp_utc, origen, modelo_version
+        FROM snapshots WHERE fecha = ?""", (date.today().isoformat(),)).fetchone()
+    conn.close()
+    if not fila:
+        return None
+    return {"fecha": fila[0], "creado_en": fila[1], "timestamp_utc": fila[2],
+            "origen": fila[3] or "dashboard", "modelo_version": fila[4]}
+
+
+def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
+                     metricas_df: pd.DataFrame, sentimientos: dict,
+                     predicciones: list, regimen: str = None,
+                     roca_chip: float = None, divergencias: list = None,
+                     ventana_betas: int = None, available_at: str = None) -> bool:
+    """Guarda el snapshot del día (idempotente: si ya existe, no duplica).
+
+    `predicciones`: lista de dicts con Ticker, Apertura estimada %, R2,
+    Intervalo80 pp, N muestra, exchange, sesion_objetivo — cada una queda
+    sellada con timestamp_utc y available_at para el verificador."""
+    init_db()
+    if ya_existe_snapshot_hoy() or metricas_df.empty:
+        return False
+    conn = get_connection()
+    conn.execute("""
+        INSERT INTO snapshots (fecha, creado_en, regimen, roca_chip, timestamp_utc,
+                               origen, modelo_version, feature_version,
+                               universo_version, ventana_betas)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (fecha, timestamp_utc, regimen, roca_chip, timestamp_utc, origen,
+         MODELO_VERSION, FEATURE_VERSION, UNIVERSO_VERSION, ventana_betas))
+
     for div in divergencias or []:
-        conn.execute(
-            """INSERT OR IGNORE INTO divergencias (fecha, par, spread_20d_pct, z_score, explicacion)
-               VALUES (?, ?, ?, ?, ?)""",
-            (hoy, div["par"], div["spread"], div["z"], div.get("explicacion", "")),
-        )
+        conn.execute("""
+            INSERT OR IGNORE INTO divergencias
+            (fecha, par, spread_20d_pct, z_score, explicacion, spread_simple_pct, z_simple)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (fecha, div["par"], div["spread"], div["z"], div.get("explicacion", ""),
+             div.get("spread_simple"), div.get("z_simple")))
 
-    apertura_por_ticker = {}
-    if df_apertura is not None and not df_apertura.empty:
-        for _, fila in df_apertura.iterrows():
-            apertura_por_ticker[fila["Ticker"]] = (fila["Apertura estimada %"], fila["R2"])
-
+    pred_por_ticker = {p["Ticker"]: p for p in (predicciones or [])}
     for _, fila in metricas_df.iterrows():
         ticker = fila["Ticker"]
         puntaje_v0 = float(fila["Puntaje v0"])
@@ -139,101 +214,157 @@ def guardar_snapshot_diario(metricas_df: pd.DataFrame, sentimientos: dict,
         puntaje_ia = None
         if sentimiento is not None:
             puntaje_ia = round(puntaje_v0 * 0.7 + ((sentimiento + 1) / 2) * 0.3, 4)
-        apertura_pct, r2 = apertura_por_ticker.get(ticker, (None, None))
-        conn.execute(
-            """INSERT OR IGNORE INTO senales_ticker
-               (fecha, ticker, puntaje_v0, sentimiento_ia, puntaje_ia,
-                apertura_estimada_pct, confianza_r2)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (hoy, ticker, puntaje_v0, sentimiento, puntaje_ia, apertura_pct, r2),
-        )
+        pred = pred_por_ticker.get(ticker)
+        conn.execute("""
+            INSERT OR IGNORE INTO senales_ticker
+            (fecha, ticker, puntaje_v0, sentimiento_ia, puntaje_ia,
+             apertura_estimada_pct, confianza_r2, timestamp_utc, exchange,
+             sesion_objetivo, available_at, estado, intervalo80_pp, n_muestra,
+             modelo_version)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (fecha, ticker, puntaje_v0, sentimiento, puntaje_ia,
+             pred["Apertura estimada %"] if pred else None,
+             pred["R2"] if pred else None,
+             timestamp_utc,
+             pred.get("exchange") if pred else None,
+             pred.get("sesion_objetivo") if pred else None,
+             available_at or timestamp_utc,
+             ESTADO_PENDIENTE if pred else None,
+             pred.get("Intervalo80 pp") if pred else None,
+             pred.get("N muestra") if pred else None,
+             MODELO_VERSION))
     conn.commit()
     conn.close()
     return True
 
 
 # ------------------------------------------------------------
-# Verificador: compara predicciones guardadas contra la realidad
+# Verificador — regla maestra de timing + doble objetivo
 # ------------------------------------------------------------
-def _historial_precios(ticker: str, desde: str) -> pd.DataFrame:
-    """Descarga el historial de precios de un ticker desde una fecha (para verificar)."""
+def _ohlc_local(ticker: str, desde: str) -> pd.DataFrame:
+    """Open/Close locales de un ticker desde una fecha (para gap y retorno)."""
     datos = yf.download(ticker, start=desde, auto_adjust=True, progress=False)
     if datos.empty:
         return pd.DataFrame()
-    cierre = datos["Close"]
-    if isinstance(cierre, pd.DataFrame):
-        cierre = cierre.iloc[:, 0]
-    return cierre.dropna().to_frame(name="Close")
+    if isinstance(datos.columns, pd.MultiIndex):
+        datos.columns = datos.columns.get_level_values(0)
+    return datos[["Open", "Close"]].dropna(how="all")
 
 
-def verificar_apertura_pendientes() -> int:
-    """Compara cada predicción de apertura contra el retorno real del día siguiente
-    (la primera sesión disponible después de la fecha de la señal). Devuelve cuántas
-    predicciones nuevas se verificaron."""
+def verificar_apertura_pendientes() -> dict:
+    """Verifica las predicciones de apertura pendientes aplicando la REGLA
+    MAESTRA: solo se evalúan las emitidas (timestamp_utc) ANTES de la apertura
+    UTC de su sesión objetivo. Las emitidas tarde quedan como
+    'no_verificable_timing' (auditables, fuera de métricas). Para las válidas
+    cuya sesión ya cerró, calcula el DOBLE objetivo: gap de apertura y retorno
+    de sesión (ambos vs el cierre de la sesión local anterior)."""
     init_db()
     conn = get_connection()
-    pendientes = conn.execute("""
-        SELECT s.fecha, s.ticker, s.apertura_estimada_pct
-        FROM senales_ticker s
-        LEFT JOIN verificacion_apertura v ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
-        WHERE s.apertura_estimada_pct IS NOT NULL AND v.id IS NULL
-        ORDER BY s.fecha
+    pendientes = conn.execute(f"""
+        SELECT id, fecha, ticker, apertura_estimada_pct, timestamp_utc,
+               exchange, sesion_objetivo, modelo_version
+        FROM senales_ticker
+        WHERE estado = '{ESTADO_PENDIENTE}' AND apertura_estimada_pct IS NOT NULL
+          AND timestamp_utc IS NOT NULL AND sesion_objetivo IS NOT NULL
+        ORDER BY fecha
     """).fetchall()
 
-    verificados = 0
-    for fecha_senal, ticker, apertura_pct in pendientes:
-        precios = _historial_precios(ticker, fecha_senal)
-        if precios.empty:
-            continue  # todavía no hay datos nuevos para este ticker
-        precios = precios[precios.index.strftime("%Y-%m-%d") >= fecha_senal]
-        if len(precios) < 2:
-            continue  # aún no ha pasado una sesión más desde la señal
-        retorno_real = (precios["Close"].iloc[1] / precios["Close"].iloc[0] - 1) * 100
-        acierto = 1 if (apertura_pct >= 0) == (retorno_real >= 0) else 0
-        error_pp = abs(apertura_pct - retorno_real)
-        conn.execute(
-            """INSERT OR IGNORE INTO verificacion_apertura
-               (fecha_senal, ticker, apertura_estimada_pct, retorno_real_pct,
-                acierto_direccion, error_pp, verificado_en)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (fecha_senal, ticker, apertura_pct, round(retorno_real, 4), acierto,
-             round(error_pp, 4), datetime.now(timezone.utc).isoformat()),
-        )
-        verificados += 1
+    verificadas, descartadas = 0, 0
+    for (id_, fecha_senal, ticker, est_pct, ts_utc, exchange,
+         sesion_obj, modelo_ver) in pendientes:
+        try:
+            apertura = calendarios.apertura_utc(exchange, sesion_obj)
+        except Exception:
+            continue
+        emitida = datetime.fromisoformat(ts_utc)
+        if emitida.tzinfo is None:
+            emitida = emitida.replace(tzinfo=timezone.utc)
+
+        # REGLA MAESTRA: emitida tarde → no verificable, fuera de métricas
+        if emitida >= apertura:
+            conn.execute("UPDATE senales_ticker SET estado = ? WHERE id = ?",
+                         (ESTADO_NO_VERIFICABLE, id_))
+            descartadas += 1
+            continue
+
+        if not calendarios.sesion_ya_cerro(exchange, sesion_obj):
+            continue  # la sesión objetivo aún no cierra: se reintenta después
+
+        sesion_ant = calendarios.sesion_anterior(exchange, sesion_obj)
+        datos = _ohlc_local(ticker, (pd.Timestamp(sesion_ant) - pd.Timedelta(days=7)).date().isoformat())
+        if datos.empty:
+            continue
+        fechas_str = datos.index.strftime("%Y-%m-%d")
+        if sesion_obj not in set(fechas_str):
+            continue  # Yahoo aún no publica la sesión objetivo: reintentar
+        idx_obj = list(fechas_str).index(sesion_obj)
+        previos = datos.iloc[:idx_obj]
+        if previos.empty:
+            continue
+        close_ant = float(previos["Close"].iloc[-1])
+        open_obj = float(datos["Open"].iloc[idx_obj])
+        close_obj = float(datos["Close"].iloc[idx_obj])
+        if close_ant <= 0:
+            continue
+
+        gap = (open_obj / close_ant - 1) * 100
+        retorno_sesion = (close_obj / close_ant - 1) * 100
+        conn.execute("""
+            INSERT OR IGNORE INTO verificacion_apertura
+            (fecha_senal, ticker, apertura_estimada_pct, retorno_real_pct,
+             acierto_direccion, error_pp, gap_pct, acierto_gap, error_gap_pp,
+             verificado_en, modelo_version, legacy)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""",
+            (fecha_senal, ticker, est_pct,
+             round(retorno_sesion, 4),
+             1 if (est_pct >= 0) == (retorno_sesion >= 0) else 0,
+             round(abs(est_pct - retorno_sesion), 4),
+             round(gap, 4),
+             1 if (est_pct >= 0) == (gap >= 0) else 0,
+             round(abs(est_pct - gap), 4),
+             datetime.now(timezone.utc).isoformat(), modelo_ver))
+        conn.execute("UPDATE senales_ticker SET estado = ? WHERE id = ?",
+                     (ESTADO_VERIFICADA, id_))
+        verificadas += 1
     conn.commit()
     conn.close()
-    return verificados
+    return {"verificadas": verificadas, "no_verificables": descartadas}
 
 
 def verificar_puntaje_pendientes() -> int:
-    """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_PUNTAJE días
-    hábiles siguientes a la señal. Devuelve cuántas predicciones nuevas se verificaron."""
+    """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_PUNTAJE
+    días hábiles siguientes. Solo evalúa filas de la Etapa 4.6 en adelante
+    (con timestamp); las legacy quedan fuera."""
     init_db()
     conn = get_connection()
-    pendientes = conn.execute("""
+    pendientes = conn.execute(f"""
         SELECT s.fecha, s.ticker, s.puntaje_ia
         FROM senales_ticker s
-        LEFT JOIN verificacion_puntaje v ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
+        LEFT JOIN verificacion_puntaje v
+          ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
         WHERE s.puntaje_ia IS NOT NULL AND v.id IS NULL
+          AND s.timestamp_utc IS NOT NULL
+          AND (s.estado IS NULL OR s.estado != '{ESTADO_LEGACY}')
+          AND s.fecha <= date('now', '-7 days')  -- antes es imposible que existan 5 sesiones
         ORDER BY s.fecha
     """).fetchall()
 
     verificados = 0
     for fecha_senal, ticker, puntaje_ia in pendientes:
-        precios = _historial_precios(ticker, fecha_senal)
-        if precios.empty:
-            continue  # todavía no hay datos nuevos para este ticker
-        precios = precios[precios.index.strftime("%Y-%m-%d") >= fecha_senal]
-        if len(precios) < DIAS_FORWARD_PUNTAJE + 1:
-            continue  # aún no han pasado suficientes sesiones desde la señal
-        retorno_5d = (precios["Close"].iloc[DIAS_FORWARD_PUNTAJE] / precios["Close"].iloc[0] - 1) * 100
-        conn.execute(
-            """INSERT OR IGNORE INTO verificacion_puntaje
-               (fecha_senal, ticker, puntaje_ia, retorno_5d_pct, verificado_en)
-               VALUES (?, ?, ?, ?, ?)""",
-            (fecha_senal, ticker, puntaje_ia, round(retorno_5d, 4),
-             datetime.now(timezone.utc).isoformat()),
-        )
+        datos = _ohlc_local(ticker, fecha_senal)
+        if datos.empty:
+            continue
+        cierres = datos["Close"]
+        cierres = cierres[cierres.index.strftime("%Y-%m-%d") >= fecha_senal]
+        if len(cierres) < DIAS_FORWARD_PUNTAJE + 1:
+            continue
+        retorno_5d = (cierres.iloc[DIAS_FORWARD_PUNTAJE] / cierres.iloc[0] - 1) * 100
+        conn.execute("""
+            INSERT OR IGNORE INTO verificacion_puntaje
+            (fecha_senal, ticker, puntaje_ia, retorno_5d_pct, verificado_en)
+            VALUES (?, ?, ?, ?, ?)""",
+            (fecha_senal, ticker, puntaje_ia, round(float(retorno_5d), 4),
+             datetime.now(timezone.utc).isoformat()))
         verificados += 1
     conn.commit()
     conn.close()
@@ -241,90 +372,159 @@ def verificar_puntaje_pendientes() -> int:
 
 
 def verificar_pendientes() -> tuple:
-    """Corre ambos verificadores. Devuelve (n_apertura, n_puntaje) verificados."""
+    """Corre ambos verificadores. Devuelve (dict_apertura, n_puntaje)."""
     return verificar_apertura_pendientes(), verificar_puntaje_pendientes()
 
 
 # ------------------------------------------------------------
-# Consultas para el dashboard (honestas: nunca inventan precisión)
+# Consultas para el dashboard (honestas + filtradas por versión)
 # ------------------------------------------------------------
-def metricas_apertura(dias: int = 30) -> dict:
-    """% de aciertos de dirección, error promedio (pp) y N evaluadas, de los
-    últimos `dias`. Si hay pocas observaciones, señala 'datos insuficientes'."""
+def metricas_apertura(dias: int = 30, modelo_version: str = MODELO_VERSION) -> dict:
+    """Métricas del DOBLE objetivo, solo con predicciones verificadas de la
+    misma modelo_version (nunca se mezclan lógicas distintas) y nunca legacy."""
     init_db()
     conn = get_connection()
     filas = conn.execute("""
-        SELECT acierto_direccion, error_pp FROM verificacion_apertura
-        WHERE fecha_senal >= date('now', ?)
-    """, (f"-{dias} days",)).fetchall()
+        SELECT acierto_gap, error_gap_pp, acierto_direccion, error_pp
+        FROM verificacion_apertura
+        WHERE legacy = 0 AND modelo_version = ? AND gap_pct IS NOT NULL
+          AND fecha_senal >= date('now', ?)
+    """, (modelo_version, f"-{dias} days")).fetchall()
     conn.close()
     n = len(filas)
     if n < MINIMO_OBSERVACIONES:
         return {"suficiente": False, "n": n}
-    aciertos = sum(f[0] for f in filas)
-    error_prom = sum(f[1] for f in filas) / n
     return {
         "suficiente": True, "n": n,
-        "pct_aciertos": round(100 * aciertos / n, 1),
-        "error_promedio_pp": round(error_prom, 2),
+        "gap": {
+            "pct_aciertos": round(100 * sum(f[0] for f in filas) / n, 1),
+            "mae_pp": round(sum(f[1] for f in filas) / n, 2),
+        },
+        "retorno_sesion": {
+            "pct_aciertos": round(100 * sum(f[2] for f in filas) / n, 1),
+            "mae_pp": round(sum(f[3] for f in filas) / n, 2),
+        },
     }
 
 
-def evolucion_aciertos_apertura() -> pd.DataFrame:
-    """Serie diaria del % de aciertos (promedio del día) para graficar en el tiempo."""
+def calibracion_intervalos(modelo_version: str = MODELO_VERSION) -> dict:
+    """Cobertura empírica del intervalo del 80%: qué fracción de los gaps
+    reales cayó dentro de estimación ± intervalo80. Con pocos datos:
+    'calibración: pendiente'."""
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT v.gap_pct, s.apertura_estimada_pct, s.intervalo80_pp
+        FROM verificacion_apertura v
+        JOIN senales_ticker s
+          ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+        WHERE v.legacy = 0 AND v.modelo_version = ? AND v.gap_pct IS NOT NULL
+          AND s.intervalo80_pp IS NOT NULL
+    """, (modelo_version,)).fetchall()
+    conn.close()
+    n = len(filas)
+    if n < MINIMO_OBSERVACIONES:
+        return {"suficiente": False, "n": n}
+    dentro = sum(1 for gap, est, int80 in filas if abs(gap - est) <= int80)
+    return {"suficiente": True, "n": n,
+            "cobertura_pct": round(100 * dentro / n, 1)}
+
+
+def evolucion_aciertos_apertura(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
     init_db()
     conn = get_connection()
     df = pd.read_sql_query("""
-        SELECT fecha_senal AS Fecha, AVG(acierto_direccion) * 100 AS "% Aciertos", COUNT(*) AS N
-        FROM verificacion_apertura GROUP BY fecha_senal ORDER BY fecha_senal
+        SELECT fecha_senal AS Fecha,
+               AVG(acierto_gap) * 100 AS "% Aciertos gap",
+               AVG(acierto_direccion) * 100 AS "% Aciertos sesión",
+               COUNT(*) AS N
+        FROM verificacion_apertura
+        WHERE legacy = 0 AND modelo_version = ? AND gap_pct IS NOT NULL
+        GROUP BY fecha_senal ORDER BY fecha_senal
+    """, conn, params=(modelo_version,))
+    conn.close()
+    return df
+
+
+def ultimas_predicciones_apertura(limite: int = 50,
+                                  modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+    init_db()
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT v.fecha_senal AS Fecha, v.ticker AS Ticker,
+               v.apertura_estimada_pct AS "Estimado %",
+               v.gap_pct AS "Gap real %",
+               v.retorno_real_pct AS "Sesión real %",
+               v.acierto_gap AS "Acierto gap",
+               v.acierto_direccion AS "Acierto sesión",
+               s.sesion_objetivo AS "Sesión objetivo",
+               s.timestamp_utc AS "Emitida (UTC)"
+        FROM verificacion_apertura v
+        LEFT JOIN senales_ticker s
+          ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+        WHERE v.legacy = 0 AND v.modelo_version = ?
+        ORDER BY v.fecha_senal DESC LIMIT ?
+    """, conn, params=(modelo_version, limite))
+    conn.close()
+    return df
+
+
+def conteo_por_estado() -> pd.DataFrame:
+    """Auditoría: cuántas predicciones hay en cada estado (incluye legacy y
+    no_verificable_timing, que están fuera de métricas pero no se borran)."""
+    init_db()
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT COALESCE(estado, 'sin_prediccion') AS Estado, COUNT(*) AS N
+        FROM senales_ticker GROUP BY estado ORDER BY N DESC
     """, conn)
     conn.close()
     return df
 
 
-def ultimas_predicciones_apertura(limite: int = 50) -> pd.DataFrame:
+def historial_snapshots(limite: int = 30) -> pd.DataFrame:
+    """Origen y hora de emisión de los últimos snapshots (programado/manual)."""
     init_db()
     conn = get_connection()
     df = pd.read_sql_query("""
-        SELECT fecha_senal AS Fecha, ticker AS Ticker,
-               apertura_estimada_pct AS "Estimado %", retorno_real_pct AS "Real %",
-               acierto_direccion AS Acierto, error_pp AS "Error (pp)"
-        FROM verificacion_apertura ORDER BY fecha_senal DESC LIMIT ?
+        SELECT fecha AS Fecha, COALESCE(origen, 'dashboard (pre-4.6)') AS Origen,
+               COALESCE(timestamp_utc, creado_en) AS "Emitido (UTC)",
+               COALESCE(modelo_version, 'pre-4.6') AS "Versión",
+               ventana_betas AS "Ventana betas"
+        FROM snapshots ORDER BY fecha DESC LIMIT ?
     """, conn, params=(limite,))
     conn.close()
     return df
 
 
-def analisis_puntaje_ia(dias: int = 90) -> dict:
-    """¿Las acciones con mejor Puntaje IA rindieron mejor en los siguientes
-    DIAS_FORWARD_PUNTAJE días hábiles? Compara el promedio de retorno del tercio
-    superior de Puntaje IA vs. el tercio inferior. Honesto: exige un mínimo de datos."""
+def analisis_puntaje_ia(dias: int = 90, modelo_version: str = MODELO_VERSION) -> dict:
+    """¿El Puntaje IA anticipa el retorno a 5 días? Solo filas post-4.6."""
     init_db()
     conn = get_connection()
-    df = pd.read_sql_query("""
-        SELECT puntaje_ia AS puntaje, retorno_5d_pct AS retorno
-        FROM verificacion_puntaje WHERE fecha_senal >= date('now', ?)
-    """, conn, params=(f"-{dias} days",))
+    df = pd.read_sql_query(f"""
+        SELECT v.puntaje_ia AS puntaje, v.retorno_5d_pct AS retorno
+        FROM verificacion_puntaje v
+        JOIN senales_ticker s
+          ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+        WHERE v.fecha_senal >= date('now', ?)
+          AND s.timestamp_utc IS NOT NULL AND s.modelo_version = ?
+    """, conn, params=(f"-{dias} days", modelo_version))
     conn.close()
     n = len(df)
     if n < MINIMO_OBSERVACIONES:
         return {"suficiente": False, "n": n, "datos": df}
     df = df.sort_values("puntaje")
     corte = max(1, n // 3)
-    tercio_bajo = df.iloc[:corte]["retorno"].mean()
-    tercio_alto = df.iloc[-corte:]["retorno"].mean()
     correlacion = df["puntaje"].corr(df["retorno"]) if n >= 3 else None
     return {
         "suficiente": True, "n": n, "datos": df,
-        "retorno_tercio_alto": round(tercio_alto, 2),
-        "retorno_tercio_bajo": round(tercio_bajo, 2),
+        "retorno_tercio_alto": round(df.iloc[-corte:]["retorno"].mean(), 2),
+        "retorno_tercio_bajo": round(df.iloc[:corte]["retorno"].mean(), 2),
         "correlacion": round(correlacion, 2) if correlacion is not None else None,
     }
 
 
 def regimen_snapshot_anterior() -> str | None:
-    """Régimen guardado en el snapshot más reciente ANTERIOR a hoy (para detectar
-    cambios de régimen entre un día y el siguiente)."""
     init_db()
     conn = get_connection()
     fila = conn.execute("""
@@ -337,11 +537,11 @@ def regimen_snapshot_anterior() -> str | None:
 
 
 def divergencias_del_dia() -> pd.DataFrame:
-    """Divergencias activas guardadas en el snapshot de hoy."""
     init_db()
     conn = get_connection()
     df = pd.read_sql_query("""
-        SELECT par AS Par, spread_20d_pct AS "Spread 20d %", z_score AS "Z-score",
+        SELECT par AS Par, spread_20d_pct AS "Spread resid. %", z_score AS "Z-score",
+               spread_simple_pct AS "Spread simple %", z_simple AS "Z simple",
                explicacion AS "Explicación"
         FROM divergencias WHERE fecha = date('now') ORDER BY ABS(z_score) DESC
     """, conn)
@@ -350,7 +550,6 @@ def divergencias_del_dia() -> pd.DataFrame:
 
 
 def historial_roca_chip(dias: int = 90) -> pd.DataFrame:
-    """Serie histórica del índice Roca→Chip guardado en los snapshots."""
     init_db()
     conn = get_connection()
     df = pd.read_sql_query("""
