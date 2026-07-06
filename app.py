@@ -1061,11 +1061,20 @@ if seccion == "Hoy":
                 lineas_ap = []
                 if not df_ant.empty:
                     lineas_ap = [
-                        f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% ({f['Confianza']})"
+                        f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% "
+                        f"(señal {alertas.etiqueta_senal(float(f['R2']))})"
                         for _, f in df_ant.iterrows()]
+                # 4.7.2: el reporte lleva el Roca→Chip SELLADO del último
+                # snapshot (como el terminal React), no el valor en vivo del
+                # hero — el mensaje de Telegram queda como registro y debe
+                # ser fiel al sello.
+                roca_sellada_rep = senales.historial_roca_chip(dias=365)
                 ok_rep, detalle_rep = alertas.enviar_reporte_matinal(
                     regimen=regimen["etiqueta"] if regimen else None,
-                    roca_chip=indice_roca_chip.get("valor") if indice_roca_chip else None,
+                    roca_chip=(float(roca_sellada_rep.iloc[-1]["Roca→Chip"])
+                               if not roca_sellada_rep.empty else None),
+                    roca_fecha=(str(roca_sellada_rep.iloc[-1]["Fecha"])
+                                if not roca_sellada_rep.empty else None),
                     sox_texto=sox_texto_alerta,
                     sentimiento_sector=sentimiento_sector,
                     lineas_apertura=lineas_ap,

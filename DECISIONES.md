@@ -509,3 +509,32 @@ neutro (--color-text-3). El color queda reservado para la cifra principal
 del Roca→Chip y solo al cruzar umbrales documentados: **frío < 30 (cian) ·
 caliente > 70 (ámbar)**. Ni verde ni rojo: esos siguen reservados para
 dirección (subió/bajó), y un percentil alto no es "bueno" ni "malo".
+
+---
+
+# Etapa 4.7.2 — alertas.py con CLI visible; el reporte es fiel al sello
+
+**Contexto:** `python alertas.py` terminaba en silencio total — era una
+biblioteca sin bloque de script, y además nadie cargaba `.env` en ese modo
+(eso siempre lo hizo app.py), así que ni el token llegaba al entorno.
+
+1. **CLI solo-visibilidad:** `python alertas.py` muestra el estado
+   (configuración enmascarada, alertas ya registradas hoy) y explica por
+   qué no envió nada; `python alertas.py reporte` fuerza el reporte matinal
+   con confirmación "Reporte enviado HH:MM" o "NO enviado: razón";
+   `--help` documenta todo. Como biblioteca (import desde app.py) nada de
+   esto se ejecuta — la lógica de qué se envía y cuándo no cambió.
+
+2. **El reporte de Telegram lleva el Roca→Chip SELLADO** del último
+   snapshot, con la etiqueta "(sellado {fecha})" — igual que el terminal
+   React (P0 de 4.7.1). Aplica al CLI y al botón de Streamlit: el mensaje
+   de Telegram queda como registro escrito y debe ser fiel al sello, no a
+   un recálculo del momento. El hero de Streamlit sigue mostrando el valor
+   en vivo (es el fallback en vivo, y en pantalla se recalcula solo).
+
+3. **Sin niveles subjetivos en Telegram:** las líneas de apertura pasan de
+   "(Alta/Media/Baja)" a "(señal fuerte/moderada/débil)" con los mismos
+   umbrales de R² de 4.7.1, vía `alertas.etiqueta_senal()` — una sola
+   definición para el lado Telegram (CLI + botón); la API mantiene la suya
+   propia (`_etiqueta_senal`), custodiada por test. La UI de Streamlit
+   (columna del anticipador) queda como está: es el fallback congelado.

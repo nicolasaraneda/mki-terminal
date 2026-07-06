@@ -4,6 +4,12 @@
 #   cambio de régimen, divergencia nueva, sentimiento extremo o alto buzz.
 #   Sin configurar (sin token/chat en .env) todo funciona en silencio y la
 #   UI muestra instrucciones. Registro anti-duplicados en SQLite.
+#
+#   Como script tiene salida visible (antes terminaba en silencio):
+#     python alertas.py            → estado: qué hay configurado y por qué
+#                                    no se envió nada
+#     python alertas.py reporte    → fuerza el reporte matinal AHORA
+#     python alertas.py --help     → ayuda
 # ============================================================
 
 import os
@@ -158,17 +164,28 @@ def alertar_si_corresponde(regimen_actual: str | None, regimen_anterior: str | N
     return enviadas
 
 
+def etiqueta_senal(r2: float) -> str:
+    """Etiqueta de señal para textos de Telegram, derivada SOLO de umbrales
+    de R² histórico (Etapa 4.7.1 — mismos cortes que la API, ver DECISIONES):
+    débil (R² < 0.10) · moderada (0.10–0.25) · fuerte (> 0.25)."""
+    return "fuerte" if r2 > 0.25 else ("moderada" if r2 > 0.10 else "débil")
+
+
 def enviar_reporte_matinal(regimen: str | None, roca_chip: float | None,
                            sox_texto: str, sentimiento_sector: float | None,
-                           lineas_apertura: list, divergencias: list) -> tuple:
+                           lineas_apertura: list, divergencias: list,
+                           roca_fecha: str | None = None) -> tuple:
     """Compone y envía el reporte matinal (botón manual en la portada Hoy).
     Devuelve (ok, detalle). Sin anti-duplicados: si el usuario aprieta el botón
-    dos veces, recibe el reporte dos veces — es una acción explícita."""
+    dos veces, recibe el reporte dos veces — es una acción explícita.
+    `roca_chip` es el valor SELLADO del último snapshot (Etapa 4.7.2 — nada
+    de valores en vivo en el reporte); `roca_fecha` es la fecha del sello."""
     partes = ["☀️ <b>Reporte matinal — MKI Terminal</b>", ""]
     if regimen:
         partes.append(f"Régimen del SOX: <b>{regimen}</b>")
     if roca_chip is not None:
-        partes.append(f"Salud de cadena Roca→Chip: <b>{roca_chip:.0f}/100</b>")
+        sello = f" (sellado {roca_fecha})" if roca_fecha else ""
+        partes.append(f"Salud de cadena Roca→Chip: <b>{roca_chip:.0f}/100</b>{sello}")
     partes.append(f"Último SOX real: {sox_texto}")
     if sentimiento_sector is not None:
         partes.append(f"Sentimiento del sector (IA): {sentimiento_sector:+.2f}")
@@ -183,3 +200,110 @@ def enviar_reporte_matinal(regimen: str | None, roca_chip: float | None,
     partes.append("")
     partes.append("<i>Herramienta de análisis — no constituye asesoría financiera.</i>")
     return enviar_mensaje("\n".join(partes))
+
+
+# ------------------------------------------------------------
+# CLI — solo visibilidad; la lógica de qué se envía y cuándo no cambia.
+# Como biblioteca (import alertas desde app.py) nada de esto se ejecuta.
+# ------------------------------------------------------------
+def _cli_estado() -> None:
+    """Muestra el estado y explica por qué esta invocación no envió nada."""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat = os.environ.get("TELEGRAM_CHAT_ID", "")
+    if esta_configurado():
+        print(f"Telegram configurado: token {token[:6]}…{token[-4:]} · "
+              f"chat id {chat[:2]}…{chat[-2:]} (leídos desde .env)")
+    else:
+        faltan = [n for n, v in (("TELEGRAM_BOT_TOKEN", token),
+                                 ("TELEGRAM_CHAT_ID", chat)) if not v]
+        print(f"Telegram NO configurado: falta {' y '.join(faltan)} en .env")
+        print("Instrucciones: panel Telegram de la portada Hoy (Streamlit).")
+    _init_db()
+    conn = sqlite3.connect(DB_PATH)
+    hoy = date.today().isoformat()
+    n_hoy = conn.execute("SELECT COUNT(*) FROM alertas_enviadas WHERE clave LIKE ?",
+                         (f"%:{hoy}:%",)).fetchone()[0]
+    conn.close()
+    print(f"Alertas automáticas ya registradas hoy: {n_hoy}")
+    print()
+    print("No se envió nada: sin subcomando, este script solo muestra el estado.")
+    print("  · Reporte matinal:      python alertas.py reporte")
+    print("    (equivale al botón 'Enviar reporte matinal' de la portada Hoy)")
+    print("  · Alertas automáticas (régimen, divergencias, sentimiento, buzz):")
+    print("    las evalúa el dashboard al abrirse, con registro anti-duplicados.")
+
+
+def _cli_reporte() -> None:
+    """Fuerza el reporte matinal: composición idéntica a la del botón de
+    app.py (mismas fuentes, mismos formatos), con salida visible. El
+    Roca→Chip es el SELLADO del último snapshot en senales.db (4.7.2)."""
+    if not esta_configurado():
+        print("NO enviado: Telegram no está configurado "
+              "(falta TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID en .env).")
+        raise SystemExit(1)
+    # imports pesados solo aquí: como biblioteca, alertas.py sigue liviano
+    import motor
+    import noticias
+    import senales
+    from api.utilidades import dias_a_proximos_earnings
+    from universo import ACCIONES, nombre
+
+    hoy = date.today()
+    print("Componiendo el reporte (motor + noticias + snapshot sellado)…")
+    regimen = motor.regimen_al(hoy)
+    roca_sellada = senales.historial_roca_chip(dias=365)
+    pred = motor.prediccion_apertura_al(
+        hoy, dias_earnings=dias_a_proximos_earnings(ACCIONES))
+    if pred is not None and not pred.empty:
+        sox_texto = (f"{pred.iloc[0]['SOX usado %']:+.2f}% "
+                     f"(sesión del {pred.iloc[0]['SOX fecha']})")
+        lineas = [f"• {nombre(p['Ticker'])}: {p['Apertura estimada %']:+.2f}% "
+                  f"(señal {etiqueta_senal(float(p['R2']))})"
+                  for _, p in pred.iterrows()]
+    else:
+        sox_texto, lineas = "sin datos", []
+    ok, detalle = enviar_reporte_matinal(
+        regimen=regimen["etiqueta"] if regimen else None,
+        roca_chip=(float(roca_sellada.iloc[-1]["Roca→Chip"])
+                   if not roca_sellada.empty else None),
+        roca_fecha=(str(roca_sellada.iloc[-1]["Fecha"])
+                    if not roca_sellada.empty else None),
+        sox_texto=sox_texto,
+        sentimiento_sector=noticias.sentimiento_promedio_sector(),
+        lineas_apertura=lineas,
+        divergencias=[d for d in motor.divergencias_al(hoy) if d["activa"]],
+    )
+    if ok:
+        print(f"Reporte enviado {datetime.now():%H:%M}")
+    else:
+        print(f"NO enviado: {detalle}")
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    # Como script nadie cargó .env todavía (app.py lo hace por su cuenta);
+    # sin esto, el token y el chat id jamás llegan a os.environ.
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(
+        prog="alertas.py",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=(
+            "Alertas por Telegram del MKI Terminal.\n\n"
+            "Sin subcomando muestra el ESTADO (configuración leída de .env, "
+            "alertas ya\nregistradas hoy) y no envía nada. Las alertas "
+            "automáticas (cambio de régimen,\ndivergencias, sentimiento "
+            "extremo, buzz) las evalúa el dashboard al abrirse —\neste "
+            "script no las dispara."),
+        epilog=("ejemplos:\n"
+                "  python alertas.py            estado, sin enviar nada\n"
+                "  python alertas.py reporte    envía el reporte matinal ahora\n"))
+    parser.add_argument(
+        "comando", nargs="?", choices=["estado", "reporte"], default="estado",
+        help="estado (default): diagnóstico sin enviar · reporte: fuerza el "
+             "reporte matinal (igual al botón de la portada Hoy)")
+    args = parser.parse_args()
+    _cli_reporte() if args.comando == "reporte" else _cli_estado()
