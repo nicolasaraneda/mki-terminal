@@ -73,6 +73,8 @@ export function Aperturas() {
       clave: 'int80',
       titulo: '± 80%',
       alinear: 'der',
+      tooltip:
+        'Intervalo central del 80%: 8 de cada 10 gaps reales deberían caer dentro de estimado ± este semiancho.',
       render: (p) => `${p.intervalo80_pp.toFixed(1)} pp`,
     },
     { clave: 'beta', titulo: 'β', alinear: 'der', render: (p) => p.beta.toFixed(2) },
@@ -84,21 +86,26 @@ export function Aperturas() {
     },
     { clave: 'n', titulo: 'n', alinear: 'der', render: (p) => p.n_muestra },
     {
-      clave: 'confianza',
-      titulo: 'Confianza',
+      clave: 'senal',
+      titulo: 'Señal',
+      tooltip:
+        'Derivada SOLO del R² histórico de la regresión de contagio: débil (R² < 0.10) · moderada (0.10–0.25) · fuerte (> 0.25).',
       render: (p) => (
         <span
           className={
-            p.confianza === 'Alta'
+            p.senal === 'fuerte'
               ? 'text-text-1'
-              : p.confianza === 'Media'
+              : p.senal === 'moderada'
                 ? 'text-text-2'
                 : 'text-text-3'
           }
         >
-          {p.confianza}
+          {p.senal === 'debil' ? 'débil' : p.senal}
           {p.zona_earnings && (
-            <span className="ml-1 text-warn" title="Confianza degradada por cercanía de earnings">
+            <span
+              className="ml-1 text-warn"
+              title="A menos de 5 días de resultados: el estimado no incorpora el anuncio"
+            >
               · earnings {p.dias_earnings}d
             </span>
           )}

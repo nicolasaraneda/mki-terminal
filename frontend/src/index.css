@@ -35,7 +35,7 @@
   /* Presupuesto de acento — usar con avaricia */
   --color-cyan: #22d3ee;
   --color-cyan-dim: #164e5f;
-  --color-magenta: #e879f9; /* SOLO la flecha de contagio en la cinta */
+  --color-magenta: #e879f9; /* SOLO en la cinta: flecha de contagio y sesión objetivo */
 
   --color-pos: #34d399;
   --color-neg: #f87171;

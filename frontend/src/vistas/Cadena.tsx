@@ -38,9 +38,9 @@ export function Cadena() {
   const d = data.datos
 
   const serieRoca =
-    d.roca_chip?.serie.fechas.map((f, i) => ({
+    d.roca_chip?.serie?.fechas.map((f, i) => ({
       fecha: f,
-      valor: d.roca_chip!.serie.valores[i],
+      valor: d.roca_chip!.serie!.valores[i],
     })) ?? []
 
   return (
@@ -82,12 +82,12 @@ export function Cadena() {
         accion={
           d.roca_chip && (
             <span className="num text-[11px] text-text-3">
-              hoy: percentil {d.roca_chip.valor} · crudo {pct(d.roca_chip.crudo_pct)}%
+              percentil {d.roca_chip.valor} · sellado {d.roca_chip.fecha}
             </span>
           )
         }
       >
-        {d.roca_chip ? (
+        {d.roca_chip && serieRoca.length > 0 ? (
           <>
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={serieRoca} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
@@ -126,12 +126,22 @@ export function Cadena() {
               </AreaChart>
             </ResponsiveContainer>
             <p className="mt-2 text-[11px] leading-relaxed text-text-3">
-              Momentum 20d promedio de los eslabones (peso igual), en % — el
-              percentil de hoy se calcula contra su último año.
+              Serie de contexto: momentum 20d promedio de los eslabones (peso
+              igual), en %, calculada al cierre del día sellado — nunca con
+              datos posteriores al sello. El percentil del encabezado es el
+              valor sellado del snapshot (frío &lt;30 · caliente &gt;70).
             </p>
           </>
+        ) : d.roca_chip ? (
+          <EmptyState
+            titulo="Serie de contexto no disponible"
+            detalle={`El valor sellado sigue vigente (percentil ${d.roca_chip.valor}, ${d.roca_chip.fecha}); solo falta la serie histórica.`}
+          />
         ) : (
-          <EmptyState titulo="Cadena sin datos suficientes (mínimo 3 eslabones)" />
+          <EmptyState
+            titulo="Sin snapshot sellado aún"
+            detalle="El índice aparece con el primer snapshot del día (18:15 Chile, o manual)."
+          />
         )}
       </Card>
 

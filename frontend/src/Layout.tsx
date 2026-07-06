@@ -50,7 +50,12 @@ export function Layout() {
         </div>
       </header>
 
-      {hoy.data && <CintaHusos husos={hoy.data.datos.husos} />}
+      {hoy.data && (
+        <CintaHusos
+          husos={hoy.data.datos.husos}
+          objetivo={hoy.data.datos.proxima_apertura?.exchange ?? null}
+        />
+      )}
 
       {snapshotViejo && (
         <div className="border-b border-warn/25 bg-bg-1 px-4 py-1.5 text-[11px] text-warn">

@@ -435,3 +435,77 @@ tests de F1).
 snapshot.py, noticias.py, alertas.py y las bases sin un solo cambio);
 8 predicciones selladas del 05-jul madurando; primera verificación posible
 el 06-jul con la apertura de Seúl.
+
+---
+
+# Etapa 4.7.1 — Pulido post-revisión
+
+## P0 — El Roca→Chip del terminal es exclusivamente el sellado
+
+**Regla:** v1 muestra exclusivamente el snapshot sellado con su timestamp;
+modo "en vivo" entre snapshots queda diferido a la futura integración de
+datos intradía (EODHD), donde se etiquetará como fuente distinta.
+
+La ruta que recalculaba (`_roca_chip_hoy` → `motor.roca_chip_al(hoy)` con
+cache de 5 min) se eliminó; /api/hoy y /api/cadena sirven el valor de la
+tabla `snapshots` de senales.db, con su fecha. Consecuencias deliberadas:
+
+1. **El "crudo %" desapareció del terminal React:** el snapshot no lo sella
+   (solo el percentil), y un número no sellable no se muestra — fue además
+   el que más derivó en la revisión (+9.04 vs +10.55). Recuperarlo exigiría
+   una columna nueva en senales.py (prohibido en 4.7.x).
+2. **La historia del sparkline también es sellada** (un punto por snapshot):
+   hoy son 2 puntos y crecerá un punto por día — un sparkline corto y
+   honesto vale más que 30 puntos recalculados.
+3. La **serie de /cadena** queda como contexto explícito, calculada ANCLADA
+   a la fecha del sello (`roca_chip_al(fecha_sellada)` usa solo datos ≤ esa
+   fecha): idéntica en cada visita, jamás contaminada por datos posteriores.
+4. **Paridad redefinida para este número:** el test compara la API contra la
+   tabla `snapshots`, no contra el recálculo vivo (que es lo que muestra el
+   Streamlit de fallback — si difieren entre sí, la discrepancia es
+   información: el mercado/los datos se movieron después del sello).
+
+Hallazgo registrado durante el fix: el snapshot del 05-jul selló 46
+mientras el recálculo estable del mismo día da 63 — los datos de Yahoo al
+momento de la emisión (06:06 Chile) diferían de los de la tarde. Es
+exactamente la clase de deriva que esta corrección hace visible en vez de
+esconder: el terminal muestra 46 "sellado 05-jul", y punto.
+
+El alcance del sello es lo que el snapshot registra (roca_chip,
+predicciones — ya sellado desde F1 — y divergencias): los bloques de
+contexto (betas de /mercados, correlaciones, comparador) siguen siendo
+presentación calculada, como el contrato siempre los trató.
+
+## P1 — La incertidumbre no lleva etiquetas subjetivas
+
+La columna/etiqueta de niveles Alta/Media/Baja se reemplazó por `senal`,
+derivada SOLO de umbrales de R² histórico de la regresión de contagio:
+**débil (R² < 0.10) · moderada (0.10–0.25) · fuerte (> 0.25)** — los mismos
+cortes que el motor ya usaba internamente, ahora explícitos y documentados
+en el tooltip de la cabecera. La zona de earnings dejó de degradar la
+etiqueta: viaja como marca aparte ("· earnings Nd"), porque mezcla dos
+dimensiones distintas (calidad histórica de la regresión vs evento puntual
+conocido). Las "señales del día" de portada conservan la semántica previa
+con criterio explícito: R² > 0.25 y fuera de zona de earnings.
+
+## P4 — La portada filtra el ruido; /analisis muestra todo
+
+/hoy solo admite titulares con **relevancia ≥ 0.5** (la relevancia 0–1 que
+asigna la IA por titular). Los análisis anteriores a la columna relevancia
+(NULL en la base — hoy son todos) entran solo si el **matching estricto**
+(helper existente `tickers_estrictos` de noticias.py) confirma una empresa
+del universo nombrada de forma inequívoca en el texto: así el listicle
+genérico etiquetado NVDA queda fuera de portada HOY, sin esperar a que se
+re-analice nada. Máximo 5 titulares, los más frescos que pasen el filtro.
+/api/noticias (vista /analisis) sigue sirviendo todo sin filtrar — ahí se
+explora, en portada se decide. noticias.py y la base: intactos.
+
+## P5 — Sparklines de contexto en gris; el color cruza umbrales
+
+El Sparkline coloreaba verde/rojo según la dirección de la ventana visible
+— junto a un índice en zona neutra, una mini-línea roja grita una alarma
+que los datos no dicen. Ahora TODOS los sparklines de contexto van en gris
+neutro (--color-text-3). El color queda reservado para la cifra principal
+del Roca→Chip y solo al cruzar umbrales documentados: **frío < 30 (cian) ·
+caliente > 70 (ámbar)**. Ni verde ni rojo: esos siguen reservados para
+dirección (subió/bajó), y un percentil alto no es "bueno" ni "malo".

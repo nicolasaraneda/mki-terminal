@@ -52,7 +52,8 @@ export interface Prediccion {
   n_muestra: number
   beta: number
   r2_historico: number
-  confianza: 'Alta' | 'Media' | 'Baja'
+  /** derivada SOLO de R² histórico: débil <0.10 · moderada 0.10–0.25 · fuerte >0.25 */
+  senal: 'fuerte' | 'moderada' | 'debil'
   zona_earnings: boolean
   dias_earnings: number | null
   sellada: boolean
@@ -94,7 +95,8 @@ export interface Titular {
 
 export interface DatosHoy {
   regimen: Regimen | null
-  roca_chip: { valor: number; crudo_pct: number; historia: number[] } | null
+  /** 4.7.1: valor sellado del último snapshot; historia = sellos previos */
+  roca_chip: { valor: number; fecha: string; historia: number[] } | null
   sox: {
     mov_pct: number
     fecha: string
@@ -198,9 +200,9 @@ export interface DatosCadena {
   }[]
   roca_chip: {
     valor: number
-    crudo_pct: number
-    historia: number[]
-    serie: Serie
+    fecha: string
+    /** contexto anclado a la fecha sellada (momentum 20d crudo) */
+    serie: Serie | null
   } | null
   divergencias: Divergencia[]
 }

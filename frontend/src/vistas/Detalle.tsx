@@ -7,6 +7,7 @@ import { SignalBadge } from '../componentes/SignalBadge'
 import { CandleChart } from '../componentes/CandleChart'
 import { NewsSentiment } from '../componentes/NewsSentiment'
 import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { rangoIntervalo80 } from '../lib/formato'
 
 // ============================================================
 // /detalle/:ticker — la ficha de un instrumento: velas de 1 año en moneda
@@ -76,7 +77,7 @@ export function Detalle() {
               <SignalBadge
                 titulo={`${d.senal_apertura.estimado_pct >= 0 ? '+' : ''}${d.senal_apertura.estimado_pct.toFixed(2)}% próxima apertura`}
                 direccion={d.senal_apertura.estimado_pct >= 0 ? 'pos' : 'neg'}
-                magnitud={`± ${d.senal_apertura.intervalo80_pp.toFixed(1)} pp · confianza ${d.senal_apertura.confianza}`}
+                magnitud={rangoIntervalo80(d.senal_apertura.estimado_pct, d.senal_apertura.intervalo80_pp)}
                 porque={`β=${d.senal_apertura.beta.toFixed(2)} sobre el último movimiento real del SOX${d.senal_apertura.zona_earnings ? ` · zona de earnings (${d.senal_apertura.dias_earnings}d)` : ''}`}
                 nMuestra={d.senal_apertura.n_muestra}
                 r2={d.senal_apertura.r2_historico}

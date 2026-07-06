@@ -7,6 +7,12 @@ import { Sparkline } from '../componentes/Sparkline'
 import { NewsSentiment } from '../componentes/NewsSentiment'
 import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
 import { distanciaHumana, fechaCorta, horaChile } from '../lib/tiempo'
+import { rangoIntervalo80 } from '../lib/formato'
+
+// Umbrales documentados del Roca→Chip (DECISIONES.md 4.7.1): solo la cifra
+// principal toma color, y solo al cruzarlos — frío <30, caliente >70.
+const tonoRoca = (v: number): 'frio' | 'caliente' | 'neutro' =>
+  v < 30 ? 'frio' : v > 70 ? 'caliente' : 'neutro'
 
 // ============================================================
 // /hoy — el portal. Responde en un vistazo: ¿en qué régimen estamos,
@@ -60,11 +66,13 @@ export function Hoy() {
             <StatTile
               etiqueta="Roca→Chip"
               valor={d.roca_chip?.valor ?? '—'}
+              tono={d.roca_chip ? tonoRoca(d.roca_chip.valor) : 'neutro'}
               detalle={
                 d.roca_chip
-                  ? `percentil 1 año · crudo ${d.roca_chip.crudo_pct >= 0 ? '+' : ''}${d.roca_chip.crudo_pct}%`
-                  : 'cadena sin datos suficientes'
+                  ? `percentil 1 año · sellado ${fechaCorta(d.roca_chip.fecha)}`
+                  : 'sin snapshot sellado aún'
               }
+              tooltip="Valor sellado del último snapshot — no se recalcula al visitar. 0 = cadena fría · 100 = caliente; la cifra toma color bajo 30 o sobre 70."
             />
             {d.roca_chip && <Sparkline valores={d.roca_chip.historia} />}
           </div>
@@ -115,7 +123,7 @@ export function Hoy() {
                     key={p.ticker}
                     titulo={`${p.nombre} ${p.estimado_pct >= 0 ? '+' : ''}${p.estimado_pct.toFixed(2)}%`}
                     direccion={p.estimado_pct >= 0 ? 'pos' : 'neg'}
-                    magnitud={`${p.estimado_pct >= 0 ? '+' : ''}${p.estimado_pct.toFixed(2)}% ± ${p.intervalo80_pp.toFixed(1)} pp · confianza ${p.confianza}`}
+                    magnitud={rangoIntervalo80(p.estimado_pct, p.intervalo80_pp)}
                     porque={`β=${p.beta.toFixed(2)} sobre el último movimiento real del SOX${p.zona_earnings ? ` · zona de earnings (${p.dias_earnings}d)` : ''}`}
                     nMuestra={p.n_muestra}
                     r2={p.r2_historico}
@@ -198,7 +206,10 @@ export function Hoy() {
             </Link>
           </>
         ) : (
-          <EmptyState titulo="Sin titulares analizados en cache" />
+          <EmptyState
+            titulo="Sin titulares relevantes hoy"
+            detalle="La portada filtra el ruido (relevancia bajo 0.5). El flujo completo, con todo, vive en Análisis IA."
+          />
         )}
       </Card>
     </div>

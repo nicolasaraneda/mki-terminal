@@ -4,6 +4,8 @@ export interface Columna<T> {
   clave: string
   titulo: string
   alinear?: 'izq' | 'der'
+  /** aclaración de la cabecera (umbral, definición) — visible al hover */
+  tooltip?: string
   render: (fila: T) => ReactNode
 }
 
@@ -28,9 +30,10 @@ export function DataTable<T>({
             {columnas.map((c) => (
               <th
                 key={c.clave}
+                title={c.tooltip}
                 className={`px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-text-3 ${
                   c.alinear === 'der' ? 'text-right' : 'text-left'
-                }`}
+                } ${c.tooltip ? 'cursor-help underline decoration-dotted decoration-border-strong underline-offset-2' : ''}`}
               >
                 {c.titulo}
               </th>

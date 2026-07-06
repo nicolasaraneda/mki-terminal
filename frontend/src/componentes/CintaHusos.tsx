@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import type { Huso } from '../lib/tipos'
 import {
   distanciaHumana,
@@ -31,7 +31,15 @@ const CARRIL: Record<string, number> = {
   XNYS: 4,
 }
 
-export function CintaHusos({ husos }: { husos: Huso[] }) {
+export function CintaHusos({
+  husos,
+  objetivo = null,
+}: {
+  husos: Huso[]
+  /** exchange de la sesión objetivo de la predicción protagonista de /hoy:
+   *  borde magenta punteado + etiqueta, conectando con "Próxima apertura" */
+  objetivo?: string | null
+}) {
   const [abierta, setAbierta] = useState(true)
   const [hover, setHover] = useState<Huso | null>(null)
   // re-render por minuto para que el marcador "ahora" avance
@@ -89,28 +97,56 @@ export function CintaHusos({ husos }: { husos: Huso[] }) {
             </svg>
           )}
 
-          {/* carriles con bloques de sesión */}
+          {/* carriles con bloques de sesión. La etiqueta vive FUERA de la
+              píldora (al lado): dentro de 8px el texto sangraba sobre los
+              bordes y los carriles asiáticos se encimaban entre sí. */}
           {husos.map((h) => {
             const ini = posEnEje(h.apertura_utc, inicioEje)
             const fin = posEnEje(h.cierre_utc, inicioEje)
             const ancho = Math.max(fin - ini, 0.012)
             const y = 2 + (CARRIL[h.exchange] ?? 4) * 8.5
-            const estilo =
+            const esObjetivo = h.exchange === objetivo
+            const fondo =
               h.estado === 'abierta'
-                ? 'border border-cyan bg-bg-3 text-text-1'
+                ? 'bg-bg-3'
                 : h.estado === 'proxima'
-                  ? 'border border-cyan-dim bg-bg-2 text-text-2 pulso-lento'
-                  : 'border border-border bg-bg-2 text-text-3 opacity-50'
+                  ? 'bg-bg-2 pulso-lento'
+                  : `bg-bg-2 ${esObjetivo ? '' : 'opacity-50'}`
+            const borde = esObjetivo
+              ? 'border border-dashed border-magenta'
+              : h.estado === 'abierta'
+                ? 'border border-cyan'
+                : h.estado === 'proxima'
+                  ? 'border border-cyan-dim'
+                  : 'border border-border'
+            const tinta =
+              h.estado === 'abierta'
+                ? 'text-text-1'
+                : h.estado === 'proxima'
+                  ? 'text-text-2'
+                  : 'text-text-3'
+            // etiqueta a la derecha de la píldora; cerca del borde derecho
+            // del eje, a la izquierda — jamás fuera de la cinta
+            const etiquetaPos =
+              fin < 0.88
+                ? { left: `calc(${fin * 100}% + 4px)` }
+                : { right: `calc(${(1 - ini) * 100}% + 4px)` }
             return (
-              <div
-                key={h.exchange}
-                onMouseEnter={() => setHover(h)}
-                onMouseLeave={() => setHover(null)}
-                className={`absolute flex h-[8px] cursor-default items-center overflow-hidden rounded-sm px-1 text-[8px] leading-none ${estilo}`}
-                style={{ left: `${ini * 100}%`, width: `${ancho * 100}%`, top: y }}
-              >
-                {h.nombre.split(' · ')[0]}
-              </div>
+              <Fragment key={h.exchange}>
+                <div
+                  onMouseEnter={() => setHover(h)}
+                  onMouseLeave={() => setHover(null)}
+                  className={`absolute h-[8px] cursor-default rounded-sm ${borde} ${fondo}`}
+                  style={{ left: `${ini * 100}%`, width: `${ancho * 100}%`, top: y }}
+                />
+                <span
+                  className={`pointer-events-none absolute flex h-[8px] items-center whitespace-nowrap text-[9px] leading-none ${tinta}`}
+                  style={{ top: y, ...etiquetaPos }}
+                >
+                  {h.nombre.split(' · ')[0]}
+                  {esObjetivo && <span className="ml-1 text-magenta">objetivo</span>}
+                </span>
+              </Fragment>
             )
           })}
 
@@ -152,6 +188,11 @@ export function CintaHusos({ husos }: { husos: Huso[] }) {
                     ? `abre ${distanciaHumana(hover.apertura_utc)}`
                     : 'cerrada'}
               </p>
+              {hover.exchange === objetivo && (
+                <p className="mt-1 text-magenta">
+                  Sesión objetivo de la predicción de portada.
+                </p>
+              )}
               {hover.cerro_antes && (
                 <p className="mt-1">
                   Antes cerró {hover.cerro_antes === 'XNYS' ? 'NY (SOX)' : hover.cerro_antes}

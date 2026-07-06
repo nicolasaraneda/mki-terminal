@@ -1,4 +1,8 @@
 // Mini-serie inline (SVG puro): tendencia de un vistazo, sin ejes ni adorno.
+// Regla 4.7.1: los sparklines son CONTEXTO y van siempre en gris neutro —
+// el color queda reservado para la cifra principal cuando cruza umbrales
+// definidos; una mini-línea roja junto a un índice en zona neutra grita
+// una alarma que los datos no dicen.
 export function Sparkline({
   valores,
   ancho = 120,
@@ -19,15 +23,14 @@ export function Sparkline({
       return `${x.toFixed(1)},${y.toFixed(1)}`
     })
     .join(' ')
-  const sube = valores[valores.length - 1] >= valores[0]
   return (
     <svg width={ancho} height={alto} className="block">
       <polyline
         points={puntos}
         fill="none"
-        stroke={sube ? 'var(--color-pos)' : 'var(--color-neg)'}
+        stroke="var(--color-text-3)"
         strokeWidth="1.25"
-        opacity="0.8"
+        opacity="0.9"
       />
     </svg>
   )

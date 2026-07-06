@@ -51,14 +51,35 @@ def test_paridad_regimen():
         assert servido["ratio_ma_pct"] == esperado["ratio_ma_pct"]
 
 
-def test_paridad_roca_chip():
-    esperado = motor.roca_chip_al(date.today())
+def test_paridad_roca_chip_contra_snapshot():
+    """P0 (4.7.1): el Roca→Chip servido es EXACTAMENTE el valor sellado del
+    último snapshot en senales.db — la API no recalcula el índice en vivo."""
+    conn = senales.get_connection()
+    fila = conn.execute("""
+        SELECT fecha, roca_chip FROM snapshots
+        WHERE roca_chip IS NOT NULL ORDER BY fecha DESC LIMIT 1
+    """).fetchone()
+    conn.close()
     servido = cliente.get("/api/hoy").json()["datos"]["roca_chip"]
-    if esperado is None:
+    if fila is None:
         assert servido is None
     else:
-        assert servido["valor"] == esperado["valor"]
-        assert servido["crudo_pct"] == esperado["crudo_pct"]
+        assert servido["valor"] == round(float(fila[1]))
+        assert servido["fecha"] == fila[0]
+        # la historia del sparkline también es sellada (un punto por snapshot)
+        assert servido["historia"][-1] == round(float(fila[1]), 1)
+
+
+def test_roca_chip_identico_entre_vistas():
+    """Una sola fuente de verdad: /api/hoy y /api/cadena sirven el MISMO
+    valor sellado, con la misma fecha."""
+    en_hoy = cliente.get("/api/hoy").json()["datos"]["roca_chip"]
+    en_cadena = cliente.get("/api/cadena").json()["datos"]["roca_chip"]
+    if en_hoy is None:
+        assert en_cadena is None
+    else:
+        assert en_cadena["valor"] == en_hoy["valor"]
+        assert en_cadena["fecha"] == en_hoy["fecha"]
 
 
 def test_paridad_betas():
@@ -91,6 +112,11 @@ def test_paridad_predicciones_apertura():
         # incertidumbre SIEMPRE presente junto a la cifra
         assert p["intervalo80_pp"] is not None
         assert p["n_muestra"] > 0
+        # 4.7.1: la etiqueta de señal deriva SOLO de umbrales de R² histórico
+        r2 = p["r2_historico"]
+        assert p["senal"] == ("fuerte" if r2 > 0.25
+                              else "moderada" if r2 > 0.10 else "debil")
+        assert "confianza" not in p  # el concepto no existe en el producto
         if not p["sellada"]:
             assert p["estimado_pct"] == float(e["Apertura estimada %"])
         else:

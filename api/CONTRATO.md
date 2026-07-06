@@ -1,4 +1,4 @@
-# Contrato de la API MKI Terminal (v1 — Etapa 4.7 "Fachada")
+# Contrato de la API MKI Terminal (v1 — Etapa 4.7 "Fachada"; enmienda 4.7.1)
 
 API REST de **solo lectura** sobre el sistema existente. Regla cero: no
 duplica ni reimplementa lógica de señales — envuelve las funciones puras de
@@ -60,13 +60,21 @@ Todo lo que necesita la portada bento.
 ```json
 "datos": {
   "regimen": {"tendencia", "vol", "etiqueta", "ratio_ma_pct"} | null,
-  "roca_chip": {"valor": 46, "crudo_pct": 4.1, "historia": [..30 vals]} | null,
+  // 4.7.1: el índice es EXCLUSIVAMENTE el valor sellado del último snapshot
+  // en senales.db (fecha = día del sello); "historia" son los valores
+  // sellados de snapshots anteriores. La API ya no recalcula el índice en
+  // vivo y el "crudo" desapareció del payload: no queda sellado en el
+  // snapshot y por lo tanto no es un número mostrable (una sola fuente de
+  // verdad). null si no existe ningún snapshot todavía.
+  "roca_chip": {"valor": 46, "fecha": "2026-07-05", "historia": [..]} | null,
   "sox": {"mov_pct": -5.44, "fecha": "2026-07-02", "feriado_hoy": true,
            "fecha_reciente": "2026-07-03"} | null,
   "sentimiento_sector": 0.30 | null,
   "track_record": {"suficiente": false, "n": 0, "minimo": 5,
                     "gap": {...} | null, "retorno_sesion": {...} | null},
-  "senales_dia": [   // máx 3, ordenadas por fuerza (misma lógica que Streamlit)
+  "senales_dia": [   // máx 3, ordenadas por fuerza (misma lógica que Streamlit;
+                     // familia "apertura" desde 4.7.1: R² > 0.25 y fuera de
+                     // zona earnings)
     {"tipo": "divergencia|apertura|sentimiento|buzz", "titulo": "...",
      "direccion": "pos|neg|neutra", "magnitud": "...", "porque": "...",
      "n_muestra": 120 | null, "r2_historico": 0.28 | null,
@@ -78,6 +86,10 @@ Todo lo que necesita la portada bento.
   } | null,
   "husos": [ ...ver /api/husos abajo, embebido aquí... ],
   "resumen_ia": "texto plano" | null,
+  // 4.7.1: la portada solo muestra lo mejor del día — titulares con
+  // relevancia ≥ 0.5; los análisis previos a la columna relevancia (NULL)
+  // entran solo si el matching estricto confirma una empresa del universo
+  // en el texto. /api/noticias sigue sirviendo TODO sin filtrar.
   "noticias_top": [{"titular", "fuente", "fecha", "sentimiento",
                      "relevancia", "tickers"} ...máx 5]
 }
@@ -98,8 +110,14 @@ XETR, XNYS):
 Las predicciones **vigentes** del anticipador. Fuente primaria: las filas
 selladas del snapshot de hoy en `senales.db` (con su `timestamp_utc` real de
 emisión — la garantía anti look-ahead). Se complementan con la salida viva de
-`motor.prediccion_apertura_al` (beta, confianza, zona earnings). Si aún no
+`motor.prediccion_apertura_al` (beta, R² histórico, zona earnings). Si aún no
 hay snapshot hoy, se sirven las vivas con `"sellada": false`.
+
+4.7.1: la etiqueta `senal` se deriva SOLO de umbrales de R² histórico:
+`debil` (R² < 0.10), `moderada` (0.10–0.25), `fuerte` (> 0.25) — la
+incertidumbre se comunica con muestra, R² e intervalo, nunca con etiquetas
+subjetivas. La zona de earnings viaja aparte (`zona_earnings`/
+`dias_earnings`) y no altera la etiqueta.
 ```json
 "datos": {
   "sox_usado": {"mov_pct": -5.44, "fecha": "2026-07-02"},
@@ -111,7 +129,7 @@ hay snapshot hoy, se sirven las vivas con `"sellada": false`.
      "exchange": "XKRX", "sesion_objetivo": "2026-07-06",
      "apertura_objetivo_utc": "...", "estimado_pct": -4.88,
      "intervalo80_pp": 6.99, "beta": 0.90, "r2_historico": 0.28,
-     "n_muestra": 120, "confianza": "Alta|Media|Baja",
+     "n_muestra": 120, "senal": "fuerte|moderada|debil",
      "zona_earnings": false, "dias_earnings": null,
      "sellada": true, "emitida_utc": "2026-07-05T10:06:05+00:00"}
   ]
@@ -154,7 +172,10 @@ la ventana de 3 años del motor).
   "niveles": [{"nivel": 0, "nombre": "Materias primas",
                 "momentum_20d_pct": -3.1, "sparkline": [..30 vals],
                 "tickers": [{"ticker", "nombre"}]}],
-  "roca_chip": {"valor", "crudo_pct", "historia": [..], "serie": {"fechas", "valores"}},
+  // 4.7.1: valor/fecha = el sello del último snapshot (igual que /api/hoy);
+  // "serie" es contexto (momentum 20d crudo) calculado ANCLADO a la fecha
+  // sellada — determinista entre visitas, jamás con datos posteriores al sello.
+  "roca_chip": {"valor", "fecha", "serie": {"fechas", "valores"}} | null,
   "divergencias": [ ...todas, con "activa", z residual y z simple... ]
 }
 ```
@@ -216,7 +237,10 @@ entidad. **Solo cache** — nunca dispara análisis nuevo.
 `tests/test_api.py` verifica que los números servidos son idénticos a los de
 las funciones de `motor.py` y los helpers de `senales.py` para la misma
 fecha. Si el dashboard Streamlit y la API difieren, el bug es de esta capa,
-por definición.
+por definición. Excepción deliberada (4.7.1): el Roca→Chip de la API es el
+valor SELLADO en senales.db — su paridad se testea contra la tabla
+`snapshots`, no contra el recálculo vivo del motor (que es lo que muestra
+Streamlit, mantenido como fallback en vivo).
 
 ### GET /api/universo  *(añadido en F4)*
 Lista plana de instrumentos seleccionables (para el comparador y navegación).

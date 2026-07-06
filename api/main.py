@@ -65,9 +65,28 @@ def _cadena_hoy() -> dict:
     return motor.datos_cadena_al(date.today())
 
 
+# P0 (4.7.1): el índice Roca→Chip que muestra el terminal es EXCLUSIVAMENTE
+# el valor sellado del último snapshot en senales.db — la API no lo recalcula
+# al momento de la visita (una sola fuente de verdad; el modo "en vivo" queda
+# diferido a la integración intradía futura, ver DECISIONES.md).
 @cache_ttl(300)
-def _roca_chip_hoy() -> dict | None:
-    return motor.roca_chip_al(date.today())
+def _roca_chip_sellado() -> dict | None:
+    df = senales.historial_roca_chip(dias=365)
+    if df.empty:
+        return None
+    return {
+        "valor": round(float(df.iloc[-1]["Roca→Chip"])),
+        "fecha": str(df.iloc[-1]["Fecha"]),
+        # la historia del sparkline también es sellada: un punto por snapshot
+        "historia": [round(float(v), 1) for v in df["Roca→Chip"].tail(30)],
+    }
+
+
+@cache_ttl(300)
+def _roca_chip_contexto(fecha_iso: str) -> dict | None:
+    """Serie de contexto (momentum 20d crudo) ANCLADA a la fecha sellada:
+    usa solo datos ≤ fecha del sello, así es idéntica en cada visita."""
+    return motor.roca_chip_al(date.fromisoformat(fecha_iso))
 
 
 @cache_ttl(300)
@@ -107,6 +126,50 @@ def _meta() -> dict:
         "modelo_version": MODELO_VERSION,
         "snapshot_hoy": senales.info_snapshot_hoy(),
     }
+
+
+# P1 (4.7.1): etiqueta de señal derivada SOLO de umbrales de R² histórico —
+# la incertidumbre se comunica con muestra, R² e intervalo, nunca con
+# etiquetas subjetivas. La zona de earnings viaja aparte y no altera esto.
+def _etiqueta_senal(r2: float) -> str:
+    return "fuerte" if r2 > 0.25 else ("moderada" if r2 > 0.10 else "debil")
+
+
+# P4 (4.7.1): filtro de portada — /hoy muestra solo lo mejor del día;
+# /api/noticias sigue sirviendo TODO (ahí el usuario explora).
+RELEVANCIA_MINIMA_PORTADA = 0.5
+MAX_TITULARES_PORTADA = 5
+
+
+@cache_ttl(300)
+def _titulares_portada() -> list:
+    """Lectura pura de noticias.db (capa de presentación). Pasan a portada:
+    relevancia ≥ umbral; los análisis previos a la columna relevancia (NULL)
+    solo si el matching estricto (helper existente de noticias.py) confirma
+    una empresa del universo nombrada de forma inequívoca en el titular."""
+    conn = noticias.get_connection()
+    try:
+        filas = conn.execute("""
+            SELECT t.fecha, t.fuente, t.titular, a.sentimiento,
+                   a.tickers_afectados, a.relevancia
+            FROM analisis a JOIN titulares t ON t.id = a.titular_id
+            ORDER BY t.fecha DESC LIMIT 60
+        """).fetchall()
+    finally:
+        conn.close()
+    resultado = []
+    for fecha, fuente, titular, sentimiento, tickers, relevancia in filas:
+        if relevancia is not None:
+            if relevancia < RELEVANCIA_MINIMA_PORTADA:
+                continue
+        elif not noticias.tickers_estrictos(titular):
+            continue
+        resultado.append({"titular": titular, "fuente": fuente, "fecha": fecha,
+                          "sentimiento": sentimiento, "relevancia": relevancia,
+                          "tickers": tickers})
+        if len(resultado) >= MAX_TITULARES_PORTADA:
+            break
+    return resultado
 
 
 def _sin_nan(obj):
@@ -180,7 +243,7 @@ def _predicciones_enriquecidas() -> list:
             "n_muestra": int(sello[3]) if sello and sello[3] else int(p["N muestra"]),
             "beta": float(p["Beta de contagio"]),
             "r2_historico": float(p["R2"]),
-            "confianza": p["Confianza"],
+            "senal": _etiqueta_senal(float(p["R2"])),
             "zona_earnings": bool(p["Zona earnings"]),
             "dias_earnings": (int(p["Dias earnings"])
                               if p["Zona earnings"] and pd.notna(p["Dias earnings"])
@@ -299,7 +362,7 @@ def universo_endpoint():
 @app.get("/api/hoy")
 def hoy():
     regimen = _regimen_hoy()
-    roca = _roca_chip_hoy()
+    roca = _roca_chip_sellado()
     predicciones = _predicciones_enriquecidas()
     divergencias = [d for d in _divergencias_hoy() if d["activa"]]
     sentimientos = noticias.sentimiento_promedio_por_ticker()
@@ -317,12 +380,16 @@ def hoy():
             "n_muestra": None, "r2_historico": None, "intervalo80_pp": None,
             "emitida_utc": None}))
     for p in predicciones:
-        if p["confianza"] == "Alta":
+        # mismo criterio que usaba el motor para su nivel máximo:
+        # R² sobre el umbral fuerte y fuera de la zona de earnings.
+        if p["r2_historico"] > 0.25 and not p["zona_earnings"]:
             candidatas.append((abs(p["estimado_pct"]) / 2, {
                 "tipo": "apertura",
                 "titulo": f"Apertura estimada: {p['nombre']} {p['estimado_pct']:+.2f}%",
                 "direccion": "pos" if p["estimado_pct"] >= 0 else "neg",
-                "magnitud": f"{p['estimado_pct']:+.2f}% ± {p['intervalo80_pp']:.1f} pp",
+                "magnitud": (f"intervalo 80%: "
+                             f"{p['estimado_pct'] - p['intervalo80_pp']:+.1f} a "
+                             f"{p['estimado_pct'] + p['intervalo80_pp']:+.1f} pp"),
                 "porque": (f"Beta de contagio {p['beta']:.2f} sobre el último "
                            f"movimiento real del SOX."),
                 "n_muestra": p["n_muestra"], "r2_historico": p["r2_historico"],
@@ -363,13 +430,10 @@ def hoy():
                              if p["exchange"] == proxima["exchange"]],
         }
 
-    titulares = noticias.obtener_titulares_analizados(limite=5)
     metricas_tr = senales.metricas_apertura(dias=30)
     return _envuelve({
         "regimen": regimen,
-        "roca_chip": ({"valor": roca["valor"], "crudo_pct": roca["crudo_pct"],
-                       "historia": [round(v, 2) for v in roca["historia"]]}
-                      if roca else None),
+        "roca_chip": roca,
         "sox": _sox_ultimo(),
         "sentimiento_sector": (round(noticias.sentimiento_promedio_sector(), 2)
                                if noticias.sentimiento_promedio_sector() is not None
@@ -379,10 +443,7 @@ def hoy():
         "proxima_apertura": proxima_apertura,
         "husos": husos,
         "resumen_ia": noticias.obtener_resumen_guardado(),
-        "noticias_top": [{
-            "titular": n["Titular"], "fuente": n["Fuente"], "fecha": n["Fecha"],
-            "sentimiento": n["Sentimiento"], "relevancia": n.get("Relevancia"),
-            "tickers": n["Tickers afectados"]} for n in titulares],
+        "noticias_top": _titulares_portada(),
     })
 
 
@@ -521,7 +582,8 @@ def mercados():
 @app.get("/api/cadena")
 def cadena():
     datos = _cadena_hoy()
-    roca = _roca_chip_hoy()
+    roca = _roca_chip_sellado()
+    contexto = _roca_chip_contexto(roca["fecha"]) if roca else None
     niveles = []
     for nivel, nombre_nivel in NIVELES_CADENA.items():
         if nivel not in datos["series_nivel"]:
@@ -540,9 +602,9 @@ def cadena():
         })
     return _envuelve({
         "niveles": niveles,
-        "roca_chip": ({"valor": roca["valor"], "crudo_pct": roca["crudo_pct"],
-                       "historia": [round(v, 2) for v in roca["historia"]],
-                       "serie": serie_a_lista(roca["serie"], 2)} if roca else None),
+        "roca_chip": ({"valor": roca["valor"], "fecha": roca["fecha"],
+                       "serie": (serie_a_lista(contexto["serie"], 2)
+                                 if contexto else None)} if roca else None),
         "divergencias": _divergencias_hoy(),
     })
 
