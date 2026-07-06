@@ -204,3 +204,57 @@ export interface DatosCadena {
   } | null
   divergencias: Divergencia[]
 }
+
+export interface DatosHistorial {
+  metricas: TrackRecord
+  calibracion: { suficiente: boolean; n: number; minimo: number; cobertura_pct?: number }
+  evolucion: Record<string, string | number | null>[]
+  ultimas: Record<string, string | number | null>[]
+  estados: { Estado: string; N: number }[]
+  snapshots: Record<string, string | number | null>[]
+  puntaje_ia: {
+    suficiente: boolean
+    n: number
+    retorno_tercio_alto?: number
+    retorno_tercio_bajo?: number
+    correlacion?: number | null
+  }
+  primera_verificacion_posible: string | null
+  pendientes_en_maduracion: number
+}
+
+export interface DatosNoticias {
+  sentimiento_por_ticker: Record<string, number>
+  buzz: Record<string, { hoy: number; promedio_diario: number; buzz: boolean }>
+  resumen_dia: string | null
+  titulares: Titular[]
+}
+
+export interface DatosDetalle {
+  perfil: {
+    ticker: string
+    nombre: string
+    segmento: string
+    nivel: number | null
+    tipo: string
+    exchange: string | null
+    moneda: string
+    duplicado_de?: string | null
+  }
+  ohlc: { t: string; o: number; h: number; l: number; c: number; v: number }[]
+  metricas: Record<string, string | number | null> | null
+  sentimiento: number | null
+  buzz: { hoy: number; promedio_diario: number; buzz: boolean } | null
+  noticias: Titular[]
+  senal_apertura: Prediccion | null
+  correlaciones_top: { ticker: string; nombre: string; corr: number }[]
+}
+
+export interface Instrumento {
+  ticker: string
+  nombre: string
+  segmento: string
+  nivel: number | null
+  tipo: string
+  exchange: string | null
+}

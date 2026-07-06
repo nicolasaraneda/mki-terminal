@@ -389,3 +389,25 @@ tests de F1).
    universo completo. Es exposición plana de universo.UNIVERSO — cero
    lógica. Con test de paridad (16 tests en verde).
 
+
+## F5 — Vistas /historial, /analisis y /detalle
+
+1. **/historial es la vista de integridad:** el 0/5 en maduración se muestra
+   en grande con su fecha de primera verificación posible ("06 jul, cuando
+   abra la sesión objetivo"), la auditoría de estados lista legacy y
+   sin_prediccion sin esconderlos, y las horas de emisión se convierten a
+   Chile. La evolución de aciertos aparecerá sola cuando existan datos.
+
+2. **/analisis:** servido íntegramente del cache de noticias.db (la API no
+   puede llamar a Anthropic por construcción). Filtro por entidad con
+   matching estricto, sentimiento por acción como barras divergentes
+   centradas en cero, buzz solo si cruza el umbral 3× con historia ≥7 días.
+
+3. **/detalle/:ticker:** velas de 1 año en moneda local (lightweight-charts),
+   señal de apertura vigente con su pie de emisión, métricas del ranking v0,
+   correlaciones top y noticias estrictas. Los ADR muestran su aviso de
+   duplicado con enlace a la acción original.
+
+4. **Fix de paridad:** la ficha usaba nombres de columna inventados
+   ("Momentum 6m %"); ahora usa los reales de motor.puntaje_v0_al
+   ("Retorno período %", "Momentum 20d %", "Volatilidad anual %").
