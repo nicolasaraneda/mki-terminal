@@ -17,8 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-# Dashboard
+# Dashboard (Streamlit, kept as fallback)
 streamlit run app.py
+
+# React terminal (Etapa 4.7): API :8000 + Vite :5173 — see README-DEV.md
+uvicorn api.main:app --reload
+export PATH="$HOME/.local/node/bin:$PATH" && cd frontend && npm run dev
 
 # Daily snapshot + verifier + CSV backups, WITHOUT Streamlit (what launchd runs)
 python snapshot.py --origen manual     # "programado" is the launchd default
@@ -26,12 +30,22 @@ python snapshot.py --origen manual     # "programado" is the launchd default
 # Anti-look-ahead test of the signal engine (must stay green)
 python tests/test_motor.py
 
+# API parity tests (pytest) + frontend typecheck
+python -m pytest tests/test_api.py -q
+cd frontend && npm run build
+
 # Backend layers standalone
 python -c "import noticias; print(noticias.actualizar_titulares())"
 python -c "import senales; senales.init_db(); print(senales.verificar_pendientes())"
 ```
 
-No test framework/linter beyond `tests/test_motor.py` (plain asserts) — don't invent one. The launchd job (Mon–Fri 18:15 Chile) lives in `launchd/` with beginner install instructions.
+`tests/test_motor.py` is a plain-assert script; `tests/test_api.py` is pytest. Node lives in `~/.local/node` (no brew/sudo). The launchd job (Mon–Fri 18:15 Chile) lives in `launchd/` with beginner install instructions.
+
+## Etapa 4.7 "Fachada" — React frontend + read-only API
+
+- **`api/`** (FastAPI, port 8000) — READ-ONLY: imports motor.py functions, reads senales.db/noticias.db via existing query helpers, never writes, never calls Anthropic (news served from cache only). Contract in `api/CONTRATO.md` — amend it BEFORE changing endpoints. Envelope: `{meta: {generado_en, fecha_datos, regimen, modelo_version, snapshot_hoy}, datos}`. NaN → null via recursive sanitizer. Only presentation logic allowed (base-100, session states, chart correlations) — never a signal.
+- **`frontend/`** (Vite + React + TS + Tailwind 4, port 5173) — never computes a signal; types in `src/lib/tipos.ts` mirror the contract. If a number differs from Streamlit, the bug is in `api/` by definition. Design tokens in `src/index.css` (@theme). Rules: cyan budget ≤4/view; hierarchy via bg levels + borders (no glow/gradients); all figures JetBrains Mono tabular; uncertainty (n, R², ±interval) beside every signal figure, never tooltip-only; sealed predictions show "emitida {ts}, antes de la apertura objetivo"; no emojis in UI; empty states say what's missing and when data will exist. Signature element: `CintaHusos` (24h global-day ribbon starting at NY close, Chile time, one micro-lane per exchange). Hidden `/sistema` route is the component catalog.
+- **REGLA CERO of 4.7:** motor.py, snapshot.py, noticias.py, alertas.py and the DBs were NOT touched — the track-record experiment keeps running. Streamlit `app.py` stays intact as fallback (port 8501).
 
 ## Architecture (Etapa 4.6)
 

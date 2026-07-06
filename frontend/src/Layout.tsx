@@ -23,7 +23,16 @@ export function Layout() {
   const snapshotViejo = salud.data?.datos.snapshot_viejo ?? false
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
+      {/* densidad tipo terminal: bajo 1024px la información no cabe con honestidad */}
+      <div className="flex min-h-screen items-center justify-center p-8 lg:hidden">
+        <p className="max-w-sm text-center text-[13px] leading-relaxed text-text-2">
+          MKI Terminal está diseñado para pantallas de 1024px o más — la
+          densidad de datos no se sacrifica. Abre esta ventana más grande o
+          usa un monitor.
+        </p>
+      </div>
+      <div className="hidden min-h-screen flex-col lg:flex">
       <header className="flex items-center gap-4 border-b border-border bg-bg-1 px-4 py-2">
         <h1 className="font-display text-[15px] font-semibold tracking-tight text-text-1">
           MKI <span className="text-text-3">Terminal</span>
@@ -82,6 +91,7 @@ export function Layout() {
         </span>{' '}
         · modelo v{meta?.modelo_version ?? '—'}
       </footer>
-    </div>
+      </div>
+    </>
   )
 }

@@ -411,3 +411,27 @@ tests de F1).
 4. **Fix de paridad:** la ficha usaba nombres de columna inventados
    ("Momentum 6m %"); ahora usa los reales de motor.puntaje_v0_al
    ("Retorno período %", "Momentum 20d %", "Volatilidad anual %").
+
+## F6 — Cierre de la Etapa 4.7
+
+1. **Guardia responsive:** bajo 1024px el terminal muestra un mensaje
+   ("pantallas de 1024px o más — la densidad no se sacrifica") en vez de
+   degradar la información. Verificado a 900px con Playwright.
+
+2. **Capturas de referencia** de las 8 vistas + /sistema en docs/capturas/
+   (1440px, datos vivos del snapshot del 05-jul).
+
+3. **README-DEV.md:** los tres procesos (API :8000, Vite :5173, Streamlit
+   :8501) conviven sin conflicto de puertos; arquitectura, reglas y tests.
+
+4. **CLAUDE.md actualizado** con la sección Etapa 4.7 (regla cero, contrato,
+   reglas de diseño del frontend, comandos).
+
+5. **Paridad final:** 16 tests de API en verde; el frontend no computa
+   ningún número — todo sale de los mismos motor.py/senales.py que usa
+   Streamlit, así que la paridad es por construcción.
+
+**Estado al cierre:** experimento de track record intacto (motor.py,
+snapshot.py, noticias.py, alertas.py y las bases sin un solo cambio);
+8 predicciones selladas del 05-jul madurando; primera verificación posible
+el 06-jul con la apertura de Seúl.
