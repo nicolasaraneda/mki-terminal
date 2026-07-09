@@ -538,3 +538,16 @@ biblioteca sin bloque de script, y además nadie cargaba `.env` en ese modo
    definición para el lado Telegram (CLI + botón); la API mantiene la suya
    propia (`_etiqueta_senal`), custodiada por test. La UI de Streamlit
    (columna del anticipador) queda como está: es el fallback congelado.
+
+4. **El reporte programado sale a las 18:25 Chile (post-snapshot), no en
+   la mañana** (launchd `com.mki.reporte`, 10 min después de
+   `com.mki.snapshot`). Razones: (a) el reporte es fiel al sello — solo
+   puede enviar lo que el snapshot de las 18:15 acaba de sellar, y los 10
+   minutos dan margen a que el snapshot y el verificador terminen de
+   escribir en senales.db; (b) las predicciones anticipan las sesiones de
+   Asia, que abren desde las ~20:00 Chile: a las 18:25 el reporte llega
+   ANTES de todas sus sesiones objetivo — un envío en la mañana de Chile
+   llegaría cuando Asia y Europa ya abrieron y cerraron, con predicciones
+   viejas disfrazadas de frescas (la confusión de timing que la regla
+   maestra existe para impedir). El reporte es "matinal" respecto del día
+   de mercado que comienza en Asia, no de la mañana chilena.

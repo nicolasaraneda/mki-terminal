@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mki.reporte</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/venv/bin/python</string>
+        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/alertas.py</string>
+        <string>reporte</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI</string>
+
+    <!-- Lunes a viernes a las 18:25 hora local (Chile): 10 minutos después
+         del snapshot de las 18:15 — el reporte envía por Telegram lo que el
+         snapshot acaba de sellar, ANTES de que abra Asia (~20:00 Chile).
+         El CLI de alertas.py carga .env por sí mismo (load_dotenv), así que
+         el token y el chat id no dependen del entorno mínimo de launchd.
+         launchd usa la hora local del sistema. Weekday: 1=lunes ... 5=viernes. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
+        <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
+        <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
+        <dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
+        <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/reporte.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/reporte.log</string>
+</dict>
+</plist>
