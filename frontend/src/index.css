@@ -141,12 +141,43 @@ html {
   border-radius: 4px;
 }
 
-/* Desplazamiento de la flecha punteada de contagio (cinta) */
-@keyframes viaje-contagio {
-  to { stroke-dashoffset: -12; }
+/* ============================================================
+   Cinta de husos (4.9 F2)
+   ============================================================ */
+
+/* Marcador "ahora": avanza por transform (compositor puro), re-posicionado
+   cada 30s con transición lineal — avance, no salto. */
+.marcador-ahora {
+  transition: transform var(--dur-slow) linear;
+  will-change: transform;
 }
-.flecha-contagio {
-  animation: viaje-contagio 1.2s linear infinite;
+
+/* Píldoras de sesión: el cruce abierta/cerrada transiciona en 300ms con
+   100ms de delay — espera a que el marcador "ahora" asiente antes de
+   cambiar de estado (las dos transiciones no compiten). */
+.pildora-huso {
+  transition:
+    background-color 300ms var(--ease-standard) 100ms,
+    border-color 300ms var(--ease-standard) 100ms,
+    opacity 300ms var(--ease-standard) 100ms;
+}
+
+/* Tooltip de la cinta: aparece en 150ms desplazándose 4px, sin parpadeo. */
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+.tooltip-cinta {
+  animation: tooltip-in 150ms var(--ease-out);
+}
+
+/* Flecha de contagio: estática por defecto; el pulso de flujo (dash-offset
+   lento, casi subliminal) SOLO cuando hay predicciones vigentes viajando
+   hacia esa sesión. */
+@keyframes viaje-contagio {
+  to { stroke-dashoffset: -16; }
+}
+.flecha-viva {
+  animation: viaje-contagio 8s linear infinite;
 }
 
 /* Foco visible por teclado, sin glow */

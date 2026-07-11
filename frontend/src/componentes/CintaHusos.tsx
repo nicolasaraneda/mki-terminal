@@ -1,8 +1,9 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import type { Huso } from '../lib/tipos'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import type { Huso, Prediccion } from '../lib/tipos'
 import {
   distanciaHumana,
   horaChile,
+  horaLocalExchange,
   inicioEjeGlobal,
   marcasEje,
   posAhora,
@@ -14,15 +15,18 @@ import {
 //
 // Un eje de 24 horas del día global del semiconductor, que ARRANCA en el
 // cierre de NY: ahí muere la sesión americana y el contagio parte a viajar
-// hacia Asia (flecha magenta punteada). Tres carriles descendentes:
-// Asia arriba → Europa al centro → EE.UU. abajo. Todo en hora de Chile.
-// Máx 56px, colapsable. Presupuesto de cian: el marcador "ahora" y la
-// próxima sesión en abrir.
+// hacia Asia (flecha magenta punteada). Un micro-carril por bolsa,
+// descendiendo Asia → Europa → EE.UU. Todo en hora de Chile.
+// Máx 56px; colapsada es una línea de 8px con las sesiones como segmentos.
+// Presupuesto de cian: el marcador "ahora" y la próxima sesión en abrir.
+//
+// 4.9 F2: el marcador avanza cada 30s con transición (transform puro);
+// el cruce de un borde de píldora cambia su estado en vivo (presentación
+// sobre los timestamps del server) con 100ms de delay para que el marcador
+// asiente primero; el tooltip suma hora local de la bolsa y qué
+// predicciones apuntan a esa sesión.
 // ============================================================
 
-// Un micro-carril por bolsa (no por región): las tres asiáticas transan casi
-// a la misma hora y en un carril compartido se taparían entre sí. El orden
-// sigue descendiendo Asia → Europa → EE.UU., que es la tesis de la cinta.
 const CARRIL: Record<string, number> = {
   XKRX: 0,
   XTKS: 1,
@@ -31,23 +35,48 @@ const CARRIL: Record<string, number> = {
   XNYS: 4,
 }
 
+/* Estado efectivo entre refetches: si "ahora" cruzó el borde de la píldora,
+   el estado cambia en vivo sin esperar a la API (que lo confirmará). */
+function estadoEfectivo(h: Huso, ahoraMs: number): Huso['estado'] {
+  const abre = new Date(h.apertura_utc).getTime()
+  const cierra = new Date(h.cierre_utc).getTime()
+  if (abre <= ahoraMs && ahoraMs <= cierra) return 'abierta'
+  if (ahoraMs > cierra) return 'cerrada'
+  return h.estado === 'abierta' ? 'proxima' : h.estado
+}
+
 export function CintaHusos({
   husos,
   objetivo = null,
+  predicciones = [],
 }: {
   husos: Huso[]
-  /** exchange de la sesión objetivo de la predicción protagonista de /hoy:
-   *  borde magenta punteado + etiqueta, conectando con "Próxima apertura" */
+  /** exchange de la sesión objetivo de la predicción protagonista de /hoy */
   objetivo?: string | null
+  /** predicciones vigentes (de /api/aperturas) — alimentan tooltip y flecha */
+  predicciones?: Prediccion[]
 }) {
   const [abierta, setAbierta] = useState(true)
   const [hover, setHover] = useState<Huso | null>(null)
-  // re-render por minuto para que el marcador "ahora" avance
-  const [, setTic] = useState(0)
+  // re-render cada 30s: el marcador avanza y los cruces de borde se detectan
+  const [ahoraMs, setAhoraMs] = useState(() => Date.now())
   useEffect(() => {
-    const id = setInterval(() => setTic((t) => t + 1), 60_000)
+    const id = setInterval(() => setAhoraMs(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
+
+  // ancho real del contenedor: el marcador se mueve con translateX en px
+  // (compositor puro) alineado al mismo sistema de % de las píldoras
+  const contRef = useRef<HTMLDivElement | null>(null)
+  const [ancho, setAncho] = useState(0)
+  useEffect(() => {
+    const el = contRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setAncho(el.clientWidth))
+    ro.observe(el)
+    setAncho(el.clientWidth)
+    return () => ro.disconnect()
+  }, [abierta])
 
   const ny = husos.find((h) => h.exchange === 'XNYS')
   const inicioEje = useMemo(
@@ -59,8 +88,25 @@ export function CintaHusos({
 
   const ahora = posAhora(inicioEje)
   const proximaAsia = husos.find(
-    (h) => h.region === 'asia' && (h.estado === 'proxima' || h.estado === 'abierta'),
+    (h) =>
+      h.region === 'asia' &&
+      ['proxima', 'abierta'].includes(estadoEfectivo(h, ahoraMs)),
   )
+  const prediccionesDe = (h: Huso) =>
+    predicciones.filter(
+      (p) => p.exchange === h.exchange && p.sesion_objetivo === h.sesion,
+    )
+  const hayViaje = proximaAsia != null && prediccionesDe(proximaAsia).length > 0
+
+  const segmentoColor = (h: Huso) => {
+    if (h.exchange === objetivo) return 'bg-magenta'
+    const est = estadoEfectivo(h, ahoraMs)
+    return est === 'abierta'
+      ? 'bg-cyan'
+      : est === 'proxima'
+        ? 'bg-cyan-dim'
+        : 'bg-border-strong'
+  }
 
   return (
     <div className="relative border-b border-border bg-bg-1">
@@ -73,9 +119,10 @@ export function CintaHusos({
         {abierta ? '▾' : '▸ husos'}
       </button>
 
-      {abierta && (
-        <div className="relative mx-auto h-[56px] max-w-[1400px] px-4">
-          {/* flecha de contagio: del cierre de NY a la próxima sesión asiática */}
+      {abierta ? (
+        <div ref={contRef} className="relative mx-auto h-[56px] max-w-[1400px] px-4">
+          {/* flecha de contagio: del cierre de NY a la próxima sesión asiática.
+              El pulso de flujo SOLO cuando viajan predicciones vigentes. */}
           {proximaAsia && (
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full"
@@ -90,7 +137,7 @@ export function CintaHusos({
                 stroke="var(--color-magenta)"
                 strokeWidth="0.35"
                 strokeDasharray="1.6 1.6"
-                className="flecha-contagio"
+                className={hayViaje ? 'flecha-viva' : ''}
                 opacity="0.7"
                 vectorEffect="non-scaling-stroke"
               />
@@ -98,35 +145,33 @@ export function CintaHusos({
           )}
 
           {/* carriles con bloques de sesión. La etiqueta vive FUERA de la
-              píldora (al lado): dentro de 8px el texto sangraba sobre los
-              bordes y los carriles asiáticos se encimaban entre sí. */}
+              píldora: dentro de 8px el texto sangraba sobre los bordes. */}
           {husos.map((h) => {
             const ini = posEnEje(h.apertura_utc, inicioEje)
             const fin = posEnEje(h.cierre_utc, inicioEje)
-            const ancho = Math.max(fin - ini, 0.012)
+            const anchoP = Math.max(fin - ini, 0.012)
             const y = 2 + (CARRIL[h.exchange] ?? 4) * 8.5
+            const est = estadoEfectivo(h, ahoraMs)
             const esObjetivo = h.exchange === objetivo
             const fondo =
-              h.estado === 'abierta'
+              est === 'abierta'
                 ? 'bg-bg-3'
-                : h.estado === 'proxima'
+                : est === 'proxima'
                   ? 'bg-bg-2 pulso-lento'
                   : `bg-bg-2 ${esObjetivo ? '' : 'opacity-50'}`
             const borde = esObjetivo
               ? 'border border-dashed border-magenta'
-              : h.estado === 'abierta'
+              : est === 'abierta'
                 ? 'border border-cyan'
-                : h.estado === 'proxima'
+                : est === 'proxima'
                   ? 'border border-cyan-dim'
                   : 'border border-border'
             const tinta =
-              h.estado === 'abierta'
+              est === 'abierta'
                 ? 'text-text-1'
-                : h.estado === 'proxima'
+                : est === 'proxima'
                   ? 'text-text-2'
                   : 'text-text-3'
-            // etiqueta a la derecha de la píldora; cerca del borde derecho
-            // del eje, a la izquierda — jamás fuera de la cinta
             const etiquetaPos =
               fin < 0.88
                 ? { left: `calc(${fin * 100}% + 4px)` }
@@ -136,8 +181,8 @@ export function CintaHusos({
                 <div
                   onMouseEnter={() => setHover(h)}
                   onMouseLeave={() => setHover(null)}
-                  className={`absolute h-[8px] cursor-default rounded-sm ${borde} ${fondo}`}
-                  style={{ left: `${ini * 100}%`, width: `${ancho * 100}%`, top: y }}
+                  className={`pildora-huso absolute h-[8px] cursor-default rounded-sm ${borde} ${fondo}`}
+                  style={{ left: `${ini * 100}%`, width: `${anchoP * 100}%`, top: y }}
                 />
                 <span
                   className={`pointer-events-none absolute flex h-[8px] items-center whitespace-nowrap text-[9px] leading-none ${tinta}`}
@@ -150,10 +195,10 @@ export function CintaHusos({
             )
           })}
 
-          {/* marcador "ahora" (cian, vivo) */}
+          {/* marcador "ahora" (cian, vivo): translateX puro, avanza cada 30s */}
           <div
-            className="absolute top-1 bottom-4 w-px bg-cyan"
-            style={{ left: `${ahora * 100}%` }}
+            className="marcador-ahora absolute left-0 top-1 bottom-4 w-px bg-cyan"
+            style={{ transform: `translateX(${ahora * ancho}px)` }}
           >
             <div className="absolute -top-0.5 -left-[2.5px] h-1.5 w-1.5 rounded-full bg-cyan" />
           </div>
@@ -171,20 +216,24 @@ export function CintaHusos({
             ))}
           </div>
 
-          {/* tooltip: qué cerró antes y con qué beta viaja el contagio */}
+          {/* tooltip refinado: hora local + Chile, contagio y predicciones */}
           {hover && (
             <div
-              className="pointer-events-none absolute top-[58px] z-20 w-64 rounded border border-border-strong bg-bg-3 px-3 py-2 text-[11px] leading-relaxed text-text-2"
+              className="tooltip-cinta pointer-events-none absolute top-[58px] z-20 w-72 rounded border border-border-strong bg-bg-3 px-3 py-2 text-[11px] leading-relaxed text-text-2"
               style={{
-                left: `${Math.min(posEnEje(hover.apertura_utc, inicioEje) * 100, 75)}%`,
+                left: `${Math.min(posEnEje(hover.apertura_utc, inicioEje) * 100, 72)}%`,
               }}
             >
               <p className="font-medium text-text-1">{hover.nombre}</p>
               <p className="num">
-                {horaChile(hover.apertura_utc)}–{horaChile(hover.cierre_utc)} Chile ·{' '}
-                {hover.estado === 'abierta'
+                {horaLocalExchange(hover.apertura_utc, hover.exchange)}–
+                {horaLocalExchange(hover.cierre_utc, hover.exchange)} local ·{' '}
+                {horaChile(hover.apertura_utc)}–{horaChile(hover.cierre_utc)} Chile
+              </p>
+              <p className="num text-text-3">
+                {estadoEfectivo(hover, ahoraMs) === 'abierta'
                   ? 'en sesión'
-                  : hover.estado === 'proxima'
+                  : estadoEfectivo(hover, ahoraMs) === 'proxima'
                     ? `abre ${distanciaHumana(hover.apertura_utc)}`
                     : 'cerrada'}
               </p>
@@ -208,8 +257,53 @@ export function CintaHusos({
                   )}
                 </p>
               )}
+              {prediccionesDe(hover).length > 0 && (
+                <p className="mt-1 border-t border-border pt-1">
+                  {prediccionesDe(hover).length} predicción
+                  {prediccionesDe(hover).length > 1 ? 'es' : ''} apunta
+                  {prediccionesDe(hover).length > 1 ? 'n' : ''} a esta sesión:{' '}
+                  <span className="num text-text-1">
+                    {prediccionesDe(hover)
+                      .slice(0, 3)
+                      .map((p) => `${p.nombre} ${p.estimado_pct >= 0 ? '+' : ''}${p.estimado_pct.toFixed(2)}%`)
+                      .join(' · ')}
+                    {prediccionesDe(hover).length > 3 &&
+                      ` · +${prediccionesDe(hover).length - 3} más`}
+                  </span>
+                </p>
+              )}
             </div>
           )}
+        </div>
+      ) : (
+        /* colapsada: línea de 8px — sesiones como segmentos + marcador */
+        <div
+          ref={contRef}
+          role="button"
+          tabIndex={0}
+          aria-label="Expandir cinta de husos"
+          onClick={() => setAbierta(true)}
+          onKeyDown={(e) => e.key === 'Enter' && setAbierta(true)}
+          className="relative mx-auto h-[8px] max-w-[1400px] cursor-pointer px-4"
+        >
+          {husos.map((h) => {
+            const ini = posEnEje(h.apertura_utc, inicioEje)
+            const fin = posEnEje(h.cierre_utc, inicioEje)
+            return (
+              <div
+                key={h.exchange}
+                className={`pildora-huso absolute top-[3px] h-[2px] rounded-full ${segmentoColor(h)}`}
+                style={{
+                  left: `${ini * 100}%`,
+                  width: `${Math.max(fin - ini, 0.008) * 100}%`,
+                }}
+              />
+            )
+          })}
+          <div
+            className="marcador-ahora absolute left-0 inset-y-0 w-px bg-cyan"
+            style={{ transform: `translateX(${ahora * ancho}px)` }}
+          />
         </div>
       )}
     </div>

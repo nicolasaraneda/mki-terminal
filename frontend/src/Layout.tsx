@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useHoy, useSalud } from './lib/api'
+import { useAperturas, useHoy, useSalud } from './lib/api'
 import { CintaHusos } from './componentes/CintaHusos'
 import { RegimeChip } from './componentes/RegimeChip'
 import { fechaHoraChile } from './lib/tiempo'
@@ -19,6 +19,7 @@ const VISTAS = [
 export function Layout() {
   const salud = useSalud()
   const hoy = useHoy()
+  const aperturas = useAperturas()
   const location = useLocation()
   const meta = salud.data?.meta
   const snapshotViejo = salud.data?.datos.snapshot_viejo ?? false
@@ -55,6 +56,7 @@ export function Layout() {
         <CintaHusos
           husos={hoy.data.datos.husos}
           objetivo={hoy.data.datos.proxima_apertura?.exchange ?? null}
+          predicciones={aperturas.data?.datos.predicciones ?? []}
         />
       )}
 

@@ -13,6 +13,25 @@ export function horaChile(iso: string): string {
   }).format(new Date(iso))
 }
 
+/* Hora local de cada bolsa (para el tooltip de la cinta: el operador ve
+   la sesión en SU hora y en la de Chile a la vez). Presentación pura. */
+const TZ_EXCHANGE: Record<string, string> = {
+  XKRX: 'Asia/Seoul',
+  XTKS: 'Asia/Tokyo',
+  XTAI: 'Asia/Taipei',
+  XETR: 'Europe/Berlin',
+  XNYS: 'America/New_York',
+}
+
+export function horaLocalExchange(iso: string, exchange: string): string {
+  return new Intl.DateTimeFormat('es-CL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: TZ_EXCHANGE[exchange] ?? 'UTC',
+  }).format(new Date(iso))
+}
+
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
                'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
