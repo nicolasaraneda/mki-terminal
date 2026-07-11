@@ -14,6 +14,7 @@
 
 import os
 import sqlite3
+import time
 from datetime import date, datetime, timezone
 
 import requests
@@ -105,7 +106,13 @@ def enviar_mensaje(texto: str) -> tuple:
         if resp.status_code == 200 and resp.json().get("ok"):
             return True, "enviado"
         return False, f"Telegram respondió {resp.status_code}: {resp.text[:200]}"
+    except requests.exceptions.ConnectionError as e:
+        # La petición NUNCA llegó al servidor (DNS caído, sin red): reenviar
+        # no puede duplicar. Es el único caso que el CLI reintenta (4.7.3).
+        return False, f"Error de conexión (el mensaje no salió): {e}"
     except requests.RequestException as e:
+        # Timeout u otros: el mensaje PUDO haber llegado — jamás se reintenta
+        # (un reporte duplicado fantasma es peor que uno perdido).
         return False, f"Error de red: {e}"
 
 
@@ -262,7 +269,8 @@ def _cli_reporte() -> None:
                   for _, p in pred.iterrows()]
     else:
         sox_texto, lineas = "sin datos", []
-    ok, detalle = enviar_reporte_matinal(
+    # argumentos compuestos UNA vez: cada reintento envía el mismo mensaje
+    argumentos = dict(
         regimen=regimen["etiqueta"] if regimen else None,
         roca_chip=(float(roca_sellada.iloc[-1]["Roca→Chip"])
                    if not roca_sellada.empty else None),
@@ -273,6 +281,16 @@ def _cli_reporte() -> None:
         lineas_apertura=lineas,
         divergencias=[d for d in motor.divergencias_al(hoy) if d["activa"]],
     )
+    ok, detalle = enviar_reporte_matinal(**argumentos)
+    # Reintento breve (4.7.3) SOLO si la petición nunca salió — típico al
+    # despertar el Mac con la red aún caída. Sin fantasmas: timeouts y
+    # errores de Telegram no se reintentan.
+    for espera in (60, 120):
+        if ok or not detalle.startswith("Error de conexión"):
+            break
+        print(f"Sin red — reintento en {espera}s…", flush=True)
+        time.sleep(espera)
+        ok, detalle = enviar_reporte_matinal(**argumentos)
     if ok:
         print(f"Reporte enviado {datetime.now():%H:%M}")
     else:

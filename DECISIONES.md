@@ -551,3 +551,39 @@ biblioteca sin bloque de script, y además nadie cargaba `.env` en ese modo
    viejas disfrazadas de frescas (la confusión de timing que la regla
    maestra existe para impedir). El reporte es "matinal" respecto del día
    de mercado que comienza en Asia, no de la mañana chilena.
+
+---
+
+# Etapa 4.7.3 — Resiliencia de descarga
+
+**Evidencia (auditoría de la semana 06–10 jul):** de 5 días hábiles solo se
+sellaron 2. El viernes 10 fue el Mac apagado (único día perdido por
+hardware), pero el lunes 06 y el martes 07 el job disparó puntual (18:16 y
+18:22 Chile, Mac encendido) y Yahoo devolvió "possibly delisted / no price
+data" para los 27 tickers: el snapshot abortó con "sin datos de mercado" —
+correctamente, prefiriendo no sellar antes que sellar basura. El sábado 11,
+al despertar el Mac, el reporte de recuperación falló por DNS (red aún
+caída). El enemigo operativo demostrado no es el timing: es la fuente.
+
+1. **Reintento del snapshot SOLO en el camino launchd** (`main()`), jamás
+   dentro de `ejecutar_snapshot()` — el fallback del dashboard no puede
+   quedarse bloqueado una hora. Criterio estricto: solo cuando el motivo
+   es "sin datos de mercado"; un sello existente o logrado sigue de largo.
+   3 intentos en ~60 min (esperas de 20 y 40 min): ambas esperas superan
+   el TTL de 15 min de la caché del motor, así cada reintento descarga de
+   verdad SIN tocar motor.py. Un sello logrado al segundo o tercer intento
+   lleva su timestamp real de emisión — el verificador de timing sigue
+   decidiendo predicción por predicción, como siempre.
+
+2. **Reintento del reporte de Telegram sin fantasmas:** `enviar_mensaje`
+   ahora distingue el error de CONEXIÓN (DNS caído, sin red — la petición
+   nunca llegó al servidor, reenviar no puede duplicar) del resto. El CLI
+   reintenta SOLO ese caso (2 reintentos: 60 s y 120 s), con los argumentos
+   compuestos una sola vez — cada intento envía el mensaje idéntico.
+   Timeouts y errores HTTP de Telegram NO se reintentan: el mensaje pudo
+   haber llegado, y un reporte duplicado fantasma es peor que uno perdido.
+   El botón del dashboard queda como estaba: un clic, un intento.
+
+3. **Cero cambios en lógica de señales o sellado:** motor.py intacto;
+   `ejecutar_snapshot` intacto; los reintentos solo repiten la misma
+   llamada idempotente más tarde, con su hora real.

@@ -23,6 +23,7 @@ import argparse
 import os
 import sqlite3
 import sys
+import time
 from datetime import date, datetime, timezone
 
 import pandas as pd
@@ -40,6 +41,14 @@ DIR_BACKUPS = os.path.join(DIRECTORIO, "data", "backups")
 TABLAS_BACKUP_SENALES = ["snapshots", "senales_ticker", "verificacion_apertura",
                          "verificacion_puntaje", "divergencias"]
 TABLAS_BACKUP_NOTICIAS = ["titulares", "analisis", "resumen_dia"]
+
+# Resiliencia de descarga (Etapa 4.7.3): si la fuente no entrega datos
+# ("sin datos de mercado" — la semana del 06-jul Yahoo falló 2 días con el
+# Mac encendido), el camino launchd reintenta con backoff: 3 intentos en
+# ~60 min. Las esperas superan el TTL de la caché del motor (15 min), así
+# cada reintento descarga de verdad. Solo aplica en main(); el fallback del
+# dashboard llama ejecutar_snapshot() directo y jamás espera.
+ESPERAS_REINTENTO_SEG = (20 * 60, 40 * 60)
 
 
 def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFAULT) -> dict:
@@ -140,6 +149,21 @@ def main() -> int:
 
     resultado = ejecutar_snapshot(args.origen)
     print(f"  snapshot: {resultado}")
+
+    # Reintento SOLO ante fallo de descarga: cualquier otro resultado
+    # (sellado, "ya existe") sigue de largo. Un sello logrado en el
+    # reintento lleva su timestamp real de emisión — el verificador de
+    # timing decide después, como siempre (la regla maestra no se toca).
+    for espera in ESPERAS_REINTENTO_SEG:
+        if resultado.get("motivo") != "sin datos de mercado":
+            break
+        print(f"  la fuente no entregó datos — reintento en {espera // 60} min",
+              flush=True)
+        time.sleep(espera)
+        print(f"[{datetime.now(timezone.utc).isoformat()}] reintento de descarga",
+              flush=True)
+        resultado = ejecutar_snapshot(args.origen)
+        print(f"  snapshot: {resultado}", flush=True)
 
     verif_apertura, verif_puntaje = senales.verificar_pendientes()
     print(f"  verificador apertura: {verif_apertura}")
