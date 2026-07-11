@@ -127,7 +127,7 @@ export function Comparador() {
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
       {/* selector */}
-      <Card titulo="Selección">
+      <Card titulo="Selección" className="capa-1">
         {universoApi.isLoading && <Cargando alto="h-16" />}
         {universo.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -192,7 +192,7 @@ export function Comparador() {
       </Card>
 
       {/* gráfico base 100 */}
-      <Card titulo={`Rendimiento base 100 (${base === 'usd' ? 'USD' : 'local'})`}>
+      <Card titulo={`Rendimiento base 100 (${base === 'usd' ? 'USD' : 'local'})`} className="capa-2">
         {!habilitado ? (
           <EmptyState titulo="Selecciona al menos 2 acciones" />
         ) : comparador.isLoading ? (
@@ -259,7 +259,7 @@ export function Comparador() {
 
       {/* métricas del período */}
       {habilitado && comparador.data && comparador.data.datos.tabla.length > 0 && (
-        <Card titulo="Métricas del período">
+        <Card titulo="Métricas del período" className="capa-3">
           <DataTable
             columnas={columnas}
             filas={comparador.data.datos.tabla}

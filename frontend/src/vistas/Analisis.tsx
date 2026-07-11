@@ -42,7 +42,7 @@ export function Analisis() {
     <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-3">
       <div className="grid gap-4 lg:col-span-2">
         {d.resumen_dia && (
-          <Card titulo="Resumen del día (IA, desde cache)">
+          <Card titulo="Resumen del día (IA, desde cache)" className="capa-1">
             <p className="text-[13px] leading-relaxed text-text-2">{d.resumen_dia}</p>
           </Card>
         )}
@@ -76,7 +76,7 @@ export function Analisis() {
       </div>
 
       <div className="grid content-start gap-4">
-        <Card titulo="Sentimiento por acción">
+        <Card titulo="Sentimiento por acción" className="capa-2">
           {sentimientos.length > 0 ? (
             <ul className="divide-y divide-border text-xs">
               {sentimientos.map(([t, s]) => (
@@ -111,7 +111,7 @@ export function Analisis() {
           </p>
         </Card>
 
-        <Card titulo="Buzz — volumen inusual de noticias">
+        <Card titulo="Buzz — volumen inusual de noticias" className="capa-3">
           {enBuzz.length > 0 ? (
             <ul className="divide-y divide-border text-xs">
               {enBuzz.map(([t, b]) => (

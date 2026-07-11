@@ -46,12 +46,73 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+/* ============================================================
+   Sistema de movimiento (4.9 F1). TODO movimiento usa estos tokens.
+   Regla: solo transform/opacity/color — nada que dispare layout.
+   El "spring" (--ease-asentar) vive en DOS lugares: command palette
+   y flash de números. En el resto, contención.
+   ============================================================ */
+:root {
+  --dur-fast: 120ms;   /* hovers, focus */
+  --dur-base: 200ms;   /* tooltips, cambios de estado */
+  --dur-slow: 320ms;   /* entradas de vista, cinta */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-asentar: cubic-bezier(0.3, 1.4, 0.4, 1);
+}
+
 html {
   background: var(--color-bg-0);
   color: var(--color-text-2);
   font-family: var(--font-sans);
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Hovers consistentes: bordes/fondos/tinta transicionan en --dur-fast en
+   todo elemento interactivo, sin excepciones por vista. */
+:where(a, button, input, select, tr, [role='button']) {
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+/* Coreografía de entrada: el wrapper de vista (keyed por ruta) hace un
+   crossfade de 150ms; adentro, 3 capas entran en orden de importancia
+   (protagonista → contexto → periferia) con stagger de 30ms. Corre UNA
+   vez por navegación — un re-render no remonta el wrapper. */
+@keyframes entrada-fade {
+  from { opacity: 0; }
+}
+@keyframes entrada-capa {
+  from { opacity: 0; transform: translateY(4px); }
+}
+.vista {
+  animation: entrada-fade 150ms var(--ease-out);
+}
+.capa-1, .capa-2, .capa-3 {
+  animation: entrada-capa var(--dur-slow) var(--ease-out) backwards;
+}
+.capa-2 { animation-delay: 30ms; }
+.capa-3 { animation-delay: 60ms; }
+
+/* Flash de <NumeroVivo>: solo color (pintura, cero reflow), decae solo. */
+@keyframes flash-pos { from { color: var(--color-pos); } }
+@keyframes flash-neg { from { color: var(--color-neg); } }
+.flash-pos { animation: flash-pos var(--dur-slow) var(--ease-asentar); }
+.flash-neg { animation: flash-neg var(--dur-slow) var(--ease-asentar); }
+
+/* Movimiento reducido: UN interruptor. Tokens a cero y cualquier
+   animación/transición muere — verificado con Playwright, no decorativo. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Toda cifra es tabular y monoespaciada: las columnas de números alinean */

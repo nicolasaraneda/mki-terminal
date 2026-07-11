@@ -38,7 +38,7 @@ export function Hoy() {
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-3">
       {/* fila 1: el estado del mundo en 4 cifras */}
-      <Card className="lg:col-span-3">
+      <Card className="lg:col-span-3 capa-1">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           <StatTile
             etiqueta="Régimen (SOX)"
@@ -52,6 +52,8 @@ export function Hoy() {
           <StatTile
             etiqueta="SOX último cierre"
             valor={d.sox ? `${d.sox.mov_pct >= 0 ? '+' : ''}${d.sox.mov_pct}` : '—'}
+            valorNumerico={d.sox?.mov_pct}
+            formato={(v) => `${v >= 0 ? '+' : ''}${parseFloat(v.toFixed(2))}`}
             sufijo="%"
             tono={d.sox ? (d.sox.mov_pct >= 0 ? 'pos' : 'neg') : 'neutro'}
             detalle={
@@ -66,6 +68,8 @@ export function Hoy() {
             <StatTile
               etiqueta="Roca→Chip"
               valor={d.roca_chip?.valor ?? '—'}
+              valorNumerico={d.roca_chip?.valor}
+              formato={(v) => `${Math.round(v)}`}
               tono={d.roca_chip ? tonoRoca(d.roca_chip.valor) : 'neutro'}
               detalle={
                 d.roca_chip
@@ -83,6 +87,8 @@ export function Hoy() {
                 ? `${d.sentimiento_sector >= 0 ? '+' : ''}${d.sentimiento_sector.toFixed(2)}`
                 : '—'
             }
+            valorNumerico={d.sentimiento_sector ?? undefined}
+            formato={(v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`}
             tono={
               d.sentimiento_sector == null
                 ? 'neutro'
@@ -100,7 +106,7 @@ export function Hoy() {
       {/* protagonista: la próxima apertura que las señales anticipan */}
       <Card
         titulo="Próxima apertura"
-        className="lg:col-span-2"
+        className="lg:col-span-2 capa-2"
         accion={
           d.proxima_apertura && (
             <span className="num text-[11px] text-text-3">
@@ -141,7 +147,7 @@ export function Hoy() {
       </Card>
 
       {/* track record — celdas vacías con naturalidad, nunca escondidas */}
-      <Card titulo="Track record (30d)">
+      <Card titulo="Track record (30d)" className="capa-2">
         {d.track_record.suficiente ? (
           <div className="grid grid-cols-2 gap-4">
             <StatTile
@@ -164,7 +170,7 @@ export function Hoy() {
       </Card>
 
       {/* señales del día */}
-      <Card titulo="Señales del día" className="lg:col-span-2">
+      <Card titulo="Señales del día" className="lg:col-span-2 capa-3">
         {d.senales_dia.length > 0 ? (
           <div className="grid gap-3">
             {d.senales_dia.map((s, i) => (
@@ -189,7 +195,7 @@ export function Hoy() {
       </Card>
 
       {/* resumen IA + titulares */}
-      <Card titulo="Noticias">
+      <Card titulo="Noticias" className="capa-3">
         {d.resumen_ia && (
           <p className="mb-3 border-b border-border pb-3 text-xs leading-relaxed text-text-2">
             {d.resumen_ia}

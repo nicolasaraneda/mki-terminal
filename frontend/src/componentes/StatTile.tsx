@@ -1,3 +1,5 @@
+import { NumeroVivo } from './NumeroVivo'
+
 // Cifra grande con su incertidumbre AL LADO — nunca escondida en tooltip.
 // La regla del producto: un número de señal sin muestra/R² no existe.
 export function StatTile({
@@ -7,6 +9,8 @@ export function StatTile({
   detalle,
   tono = 'neutro',
   tooltip,
+  valorNumerico,
+  formato,
 }: {
   etiqueta: string
   valor: string | number
@@ -17,6 +21,9 @@ export function StatTile({
   tono?: 'pos' | 'neg' | 'neutro' | 'frio' | 'caliente'
   /** aclaración larga (densidad 4.6: caption extensa → tooltip) */
   tooltip?: string
+  /** si se entregan, la cifra es un <NumeroVivo>: cuenta al cambiar (4.9) */
+  valorNumerico?: number
+  formato?: (v: number) => string
 }) {
   const color =
     tono === 'pos'
@@ -34,7 +41,11 @@ export function StatTile({
         {etiqueta}
       </span>
       <span className={`num text-2xl leading-none ${color}`}>
-        {valor}
+        {valorNumerico != null && formato ? (
+          <NumeroVivo valor={valorNumerico} formato={formato} />
+        ) : (
+          valor
+        )}
         {sufijo && <span className="ml-1 text-sm text-text-3">{sufijo}</span>}
       </span>
       {detalle && <span className="num text-[11px] text-text-3">{detalle}</span>}

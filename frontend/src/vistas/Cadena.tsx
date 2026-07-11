@@ -46,7 +46,7 @@ export function Cadena() {
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
       {/* eslabones de la cadena, de la roca al data center */}
-      <Card titulo="Eslabones — momentum 20 días (USD)">
+      <Card titulo="Eslabones — momentum 20 días (USD)" className="capa-1">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {d.niveles.map((n) => (
             <div key={n.nivel} className="rounded border border-border bg-bg-2 p-3">
@@ -79,6 +79,7 @@ export function Cadena() {
       {/* Roca→Chip: serie completa */}
       <Card
         titulo="Índice Roca→Chip"
+        className="capa-2"
         accion={
           d.roca_chip && (
             <span className="num text-[11px] text-text-3">
@@ -146,7 +147,7 @@ export function Cadena() {
       </Card>
 
       {/* divergencias entre competidores */}
-      <Card titulo="Divergencias entre competidores directos">
+      <Card titulo="Divergencias entre competidores directos" className="capa-3">
         {d.divergencias.length > 0 ? (
           <>
             <div className="grid gap-3 sm:grid-cols-2">

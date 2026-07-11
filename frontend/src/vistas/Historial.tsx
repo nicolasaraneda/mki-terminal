@@ -100,7 +100,7 @@ export function Historial() {
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
       {/* el estado de la medición en cifras */}
-      <Card>
+      <Card className="capa-1">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           <StatTile
             etiqueta="Acierto gap (30d)"
@@ -144,7 +144,7 @@ export function Historial() {
       </Card>
 
       {/* evolución de aciertos */}
-      <Card titulo="Evolución de aciertos por día">
+      <Card titulo="Evolución de aciertos por día" className="capa-2">
         {d.evolucion.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={d.evolucion} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
@@ -190,7 +190,7 @@ export function Historial() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* últimas verificaciones */}
-        <Card titulo="Últimas verificaciones">
+        <Card titulo="Últimas verificaciones" className="capa-3">
           {d.ultimas.length > 0 ? (
             <DataTable
               columnas={columnasUltimas}
@@ -204,7 +204,7 @@ export function Historial() {
 
         <div className="grid gap-4">
           {/* auditoría de estados */}
-          <Card titulo="Auditoría — predicciones por estado">
+          <Card titulo="Auditoría — predicciones por estado" className="capa-3">
             <ul className="divide-y divide-border text-xs">
               {d.estados.map((e) => (
                 <li key={e.Estado} className="flex justify-between py-1.5">
@@ -220,7 +220,7 @@ export function Historial() {
           </Card>
 
           {/* snapshots emitidos */}
-          <Card titulo="Snapshots emitidos">
+          <Card titulo="Snapshots emitidos" className="capa-3">
             {d.snapshots.length > 0 ? (
               <DataTable
                 columnas={columnasSnapshots}

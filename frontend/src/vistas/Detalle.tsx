@@ -34,7 +34,7 @@ export function Detalle() {
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
       {/* perfil */}
-      <Card>
+      <Card className="capa-1">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <h1 className="font-display text-xl font-semibold text-text-1">
             {d.perfil.nombre}
@@ -61,7 +61,7 @@ export function Detalle() {
         {/* velas */}
         <Card
           titulo={`Último año (${d.perfil.moneda}, diario)`}
-          className="lg:col-span-2"
+          className="lg:col-span-2 capa-2"
         >
           {d.ohlc.length > 0 ? (
             <CandleChart velas={d.ohlc} alto={340} />
@@ -73,7 +73,7 @@ export function Detalle() {
         <div className="grid content-start gap-4">
           {/* señal vigente si aplica */}
           {d.senal_apertura && (
-            <Card titulo="Señal de apertura vigente">
+            <Card titulo="Señal de apertura vigente" className="capa-2">
               <SignalBadge
                 titulo={`${d.senal_apertura.estimado_pct >= 0 ? '+' : ''}${d.senal_apertura.estimado_pct.toFixed(2)}% próxima apertura`}
                 direccion={d.senal_apertura.estimado_pct >= 0 ? 'pos' : 'neg'}
@@ -87,7 +87,7 @@ export function Detalle() {
           )}
 
           {/* métricas del ranking */}
-          <Card titulo="Métricas (ranking v0)">
+          <Card titulo="Métricas (ranking v0)" className="capa-2">
             {m ? (
               <div className="grid grid-cols-2 gap-4">
                 <StatTile
@@ -140,7 +140,7 @@ export function Detalle() {
           </Card>
 
           {/* correlaciones */}
-          <Card titulo="Correlaciones principales (USD, diario)">
+          <Card titulo="Correlaciones principales (USD, diario)" className="capa-3">
             {d.correlaciones_top.length > 0 ? (
               <ul className="divide-y divide-border text-xs">
                 {d.correlaciones_top.map((c) => (
@@ -160,7 +160,7 @@ export function Detalle() {
       </div>
 
       {/* noticias de la entidad */}
-      <Card titulo="Noticias (matching estricto de entidad)">
+      <Card titulo="Noticias (matching estricto de entidad)" className="capa-3">
         {d.noticias.length > 0 ? (
           <NewsSentiment titulares={d.noticias} />
         ) : (

@@ -5,6 +5,7 @@ import { StatTile } from '../componentes/StatTile'
 import { DataTable, type Columna } from '../componentes/DataTable'
 import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
 import { fechaCorta, fechaHoraChile, horaChile } from '../lib/tiempo'
+import { NumeroVivo } from '../componentes/NumeroVivo'
 import type { Prediccion } from '../lib/tipos'
 
 // ============================================================
@@ -65,7 +66,7 @@ export function Aperturas() {
       alinear: 'der',
       render: (p) => (
         <span className={p.estimado_pct >= 0 ? 'text-pos' : 'text-neg'}>
-          {pct(p.estimado_pct)}%
+          <NumeroVivo valor={p.estimado_pct} formato={(v) => `${pct(v)}%`} />
         </span>
       ),
     },
@@ -128,11 +129,13 @@ export function Aperturas() {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
-      <Card>
+      <Card className="capa-1">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           <StatTile
             etiqueta="SOX usado"
             valor={d.sox_usado ? `${pct(d.sox_usado.mov_pct)}` : '—'}
+            valorNumerico={d.sox_usado?.mov_pct}
+            formato={(v) => pct(v)}
             sufijo="%"
             tono={d.sox_usado ? (d.sox_usado.mov_pct >= 0 ? 'pos' : 'neg') : 'neutro'}
             detalle={
@@ -166,7 +169,7 @@ export function Aperturas() {
         </div>
       </Card>
 
-      <Card titulo="Predicciones de apertura vigentes">
+      <Card titulo="Predicciones de apertura vigentes" className="capa-2">
         {d.predicciones.length > 0 ? (
           <>
             <DataTable

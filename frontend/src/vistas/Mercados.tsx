@@ -60,7 +60,7 @@ export function Mercados() {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-2">
-      <Card titulo="Betas de contagio — SOX(t−1) → acción(t)">
+      <Card titulo="Betas de contagio — SOX(t−1) → acción(t)" className="capa-1">
         {d.betas.length > 0 ? (
           <>
             <DataTable columnas={columnas} filas={d.betas} clavePor={(b) => b.ticker} />
@@ -77,7 +77,7 @@ export function Mercados() {
 
       <div className="grid gap-4">
         {/* el hallazgo permanente */}
-        <Card titulo="Caso: el contagio viaja con el sol">
+        <Card titulo="Caso: el contagio viaja con el sol" className="capa-2">
           {d.caso_destacado ? (
             <>
               <p className="mb-3 text-[13px] text-text-2">
@@ -107,7 +107,7 @@ export function Mercados() {
           )}
         </Card>
 
-        <Card titulo="Correlación entre eslabones, con desfase">
+        <Card titulo="Correlación entre eslabones, con desfase" className="capa-3">
           {d.correlaciones_desfase.filas.length > 0 ? (
             <>
               <CorrHeatmap

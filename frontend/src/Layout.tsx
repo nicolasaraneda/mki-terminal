@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useHoy, useSalud } from './lib/api'
 import { CintaHusos } from './componentes/CintaHusos'
 import { RegimeChip } from './componentes/RegimeChip'
@@ -19,6 +19,7 @@ const VISTAS = [
 export function Layout() {
   const salud = useSalud()
   const hoy = useHoy()
+  const location = useLocation()
   const meta = salud.data?.meta
   const snapshotViejo = salud.data?.datos.snapshot_viejo ?? false
 
@@ -84,7 +85,11 @@ export function Layout() {
         </nav>
 
         <main className="min-w-0 flex-1 p-4">
-          <Outlet />
+          {/* keyed por ruta: la coreografía de entrada corre UNA vez por
+              navegación; los re-renders no la re-disparan */}
+          <div key={location.pathname} className="vista">
+            <Outlet />
+          </div>
         </main>
       </div>
 
