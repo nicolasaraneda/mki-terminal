@@ -1,6 +1,10 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAperturas, useHoy, useSalud } from './lib/api'
+import { useAtajos } from './lib/atajos'
+import { AtajosOverlay } from './componentes/AtajosOverlay'
 import { CintaHusos } from './componentes/CintaHusos'
+import { CommandPalette } from './componentes/CommandPalette'
 import { RegimeChip } from './componentes/RegimeChip'
 import { fechaHoraChile } from './lib/tiempo'
 
@@ -21,8 +25,18 @@ export function Layout() {
   const hoy = useHoy()
   const aperturas = useAperturas()
   const location = useLocation()
+  const navigate = useNavigate()
   const meta = salud.data?.meta
   const snapshotViejo = salud.data?.datos.snapshot_viejo ?? false
+
+  const [paleta, setPaleta] = useState(false)
+  const [ayuda, setAyuda] = useState(false)
+  useAtajos({
+    abrirPaleta: () => setPaleta((v) => !v),
+    alternarAyuda: () => setAyuda((v) => !v),
+    navegar: navigate,
+    hayOverlay: paleta || ayuda,
+  })
 
   return (
     <>
@@ -95,15 +109,33 @@ export function Layout() {
         </main>
       </div>
 
-      <footer className="border-t border-border px-4 py-2 text-[11px] text-text-3">
-        MKI Terminal no constituye asesoría financiera. Datos: yfinance (diario).
-        Último snapshot:{' '}
-        <span className="num">
-          {meta?.snapshot_hoy ? fechaHoraChile(meta.snapshot_hoy.timestamp_utc) : '—'}
-        </span>{' '}
-        · modelo v{meta?.modelo_version ?? '—'}
+      <footer className="flex items-center border-t border-border px-4 py-2 text-[11px] text-text-3">
+        <span>
+          MKI Terminal no constituye asesoría financiera. Datos: yfinance (diario).
+          Último snapshot:{' '}
+          <span className="num">
+            {meta?.snapshot_hoy ? fechaHoraChile(meta.snapshot_hoy.timestamp_utc) : '—'}
+          </span>{' '}
+          · modelo v{meta?.modelo_version ?? '—'}
+        </span>
+        <button
+          onClick={() => setAyuda(true)}
+          className="num ml-auto rounded border border-border bg-bg-2 px-1.5 py-0.5 text-[10px] hover:text-text-2"
+          aria-label="Mapa de atajos de teclado"
+          title="Atajos de teclado"
+        >
+          ?
+        </button>
       </footer>
       </div>
+
+      {paleta && (
+        <CommandPalette
+          alCerrar={() => setPaleta(false)}
+          resumenDia={hoy.data?.datos.resumen_ia ?? null}
+        />
+      )}
+      {ayuda && <AtajosOverlay alCerrar={() => setAyuda(false)} />}
     </>
   )
 }

@@ -180,8 +180,21 @@ html {
   animation: viaje-contagio 8s linear infinite;
 }
 
-/* Foco visible por teclado, sin glow */
+/* Foco visible por teclado, sin glow: anillo cyan de 2px con offset (F3) */
 :focus-visible {
-  outline: 1px solid var(--color-cyan);
+  outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Command palette y overlay de atajos (F3). El panel "asienta" — uno de
+   los DOS lugares con --ease-asentar. */
+@keyframes paleta-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+.paleta-overlay {
+  animation: entrada-fade var(--dur-base) var(--ease-out);
+}
+.paleta-panel {
+  animation: paleta-in var(--dur-base) var(--ease-asentar);
 }
