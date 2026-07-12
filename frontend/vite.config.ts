@@ -12,4 +12,12 @@ export default defineConfig({
       '/api': 'http://localhost:8000',
     },
   },
+  // vite preview (build de producción, usado por Lighthouse en F6 de 4.9)
+  // necesita su propio proxy — no hereda el de server.
+  preview: {
+    port: 4173,
+    proxy: {
+      '/api': 'http://localhost:8000',
+    },
+  },
 })

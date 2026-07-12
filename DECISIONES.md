@@ -587,3 +587,62 @@ caída). El enemigo operativo demostrado no es el timing: es la fuente.
 3. **Cero cambios en lógica de señales o sellado:** motor.py intacto;
    `ejecutar_snapshot` intacto; los reintentos solo repiten la misma
    llamada idempotente más tarde, con su hora real.
+
+---
+
+# Etapa 4.9 — "Alta costura" (elevación visual y de interacción)
+
+100% frontend/; la API no cambió su contrato y la paridad numérica se
+verificó hermética: el código pre-4.9 y el 4.9 servidos EN PARALELO
+(worktree en :5174 vs :5173), mismo instante, mismos 72+60 tokens
+numéricos en /hoy y /aperturas. Lighthouse sobre build de producción:
+performance 91 · accesibilidad 100 · CLS 0 · TBT 0 ms.
+
+## Decisiones de motion
+
+1. **CSS puro, cero librerías** (sin framer-motion): tokens --dur-fast/
+   base/slow (120/200/320 ms) y 3 easings en :root; TODO movimiento los
+   usa. El "spring" (--ease-asentar) vive en exactamente DOS lugares:
+   command palette y flash de números — la contención es la firma.
+2. **Solo transform/opacity/color.** El marcador "ahora" de la cinta se
+   mueve con translateX en px medidos por ResizeObserver — alineado al
+   sistema de % de las píldoras sin animar `left` (layout). El colapso de
+   la cinta (56→8px) es swap instantáneo: un cambio de layout no se
+   disfraza animando layout.
+3. **Entrada por capas keyed por ruta:** wrapper `.vista` remonta por
+   pathname (una corrida por navegación, jamás en re-render); crossfade
+   de entrada 150ms contra el chrome estable — sin árboles dobles ni
+   AnimatePresence.
+4. **NumeroVivo nunca anima el primer render** (un número sellado aparece
+   quieto: es un registro) y reserva su ancho en `ch` con tabular-nums —
+   el count-up y el flash son pintura pura, cero reflow en tablas
+   (afinación pedida en la revisión del plan).
+5. **La píldora espera al marcador:** cuando "ahora" cruza un borde de
+   sesión, la píldora transiciona con 100ms de delay — las dos
+   transiciones no compiten (afinación pedida). El estado abierta/cerrada
+   entre refetches se deriva client-side de los timestamps del server:
+   presentación pura, jamás una señal.
+6. **Flecha de contagio:** pulso de dash-offset a 8s/ciclo SOLO cuando hay
+   predicciones vigentes viajando a esa sesión; sin predicciones, la
+   flecha queda estática.
+7. **prefers-reduced-motion = un interruptor:** tokens a 0ms + kill global
+   de animaciones/transiciones; verificado con Playwright
+   (animationDuration 0.01ms).
+
+## Decisiones de teclado
+
+8. **Cmd+K sin dependencias:** palette propio (vistas, 27 tickers por
+   nombre o símbolo con normalización de acentos, acciones rápidas);
+   secuencias g+h/a/c/m/r/i/t con ventana de 1s; ? abre el mapa; nada
+   escucha cuando se escribe en un input. Focus ring cyan 2px/offset 2px
+   en todo elemento interactivo.
+
+## Estados y detalle
+
+9. **Skeletons con las proporciones del contenido real** (tiles/tabla/
+   card) — CLS 0.0 medido; errores con causa visible y botón Reintentar
+   (verificado: API bloqueada → banner → reintento recupera); espaciados
+   normalizados a múltiplos de 4px (los valores de posicionamiento de la
+   cinta no son espaciado y quedaron intactos); título de pestaña
+   "MKI · {régimen} · {fecha snapshot}" y favicon SVG trazado como path
+   (sin depender de fuentes).
