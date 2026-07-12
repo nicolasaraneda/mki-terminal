@@ -78,14 +78,29 @@ export function Aperturas() {
         'Intervalo central del 80%: 8 de cada 10 gaps reales deberían caer dentro de estimado ± este semiancho.',
       render: (p) => `${p.intervalo80_pp.toFixed(1)} pp`,
     },
-    { clave: 'beta', titulo: 'β', alinear: 'der', render: (p) => p.beta.toFixed(2) },
+    {
+      clave: 'beta',
+      titulo: 'β',
+      alinear: 'der',
+      tooltip:
+        'Beta de contagio: si el SOX se movió 1%, la acción tiende a abrir β%. Regresión SOX(t−1) → apertura(t).',
+      render: (p) => p.beta.toFixed(2),
+    },
     {
       clave: 'r2',
       titulo: 'R² hist',
       alinear: 'der',
+      tooltip:
+        'Cuánta variación de la apertura explicó históricamente el SOX (0 = nada, 1 = toda). La etiqueta de señal sale de aquí.',
       render: (p) => p.r2_historico.toFixed(2),
     },
-    { clave: 'n', titulo: 'n', alinear: 'der', render: (p) => p.n_muestra },
+    {
+      clave: 'n',
+      titulo: 'n',
+      alinear: 'der',
+      tooltip: 'Sesiones usadas en la regresión (ventana rodante).',
+      render: (p) => p.n_muestra,
+    },
     {
       clave: 'senal',
       titulo: 'Señal',

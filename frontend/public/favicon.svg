@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- MKI Terminal: la M del wordmark con el punto cyan. Trazada como path
+       (sin depender de fuentes) para ser legible a 32 y 16px. -->
+  <rect width="32" height="32" rx="6" fill="#10141c"/>
+  <path d="M5 24V8h3.6l5 9.2L18.6 8H22v16h-3V14l-4.2 7.6h-1.6L9 14v10H5z"
+        fill="#e7eaf1"/>
+  <circle cx="26.5" cy="21.5" r="2.8" fill="#22d3ee"/>
+</svg>

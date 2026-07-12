@@ -121,6 +121,28 @@ html {
   font-variant-numeric: tabular-nums;
 }
 
+/* Micro-detalle (F5): scrollbars finas acordes al tema, selección cyan
+   translúcida, cursor pointer solo en lo clickeable (Tailwind 4 dejó los
+   botones con cursor default — se restituye). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::selection {
+  background: rgba(34, 211, 238, 0.22);
+  color: var(--color-text-1);
+}
+button:not(:disabled),
+[role='button'] {
+  cursor: pointer;
+}
+
 /* Pulso lento de la próxima sesión en la cinta (nunca shimmer) */
 @keyframes pulso-lento {
   0%, 100% { opacity: 1; }

@@ -26,9 +26,9 @@ export function SignalBadge({
         ? 'border-l-neg'
         : 'border-l-border-strong'
   return (
-    <article className={`rounded border border-border border-l-2 ${borde} bg-bg-2 px-3 py-2.5`}>
+    <article className={`rounded border border-border border-l-2 ${borde} bg-bg-2 px-3 py-2`}>
       <h3 className="text-[13px] font-medium text-text-1">{titulo}</h3>
-      <p className="num mt-0.5 text-xs text-text-2">{magnitud}</p>
+      <p className="num mt-1 text-xs text-text-2">{magnitud}</p>
       <p className="mt-1 text-xs leading-relaxed text-text-3">{porque}</p>
       {(nMuestra != null || r2 != null) && (
         <p className="num mt-1 text-[11px] text-text-3">
@@ -38,7 +38,7 @@ export function SignalBadge({
         </p>
       )}
       {emitidaUtc && (
-        <footer className="mt-1.5 border-t border-border pt-1.5 text-[11px] text-text-3">
+        <footer className="mt-2 border-t border-border pt-2 text-[11px] text-text-3">
           emitida {fechaHoraChile(emitidaUtc)}, antes de la apertura objetivo
         </footer>
       )}

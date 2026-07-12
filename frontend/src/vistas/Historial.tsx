@@ -214,7 +214,7 @@ export function Historial() {
           <Card titulo="Auditoría — predicciones por estado" className="capa-3">
             <ul className="divide-y divide-border text-xs">
               {d.estados.map((e) => (
-                <li key={e.Estado} className="flex justify-between py-1.5">
+                <li key={e.Estado} className="flex justify-between py-2">
                   <span className="text-text-2">{e.Estado}</span>
                   <span className="num text-text-1">{e.N}</span>
                 </li>

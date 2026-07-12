@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAperturas, useHoy, useSalud } from './lib/api'
 import { useAtajos } from './lib/atajos'
@@ -28,6 +28,14 @@ export function Layout() {
   const navigate = useNavigate()
   const meta = salud.data?.meta
   const snapshotViejo = salud.data?.datos.snapshot_viejo ?? false
+
+  // Título de pestaña dinámico (F5): estado del sistema de un vistazo
+  // incluso con la pestaña en segundo plano.
+  useEffect(() => {
+    const regimen = meta?.regimen ?? 'sin régimen'
+    const fecha = meta?.snapshot_hoy?.fecha ?? 'sin snapshot'
+    document.title = `MKI · ${regimen} · ${fecha}`
+  }, [meta?.regimen, meta?.snapshot_hoy?.fecha])
 
   const [paleta, setPaleta] = useState(false)
   const [ayuda, setAyuda] = useState(false)
@@ -75,7 +83,7 @@ export function Layout() {
       )}
 
       {snapshotViejo && (
-        <div className="flex items-center gap-2 border-b border-border bg-bg-1 px-4 py-1.5 text-[11px] text-text-2">
+        <div className="flex items-center gap-2 border-b border-border bg-bg-1 px-4 py-2 text-[11px] text-text-2">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warn" aria-hidden />
           El último snapshot tiene más de un día hábil — las señales mostradas
           pueden estar desactualizadas. El próximo se sella a las 18:15 de un
@@ -90,7 +98,7 @@ export function Layout() {
               key={v.ruta}
               to={v.ruta}
               className={({ isActive }) =>
-                `block border-l-2 px-4 py-1.5 text-[13px] ${
+                `block border-l-2 px-4 py-2 text-[13px] ${
                   isActive
                     ? 'border-cyan bg-bg-2 font-medium text-text-1'
                     : 'border-transparent text-text-2 hover:bg-bg-2 hover:text-text-1'
@@ -122,7 +130,7 @@ export function Layout() {
         </span>
         <button
           onClick={() => setAyuda(true)}
-          className="num ml-auto rounded border border-border bg-bg-2 px-1.5 py-0.5 text-[10px] hover:text-text-2"
+          className="num ml-auto rounded border border-border bg-bg-2 px-2 py-1 text-[10px] hover:text-text-2"
           aria-label="Mapa de atajos de teclado"
           title="Atajos de teclado"
         >

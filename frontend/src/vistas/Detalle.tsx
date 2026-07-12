@@ -153,7 +153,7 @@ export function Detalle() {
             {d.correlaciones_top.length > 0 ? (
               <ul className="divide-y divide-border text-xs">
                 {d.correlaciones_top.map((c) => (
-                  <li key={c.ticker} className="flex justify-between py-1.5">
+                  <li key={c.ticker} className="flex justify-between py-2">
                     <Link to={`/detalle/${c.ticker}`} className="text-text-2 hover:text-text-1">
                       {c.nombre}
                     </Link>

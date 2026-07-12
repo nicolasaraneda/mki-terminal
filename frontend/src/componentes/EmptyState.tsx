@@ -48,13 +48,13 @@ export function EsqueletoTiles({ n = 4 }: { n?: number }) {
 export function EsqueletoTabla({ filas = 8 }: { filas?: number }) {
   return (
     <div className="rounded-md border border-border bg-bg-1">
-      <div className="border-b border-border px-4 py-2.5">
+      <div className="border-b border-border px-4 py-2">
         <div className="cargando h-3.5 w-48" />
       </div>
       <div className="p-4">
         <div className="cargando mb-2 h-4 w-full" />
         {Array.from({ length: filas }).map((_, i) => (
-          <div key={i} className="cargando mb-1.5 h-7 w-full" />
+          <div key={i} className="cargando mb-2 h-7 w-full" />
         ))}
       </div>
     </div>
@@ -72,7 +72,7 @@ export function EsqueletoCard({
   return (
     <div className="rounded-md border border-border bg-bg-1">
       {conTitulo && (
-        <div className="border-b border-border px-4 py-2.5">
+        <div className="border-b border-border px-4 py-2">
           <div className="cargando h-3.5 w-40" />
         </div>
       )}
@@ -96,14 +96,14 @@ export function ErrorCarga({
     <div className="mx-auto flex max-w-6xl items-center gap-3 rounded-md border border-neg/30 bg-bg-1 px-4 py-3">
       <div className="min-w-0 flex-1">
         <p className="text-[13px] text-text-1">No se pudieron cargar los datos</p>
-        <p className="mt-0.5 truncate text-xs text-text-3" title={mensaje}>
+        <p className="mt-1 truncate text-xs text-text-3" title={mensaje}>
           {mensaje} — ¿está corriendo la API en :8000? (uvicorn api.main:app)
         </p>
       </div>
       {alReintentar && (
         <button
           onClick={alReintentar}
-          className="shrink-0 rounded border border-border bg-bg-2 px-3 py-1.5 text-xs text-text-2 hover:border-border-strong hover:text-text-1"
+          className="shrink-0 rounded border border-border bg-bg-2 px-3 py-2 text-xs text-text-2 hover:border-border-strong hover:text-text-1"
         >
           Reintentar
         </button>

@@ -45,6 +45,8 @@ export function Mercados() {
       clave: 'beta',
       titulo: 'β contagio',
       alinear: 'der',
+      tooltip:
+        'Si el SOX se movió 1% ayer, la acción tiende a abrir β% hoy. Regresión SOX(t−1) → acción(t).',
       render: (b) => (
         <span className="text-text-1">{b.beta.toFixed(2)}</span>
       ),
@@ -53,9 +55,17 @@ export function Mercados() {
       clave: 'r2',
       titulo: 'R² hist',
       alinear: 'der',
+      tooltip:
+        'Cuánta variación explicó históricamente la regresión (0 = nada, 1 = toda).',
       render: (b) => b.r2_historico.toFixed(2),
     },
-    { clave: 'n', titulo: 'n', alinear: 'der', render: (b) => b.n_muestra },
+    {
+      clave: 'n',
+      titulo: 'n',
+      alinear: 'der',
+      tooltip: 'Sesiones usadas en la regresión (ventana rodante).',
+      render: (b) => b.n_muestra,
+    },
   ]
 
   return (

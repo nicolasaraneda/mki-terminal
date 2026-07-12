@@ -114,7 +114,7 @@ export function CintaHusos({
         onClick={() => setAbierta(!abierta)}
         aria-expanded={abierta}
         aria-label={abierta ? 'Colapsar cinta de husos' : 'Expandir cinta de husos'}
-        className="absolute right-2 top-1 z-10 rounded px-1.5 text-[10px] text-text-3 hover:bg-bg-2 hover:text-text-2"
+        className="absolute right-2 top-1 z-10 rounded px-2 text-[10px] text-text-3 hover:bg-bg-2 hover:text-text-2"
       >
         {abierta ? '▾' : '▸ husos'}
       </button>

@@ -26,7 +26,7 @@ export function NewsSentiment({ titulares }: { titulares: Titular[] }) {
             ) : (
               <p className="text-[13px] leading-snug text-text-1">{t.titular}</p>
             )}
-            <p className="mt-0.5 text-[11px] text-text-3">
+            <p className="mt-1 text-[11px] text-text-3">
               {t.fuente} · {t.fecha}
               {t.tickers ? ` · ${t.tickers}` : ''}
             </p>

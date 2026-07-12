@@ -130,7 +130,7 @@ export function Comparador() {
       <Card titulo="Selección" className="capa-1">
         {universoApi.isLoading && <Cargando alto="h-16" />}
         {universo.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {universo.map((t) => {
               const activo = seleccion.includes(t.ticker)
               return (

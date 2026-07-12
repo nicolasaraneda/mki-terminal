@@ -87,7 +87,7 @@ export function Analisis() {
           {sentimientos.length > 0 ? (
             <ul className="divide-y divide-border text-xs">
               {sentimientos.map(([t, s]) => (
-                <li key={t} className="flex items-center justify-between py-1.5">
+                <li key={t} className="flex items-center justify-between py-2">
                   <Link to={`/detalle/${t}`} className="text-text-2 hover:text-text-1">
                     {t}
                   </Link>
@@ -125,7 +125,7 @@ export function Analisis() {
           {enBuzz.length > 0 ? (
             <ul className="divide-y divide-border text-xs">
               {enBuzz.map(([t, b]) => (
-                <li key={t} className="flex justify-between py-1.5">
+                <li key={t} className="flex justify-between py-2">
                   <Link to={`/detalle/${t}`} className="text-text-1 hover:underline">
                     {t}
                   </Link>

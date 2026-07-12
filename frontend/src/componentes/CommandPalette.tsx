@@ -167,7 +167,7 @@ export function CommandPalette({
             </li>
           )}
         </ul>
-        <p className="border-t border-border px-4 py-1.5 text-[10px] text-text-3">
+        <p className="border-t border-border px-4 py-2 text-[10px] text-text-3">
           ↑↓ navegar · Enter abrir · Esc cerrar
         </p>
       </div>

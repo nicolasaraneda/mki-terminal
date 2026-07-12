@@ -3,13 +3,13 @@
 export function RegimeChip({ etiqueta }: { etiqueta: string | null }) {
   if (!etiqueta) {
     return (
-      <span className="rounded border border-border px-2 py-0.5 text-[11px] text-text-3">
+      <span className="rounded border border-border px-2 py-1 text-[11px] text-text-3">
         régimen: sin datos
       </span>
     )
   }
   return (
-    <span className="rounded border border-cyan-dim bg-bg-2 px-2 py-0.5 text-[11px] font-medium text-cyan">
+    <span className="rounded border border-cyan-dim bg-bg-2 px-2 py-1 text-[11px] font-medium text-cyan">
       {etiqueta}
     </span>
   )

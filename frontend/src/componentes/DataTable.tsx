@@ -31,7 +31,7 @@ export function DataTable<T>({
               <th
                 key={c.clave}
                 title={c.tooltip}
-                className={`px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-text-3 ${
+                className={`px-2 py-2 text-[11px] font-medium uppercase tracking-wider text-text-3 ${
                   c.alinear === 'der' ? 'text-right' : 'text-left'
                 } ${c.tooltip ? 'cursor-help underline decoration-dotted decoration-border-strong underline-offset-2' : ''}`}
               >
@@ -52,7 +52,7 @@ export function DataTable<T>({
               {columnas.map((c) => (
                 <td
                   key={c.clave}
-                  className={`px-2 py-1.5 ${
+                  className={`px-2 py-2 ${
                     c.alinear === 'der' ? 'num text-right' : 'text-left'
                   }`}
                 >

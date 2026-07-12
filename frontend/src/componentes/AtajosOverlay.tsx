@@ -43,9 +43,9 @@ export function AtajosOverlay({ alCerrar }: { alCerrar: () => void }) {
         </h2>
         <ul className="divide-y divide-border">
           {ATAJOS.map(([tecla, accion]) => (
-            <li key={tecla} className="flex items-center justify-between py-1.5 text-[12px]">
+            <li key={tecla} className="flex items-center justify-between py-2 text-[12px]">
               <span className="text-text-2">{accion}</span>
-              <kbd className="num rounded border border-border bg-bg-2 px-1.5 py-0.5 text-[11px] text-text-1">
+              <kbd className="num rounded border border-border bg-bg-2 px-2 py-1 text-[11px] text-text-1">
                 {tecla}
               </kbd>
             </li>
