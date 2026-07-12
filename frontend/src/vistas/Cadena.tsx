@@ -13,7 +13,7 @@ import type { DatosCadena } from '../lib/tipos'
 import { Card } from '../componentes/Card'
 import { Sparkline } from '../componentes/Sparkline'
 import { SignalBadge } from '../componentes/SignalBadge'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard } from '../componentes/EmptyState'
 
 // ============================================================
 // /cadena — la tesis del producto: roca → chip → data center.
@@ -24,16 +24,17 @@ import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
 const pct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}`
 
 export function Cadena() {
-  const { data, isLoading, error } = useApi<DatosCadena>('/cadena')
+  const { data, isLoading, error, refetch } = useApi<DatosCadena>('/cadena')
 
   if (isLoading)
     return (
       <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-40" />
-        <Cargando alto="h-64" />
+        <EsqueletoCard alto="h-40" />
+        <EsqueletoCard alto="h-60" />
+        <EsqueletoCard alto="h-40" />
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
 
@@ -171,7 +172,10 @@ export function Cadena() {
             </p>
           </>
         ) : (
-          <EmptyState titulo="Sin pares con historia suficiente (mínimo 120 sesiones)" />
+          <EmptyState
+            titulo="Sin pares con historia suficiente (mínimo 120 sesiones)"
+            detalle="Se completan solos a medida que la descarga diaria acumule historia común por par."
+          />
         )}
       </Card>
     </div>

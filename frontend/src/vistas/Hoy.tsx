@@ -5,7 +5,7 @@ import { StatTile } from '../componentes/StatTile'
 import { SignalBadge } from '../componentes/SignalBadge'
 import { Sparkline } from '../componentes/Sparkline'
 import { NewsSentiment } from '../componentes/NewsSentiment'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard, EsqueletoTiles } from '../componentes/EmptyState'
 import { distanciaHumana, fechaCorta, horaChile } from '../lib/tiempo'
 import { rangoIntervalo80 } from '../lib/formato'
 
@@ -21,17 +21,19 @@ const tonoRoca = (v: number): 'frio' | 'caliente' | 'neutro' =>
 // ============================================================
 
 export function Hoy() {
-  const { data, isLoading, error } = useHoy()
+  const { data, isLoading, error, refetch } = useHoy()
 
   if (isLoading)
     return (
-      <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-24" />
-        <Cargando alto="h-48" />
-        <Cargando alto="h-48" />
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-3"><EsqueletoTiles /></div>
+        <div className="lg:col-span-2"><EsqueletoCard alto="h-36" /></div>
+        <EsqueletoCard alto="h-36" />
+        <div className="lg:col-span-2"><EsqueletoCard alto="h-44" /></div>
+        <EsqueletoCard alto="h-44" />
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
 
@@ -138,11 +140,17 @@ export function Hoy() {
                 ))}
               </div>
             ) : (
-              <EmptyState titulo="Sin predicciones para este exchange" />
+              <EmptyState
+                titulo="Sin predicciones para este exchange"
+                detalle="Aparecen con el próximo snapshot (18:15 Chile) si el motor tiene betas suficientes para sus acciones."
+              />
             )}
           </>
         ) : (
-          <EmptyState titulo="Sin sesión próxima identificable" />
+          <EmptyState
+            titulo="Sin sesión próxima identificable"
+            detalle="Los calendarios de bolsa no entregaron la siguiente sesión — se resuelve solo al refrescar."
+          />
         )}
       </Card>
 

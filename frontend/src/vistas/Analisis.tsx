@@ -4,7 +4,7 @@ import { useApi } from '../lib/api'
 import type { DatosNoticias, Instrumento } from '../lib/tipos'
 import { Card } from '../componentes/Card'
 import { NewsSentiment } from '../componentes/NewsSentiment'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard, EsqueletoTabla } from '../componentes/EmptyState'
 
 // ============================================================
 // /analisis — la capa de noticias IA, servida SOLO desde el cache de
@@ -24,12 +24,19 @@ export function Analisis() {
 
   if (noticias.isLoading && !noticias.data)
     return (
-      <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-24" />
-        <Cargando alto="h-64" />
+      <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-3">
+        <div className="grid content-start gap-4 lg:col-span-2">
+          <EsqueletoCard alto="h-20" />
+          <EsqueletoTabla filas={8} />
+        </div>
+        <div className="grid content-start gap-4">
+          <EsqueletoCard alto="h-56" />
+          <EsqueletoCard alto="h-24" />
+        </div>
       </div>
     )
-  if (noticias.error) return <ErrorCarga mensaje={String(noticias.error)} />
+  if (noticias.error)
+    return <ErrorCarga mensaje={String(noticias.error)} alReintentar={() => noticias.refetch()} />
   if (!noticias.data) return null
   const d = noticias.data.datos
 
@@ -103,7 +110,10 @@ export function Analisis() {
               ))}
             </ul>
           ) : (
-            <EmptyState titulo="Sin sentimiento calculado en cache" />
+            <EmptyState
+              titulo="Sin sentimiento calculado en cache"
+              detalle="Se llena con el próximo análisis IA (acción manual desde el dashboard Streamlit)."
+            />
           )}
           <p className="mt-2 border-t border-border pt-2 text-[11px] leading-relaxed text-text-3">
             Promedio ponderado por frescura (decaimiento temporal) y relevancia

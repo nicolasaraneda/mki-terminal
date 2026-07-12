@@ -12,7 +12,7 @@ import type { DatosHistorial } from '../lib/tipos'
 import { Card } from '../componentes/Card'
 import { StatTile } from '../componentes/StatTile'
 import { DataTable, type Columna } from '../componentes/DataTable'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard, EsqueletoTabla, EsqueletoTiles } from '../componentes/EmptyState'
 import { fechaCorta, fechaHoraChile } from '../lib/tiempo'
 
 // ============================================================
@@ -28,16 +28,20 @@ const num = (v: string | number | null, dec = 2) =>
   v == null ? '—' : typeof v === 'number' ? v.toFixed(dec) : v
 
 export function Historial() {
-  const { data, isLoading, error } = useApi<DatosHistorial>('/historial')
+  const { data, isLoading, error, refetch } = useApi<DatosHistorial>('/historial')
 
   if (isLoading)
     return (
       <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-24" />
-        <Cargando alto="h-64" />
+        <EsqueletoTiles />
+        <EsqueletoCard alto="h-48" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <EsqueletoTabla filas={6} />
+          <EsqueletoCard alto="h-64" />
+        </div>
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
 
@@ -198,7 +202,10 @@ export function Historial() {
               clavePor={(f) => `${f['Fecha']}-${f['Ticker']}`}
             />
           ) : (
-            <EmptyState titulo="Sin verificaciones registradas todavía" />
+            <EmptyState
+              titulo="Sin verificaciones registradas todavía"
+              detalle="La primera existirá cuando cierre la sesión objetivo de una predicción sellada y el verificador corra con datos."
+            />
           )}
         </Card>
 
@@ -228,7 +235,10 @@ export function Historial() {
                 clavePor={(f) => String(f['Fecha'])}
               />
             ) : (
-              <EmptyState titulo="Sin snapshots registrados" />
+              <EmptyState
+                titulo="Sin snapshots registrados"
+                detalle="El primero se sella a las 18:15 de un día hábil (launchd) o al abrir el dashboard Streamlit."
+              />
             )}
           </Card>
         </div>

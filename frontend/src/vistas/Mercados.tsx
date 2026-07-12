@@ -5,7 +5,7 @@ import { Card } from '../componentes/Card'
 import { StatTile } from '../componentes/StatTile'
 import { DataTable, type Columna } from '../componentes/DataTable'
 import { CorrHeatmap } from '../componentes/CorrHeatmap'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard, EsqueletoTabla } from '../componentes/EmptyState'
 
 // ============================================================
 // /mercados — cómo viaja el contagio: betas SOX(t−1) → acción(t),
@@ -16,16 +16,16 @@ import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
 type Beta = DatosMercados['betas'][number]
 
 export function Mercados() {
-  const { data, isLoading, error } = useApi<DatosMercados>('/mercados')
+  const { data, isLoading, error, refetch } = useApi<DatosMercados>('/mercados')
 
   if (isLoading)
     return (
       <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-64" />
-        <Cargando alto="h-40" />
+        <EsqueletoTabla filas={10} />
+        <EsqueletoCard alto="h-40" />
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
 
@@ -71,7 +71,10 @@ export function Mercados() {
             </p>
           </>
         ) : (
-          <EmptyState titulo="Sin betas disponibles (mínimo 40 sesiones por acción)" />
+          <EmptyState
+            titulo="Sin betas disponibles (mínimo 40 sesiones por acción)"
+            detalle="Se calculan solas cuando la descarga diaria acumule esa historia."
+          />
         )}
       </Card>
 

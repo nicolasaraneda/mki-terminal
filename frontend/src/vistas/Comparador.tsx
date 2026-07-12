@@ -194,11 +194,14 @@ export function Comparador() {
       {/* gráfico base 100 */}
       <Card titulo={`Rendimiento base 100 (${base === 'usd' ? 'USD' : 'local'})`} className="capa-2">
         {!habilitado ? (
-          <EmptyState titulo="Selecciona al menos 2 acciones" />
+          <EmptyState
+            titulo="Selecciona al menos 2 acciones"
+            detalle="Con dos o más chips activos, el gráfico base 100 aparece al instante."
+          />
         ) : comparador.isLoading ? (
           <Cargando alto="h-72" />
         ) : comparador.error ? (
-          <ErrorCarga mensaje={String(comparador.error)} />
+          <ErrorCarga mensaje={String(comparador.error)} alReintentar={() => comparador.refetch()} />
         ) : filasGrafico.length > 0 ? (
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={filasGrafico} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
@@ -253,7 +256,10 @@ export function Comparador() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <EmptyState titulo="Sin datos para ese rango" />
+          <EmptyState
+            titulo="Sin datos para ese rango"
+            detalle="Prueba un período más largo — la descarga cubre hasta 3 años."
+          />
         )}
       </Card>
 

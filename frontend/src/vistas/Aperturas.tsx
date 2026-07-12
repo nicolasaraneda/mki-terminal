@@ -3,7 +3,7 @@ import { useAperturas } from '../lib/api'
 import { Card } from '../componentes/Card'
 import { StatTile } from '../componentes/StatTile'
 import { DataTable, type Columna } from '../componentes/DataTable'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoTabla, EsqueletoTiles } from '../componentes/EmptyState'
 import { fechaCorta, fechaHoraChile, horaChile } from '../lib/tiempo'
 import { NumeroVivo } from '../componentes/NumeroVivo'
 import type { Prediccion } from '../lib/tipos'
@@ -17,16 +17,16 @@ import type { Prediccion } from '../lib/tipos'
 const pct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`
 
 export function Aperturas() {
-  const { data, isLoading, error } = useAperturas()
+  const { data, isLoading, error, refetch } = useAperturas()
 
   if (isLoading)
     return (
       <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-20" />
-        <Cargando alto="h-64" />
+        <EsqueletoTiles />
+        <EsqueletoTabla filas={8} />
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
 

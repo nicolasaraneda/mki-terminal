@@ -6,7 +6,7 @@ import { StatTile } from '../componentes/StatTile'
 import { SignalBadge } from '../componentes/SignalBadge'
 import { CandleChart } from '../componentes/CandleChart'
 import { NewsSentiment } from '../componentes/NewsSentiment'
-import { Cargando, EmptyState, ErrorCarga } from '../componentes/EmptyState'
+import { EmptyState, ErrorCarga, EsqueletoCard } from '../componentes/EmptyState'
 import { rangoIntervalo80 } from '../lib/formato'
 
 // ============================================================
@@ -17,16 +17,22 @@ import { rangoIntervalo80 } from '../lib/formato'
 
 export function Detalle() {
   const { ticker } = useParams<{ ticker: string }>()
-  const { data, isLoading, error } = useApi<DatosDetalle>(`/detalle/${ticker}`)
+  const { data, isLoading, error, refetch } = useApi<DatosDetalle>(`/detalle/${ticker}`)
 
   if (isLoading)
     return (
       <div className="mx-auto grid max-w-6xl gap-4">
-        <Cargando alto="h-16" />
-        <Cargando alto="h-80" />
+        <EsqueletoCard alto="h-8" conTitulo={false} />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2"><EsqueletoCard alto="h-[340px]" /></div>
+          <div className="grid content-start gap-4">
+            <EsqueletoCard alto="h-40" />
+            <EsqueletoCard alto="h-32" />
+          </div>
+        </div>
       </div>
     )
-  if (error) return <ErrorCarga mensaje={String(error)} />
+  if (error) return <ErrorCarga mensaje={String(error)} alReintentar={() => refetch()} />
   if (!data) return null
   const d = data.datos
   const m = d.metricas
@@ -66,7 +72,10 @@ export function Detalle() {
           {d.ohlc.length > 0 ? (
             <CandleChart velas={d.ohlc} alto={340} />
           ) : (
-            <EmptyState titulo="Sin datos OHLC disponibles" />
+            <EmptyState
+              titulo="Sin datos OHLC disponibles"
+              detalle="Yahoo no entregó velas para este ticker — suele reaparecer al recargar más tarde."
+            />
           )}
         </Card>
 
@@ -153,7 +162,10 @@ export function Detalle() {
                 ))}
               </ul>
             ) : (
-              <EmptyState titulo="Sin correlaciones calculables" />
+              <EmptyState
+                titulo="Sin correlaciones calculables"
+                detalle="Requieren retornos superpuestos con el resto del universo — llegan con más historia descargada."
+              />
             )}
           </Card>
         </div>

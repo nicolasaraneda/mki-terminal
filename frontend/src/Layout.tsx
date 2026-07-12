@@ -75,9 +75,11 @@ export function Layout() {
       )}
 
       {snapshotViejo && (
-        <div className="border-b border-warn/25 bg-bg-1 px-4 py-1.5 text-[11px] text-warn">
+        <div className="flex items-center gap-2 border-b border-border bg-bg-1 px-4 py-1.5 text-[11px] text-text-2">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warn" aria-hidden />
           El último snapshot tiene más de un día hábil — las señales mostradas
-          pueden estar desactualizadas.
+          pueden estar desactualizadas. El próximo se sella a las 18:15 de un
+          día hábil (o al abrir el dashboard Streamlit).
         </div>
       )}
 
