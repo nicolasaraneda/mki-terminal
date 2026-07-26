@@ -18,6 +18,7 @@ const VISTAS = [
   { ruta: '/comparador', etiqueta: 'Comparador' },
   { ruta: '/analisis', etiqueta: 'Análisis IA' },
   { ruta: '/historial', etiqueta: 'Historial' },
+  { ruta: '/salud', etiqueta: 'Salud' },
 ]
 
 export function Layout() {
@@ -79,6 +80,15 @@ export function Layout() {
           husos={hoy.data.datos.husos}
           objetivo={hoy.data.datos.proxima_apertura?.exchange ?? null}
           predicciones={aperturas.data?.datos.predicciones ?? []}
+          descarga={
+            meta?.snapshot_hoy?.descarga_ok != null &&
+            meta.snapshot_hoy.descarga_total != null
+              ? {
+                  ok: meta.snapshot_hoy.descarga_ok,
+                  total: meta.snapshot_hoy.descarga_total,
+                }
+              : null
+          }
         />
       )}
 
@@ -126,7 +136,8 @@ export function Layout() {
           <span className="num">
             {meta?.snapshot_hoy ? fechaHoraChile(meta.snapshot_hoy.timestamp_utc) : '—'}
           </span>{' '}
-          · modelo v{meta?.modelo_version ?? '—'}
+          · modelo v{meta?.modelo_version ?? '—'} · plataforma v
+          {meta?.plataforma_version ?? '—'}
         </span>
         <button
           onClick={() => setAyuda(true)}

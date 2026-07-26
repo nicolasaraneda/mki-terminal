@@ -226,3 +226,62 @@ def test_husos_cinta():
     if not abiertas:
         assert len(proximas) >= 1
         assert len({h["apertura_utc"] for h in proximas}) == 1
+
+
+# ------------------------------------------------------------
+# Enmienda 5.0: bloque operacional, Wilson, calibración, desgloses
+# ------------------------------------------------------------
+def test_meta_versionado_dual():
+    from version import PLATAFORMA_VERSION
+    meta = cliente.get("/api/salud").json()["meta"]
+    assert meta["plataforma_version"] == PLATAFORMA_VERSION
+    assert meta["modelo_version"] == MODELO_VERSION  # el modelo sigue congelado
+
+
+def test_salud_operacion():
+    datos = cliente.get("/api/salud").json()["datos"]
+    op = datos["operacion"]
+    assert {j["job"] for j in op["jobs"]} == {"noticias", "snapshot", "reporte",
+                                              "backup", "vigia"}
+    for j in op["jobs"]:
+        assert isinstance(j["ok"], bool) and j["detalle"]
+    assert isinstance(op["es_dia_habil"], bool)
+    assert op["presupuesto"]["tope_usd"] > 0
+    assert any(d["nombre"] == "senales.db" for d in op["dbs"])
+    assert datos["versiones"]["plataforma"]
+
+
+def test_historial_wilson_contra_formula():
+    """El Wilson servido corresponde a los aciertos reales de la DB."""
+    from api.utilidades import intervalo_wilson
+    datos = cliente.get("/api/historial").json()["datos"]
+    df = senales.verificaciones_detalle()
+    if df.empty:
+        assert datos["wilson"] is None
+        return
+    k, n = int(df["acierto_gap"].sum()), len(df)
+    lo, hi = intervalo_wilson(k, n)
+    w = datos["wilson"]["gap"]
+    assert (w["pct"], w["lo_pct"], w["hi_pct"], w["n"]) == (
+        round(100 * k / n, 1), lo, hi, n)
+    assert w["lo_pct"] < w["pct"] < w["hi_pct"]
+
+
+def test_historial_curva_y_desgloses():
+    datos = cliente.get("/api/historial").json()["datos"]
+    curva = datos["calibracion_curva"]
+    if curva is not None:
+        assert curva["nominal_pct"] == sorted(curva["nominal_pct"])
+        # la cobertura empírica es monótona no-decreciente con el nominal
+        assert all(a <= b for a, b in zip(curva["real_pct"], curva["real_pct"][1:]))
+        # y en 80% nominal debe coincidir con la calibración clásica servida
+        idx80 = curva["nominal_pct"].index(80)
+        if datos["calibracion"].get("suficiente"):
+            assert abs(curva["real_pct"][idx80]
+                       - datos["calibracion"]["cobertura_pct"]) < 0.11
+    # los desgloses recomponen el total
+    df = senales.verificaciones_detalle()
+    for clave in ("por_region", "por_regimen"):
+        assert sum(f["n"] for f in datos[clave]) == len(df)
+        for f in datos[clave]:
+            assert f["wilson_lo_pct"] <= f["gap_pct"] <= f["wilson_hi_pct"]

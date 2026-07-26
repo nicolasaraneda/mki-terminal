@@ -5,11 +5,18 @@ export interface Meta {
   fecha_datos: string
   regimen: string | null
   modelo_version: string
+  /** 5.0: versionado dual — la plataforma evoluciona, el modelo sigue congelado */
+  plataforma_version: string
   snapshot_hoy: {
     fecha: string
     origen: string
     timestamp_utc: string
     modelo_version: string
+    /** 5.0: salud de descarga SELLADA (null en sellos pre-5.0) */
+    descarga_ok: number | null
+    descarga_total: number | null
+    descarga_caidos: string | null
+    plataforma_version: string | null
   } | null
 }
 
@@ -130,13 +137,50 @@ export interface Serie {
   valores: number[]
 }
 
+export interface JobOperacion {
+  job: 'noticias' | 'snapshot' | 'reporte' | 'backup' | 'vigia'
+  hora_programada: string
+  ok: boolean
+  detalle: string
+  log: string
+  log_modificado_utc: string | null
+}
+
+export interface Operacion {
+  es_dia_habil: boolean
+  jobs: JobOperacion[]
+  descarga_semana: {
+    fecha: string
+    origen: string
+    descarga_ok: number | null
+    descarga_total: number | null
+    descarga_caidos: string | null
+  }[]
+  verificaciones: {
+    estados: { Estado: string; N: number }[]
+    pendientes: { fecha: string; ticker: string; sesion_objetivo: string; exchange: string }[]
+    atascadas: { fecha: string; ticker: string; sesion_objetivo: string; exchange: string }[]
+  }
+  presupuesto: {
+    fecha: string
+    gasto_usd: number
+    tope_usd: number
+    restante_usd: number
+    agotado: boolean
+    gasto_mes_usd: number
+    corridas_hoy: Record<string, string | number | null>[]
+  }
+  dbs: { nombre: string; bytes: number }[]
+}
+
 export interface DatosSalud {
   snapshot: Meta['snapshot_hoy']
   snapshot_viejo: boolean
   edad_snapshot_horas: number | null
   salud_datos: { ok: boolean; problemas: string[]; tickers_revisados: number }
   horarios_utc: Record<string, string>[]
-  versiones: { modelo: string; feature: string; universo: string }
+  versiones: { modelo: string; feature: string; universo: string; plataforma: string }
+  operacion: Operacion
 }
 
 export interface DatosComparador {
@@ -223,6 +267,25 @@ export interface DatosHistorial {
   }
   primera_verificacion_posible: string | null
   pendientes_en_maduracion: number
+  /** 5.0: aciertos CON su incertidumbre estadística (Wilson 95%) */
+  wilson: {
+    gap: { pct: number; lo_pct: number; hi_pct: number; n: number }
+    retorno_sesion: { pct: number; lo_pct: number; hi_pct: number; n: number }
+  } | null
+  /** 5.0: cobertura empírica vs nominal (re-escala del sigma sellado) */
+  calibracion_curva: { nominal_pct: number[]; real_pct: number[]; n: number } | null
+  por_region: DesgloseTrackRecord[]
+  por_regimen: DesgloseTrackRecord[]
+}
+
+export interface DesgloseTrackRecord {
+  region?: string
+  regimen?: string
+  n: number
+  gap_pct: number
+  wilson_lo_pct: number
+  wilson_hi_pct: number
+  mae_gap_pp: number
 }
 
 export interface DatosNoticias {

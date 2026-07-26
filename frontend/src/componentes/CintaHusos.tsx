@@ -49,12 +49,15 @@ export function CintaHusos({
   husos,
   objetivo = null,
   predicciones = [],
+  descarga = null,
 }: {
   husos: Huso[]
   /** exchange de la sesión objetivo de la predicción protagonista de /hoy */
   objetivo?: string | null
   /** predicciones vigentes (de /api/aperturas) — alimentan tooltip y flecha */
   predicciones?: Prediccion[]
+  /** 5.0: salud de descarga SELLADA del snapshot de hoy (null: sin dato) */
+  descarga?: { ok: number; total: number } | null
 }) {
   const [abierta, setAbierta] = useState(true)
   const [hover, setHover] = useState<Huso | null>(null)
@@ -110,6 +113,21 @@ export function CintaHusos({
 
   return (
     <div className="relative border-b border-border bg-bg-1">
+      {/* 5.0: badge de salud de descarga sellada, en el extremo de la cinta */}
+      {descarga && (
+        <span
+          className={`num absolute right-16 top-1 z-10 px-1 text-[10px] ${
+            descarga.ok === descarga.total ? 'text-text-3' : 'text-warn'
+          }`}
+          title={
+            descarga.ok === descarga.total
+              ? 'descarga del snapshot de hoy: lote completo'
+              : 'descarga del snapshot de hoy: INCOMPLETA — detalle en /salud'
+          }
+        >
+          descarga {descarga.ok}/{descarga.total}
+        </span>
+      )}
       <button
         onClick={() => setAbierta(!abierta)}
         aria-expanded={abierta}

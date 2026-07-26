@@ -1,4 +1,4 @@
-# Contrato de la API MKI Terminal (v1 — Etapa 4.7 "Fachada"; enmienda 4.7.1)
+# Contrato de la API MKI Terminal (v1 — Etapa 4.7 "Fachada"; enmiendas 4.7.1 y 5.0)
 
 API REST de **solo lectura** sobre el sistema existente. Regla cero: no
 duplica ni reimplementa lógica de señales — envuelve las funciones puras de
@@ -25,9 +25,13 @@ Toda respuesta tiene esta forma:
     "fecha_datos": "2026-07-05",                   // fecha del motor (hoy)
     "regimen": "Alcista · vol alta" | null,        // régimen vigente, siempre
     "modelo_version": "4.6.0",
+    "plataforma_version": "5.0.0",                 // 5.0: versionado dual
     "snapshot_hoy": {                              // null si aún no hay
       "fecha": "2026-07-05", "origen": "programado|manual|dashboard",
-      "timestamp_utc": "...", "modelo_version": "4.6.0"
+      "timestamp_utc": "...", "modelo_version": "4.6.0",
+      // 5.0: salud de descarga SELLADA del snapshot (null en sellos pre-5.0)
+      "descarga_ok": 27, "descarga_total": 28, "descarga_caidos": "MU" | null,
+      "plataforma_version": "5.0.0" | null
     }
   },
   "datos": { ... }                                 // específico del endpoint
@@ -41,7 +45,8 @@ clase, no un tooltip.
 ## Endpoints
 
 ### GET /api/salud
-Estado del sistema para el banner global y el footer.
+Estado del sistema para el banner global, el footer y (desde 5.0) la vista
+/salud — la sala de máquinas visible.
 ```json
 "datos": {
   "snapshot": {...} | null,
@@ -51,7 +56,30 @@ Estado del sistema para el banner global y el footer.
                    "auto_adjust": true},
   "horarios_utc": [{"exchange": "...", "proxima_sesion": "...",
                      "apertura_utc": "...", "cierre_utc": "..."}],
-  "versiones": {"modelo": "4.6.0", "feature": "4.6.0", "universo": "4.6.0"}
+  "versiones": {"modelo": "4.6.0", "feature": "4.6.0", "universo": "4.6.0",
+                 "plataforma": "5.0.0"},
+  // ---- Enmienda 5.0 (aditiva): bloque operacional ----
+  "operacion": {
+    "es_dia_habil": true,           // sábado/domingo: los jobs no corren
+    "jobs": [                       // los 5 jobs del día, estado según sus
+                                    // artefactos (sello, ledger, logs, git)
+      {"job": "noticias|snapshot|reporte|backup|vigia",
+       "hora_programada": "17:50", "ok": true|false, "detalle": "...",
+       "log": "data/noticias.log", "log_modificado_utc": "..." | null}
+    ],
+    "descarga_semana": [            // salud de descarga SELLADA, últimos 10
+      {"fecha", "origen", "descarga_ok", "descarga_total", "descarga_caidos"}
+    ],
+    "verificaciones": {
+      "estados": [{"estado", "n"}],
+      "pendientes": [{"fecha", "ticker", "sesion_objetivo", "exchange"}],
+      "atascadas": [{"fecha", "ticker", "sesion_objetivo", "exchange"}]
+    },
+    "presupuesto": {"fecha", "gasto_usd", "tope_usd", "restante_usd",
+                     "agotado", "gasto_mes_usd",
+                     "corridas_hoy": [{"origen", "costo_usd", "resultado", ...}]},
+    "dbs": [{"nombre": "senales.db", "bytes": 147456}]
+  }
 }
 ```
 
@@ -208,7 +236,25 @@ entidad. **Solo cache** — nunca dispara análisis nuevo.
   "snapshots": [{"fecha", "origen", "emitido_utc", "version", "ventana_betas"}],
   "puntaje_ia": {"suficiente", "n", ...} ,
   "primera_verificacion_posible": "2026-07-06",  // cuándo habrá 1er dato
-  "pendientes_en_maduracion": 8
+  "pendientes_en_maduracion": 8,
+  // ---- Enmienda 5.0 (aditiva): la incertidumbre del track record ----
+  // Intervalos de Wilson al 95% sobre los aciertos (un 78.8% con n=80 se
+  // muestra CON su incertidumbre estadística) — presentación pura.
+  "wilson": {"gap": {"pct", "lo_pct", "hi_pct", "n"},
+              "retorno_sesion": {...}} | null,
+  // Curva de calibración: cobertura EMPÍRICA vs nominal. El sello guarda el
+  // intervalo del 80% (±z80·sigma); las demás coberturas nominales se
+  // obtienen re-escalando ese mismo sigma sellado (z_q/z80) — presentación
+  // de números sellados, jamás una señal nueva.
+  "calibracion_curva": {"nominal_pct": [20,40,50,60,70,80,90,95],
+                         "real_pct": [...], "n": 80} | null,
+  // Desglose por región (exchange) y por régimen SELLADO del día de emisión,
+  // cada celda con su Wilson. La advertencia honesta va en la UI: la muestra
+  // proviene casi entera de un solo régimen.
+  "por_region": [{"region", "n", "gap_pct", "wilson_lo_pct", "wilson_hi_pct",
+                   "mae_gap_pp"}],
+  "por_regimen": [{"regimen", "n", "gap_pct", "wilson_lo_pct",
+                    "wilson_hi_pct", "mae_gap_pp"}]
 }
 ```
 

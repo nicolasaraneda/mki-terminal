@@ -21,11 +21,13 @@ import calendarios
 import motor
 import noticias
 import senales
-from api.utilidades import cache_ttl, dias_a_proximos_earnings, ohlc_1y, serie_a_lista
+from api.utilidades import (Z_POR_NOMINAL, cache_ttl, dias_a_proximos_earnings,
+                            intervalo_wilson, ohlc_1y, serie_a_lista)
 from universo import (ACCIONES, BENCHMARK, EXCHANGE_POR_TICKER, MERCADOS_POR_ABRIR,
                       MONEDA_TICKER, NIVELES_CADENA, TICKERS_POR_NIVEL, UNIVERSO,
                       nombre)
-from version import FEATURE_VERSION, MODELO_VERSION, UNIVERSO_VERSION
+from version import (FEATURE_VERSION, MODELO_VERSION, PLATAFORMA_VERSION,
+                     UNIVERSO_VERSION)
 
 app = FastAPI(title="MKI Terminal API", version="1.0",
               description="API de solo lectura sobre el motor de señales MKI")
@@ -124,6 +126,7 @@ def _meta() -> dict:
         "fecha_datos": date.today().isoformat(),
         "regimen": regimen["etiqueta"] if regimen else None,
         "modelo_version": MODELO_VERSION,
+        "plataforma_version": PLATAFORMA_VERSION,   # 5.0: versionado dual
         "snapshot_hoy": senales.info_snapshot_hoy(),
     }
 
@@ -316,6 +319,78 @@ def _husos() -> list:
 # ------------------------------------------------------------
 # Endpoints
 # ------------------------------------------------------------
+def _operacion() -> dict:
+    """Bloque operacional 5.0 (la sala de máquinas): estado de los 5 jobs
+    según sus ARTEFACTOS (sello, ledger de costos, logs, git) — los mismos
+    chequeos del vigía, reutilizados. Solo lectura."""
+    import os
+
+    import costos
+    import mki_vigia
+
+    directorio = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    definicion = [
+        ("noticias", "17:50", mki_vigia.chequear_noticias, "data/noticias.log"),
+        ("snapshot", "18:15", mki_vigia.chequear_snapshot, "data/snapshot.log"),
+        ("reporte", "18:25", mki_vigia.chequear_reporte, "data/reporte.log"),
+        ("backup", "18:40", mki_vigia.chequear_backup, "data/backup.log"),
+        ("vigia", "19:00", None, "data/vigia.log"),
+    ]
+    jobs = []
+    for nombre_job, hora, chequeo, log_rel in definicion:
+        ruta_log = os.path.join(directorio, log_rel)
+        mtime = None
+        if os.path.exists(ruta_log):
+            mtime = datetime.fromtimestamp(os.path.getmtime(ruta_log),
+                                           tz=timezone.utc).isoformat()
+        if chequeo is not None:
+            try:
+                ok, detalle = chequeo()
+            except Exception as e:
+                ok, detalle = False, f"chequeo falló: {e}"
+        else:
+            # el vigía se evalúa por su propio log (si corrió hoy, escribió)
+            hoy = date.today().isoformat()
+            ok = bool(mtime) and mtime[:10] == hoy
+            detalle = ("vigia: corrió hoy" if ok
+                       else "vigia: sin corrida registrada hoy")
+        jobs.append({"job": nombre_job, "hora_programada": hora, "ok": ok,
+                     "detalle": detalle, "log": log_rel,
+                     "log_modificado_utc": mtime})
+
+    conn = senales.get_connection()
+    try:
+        semana = [dict(zip(("fecha", "origen", "descarga_ok", "descarga_total",
+                            "descarga_caidos"), f))
+                  for f in conn.execute("""
+                      SELECT fecha, origen, descarga_ok, descarga_total,
+                             descarga_caidos
+                      FROM snapshots ORDER BY fecha DESC LIMIT 10""")]
+    finally:
+        conn.close()
+
+    dbs = []
+    for nombre_db in ("senales.db", "noticias.db", "alertas.db"):
+        ruta = os.path.join(directorio, nombre_db)
+        if os.path.exists(ruta):
+            dbs.append({"nombre": nombre_db, "bytes": os.path.getsize(ruta)})
+
+    return {
+        "es_dia_habil": date.today().weekday() < 5,
+        "jobs": jobs,
+        "descarga_semana": semana,
+        "verificaciones": {
+            "estados": senales.conteo_por_estado().to_dict(orient="records"),
+            "pendientes": senales.predicciones_por_estado(senales.ESTADO_PENDIENTE),
+            "atascadas": senales.predicciones_por_estado(senales.ESTADO_SIN_DATOS),
+        },
+        "presupuesto": {**costos.estado_presupuesto(),
+                        "gasto_mes_usd": costos.gasto_del_mes(),
+                        "corridas_hoy": costos.corridas_del_dia()},
+        "dbs": dbs,
+    }
+
+
 @app.get("/api/salud")
 def salud():
     snap = senales.info_snapshot_hoy()
@@ -343,7 +418,9 @@ def salud():
         "salud_datos": _salud_hoy(),
         "horarios_utc": horarios.to_dict(orient="records"),
         "versiones": {"modelo": MODELO_VERSION, "feature": FEATURE_VERSION,
-                      "universo": UNIVERSO_VERSION},
+                      "universo": UNIVERSO_VERSION,
+                      "plataforma": PLATAFORMA_VERSION},
+        "operacion": _operacion(),
     })
 
 
@@ -635,6 +712,59 @@ def noticias_endpoint(entidad: str = Query(None)):
     })
 
 
+REGION_POR_EXCHANGE = {"XKRX": "Corea", "XTKS": "Japón", "XTAI": "Taiwán",
+                       "XETR": "Europa", "XNYS": "EE.UU."}
+
+
+def _estadistica_track_record() -> dict:
+    """Presentación 5.0 sobre las verificaciones limpias: intervalos de
+    Wilson, curva de calibración (re-escala del sigma sellado) y desgloses
+    por región/régimen. Los datos vienen del helper de senales.py; aquí
+    solo se agrupa y se calcula incertidumbre de PRESENTACIÓN."""
+    df = senales.verificaciones_detalle()
+    if df.empty:
+        return {"wilson": None, "calibracion_curva": None,
+                "por_region": [], "por_regimen": []}
+    n = len(df)
+
+    def _wilson_dict(col: str) -> dict:
+        k = int(df[col].sum())
+        lo, hi = intervalo_wilson(k, n)
+        return {"pct": round(100 * k / n, 1), "lo_pct": lo, "hi_pct": hi, "n": n}
+
+    wilson = {"gap": _wilson_dict("acierto_gap"),
+              "retorno_sesion": _wilson_dict("acierto_direccion")}
+
+    curva = None
+    con_intervalo = df.dropna(subset=["intervalo80_pp", "apertura_estimada_pct"])
+    if len(con_intervalo) >= senales.MINIMO_OBSERVACIONES:
+        errores = (con_intervalo["gap_pct"]
+                   - con_intervalo["apertura_estimada_pct"]).abs()
+        sigma = con_intervalo["intervalo80_pp"] / Z_POR_NOMINAL[80]
+        niveles = sorted(Z_POR_NOMINAL)
+        curva = {"nominal_pct": niveles,
+                 "real_pct": [round(float((errores <= sigma * Z_POR_NOMINAL[q])
+                                          .mean() * 100), 1) for q in niveles],
+                 "n": int(len(con_intervalo))}
+
+    def _desglose(serie: pd.Series, etiqueta: str) -> list:
+        filas = []
+        for valor, grupo in df.groupby(serie):
+            k, m = int(grupo["acierto_gap"].sum()), len(grupo)
+            lo, hi = intervalo_wilson(k, m)
+            filas.append({etiqueta: valor, "n": m,
+                          "gap_pct": round(100 * k / m, 1),
+                          "wilson_lo_pct": lo, "wilson_hi_pct": hi,
+                          "mae_gap_pp": round(float(grupo["error_gap_pp"].mean()), 2)})
+        return sorted(filas, key=lambda f: -f["n"])
+
+    region = df["exchange"].map(lambda e: REGION_POR_EXCHANGE.get(e, e or "—"))
+    regimen = df["regimen"].fillna("sin régimen sellado")
+    return {"wilson": wilson, "calibracion_curva": curva,
+            "por_region": _desglose(region, "region"),
+            "por_regimen": _desglose(regimen, "regimen")}
+
+
 @app.get("/api/historial")
 def historial():
     evolucion = senales.evolucion_aciertos_apertura()
@@ -666,6 +796,7 @@ def historial():
             if k != "datos"},
         "primera_verificacion_posible": fila[0] if fila else None,
         "pendientes_en_maduracion": fila[1] if fila else 0,
+        **_estadistica_track_record(),
     })
 
 

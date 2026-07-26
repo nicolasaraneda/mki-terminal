@@ -12,6 +12,7 @@ export const RUTAS_ATAJO: Record<string, string> = {
   r: '/comparador',
   i: '/analisis',
   t: '/historial',
+  s: '/salud',
 }
 
 function escribiendo(e: KeyboardEvent): boolean {

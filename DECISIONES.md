@@ -792,3 +792,43 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
    alertas.py: componían en vivo (régimen del motor, líneas con etiquetas
    derivadas) — exactamente lo que el 2.0 prohíbe. La API conserva su
    `_etiqueta_senal` propia (custodiada por test de contrato).
+
+## WS4 — Vista /salud y calibración en /historial
+
+1. **`/api/salud` se extendió aditivamente** (contrato enmendado ANTES de
+   codear) con el bloque `operacion`: los 5 jobs evaluados por sus
+   ARTEFACTOS reutilizando los MISMOS chequeos del vigía (una sola
+   definición de "¿ocurrió el día?"), salud de descarga sellada de los
+   últimos 10 snapshots, verificaciones por estado con las atascadas
+   nombradas, presupuesto de IA con corridas del día, y tamaños de DB.
+   `meta` ganó `plataforma_version` y el `snapshot_hoy` la salud sellada
+   (versionado dual visible en footer y cabecera del reporte).
+
+2. **Fin de semana no es falla**: el bloque lleva `es_dia_habil` y la
+   vista pinta los jobs en gris neutro los sábados/domingos — un "NO se
+   selló hoy" sabatino es lo esperado, no una alerta. El vigía ya
+   descansaba los fines de semana; la vista respeta el mismo criterio.
+
+3. **La curva de calibración re-escala el sigma SELLADO** — el sello
+   guarda ±z80·sigma; la cobertura empírica a otros niveles nominales
+   (20–95%) usa z_q/z80 sobre ese mismo sigma. Cero información nueva:
+   presentación de números sellados. El test verifica monotonía de la
+   curva y coincidencia exacta con la calibración clásica en el punto 80.
+   Lectura del gráfico en la propia UI: sobre la diagonal = intervalos
+   conservadores (hoy: muy sobre — cobertura 93.8% al nominal 80%).
+
+4. **Wilson al 95% en todo acierto mostrado** (`intervalo_wilson` en
+   api/utilidades): las tiles de /historial y los desgloses muestran
+   "78.8% · IC95 [68.6–86.3]" — nunca un porcentaje desnudo con n
+   pequeño. El desglose es por región (exchange → Corea/Japón/Taiwán/
+   Europa/EE.UU.) y por régimen SELLADO del día de emisión; los 8 aciertos
+   de días con régimen vacío (la errata del 20/23-jul) forman su propio
+   bucket "sin régimen sellado" en vez de esconderse. La advertencia
+   honesta (muestra de un solo régimen; el backtest B0–B5 decidirá) quedó
+   fija en la tarjeta.
+
+5. **Badge de descarga en la cinta**: extremo derecho, "descarga 27/28" en
+   ámbar cuando el sello del día vino incompleto (gris neutro si completo,
+   ausente si no hay dato) — el estado de la fuente visible sin salir de
+   ninguna vista, con detalle en /salud. Presupuesto de cian intacto (el
+   badge usa ámbar/gris).

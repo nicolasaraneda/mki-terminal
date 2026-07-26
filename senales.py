@@ -188,17 +188,22 @@ def ya_existe_snapshot_hoy() -> bool:
 
 
 def info_snapshot_hoy() -> dict | None:
-    """Metadatos del snapshot de hoy (para la tarjeta de estado del sistema)."""
+    """Metadatos del snapshot de hoy (para la tarjeta de estado del sistema).
+    Desde 5.0 incluye la salud de descarga sellada y la versión de
+    plataforma (NULL en sellos anteriores)."""
     init_db()
     conn = get_connection()
     fila = conn.execute("""
-        SELECT fecha, creado_en, timestamp_utc, origen, modelo_version
+        SELECT fecha, creado_en, timestamp_utc, origen, modelo_version,
+               descarga_ok, descarga_total, descarga_caidos, plataforma_version
         FROM snapshots WHERE fecha = ?""", (date.today().isoformat(),)).fetchone()
     conn.close()
     if not fila:
         return None
     return {"fecha": fila[0], "creado_en": fila[1], "timestamp_utc": fila[2],
-            "origen": fila[3] or "dashboard", "modelo_version": fila[4]}
+            "origen": fila[3] or "dashboard", "modelo_version": fila[4],
+            "descarga_ok": fila[5], "descarga_total": fila[6],
+            "descarga_caidos": fila[7], "plataforma_version": fila[8]}
 
 
 def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
@@ -513,6 +518,42 @@ def ultimas_predicciones_apertura(limite: int = 50,
     """, conn, params=(modelo_version, limite))
     conn.close()
     return df
+
+
+def verificaciones_detalle(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+    """Cada verificación limpia con su CONTEXTO de emisión: exchange de la
+    predicción y régimen SELLADO del snapshot del día en que se emitió.
+    Para los desgloses por región y por régimen del /historial 5.0 — la
+    agrupación y los intervalos de Wilson son presentación (capa API)."""
+    init_db()
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT v.fecha_senal, v.ticker, v.acierto_gap, v.acierto_direccion,
+               v.error_gap_pp, v.gap_pct, v.apertura_estimada_pct,
+               s.exchange, s.intervalo80_pp, snap.regimen
+        FROM verificacion_apertura v
+        LEFT JOIN senales_ticker s
+          ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+        LEFT JOIN snapshots snap ON snap.fecha = v.fecha_senal
+        WHERE v.legacy = 0 AND v.modelo_version = ? AND v.gap_pct IS NOT NULL
+        ORDER BY v.fecha_senal
+    """, conn, params=(modelo_version,))
+    conn.close()
+    return df
+
+
+def predicciones_por_estado(estado: str) -> list:
+    """Predicciones en un estado dado (pendiente, sin_datos_mercado...) con
+    su identidad completa — para la vista /salud."""
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT fecha, ticker, sesion_objetivo, exchange FROM senales_ticker
+        WHERE estado = ? ORDER BY fecha DESC, ticker
+    """, (estado,)).fetchall()
+    conn.close()
+    return [{"fecha": f[0], "ticker": f[1], "sesion_objetivo": f[2],
+             "exchange": f[3]} for f in filas]
 
 
 def conteo_por_estado() -> pd.DataFrame:

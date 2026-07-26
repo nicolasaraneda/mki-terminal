@@ -111,7 +111,9 @@ export function Historial() {
             valor={d.metricas.suficiente ? `${d.metricas.gap!.pct_aciertos}%` : `${d.metricas.n}/${d.metricas.minimo}`}
             detalle={
               d.metricas.suficiente
-                ? `MAE ${d.metricas.gap!.mae_pp} pp · n=${d.metricas.n}`
+                ? `MAE ${d.metricas.gap!.mae_pp} pp · n=${d.metricas.n}${
+                    d.wilson ? ` · IC95 [${d.wilson.gap.lo_pct}–${d.wilson.gap.hi_pct}]` : ''
+                  }`
                 : d.primera_verificacion_posible
                   ? `en maduración — 1ª verificación posible: ${fechaCorta(d.primera_verificacion_posible)}`
                   : 'sin predicciones selladas pendientes'
@@ -122,7 +124,11 @@ export function Historial() {
             valor={d.metricas.suficiente ? `${d.metricas.retorno_sesion!.pct_aciertos}%` : `${d.metricas.n}/${d.metricas.minimo}`}
             detalle={
               d.metricas.suficiente
-                ? `MAE ${d.metricas.retorno_sesion!.mae_pp} pp`
+                ? `MAE ${d.metricas.retorno_sesion!.mae_pp} pp${
+                    d.wilson
+                      ? ` · IC95 [${d.wilson.retorno_sesion.lo_pct}–${d.wilson.retorno_sesion.hi_pct}]`
+                      : ''
+                  }`
                 : `${d.pendientes_en_maduracion} predicciones madurando`
             }
           />
@@ -146,6 +152,111 @@ export function Historial() {
           />
         </div>
       </Card>
+
+      {/* 5.0: calibración y desgloses — la incertidumbre como protagonista */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card titulo="Calibración del intervalo — cobertura real vs nominal" className="capa-2">
+          {d.calibracion_curva ? (
+            <>
+              <ResponsiveContainer width="100%" height={190}>
+                <LineChart
+                  data={d.calibracion_curva.nominal_pct.map((nom, i) => ({
+                    nominal: nom,
+                    real: d.calibracion_curva!.real_pct[i],
+                    ideal: nom,
+                  }))}
+                  margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
+                >
+                  <CartesianGrid stroke="#161b26" vertical={false} />
+                  <XAxis
+                    dataKey="nominal"
+                    unit="%"
+                    tick={{ fill: '#5d6679', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#222939' }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    unit="%"
+                    tick={{ fill: '#5d6679', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#1d2330',
+                      border: '1px solid #303a50',
+                      borderRadius: 4,
+                      fontSize: 11,
+                      fontFamily: 'JetBrains Mono',
+                    }}
+                    labelStyle={{ color: '#9aa3b7' }}
+                    formatter={(v, nombre) => [
+                      `${v}%`,
+                      nombre === 'real' ? 'cobertura real' : 'ideal (diagonal)',
+                    ]}
+                    labelFormatter={(v) => `nominal ${v}%`}
+                  />
+                  <Line type="monotone" dataKey="ideal" stroke="#3a4358" strokeWidth={1} strokeDasharray="4 4" dot={false} />
+                  <Line type="monotone" dataKey="real" stroke="#7dd3fc" strokeWidth={1.4} dot={{ r: 2.5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="mt-1 text-[11px] leading-relaxed text-text-3">
+                Sobre la diagonal = intervalos anchos (conservadores); bajo la
+                diagonal = intervalos que prometen más de lo que cubren. Curva
+                derivada re-escalando el sigma SELLADO de cada predicción ·
+                n={d.calibracion_curva.n}.
+              </p>
+            </>
+          ) : (
+            <EmptyState
+              titulo="Calibración pendiente"
+              detalle={`Se necesitan ${d.calibracion.minimo} verificaciones con intervalo sellado; hay ${d.calibracion.n}.`}
+            />
+          )}
+        </Card>
+
+        <Card titulo="Acierto de gap por región y por régimen" className="capa-2">
+          {d.por_region.length > 0 ? (
+            <>
+              {[
+                { titulo: 'Por región', filas: d.por_region, clave: 'region' as const },
+                { titulo: 'Por régimen sellado', filas: d.por_regimen, clave: 'regimen' as const },
+              ].map((bloque) => (
+                <div key={bloque.titulo} className="mb-3">
+                  <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-text-3">
+                    {bloque.titulo}
+                  </p>
+                  <ul className="divide-y divide-border text-xs">
+                    {bloque.filas.map((f) => (
+                      <li key={String(f[bloque.clave])} className="flex items-baseline gap-2 py-1.5">
+                        <span className="w-40 shrink-0 truncate text-text-2">{f[bloque.clave]}</span>
+                        <span className="num text-text-1">{f.gap_pct}%</span>
+                        <span className="num text-text-3">
+                          [{f.wilson_lo_pct}–{f.wilson_hi_pct}]
+                        </span>
+                        <span className="num ml-auto text-text-3">
+                          MAE {f.mae_gap_pp} pp · n={f.n}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <p className="border-t border-border pt-2 text-[11px] leading-relaxed text-text-2">
+                Advertencia honesta: la mayoría de la muestra proviene de un solo
+                régimen de mercado. El backtest B0–B5 (en el Laboratorio) dirá si
+                esto es señal o momentum del período.
+              </p>
+            </>
+          ) : (
+            <EmptyState
+              titulo="Sin desgloses todavía"
+              detalle="Aparecen con las primeras verificaciones limpias."
+            />
+          )}
+        </Card>
+      </div>
 
       {/* evolución de aciertos */}
       <Card titulo="Evolución de aciertos por día" className="capa-2">

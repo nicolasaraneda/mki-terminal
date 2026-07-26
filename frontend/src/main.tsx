@@ -12,6 +12,7 @@ import { Mercados } from './vistas/Mercados'
 import { Comparador } from './vistas/Comparador'
 import { Analisis } from './vistas/Analisis'
 import { Historial } from './vistas/Historial'
+import { Salud } from './vistas/Salud'
 import { Detalle } from './vistas/Detalle'
 
 const queryClient = new QueryClient({
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: '/comparador', element: <Comparador /> },
       { path: '/analisis', element: <Analisis /> },
       { path: '/historial', element: <Historial /> },
+      { path: '/salud', element: <Salud /> },
       { path: '/detalle/:ticker', element: <Detalle /> },
       // catálogo del sistema de diseño — oculto, sin enlace en la navegación
       { path: '/sistema', element: <Sistema /> },

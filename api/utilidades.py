@@ -90,3 +90,24 @@ def serie_a_lista(serie: pd.Series, redondeo: int = 4) -> dict:
         "fechas": [i.date().isoformat() for i in serie.index],
         "valores": [round(float(v), redondeo) for v in serie.values],
     }
+
+
+def intervalo_wilson(aciertos: int, n: int, z: float = 1.96) -> tuple:
+    """Intervalo de Wilson al 95% para una proporción (presentación de
+    incertidumbre estadística — Etapa 5.0: un 78.8% con n=80 se muestra CON
+    su intervalo, jamás solo). Devuelve (lo_pct, hi_pct)."""
+    if n == 0:
+        return (0.0, 100.0)
+    p = aciertos / n
+    denom = 1 + z * z / n
+    centro = (p + z * z / (2 * n)) / denom
+    margen = (z / denom) * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)
+    return (round(max(0.0, centro - margen) * 100, 1),
+            round(min(1.0, centro + margen) * 100, 1))
+
+
+# Cuantiles normales para la curva de calibración: el sello guarda el
+# intervalo del 80% (±1.2816·sigma); la cobertura a otros niveles nominales
+# se obtiene re-escalando ese sigma sellado (z_q / z_80).
+Z_POR_NOMINAL = {20: 0.2533, 40: 0.5244, 50: 0.6745, 60: 0.8416,
+                 70: 1.0364, 80: 1.2816, 90: 1.6449, 95: 1.9600}
