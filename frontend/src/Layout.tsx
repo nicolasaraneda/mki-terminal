@@ -18,6 +18,7 @@ const VISTAS = [
   { ruta: '/comparador', etiqueta: 'Comparador' },
   { ruta: '/analisis', etiqueta: 'Análisis IA' },
   { ruta: '/historial', etiqueta: 'Historial' },
+  { ruta: '/laboratorio', etiqueta: 'Laboratorio' },
   { ruta: '/salud', etiqueta: 'Salud' },
 ]
 

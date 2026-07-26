@@ -23,6 +23,7 @@ const VISTAS: [string, string][] = [
   ['Comparador', '/comparador'],
   ['Análisis IA', '/analisis'],
   ['Historial', '/historial'],
+  ['Laboratorio', '/laboratorio'],
   ['Salud', '/salud'],
 ]
 

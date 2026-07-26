@@ -1,0 +1,5 @@
+# Los resúmenes (resumen.md) se versionan; los datos crudos de cada
+# corrida no (pueden pesar y se regeneran con el mismo commit).
+*.csv
+*.json
+*.parquet

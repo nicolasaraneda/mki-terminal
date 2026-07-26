@@ -832,3 +832,45 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
    ausente si no hay dato) — el estado de la fuente visible sin salir de
    ninguna vista, con detalle en /salud. Presupuesto de cian intacto (el
    badge usa ámbar/gris).
+
+## WS5 — Motor de backtest B0→B5 (construido, probado, en espera)
+
+1. **La fuente se CONGELA al inicio de cada corrida** (`FuenteCongelada`):
+   una descarga, y motor._datos_crudos pasa a servir esos frames por la
+   duración del run. Sin esto, el TTL de 15 min de la caché del motor
+   re-descargaría a mitad de corrida y los datos cambiarían bajo los pies
+   — adiós determinismo. Mismo mecanismo de parcheo que usa
+   tests/test_motor.py desde la 4.6: la vía ya auditada.
+
+2. **Features vectorizadas retrospectivas, no llamadas `*_al` por día.**
+   Llamar regimen_al/divergencias_al para cada una de ~500 emisiones ×
+   250 filas de entrenamiento era inviable. Toda feature se construye UNA
+   vez con operaciones exclusivamente hacia atrás (rolling/shift): el
+   valor en d usa solo datos ≤ d — point-in-time por construcción, con la
+   guardia dura `validar_sin_futuro` en cada acceso. DOS desviaciones
+   documentadas respecto del motor: la residualización usa ventana
+   RODANTE de 120 (el motor usa expansiva) y la beta·SOX de las features
+   B3+ es la reconstrucción cov/var rodante — son features del backtest,
+   jamás señales de producción.
+
+3. **B2 es la excepción: llama a motor.prediccion_apertura_al tal cual.**
+   Su rol es AUDITAR el modelo congelado, no imitarlo. La auditoría de
+   reproducción del humo real: 50 predicciones selladas comparadas,
+   diferencia media 0.053 pp, máxima 0.28 pp — el framework reproduce
+   producción; el residuo es deriva de datos de la fuente (hallazgo
+   4.7.1), y el resumen lo dice con esas palabras.
+
+4. **IC de una predicción constante = 0** (no "sin dato"): así "B1 vs B0"
+   del veredicto escalonado es literalmente "momentum vs nada" con series
+   emparejadas por fecha, en vez de un hueco.
+
+5. **El humo real (jun–jul, NO-CONCLUYENTE) ya enseñó cosas**: B2 aporta
+   sobre B1 (ΔIC +0.38, t 2.57) — consistente con el track record vivo —,
+   B3–B5 no demuestran nada en 35 días con 85% de evidencia grado B, y
+   NINGUNA cartera capturable sobrevive a 25 pb en la ventana (SMH también
+   cayó −7.1%). Exactamente la clase de honestidad que el diseño exige;
+   veredicto real: Etapa 5.1.
+
+6. **resultados/**: resumen.md versionable, datos crudos (CSV/JSON)
+   gitignorados — se regeneran con el mismo commit (queda anotado el hash
+   en cada resumen).

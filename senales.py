@@ -577,7 +577,8 @@ def historial_snapshots(limite: int = 30) -> pd.DataFrame:
         SELECT fecha AS Fecha, COALESCE(origen, 'dashboard (pre-4.6)') AS Origen,
                COALESCE(timestamp_utc, creado_en) AS "Emitido (UTC)",
                COALESCE(modelo_version, 'pre-4.6') AS "Versión",
-               ventana_betas AS "Ventana betas"
+               ventana_betas AS "Ventana betas",
+               regimen AS "Régimen"
         FROM snapshots ORDER BY fecha DESC LIMIT ?
     """, conn, params=(limite,))
     conn.close()
