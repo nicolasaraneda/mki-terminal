@@ -149,7 +149,15 @@ def init_db() -> None:
         "descarga_total": "INTEGER",   # tickers esperados (universo + ^SOX)
         "descarga_caidos": "TEXT",     # lista separada por comas de los caídos
         "plataforma_version": "TEXT",  # versionado dual 5.0: plataforma vs modelo
+        # WS3: el reporte solo dice lo SELLADO — para que diga qué SOX alimentó
+        # las predicciones, ese dato se sella también (era parte del frame de
+        # predicción del motor; aditivo, cero lógica nueva).
+        "sox_usado_pct": "REAL",
+        "sox_fecha": "TEXT",
     })
+    # WS3: la beta de contagio de cada predicción también queda sellada
+    # (el motor siempre la calculó; ahora el sello la conserva).
+    _asegurar_columnas(conn, "senales_ticker", {"beta": "REAL"})
     _asegurar_columnas(conn, "divergencias", {
         "spread_simple_pct": "REAL", "z_simple": "REAL",
     })
@@ -198,7 +206,8 @@ def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
                      predicciones: list, regimen: str = None,
                      roca_chip: float = None, divergencias: list = None,
                      ventana_betas: int = None, available_at: str = None,
-                     salud_descarga: dict = None) -> bool:
+                     salud_descarga: dict = None, sox_usado_pct: float = None,
+                     sox_fecha: str = None) -> bool:
     """Guarda el snapshot del día (idempotente: si ya existe, no duplica).
 
     `predicciones`: lista de dicts con Ticker, Apertura estimada %, R2,
@@ -216,13 +225,13 @@ def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
                                origen, modelo_version, feature_version,
                                universo_version, ventana_betas,
                                descarga_ok, descarga_total, descarga_caidos,
-                               plataforma_version)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                               plataforma_version, sox_usado_pct, sox_fecha)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (fecha, timestamp_utc, regimen, roca_chip, timestamp_utc, origen,
          MODELO_VERSION, FEATURE_VERSION, UNIVERSO_VERSION, ventana_betas,
          salud.get("ok_n"), salud.get("total"),
          ",".join(salud["caidos"]) if salud.get("caidos") else None,
-         PLATAFORMA_VERSION))
+         PLATAFORMA_VERSION, sox_usado_pct, sox_fecha))
 
     for div in divergencias or []:
         conn.execute("""
@@ -246,8 +255,8 @@ def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
             (fecha, ticker, puntaje_v0, sentimiento_ia, puntaje_ia,
              apertura_estimada_pct, confianza_r2, timestamp_utc, exchange,
              sesion_objetivo, available_at, estado, intervalo80_pp, n_muestra,
-             modelo_version)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+             modelo_version, beta)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (fecha, ticker, puntaje_v0, sentimiento, puntaje_ia,
              pred["Apertura estimada %"] if pred else None,
              pred["R2"] if pred else None,
@@ -258,7 +267,8 @@ def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
              ESTADO_PENDIENTE if pred else None,
              pred.get("Intervalo80 pp") if pred else None,
              pred.get("N muestra") if pred else None,
-             MODELO_VERSION))
+             MODELO_VERSION,
+             pred.get("Beta") if pred else None))
     conn.commit()
     conn.close()
     return True
@@ -558,6 +568,42 @@ def analisis_puntaje_ia(dias: int = 90, modelo_version: str = MODELO_VERSION) ->
         "retorno_tercio_bajo": round(df.iloc[:corte]["retorno"].mean(), 2),
         "correlacion": round(correlacion, 2) if correlacion is not None else None,
     }
+
+
+def snapshot_del_dia(fecha: str = None) -> dict | None:
+    """La fila COMPLETA del snapshot sellado de `fecha` (default hoy) — la
+    fuente única del reporte 2.0 (Etapa 5.0 WS3): el reporte dice lo sellado
+    y nada más."""
+    init_db()
+    fecha = fecha or date.today().isoformat()
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    fila = conn.execute("""
+        SELECT fecha, timestamp_utc, origen, regimen, roca_chip,
+               modelo_version, plataforma_version, ventana_betas,
+               descarga_ok, descarga_total, descarga_caidos,
+               sox_usado_pct, sox_fecha
+        FROM snapshots WHERE fecha = ?""", (fecha,)).fetchone()
+    conn.close()
+    return dict(fila) if fila else None
+
+
+def predicciones_selladas_del_dia(fecha: str = None) -> list:
+    """Las predicciones SELLADAS de `fecha` (default hoy), ordenadas por
+    |estimado| descendente — para el reporte 2.0 y la vista /salud."""
+    init_db()
+    fecha = fecha or date.today().isoformat()
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    filas = conn.execute("""
+        SELECT ticker, apertura_estimada_pct, confianza_r2 AS r2,
+               intervalo80_pp, n_muestra, beta, exchange, sesion_objetivo,
+               timestamp_utc, estado
+        FROM senales_ticker
+        WHERE fecha = ? AND apertura_estimada_pct IS NOT NULL
+        ORDER BY ABS(apertura_estimada_pct) DESC""", (fecha,)).fetchall()
+    conn.close()
+    return [dict(f) for f in filas]
 
 
 def regimen_snapshot_anterior() -> str | None:

@@ -124,7 +124,9 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
     # la predicción — el instante desde el cual esa información era conocible.
     available_at = ts_emision
     predicciones = []
+    sox_usado_pct, sox_fecha = None, None
     if not pred.empty:
+        sox_usado_pct = float(pred.iloc[0]["SOX usado %"])
         sox_fecha = pred.iloc[0]["SOX fecha"]
         if sox_fecha:
             try:
@@ -144,6 +146,8 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
                 "R2": float(fila["R2"]),
                 "Intervalo80 pp": float(fila["Intervalo80 pp"]),
                 "N muestra": int(fila["N muestra"]),
+                # WS3: la beta viaja al sello — el reporte solo dice lo sellado
+                "Beta": float(fila["Beta de contagio"]),
                 "exchange": exchange,
                 "sesion_objetivo": sesion_obj,
             })
@@ -156,6 +160,7 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
         roca_chip=roca_chip.get("valor") if roca_chip else None,
         divergencias=divergencias, ventana_betas=ventana_betas,
         available_at=available_at, salud_descarga=salud,
+        sox_usado_pct=sox_usado_pct, sox_fecha=sox_fecha,
     )
     return {"snapshot": guardado, "predicciones": len(predicciones),
             "regimen": regimen["etiqueta"] if regimen else None,

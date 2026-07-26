@@ -754,3 +754,41 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
    contener rutas privadas de la máquina (decisión del GATE A) y la
    instalación baja a un comando. Horarios: noticias 17:50 → snapshot
    18:15 → reporte 18:25 → backup 18:40 → vigía 19:00 (hábiles, Chile).
+
+## WS3 — Reporte de Telegram 2.0 (fiel al sello por construcción)
+
+1. **Un solo compositor, tres puntos de envío.** `componer_reporte_sellado()`
+   construye el mensaje COMPLETO desde senales.db (fila del snapshot +
+   predicciones selladas + track record) y el cache de noticias.db. El job
+   de launchd, el CLI y el botón del dashboard envían exactamente ese
+   texto. El compositor no importa motor.py — y un test lo prueba
+   dinamitando todas las funciones del motor y componiendo igual. El bug
+   del 22-jul (el reporte "tapó" el hueco de régimen recalculando en vivo)
+   es imposible por construcción: si el sello tiene un hueco, el reporte
+   dice "sin dato sellado hoy ⚠".
+
+2. **Para que el reporte diga SOX y β, SOX y β se sellan** (aditivo). El
+   reporte 2.0 exige "solo lo sellado", pero el SOX usado y la beta de cada
+   predicción no se sellaban — el motor siempre los calculó y viajaban
+   hasta el frame de predicción, así que sellarlos es conservar, no
+   computar: columnas `sox_usado_pct`/`sox_fecha` en snapshots y `beta` en
+   senales_ticker. Los sellos pre-5.0 tienen NULL → el reporte muestra
+   "SOX: sin dato sellado" y omite β (errata implícita, no backfill).
+
+3. **El track record del reporte usa LAS MISMAS consultas que el dashboard**
+   (`senales.metricas_apertura`, `calibracion_intervalos`) — el test compara
+   el texto contra la salida de esas funciones, no contra números fijos.
+   La palabra "confianza" tiene test negativo propio (constitución #4).
+
+4. **Diversidad en la selección de noticias del reporte** (presentación
+   pura): el mismo evento desde dos fuentes no ocupa dos de los 3 cupos.
+   Umbral 0.55 (más laxo que el 0.85 del dedup de guardado, porque aquí
+   descartar de más es barato) evaluado en AMBOS órdenes de
+   SequenceMatcher — no es simétrico: el par real Samsung/Broadcom daba
+   0.57 en un orden y 0.49 en el otro, y con un solo orden se colaba.
+   El pipeline de guardado no se tocó.
+
+5. **`enviar_reporte_matinal()` y `etiqueta_senal()` se eliminaron** de
+   alertas.py: componían en vivo (régimen del motor, líneas con etiquetas
+   derivadas) — exactamente lo que el 2.0 prohíbe. La API conserva su
+   `_etiqueta_senal` propia (custodiada por test de contrato).

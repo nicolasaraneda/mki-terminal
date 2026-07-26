@@ -1056,30 +1056,10 @@ if seccion == "Hoy":
         st.markdown('<div class="mini-label">Telegram</div>', unsafe_allow_html=True)
         if alertas.esta_configurado():
             if st.button("Enviar reporte matinal", use_container_width=True):
-                sox_texto_alerta = (f"{ult_mov_apertura:+.2f}% (sesión del {ult_fecha_apertura})"
-                                    if ult_mov_apertura is not None else "sin datos")
-                lineas_ap = []
-                if not df_ant.empty:
-                    lineas_ap = [
-                        f"• {f['Acción']}: {f['Apertura estimada %']:+.2f}% "
-                        f"(señal {alertas.etiqueta_senal(float(f['R2']))})"
-                        for _, f in df_ant.iterrows()]
-                # 4.7.2: el reporte lleva el Roca→Chip SELLADO del último
-                # snapshot (como el terminal React), no el valor en vivo del
-                # hero — el mensaje de Telegram queda como registro y debe
-                # ser fiel al sello.
-                roca_sellada_rep = senales.historial_roca_chip(dias=365)
-                ok_rep, detalle_rep = alertas.enviar_reporte_matinal(
-                    regimen=regimen["etiqueta"] if regimen else None,
-                    roca_chip=(float(roca_sellada_rep.iloc[-1]["Roca→Chip"])
-                               if not roca_sellada_rep.empty else None),
-                    roca_fecha=(str(roca_sellada_rep.iloc[-1]["Fecha"])
-                                if not roca_sellada_rep.empty else None),
-                    sox_texto=sox_texto_alerta,
-                    sentimiento_sector=sentimiento_sector,
-                    lineas_apertura=lineas_ap,
-                    divergencias=divergencias_activas,
-                )
+                # 5.0 WS3: el botón envía EXACTAMENTE el mismo reporte que el
+                # job de las 18:25 — un solo compositor, todo desde lo SELLADO
+                # (si el sello tiene huecos, el reporte los dice).
+                ok_rep, detalle_rep = alertas.enviar_reporte_sellado()
                 if ok_rep:
                     st.success("Reporte enviado.")
                 else:

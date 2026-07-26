@@ -176,42 +176,122 @@ def alertar_si_corresponde(regimen_actual: str | None, regimen_anterior: str | N
     return enviadas
 
 
-def etiqueta_senal(r2: float) -> str:
-    """Etiqueta de señal para textos de Telegram, derivada SOLO de umbrales
-    de R² histórico (Etapa 4.7.1 — mismos cortes que la API, ver DECISIONES):
-    débil (R² < 0.10) · moderada (0.10–0.25) · fuerte (> 0.25)."""
-    return "fuerte" if r2 > 0.25 else ("moderada" if r2 > 0.10 else "débil")
+def _hora_chile(ts_iso: str) -> str:
+    """Hora local de Chile 'HH:MM' de un timestamp ISO UTC."""
+    try:
+        from zoneinfo import ZoneInfo
+        dt = datetime.fromisoformat(ts_iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(ZoneInfo("America/Santiago")).strftime("%H:%M")
+    except Exception:
+        return (ts_iso or "")[11:16] + " UTC"
 
 
-def enviar_reporte_matinal(regimen: str | None, roca_chip: float | None,
-                           sox_texto: str, sentimiento_sector: float | None,
-                           lineas_apertura: list, divergencias: list,
-                           roca_fecha: str | None = None) -> tuple:
-    """Compone y envía el reporte matinal (botón manual en la portada Hoy).
-    Devuelve (ok, detalle). Sin anti-duplicados: si el usuario aprieta el botón
-    dos veces, recibe el reporte dos veces — es una acción explícita.
-    `roca_chip` es el valor SELLADO del último snapshot (Etapa 4.7.2 — nada
-    de valores en vivo en el reporte); `roca_fecha` es la fecha del sello."""
-    partes = ["☀️ <b>Reporte matinal — MKI Terminal</b>", ""]
-    if regimen:
-        partes.append(f"Régimen del SOX: <b>{regimen}</b>")
-    if roca_chip is not None:
-        sello = f" (sellado {roca_fecha})" if roca_fecha else ""
-        partes.append(f"Salud de cadena Roca→Chip: <b>{roca_chip:.0f}/100</b>{sello}")
-    partes.append(f"Último SOX real: {sox_texto}")
-    if sentimiento_sector is not None:
-        partes.append(f"Sentimiento del sector (IA): {sentimiento_sector:+.2f}")
-    if lineas_apertura:
+def componer_reporte_sellado(fecha: str = None) -> str:
+    """El reporte diario 2.0 (Etapa 5.0 WS3): TODO sale de lo SELLADO en
+    senales.db y del cache de noticias.db — jamás recompone una señal en
+    vivo. Si un campo sellado viene vacío, el reporte LO DICE en vez de
+    rellenarlo (el bug del 22-jul, donde el reporte "tapó" el hueco de
+    régimen recalculando, no puede repetirse por construcción)."""
+    import html
+
+    import noticias
+    import senales
+    from universo import nombre
+    from version import MODELO_VERSION, PLATAFORMA_VERSION
+
+    fecha = fecha or date.today().isoformat()
+    snap = senales.snapshot_del_dia(fecha)
+    partes = []
+
+    # --- Cabecera con versionado dual
+    if snap:
+        partes.append(f"<b>MKI</b> · {fecha} · sellado {_hora_chile(snap['timestamp_utc'])} "
+                      f"Chile · plataforma {snap.get('plataforma_version') or PLATAFORMA_VERSION} "
+                      f"/ modelo {snap.get('modelo_version') or MODELO_VERSION}")
+    else:
+        partes.append(f"<b>MKI</b> · {fecha} · ⚠ sin snapshot sellado hoy · "
+                      f"plataforma {PLATAFORMA_VERSION} / modelo {MODELO_VERSION}")
+
+    # --- Bloque sellado: régimen, SOX, Roca→Chip, salud de descarga
+    partes.append("")
+    if snap:
+        partes.append(f"Régimen: {snap['regimen'] or 'sin dato sellado hoy ⚠'}")
+        if snap.get("sox_usado_pct") is not None:
+            partes.append(f"SOX: {snap['sox_usado_pct']:+.2f}% "
+                          f"(sesión del {snap.get('sox_fecha') or '—'})")
+        else:
+            partes.append("SOX: sin dato sellado")
+        partes.append(f"Roca→Chip: {snap['roca_chip']:.0f}/100"
+                      if snap.get("roca_chip") is not None
+                      else "Roca→Chip: sin dato sellado hoy ⚠")
+        if (snap.get("descarga_ok") is not None
+                and snap["descarga_ok"] < (snap.get("descarga_total") or 0)):
+            partes.append(f"Descarga: {snap['descarga_ok']}/{snap['descarga_total']} ⚠ "
+                          f"caídos: {snap.get('descarga_caidos') or '—'}")
+    else:
+        partes.append("Régimen / SOX / Roca→Chip: sin sello hoy — nada que reportar ⚠")
+
+    # --- Predicciones selladas (top por |estimado|)
+    partes.append("")
+    preds = senales.predicciones_selladas_del_dia(fecha)
+    if preds:
+        partes.append("<b>Aperturas selladas</b> (top por |estimado|):")
+        for p in preds[:5]:
+            est, int80 = p["apertura_estimada_pct"], p["intervalo80_pp"] or 0.0
+            linea = (f"· {nombre(p['ticker'])} {est:+.1f}% "
+                     f"[80%: {est - int80:+.1f},{est + int80:+.1f}]")
+            if p.get("beta") is not None:
+                linea += f" β{p['beta']:.2f}"
+            if p.get("r2") is not None:
+                linea += f" R²{p['r2']:.2f}"
+            if p.get("n_muestra") is not None:
+                linea += f" n{p['n_muestra']}"
+            linea += f" → {p['sesion_objetivo']}"
+            partes.append(linea)
+        partes.append(f"{len(preds)} selladas en total · emitidas "
+                      f"{_hora_chile(preds[0]['timestamp_utc'])} Chile, antes "
+                      f"de la apertura objetivo")
+    else:
+        partes.append("Aperturas: sin predicciones selladas hoy ⚠")
+
+    # --- Track record vivo: MISMOS números que el dashboard (misma consulta
+    #     a la DB — senales.metricas_apertura / calibracion_intervalos)
+    partes.append("")
+    m = senales.metricas_apertura(dias=30)
+    if m.get("suficiente"):
+        partes.append(f"<b>Track record</b> (modelo {MODELO_VERSION}, 30d): "
+                      f"N={m['n']} · gap {m['gap']['pct_aciertos']:.1f}% · "
+                      f"sesión {m['retorno_sesion']['pct_aciertos']:.1f}% · "
+                      f"MAE {m['gap']['mae_pp']:.2f}/{m['retorno_sesion']['mae_pp']:.2f} pp")
+    else:
+        partes.append(f"<b>Track record</b>: {m['n']} verificaciones — "
+                      f"datos insuficientes")
+    cal = senales.calibracion_intervalos()
+    partes.append(f"Cobertura del intervalo 80%: {cal['cobertura_pct']:.1f}% "
+                  f"(n={cal['n']})" if cal.get("suficiente")
+                  else "Cobertura del intervalo 80%: pendiente")
+
+    # --- Noticias top por relevancia (cache de noticias.db)
+    top = noticias.titulares_top_relevancia(3)
+    if top:
         partes.append("")
-        partes.append("<b>Aperturas estimadas (Asia/Europa):</b>")
-        partes.extend(lineas_apertura)
-    if divergencias:
-        partes.append("")
-        partes.append("<b>Divergencias activas:</b>")
-        partes.extend(f"• {d['par']}: z={d['z']:+.1f}" for d in divergencias)
+        partes.append("<b>Noticias</b> (top relevancia hoy):")
+        partes.extend(f"· ({t['sentimiento']:+.1f}) {html.escape(t['titular'][:110])}"
+                      for t in top)
+
     partes.append("")
     partes.append("<i>Herramienta de análisis — no constituye asesoría financiera.</i>")
-    return enviar_mensaje("\n".join(partes))
+    return "\n".join(partes)
+
+
+def enviar_reporte_sellado() -> tuple:
+    """Compone el reporte 2.0 desde lo sellado y lo envía. Es lo que usan
+    tanto el job de las 18:25 como el botón del dashboard: UN compositor,
+    UN mensaje. Sin anti-duplicados: forzarlo dos veces lo envía dos veces
+    (acción explícita, decisión 4.5)."""
+    return enviar_mensaje(componer_reporte_sellado())
 
 
 # ------------------------------------------------------------
@@ -247,47 +327,18 @@ def _cli_estado() -> None:
 
 
 def _cli_reporte() -> None:
-    """Fuerza el reporte matinal: composición idéntica a la del botón de
-    app.py (mismas fuentes, mismos formatos), con salida visible. El
-    Roca→Chip es el SELLADO del último snapshot en senales.db (4.7.2)."""
+    """Envía el reporte 2.0. La composición es 100% desde lo SELLADO
+    (componer_reporte_sellado): el CLI, el job de launchd y el botón del
+    dashboard mandan EXACTAMENTE el mismo mensaje. Cero motor en vivo."""
     if not esta_configurado():
         print("NO enviado: Telegram no está configurado "
               "(falta TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID en .env).")
         raise SystemExit(1)
-    # imports pesados solo aquí: como biblioteca, alertas.py sigue liviano
-    import motor
-    import noticias
-    import senales
-    from api.utilidades import dias_a_proximos_earnings
-    from universo import ACCIONES, nombre
-
-    hoy = date.today()
-    print("Componiendo el reporte (motor + noticias + snapshot sellado)…")
-    regimen = motor.regimen_al(hoy)
-    roca_sellada = senales.historial_roca_chip(dias=365)
-    pred = motor.prediccion_apertura_al(
-        hoy, dias_earnings=dias_a_proximos_earnings(ACCIONES))
-    if pred is not None and not pred.empty:
-        sox_texto = (f"{pred.iloc[0]['SOX usado %']:+.2f}% "
-                     f"(sesión del {pred.iloc[0]['SOX fecha']})")
-        lineas = [f"• {nombre(p['Ticker'])}: {p['Apertura estimada %']:+.2f}% "
-                  f"(señal {etiqueta_senal(float(p['R2']))})"
-                  for _, p in pred.iterrows()]
-    else:
-        sox_texto, lineas = "sin datos", []
-    # argumentos compuestos UNA vez: cada reintento envía el mismo mensaje
-    argumentos = dict(
-        regimen=regimen["etiqueta"] if regimen else None,
-        roca_chip=(float(roca_sellada.iloc[-1]["Roca→Chip"])
-                   if not roca_sellada.empty else None),
-        roca_fecha=(str(roca_sellada.iloc[-1]["Fecha"])
-                    if not roca_sellada.empty else None),
-        sox_texto=sox_texto,
-        sentimiento_sector=noticias.sentimiento_promedio_sector(),
-        lineas_apertura=lineas,
-        divergencias=[d for d in motor.divergencias_al(hoy) if d["activa"]],
-    )
-    ok, detalle = enviar_reporte_matinal(**argumentos)
+    # texto compuesto UNA vez: cada reintento envía el mensaje idéntico
+    texto = componer_reporte_sellado()
+    print(f"[{datetime.now(timezone.utc).isoformat()}] reporte compuesto "
+          f"desde el sello ({len(texto)} caracteres)")
+    ok, detalle = enviar_mensaje(texto)
     # Reintento breve (4.7.3) SOLO si la petición nunca salió — típico al
     # despertar el Mac con la red aún caída. Sin fantasmas: timeouts y
     # errores de Telegram no se reintentan.
@@ -296,11 +347,13 @@ def _cli_reporte() -> None:
             break
         print(f"Sin red — reintento en {espera}s…", flush=True)
         time.sleep(espera)
-        ok, detalle = enviar_reporte_matinal(**argumentos)
+        ok, detalle = enviar_mensaje(texto)
     if ok:
-        print(f"Reporte enviado {datetime.now():%H:%M}")
+        # La fecha ISO en esta línea es la que el vigía busca (WS2.7).
+        print(f"[{datetime.now(timezone.utc).isoformat()}] Reporte enviado "
+              f"{datetime.now():%H:%M}")
     else:
-        print(f"NO enviado: {detalle}")
+        print(f"[{datetime.now(timezone.utc).isoformat()}] NO enviado: {detalle}")
         raise SystemExit(1)
 
 

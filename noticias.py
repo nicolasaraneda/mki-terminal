@@ -554,6 +554,43 @@ def generar_resumen_dia(client) -> str:
     return resumen
 
 
+def titulares_top_relevancia(n: int = 3) -> list:
+    """Los titulares analizados HOY con mayor relevancia (para el reporte
+    sellado de la Etapa 5.0). Solo lectura del cache — cero llamadas a IA.
+
+    Con filtro de DIVERSIDAD en la selección: el mismo evento desde dos
+    fuentes (que el dedup de guardado no atrapó por redacción distinta) no
+    ocupa dos de los n cupos. Umbral más laxo que el de guardado (0.55 vs
+    0.85) porque aquí descartar de más es barato: hay reemplazo."""
+    import difflib
+    init_db()
+    conn = get_connection()
+    filas = conn.execute("""
+        SELECT t.titular, a.sentimiento, COALESCE(a.relevancia, 1.0) AS relevancia
+        FROM analisis a JOIN titulares t ON t.id = a.titular_id
+        WHERE date(a.analizado_en) = date('now')
+        ORDER BY relevancia DESC, ABS(a.sentimiento) DESC
+        LIMIT ?""", (n * 4,)).fetchall()
+    conn.close()
+    def _parecidos(x: str, y: str) -> bool:
+        # SequenceMatcher NO es simétrico (0.57 vs 0.49 en un caso real):
+        # se evalúan ambos órdenes y decide el mayor.
+        return max(difflib.SequenceMatcher(None, x, y).ratio(),
+                   difflib.SequenceMatcher(None, y, x).ratio()) > 0.55
+
+    elegidos = []
+    for titular, sentimiento, relevancia in filas:
+        norm = _normalizar_titular(titular)
+        if any(_parecidos(norm, _normalizar_titular(e["titular"]))
+               for e in elegidos):
+            continue
+        elegidos.append({"titular": titular, "sentimiento": sentimiento,
+                         "relevancia": relevancia})
+        if len(elegidos) == n:
+            break
+    return elegidos
+
+
 def obtener_resumen_guardado() -> str | None:
     init_db()
     conn = get_connection()
