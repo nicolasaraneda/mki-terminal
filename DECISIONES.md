@@ -929,3 +929,25 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
    sesiones: las 6 reglas antes que cualquier arquitectura) y una sección
    Etapa 5.0 con los módulos nuevos; las secciones 4.6/4.7 quedan como
    referencia histórica vigente.
+
+## Acta de cierre de la Etapa 5.0.0 (GATE C aprobado, 26-jul-2026)
+
+- Los tres gates humanos ocurrieron y quedaron registrados: GATE A
+  (pre-vuelo de seguridad: historia limpia, identidad reescrita con
+  respaldo), GATE B (diseño del backtest congelado con tres ajustes del
+  usuario: veredicto escalonado, benchmark SMH obligatorio, gatillo 5.1
+  fijado) y GATE C (este cierre).
+- Verificaciones finales: suite completa en verde (49 pytest + el
+  anti-look-ahead del motor, re-ejecutada por el hook en cada commit);
+  Lighthouse sobre build de producción móvil 92/100/100 con CLS 0
+  (desktop 94/95/100 — el 95 es el contraste del token text-3 del sistema
+  4.9, preexistente y deliberado); paridad de números SELLADOS verificada
+  con Playwright contra senales.db (Roca→Chip y los 8 estimados);
+  launchctl con los 5 jobs registrados.
+- Fix de cierre: la guardia responsive (<1024px) pasó de <div> a <main> —
+  Lighthouse móvil solo ve esa rama y el documento no tenía landmark. Es
+  la única línea de código del commit de cierre.
+- Pendientes FUERA del repo, del usuario: rotar el token de Telegram
+  (BotFather) y el push manual a GitHub. La Etapa 5.1 (backtest con
+  veredicto) espera su gatillo: N ≥ 150 verificadas en vivo + un cambio
+  de régimen, o 3 meses continuos (25-oct-2026) — y su decisión.
