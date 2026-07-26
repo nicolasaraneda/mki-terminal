@@ -25,7 +25,8 @@ import pandas as pd
 import yfinance as yf
 
 import calendarios
-from version import FEATURE_VERSION, MODELO_VERSION, UNIVERSO_VERSION
+from version import (FEATURE_VERSION, MODELO_VERSION, PLATAFORMA_VERSION,
+                     UNIVERSO_VERSION)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "senales.db")
 
@@ -37,6 +38,12 @@ ESTADO_PENDIENTE = "pendiente"
 ESTADO_VERIFICADA = "verificada"
 ESTADO_NO_VERIFICABLE = "no_verificable_timing"
 ESTADO_LEGACY = "legacy_pre_4.6"
+# Etapa 5.0 WS2: estado TERMINAL para verificaciones atascadas — la fuente
+# lleva ≥ SESIONES_LIMITE_SIN_DATOS sesiones sin publicar la sesión objetivo
+# (caso real: XKRX del 17-jul jamás apareció en Yahoo). Auditable, fuera de
+# TODAS las métricas (nunca entra a verificacion_apertura).
+ESTADO_SIN_DATOS = "sin_datos_mercado"
+SESIONES_LIMITE_SIN_DATOS = 5
 
 
 def get_connection() -> sqlite3.Connection:
@@ -133,6 +140,16 @@ def init_db() -> None:
         "modelo_version": "TEXT",
         "legacy": "INTEGER",
     })
+    # --- Migración Etapa 5.0 (WS2.2): salud de descarga sellada por snapshot.
+    # Excepción quirúrgica #1 de la constitución: SOLO observabilidad — qué
+    # fracción del lote de tickers descargó bien al momento de sellar. Cero
+    # cambios en la lógica de señales.
+    _asegurar_columnas(conn, "snapshots", {
+        "descarga_ok": "INTEGER",      # tickers con datos recientes al sellar
+        "descarga_total": "INTEGER",   # tickers esperados (universo + ^SOX)
+        "descarga_caidos": "TEXT",     # lista separada por comas de los caídos
+        "plataforma_version": "TEXT",  # versionado dual 5.0: plataforma vs modelo
+    })
     _asegurar_columnas(conn, "divergencias", {
         "spread_simple_pct": "REAL", "z_simple": "REAL",
     })
@@ -180,23 +197,32 @@ def guardar_snapshot(fecha: str, timestamp_utc: str, origen: str,
                      metricas_df: pd.DataFrame, sentimientos: dict,
                      predicciones: list, regimen: str = None,
                      roca_chip: float = None, divergencias: list = None,
-                     ventana_betas: int = None, available_at: str = None) -> bool:
+                     ventana_betas: int = None, available_at: str = None,
+                     salud_descarga: dict = None) -> bool:
     """Guarda el snapshot del día (idempotente: si ya existe, no duplica).
 
     `predicciones`: lista de dicts con Ticker, Apertura estimada %, R2,
     Intervalo80 pp, N muestra, exchange, sesion_objetivo — cada una queda
-    sellada con timestamp_utc y available_at para el verificador."""
+    sellada con timestamp_utc y available_at para el verificador.
+    `salud_descarga` (Etapa 5.0 WS2.2, opcional): {"ok_n", "total", "caidos"}
+    — observabilidad sellada de la descarga; no toca ninguna señal."""
     init_db()
     if ya_existe_snapshot_hoy() or metricas_df.empty:
         return False
+    salud = salud_descarga or {}
     conn = get_connection()
     conn.execute("""
         INSERT INTO snapshots (fecha, creado_en, regimen, roca_chip, timestamp_utc,
                                origen, modelo_version, feature_version,
-                               universo_version, ventana_betas)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                               universo_version, ventana_betas,
+                               descarga_ok, descarga_total, descarga_caidos,
+                               plataforma_version)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (fecha, timestamp_utc, regimen, roca_chip, timestamp_utc, origen,
-         MODELO_VERSION, FEATURE_VERSION, UNIVERSO_VERSION, ventana_betas))
+         MODELO_VERSION, FEATURE_VERSION, UNIVERSO_VERSION, ventana_betas,
+         salud.get("ok_n"), salud.get("total"),
+         ",".join(salud["caidos"]) if salud.get("caidos") else None,
+         PLATAFORMA_VERSION))
 
     for div in divergencias or []:
         conn.execute("""
@@ -269,7 +295,7 @@ def verificar_apertura_pendientes() -> dict:
         ORDER BY fecha
     """).fetchall()
 
-    verificadas, descartadas = 0, 0
+    verificadas, descartadas, atascadas = 0, 0, 0
     for (id_, fecha_senal, ticker, est_pct, ts_utc, exchange,
          sesion_obj, modelo_ver) in pendientes:
         try:
@@ -292,11 +318,20 @@ def verificar_apertura_pendientes() -> dict:
 
         sesion_ant = calendarios.sesion_anterior(exchange, sesion_obj)
         datos = _ohlc_local(ticker, (pd.Timestamp(sesion_ant) - pd.Timedelta(days=7)).date().isoformat())
-        if datos.empty:
+        fechas_str = datos.index.strftime("%Y-%m-%d") if not datos.empty else []
+        if datos.empty or sesion_obj not in set(fechas_str):
+            # Yahoo aún no publica la sesión objetivo. Normalmente se
+            # reintenta en la próxima corrida — pero si ya cerraron
+            # SESIONES_LIMITE_SIN_DATOS sesiones posteriores y los datos
+            # siguen sin aparecer, la verificación está atascada: pasa al
+            # estado TERMINAL sin_datos_mercado (Etapa 5.0 WS2.6 — auditable,
+            # fuera de métricas; jamás se inventa un resultado).
+            if (calendarios.sesiones_cerradas_desde(exchange, sesion_obj)
+                    >= SESIONES_LIMITE_SIN_DATOS):
+                conn.execute("UPDATE senales_ticker SET estado = ? WHERE id = ?",
+                             (ESTADO_SIN_DATOS, id_))
+                atascadas += 1
             continue
-        fechas_str = datos.index.strftime("%Y-%m-%d")
-        if sesion_obj not in set(fechas_str):
-            continue  # Yahoo aún no publica la sesión objetivo: reintentar
         idx_obj = list(fechas_str).index(sesion_obj)
         previos = datos.iloc[:idx_obj]
         if previos.empty:
@@ -328,7 +363,8 @@ def verificar_apertura_pendientes() -> dict:
         verificadas += 1
     conn.commit()
     conn.close()
-    return {"verificadas": verificadas, "no_verificables": descartadas}
+    return {"verificadas": verificadas, "no_verificables": descartadas,
+            "sin_datos_mercado": atascadas}
 
 
 def verificar_puntaje_pendientes() -> int:

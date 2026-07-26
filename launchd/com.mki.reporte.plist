@@ -6,22 +6,20 @@
     <key>Label</key>
     <string>com.mki.reporte</string>
 
+    <!-- Plantilla (Etapa 5.0): __MKI_DIR__ se reemplaza por la ruta real del
+         proyecto al instalar — usa launchd/instalar.sh. Envia por Telegram lo que el snapshot de 18:15 acaba de sellar; el CLI carga .env solo. -->
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/venv/bin/python</string>
-        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/alertas.py</string>
+        <string>__MKI_DIR__/venv/bin/python</string>
+        <string>__MKI_DIR__/alertas.py</string>
         <string>reporte</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI</string>
+    <string>__MKI_DIR__</string>
 
-    <!-- Lunes a viernes a las 18:25 hora local (Chile): 10 minutos después
-         del snapshot de las 18:15 — el reporte envía por Telegram lo que el
-         snapshot acaba de sellar, ANTES de que abra Asia (~20:00 Chile).
-         El CLI de alertas.py carga .env por sí mismo (load_dotenv), así que
-         el token y el chat id no dependen del entorno mínimo de launchd.
-         launchd usa la hora local del sistema. Weekday: 1=lunes ... 5=viernes. -->
+    <!-- Lunes a viernes a las 18:25 hora local del sistema (Chile).
+         Weekday: 1=lunes ... 5=viernes. -->
     <key>StartCalendarInterval</key>
     <array>
         <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>25</integer></dict>
@@ -32,8 +30,8 @@
     </array>
 
     <key>StandardOutPath</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/reporte.log</string>
+    <string>__MKI_DIR__/data/reporte.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/reporte.log</string>
+    <string>__MKI_DIR__/data/reporte.log</string>
 </dict>
 </plist>

@@ -6,20 +6,21 @@
     <key>Label</key>
     <string>com.mki.snapshot</string>
 
+    <!-- Plantilla (Etapa 5.0): __MKI_DIR__ se reemplaza por la ruta real del
+         proyecto al instalar — usa launchd/instalar.sh. Sella el snapshot diario tras el cierre de NY, antes de que abra Asia. -->
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/venv/bin/python</string>
-        <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/snapshot.py</string>
+        <string>__MKI_DIR__/venv/bin/python</string>
+        <string>__MKI_DIR__/snapshot.py</string>
         <string>--origen</string>
         <string>programado</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI</string>
+    <string>__MKI_DIR__</string>
 
-    <!-- Lunes a viernes a las 18:15 hora local (Chile): después del cierre
-         de Nueva York, antes de la apertura de Asia. launchd usa la hora
-         local del sistema. Weekday: 1=lunes ... 5=viernes. -->
+    <!-- Lunes a viernes a las 18:15 hora local del sistema (Chile).
+         Weekday: 1=lunes ... 5=viernes. -->
     <key>StartCalendarInterval</key>
     <array>
         <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>15</integer></dict>
@@ -30,8 +31,8 @@
     </array>
 
     <key>StandardOutPath</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/snapshot.log</string>
+    <string>__MKI_DIR__/data/snapshot.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/nicolasaraneda/Downloads/StockScreenerMKI/data/snapshot.log</string>
+    <string>__MKI_DIR__/data/snapshot.log</string>
 </dict>
 </plist>

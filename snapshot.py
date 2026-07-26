@@ -32,8 +32,8 @@ import calendarios
 import motor
 import noticias
 import senales
-from universo import EXCHANGE_POR_TICKER
-from version import MODELO_VERSION
+from universo import EXCHANGE_POR_TICKER, UNIVERSO
+from version import MODELO_VERSION, PLATAFORMA_VERSION
 
 DIRECTORIO = os.path.dirname(os.path.abspath(__file__))
 DIR_BACKUPS = os.path.join(DIRECTORIO, "data", "backups")
@@ -50,23 +50,71 @@ TABLAS_BACKUP_NOTICIAS = ["titulares", "analisis", "resumen_dia"]
 # dashboard llama ejecutar_snapshot() directo y jamás espera.
 ESPERAS_REINTENTO_SEG = (20 * 60, 40 * 60)
 
+# Reintento PARCIAL (Etapa 5.0 WS2.3 — excepción quirúrgica #2): si el lote
+# bajó INCOMPLETO (algunos tickers caídos, el patrón DarkWake de la auditoría
+# 13–24 jul), se reintenta la descarga hasta 2 veces con espera corta ANTES
+# de sellar, limpiando la caché del motor para que el reintento descargue de
+# verdad. Nota de diseño (ver DECISIONES.md): el reintento re-descarga el
+# lote completo — "solo los caídos" exigiría inyectar columnas en la caché
+# interna del motor, y motor.py es intocable; el efecto neto es el mismo
+# (los caídos obtienen otra oportunidad) sin cirugía en el motor.
+ESPERAS_REINTENTO_PARCIAL_SEG = (60, 120)
 
-def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFAULT) -> dict:
+
+def salud_descarga(fecha: date) -> dict:
+    """Salud de la descarga del día: qué tickers esperados (universo + ^SOX)
+    entregaron datos recientes (≤7 días hasta `fecha`).
+
+    SOLO OBSERVA los mismos DataFrames que el motor ya descargó (misma caché,
+    mismo punto único _datos_crudos): no crea una vía de datos nueva ni toca
+    ninguna señal. Excepción quirúrgica #1 de la constitución 5.0."""
+    tickers_universo = tuple(UNIVERSO.keys())
+    frame_universo = motor._datos_crudos(tickers_universo)
+    frame_sox = motor._datos_crudos(("^SOX",))
+    limite = pd.Timestamp(fecha) - pd.Timedelta(days=7)
+    ok, caidos = [], []
+    for t in list(tickers_universo) + ["^SOX"]:
+        df = frame_sox if t == "^SOX" else frame_universo
+        serie = df[t].dropna() if (not df.empty and t in df.columns) else pd.Series(dtype=float)
+        (ok if (not serie.empty and serie.index.max() >= limite) else caidos).append(t)
+    return {"ok_n": len(ok), "total": len(ok) + len(caidos),
+            "caidos": caidos, "completa": not caidos}
+
+
+def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFAULT,
+                      reintentos_parciales: int = 0) -> dict:
     """Toma el snapshot del día si no existe. Sella cada predicción con:
     timestamp_utc (ahora), exchange, sesion_objetivo (la próxima sesión de esa
     bolsa cuya apertura es posterior a la emisión) y available_at (el cierre
     UTC de la última sesión del SOX usada — cuándo era conocible el insumo).
-    Devuelve un dict con lo que hizo."""
+    Con `reintentos_parciales` > 0 (solo el camino launchd; el fallback del
+    dashboard jamás espera), una descarga incompleta se reintenta antes de
+    sellar. Devuelve un dict con lo que hizo."""
     if senales.ya_existe_snapshot_hoy():
         return {"snapshot": False, "motivo": "ya existe snapshot de hoy"}
 
     hoy = date.today()
+
+    # WS2.3: reintento parcial ANTES de computar/sellar nada.
+    salud = salud_descarga(hoy)
+    for intento in range(reintentos_parciales):
+        if salud["completa"]:
+            break
+        espera = ESPERAS_REINTENTO_PARCIAL_SEG[
+            min(intento, len(ESPERAS_REINTENTO_PARCIAL_SEG) - 1)]
+        print(f"  descarga parcial ({salud['ok_n']}/{salud['total']}, caídos: "
+              f"{', '.join(salud['caidos'])}) — reintento en {espera}s", flush=True)
+        time.sleep(espera)
+        motor._cache.clear()  # sin esto el reintento leería la caché a medias
+        salud = salud_descarga(hoy)
+
     ahora_utc = datetime.now(timezone.utc)
     ts_emision = ahora_utc.isoformat()
 
     metricas = motor.puntaje_v0_al(hoy)
     if metricas.empty:
-        return {"snapshot": False, "motivo": "sin datos de mercado"}
+        return {"snapshot": False, "motivo": "sin datos de mercado",
+                "descarga": f"{salud['ok_n']}/{salud['total']}"}
     regimen = motor.regimen_al(hoy)
     roca_chip = motor.roca_chip_al(hoy)
     divergencias = motor.divergencias_al(hoy)
@@ -107,12 +155,14 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
         regimen=regimen["etiqueta"] if regimen else None,
         roca_chip=roca_chip.get("valor") if roca_chip else None,
         divergencias=divergencias, ventana_betas=ventana_betas,
-        available_at=available_at,
+        available_at=available_at, salud_descarga=salud,
     )
     return {"snapshot": guardado, "predicciones": len(predicciones),
             "regimen": regimen["etiqueta"] if regimen else None,
             "roca_chip": roca_chip.get("valor") if roca_chip else None,
-            "divergencias_activas": sum(1 for d in divergencias if d["activa"])}
+            "divergencias_activas": sum(1 for d in divergencias if d["activa"]),
+            "descarga": f"{salud['ok_n']}/{salud['total']}",
+            "caidos": salud["caidos"]}
 
 
 def respaldar_a_csv() -> list:
@@ -145,12 +195,13 @@ def main() -> int:
     args = parser.parse_args()
 
     print(f"[{datetime.now(timezone.utc).isoformat()}] snapshot.py "
-          f"(origen={args.origen}, modelo={MODELO_VERSION})")
+          f"(origen={args.origen}, modelo={MODELO_VERSION}, "
+          f"plataforma={PLATAFORMA_VERSION})")
 
-    resultado = ejecutar_snapshot(args.origen)
+    resultado = ejecutar_snapshot(args.origen, reintentos_parciales=2)
     print(f"  snapshot: {resultado}")
 
-    # Reintento SOLO ante fallo de descarga: cualquier otro resultado
+    # Reintento SOLO ante fallo TOTAL de descarga: cualquier otro resultado
     # (sellado, "ya existe") sigue de largo. Un sello logrado en el
     # reintento lleva su timestamp real de emisión — el verificador de
     # timing decide después, como siempre (la regla maestra no se toca).
@@ -162,8 +213,12 @@ def main() -> int:
         time.sleep(espera)
         print(f"[{datetime.now(timezone.utc).isoformat()}] reintento de descarga",
               flush=True)
-        resultado = ejecutar_snapshot(args.origen)
+        resultado = ejecutar_snapshot(args.origen, reintentos_parciales=2)
         print(f"  snapshot: {resultado}", flush=True)
+
+    if resultado.get("caidos"):
+        print(f"  ⚠ descarga degradada {resultado['descarga']} — caídos: "
+              f"{', '.join(resultado['caidos'])} (sellado igual, salud visible)")
 
     verif_apertura, verif_puntaje = senales.verificar_pendientes()
     print(f"  verificador apertura: {verif_apertura}")

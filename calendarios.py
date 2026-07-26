@@ -68,6 +68,29 @@ def sesion_anterior(exchange: str, sesion: str) -> str:
     return cal.previous_session(sesion).date().isoformat()
 
 
+def sesiones_cerradas_desde(exchange: str, sesion: str) -> int:
+    """Cuántas sesiones del exchange posteriores a `sesion` ya CERRARON (con
+    el margen de publicación de 2h incluido). Mide cuánto lleva la fuente sin
+    publicar los datos de `sesion`: si ya cerraron N sesiones posteriores y
+    la sesión sigue sin datos en Yahoo, la verificación está atascada
+    (Etapa 5.0 WS2 — las 2 coreanas del 16-jul)."""
+    cal = _calendario(exchange)
+    hoy = pd.Timestamp(datetime.now(timezone.utc)).tz_convert("UTC").normalize().tz_localize(None)
+    inicio = pd.Timestamp(sesion)
+    if inicio >= hoy:
+        return 0
+    try:
+        sesiones = cal.sessions_in_range(inicio, hoy)
+    except Exception:
+        return 0
+    n = 0
+    for s in sesiones:
+        s_str = s.date().isoformat()
+        if s_str > sesion and sesion_ya_cerro(exchange, s_str):
+            n += 1
+    return n
+
+
 def sesion_ya_cerro(exchange: str, sesion: str, margen_horas: float = 2.0) -> bool:
     """True si la sesión ya cerró hace al menos `margen_horas` (margen para que
     Yahoo publique los datos de cierre)."""

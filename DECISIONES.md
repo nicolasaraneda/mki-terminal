@@ -646,3 +646,111 @@ performance 91 · accesibilidad 100 · CLS 0 · TBT 0 ms.
    cinta no son espaciado y quedaron intactos); título de pestaña
    "MKI · {régimen} · {fecha snapshot}" y favicon SVG trazado como path
    (sin depender de fuentes).
+
+---
+
+# Etapa 5.0.0 — "Plataforma" (plataforma v5.0.0 · modelo congelado v4.6.0)
+
+## ERRATA — sellos degradados por fallos parciales de descarga (8–24 jul)
+
+Los snapshots de estas fechas se sellaron con descargas INCOMPLETAS de
+Yahoo. Causa raíz (auditoría del 25-jul sobre el período autónomo 13–24
+jul): los jobs de launchd corrieron en DarkWake — el despertador pmset de
+las 18:10 solo despierta el Mac ~5 segundos con batería, launchd dispara
+en la siguiente ventana (18:22–18:28) y en DarkWake la red funciona a
+medias, así que yfinance devolvió lotes parciales. Fechas afectadas,
+verificadas contra senales.db:
+
+- **20-jul**: régimen sellado VACÍO (^SOX no descargó) y **0 predicciones**
+  selladas (el lote de betas bajó vacío).
+- **23-jul**: régimen sellado VACÍO (mismo síntoma; las 8 predicciones sí
+  se sellaron).
+- **21-jul**: Roca→Chip sellado **13**; la recomputación estable posterior
+  del mismo día da **~16**.
+- **22-jul**: Roca→Chip sellado **22** vs **~18** recomputado.
+- **13-jul**: solo **4 de 8** predicciones selladas.
+- **8–9 jul (pre-período)**: sellos tomados bajo la misma mecánica de
+  DarkWake; posible afectación de la misma clase, sin recomputación
+  concluyente que la cuantifique.
+
+**Ningún valor sellado se corrige** (constitución 5.0: las filas selladas
+jamás se reescriben; un error histórico es una errata documentada). Las
+métricas del track record NO están contaminadas por esto: el verificador
+solo evalúa predicciones efectivamente emitidas, y una predicción no
+emitida simplemente no existe — el costo fue de COBERTURA (menos
+predicciones, régimen vacío), no de veracidad. Nota: el colapso del
+Roca→Chip de mediados de julio (≈50 → 2–5) es REAL — verificado por
+recómputo — y no parte de esta errata.
+
+Mitigación en esta etapa: salud de descarga sellada por snapshot (WS2.2),
+reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
+
+## WS2 — Decisiones de autonomía de datos
+
+1. **La salud de descarga OBSERVA, jamás descarga** (excepción quirúrgica
+   #1). `snapshot.salud_descarga()` inspecciona los mismos DataFrames que
+   el motor ya bajó por su punto único `_datos_crudos` (misma caché): no
+   existe una segunda vía de datos. "Ok" = el ticker tiene algún dato en
+   los últimos 7 días; lo esperado es universo + ^SOX. Se sella en columnas
+   nuevas de `snapshots` (migración aditiva) junto a `plataforma_version`
+   (versionado dual de la constitución). Tests: observar no cambia ninguna
+   señal, y sellar la salud produce filas de predicción BYTE-idénticas a
+   no sellarla.
+
+2. **El reintento parcial re-descarga el lote completo, no "solo los
+   caídos"** (excepción quirúrgica #2, letra vs espíritu). Descargar solo
+   los caídos exigiría inyectar columnas en la caché interna del motor —
+   cirugía en motor.py, que es intocable. Re-descargar el lote entero tras
+   limpiar la caché logra el mismo efecto (los caídos obtienen 2 nuevas
+   oportunidades con esperas de 60/120 s) sin tocar una línea del motor.
+   Solo el camino launchd reintenta (`reintentos_parciales=2` en main());
+   el fallback del dashboard sigue sin esperar jamás (test explícito). Si
+   tras los reintentos aún faltan tickers, SE SELLA IGUAL con la salud
+   degradada visible: un sello honesto con hueco documentado vale más que
+   un día perdido.
+
+3. **El estado terminal `sin_datos_mercado` exige 5 sesiones de paciencia**
+   (WS2.6). Una verificación pasa de `pendiente` al estado terminal solo
+   cuando ≥5 sesiones POSTERIORES del mismo exchange ya cerraron y Yahoo
+   sigue sin publicar la sesión objetivo (`calendarios.sesiones_cerradas_
+   desde`). Contado en sesiones del calendario real, no en días corridos:
+   un feriado largo no puede gatillar el estado por error. Es terminal y
+   auditable, queda fuera de TODAS las métricas, y jamás se inventa un
+   resultado. Aplicado en producción: las 2 coreanas del 16-jul (sesión
+   XKRX del 17-jul, que Yahoo nunca publicó) salieron de `pendiente`
+   después de 6 sesiones atascadas.
+
+4. **El presupuesto de IA se frena ENTRE lotes, con el bucle desplegado en
+   el entrypoint** (WS2.4). `noticias.analizar_pendientes()` procesa todo
+   de una vez y no tiene hook de presupuesto; cambiarle la firma violaba
+   "cero cambios de lógica interna". El entrypoint `mki_noticias.py`
+   despliega el mismo bucle (usando las MISMAS funciones de noticias.py:
+   `obtener_titulares_sin_analizar`, `_analizar_lote`, `guardar_analisis`)
+   y chequea el tope entre lote y lote. Un typo en la variable de entorno
+   no desactiva el guardarraíl (cae al default 0.50). El resumen del día
+   no expone `usage`: se registra con estimación conservadora fija de
+   0.01 USD y solo corre con ≥0.05 USD de holgura. Primera corrida real:
+   429 titulares del backlog congelado analizados por 0.224 USD — bajo el
+   tope, capa de noticias viva de nuevo.
+
+5. **El ledger de costos es un JSONL en data/costos_ia.log** — parseable
+   para la vista /salud y el vigía, gitignoreado como todo log, y con el
+   acumulado del día calculado al escribir. Una línea corrupta se ignora:
+   el guardarraíl no puede caerse por un log dañado.
+
+6. **El backup git commitea con pathspec** (WS2.5): `git commit -m
+   "Backup diario {fecha}" -- data/backups` — aunque hubiera otras cosas
+   staged (una etapa a medias, por ejemplo), SOLO los CSV de respaldo
+   entran al commit del job.
+
+7. **El vigía solo LEE y solo alerta** (WS2.7): cinco chequeos (sello,
+   salud de descarga, corrida de noticias vía ledger, envío del reporte
+   vía log, commit de backup vía git log) y UN mensaje de Telegram si algo
+   falló — distinto del reporte diario. No corrige nada por su cuenta: un
+   guardián que repara es otro sistema que puede fallar en silencio.
+
+8. **Los plists son plantillas** (`__MKI_DIR__`) y `launchd/instalar.sh`
+   genera e instala los 5 jobs con la ruta real deducida — el repo deja de
+   contener rutas privadas de la máquina (decisión del GATE A) y la
+   instalación baja a un comando. Horarios: noticias 17:50 → snapshot
+   18:15 → reporte 18:25 → backup 18:40 → vigía 19:00 (hábiles, Chile).

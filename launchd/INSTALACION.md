@@ -1,79 +1,70 @@
-# Instalar las tareas automáticas (macOS launchd) — paso a paso
+# Tareas automáticas de MKI Terminal (macOS launchd)
 
-Dos tareas, de lunes a viernes, sin que tengas que abrir el dashboard:
+Cinco jobs, de lunes a viernes, para que el sistema corra solo — el día
+operativo completo, en orden:
 
-- **com.mki.snapshot** — 18:15 hora de Chile: toma el snapshot diario de
-  señales (después del cierre de Nueva York y antes de que abra Asia).
-- **com.mki.reporte** — 18:25 hora de Chile: envía el reporte por Telegram
-  con lo que el snapshot acaba de sellar (`python alertas.py reporte`).
-  Los 10 minutos de separación dan tiempo a que el snapshot y el
-  verificador terminen de escribir en senales.db.
+| Job | Hora (Chile) | Qué hace | Log |
+|---|---|---|---|
+| `com.mki.noticias` | 17:50 | Refresca titulares RSS y los analiza con IA **bajo presupuesto** (tope en `.env`, freno duro + aviso Telegram) | `data/noticias.log` |
+| `com.mki.snapshot` | 18:15 | Sella el snapshot diario (señales, régimen, predicciones, **salud de descarga**) con reintento parcial si el lote baja incompleto | `data/snapshot.log` |
+| `com.mki.reporte` | 18:25 | Envía el reporte de Telegram con lo que el snapshot acaba de **sellar** — antes de que abra Asia (~20:00 Chile) | `data/reporte.log` |
+| `com.mki.backup` | 18:40 | Commitea `data/backups/*.csv` si cambiaron ("Backup diario {fecha}") — solo esos paths, jamás push | `data/backup.log` |
+| `com.mki.vigia` | 19:00 | Revisa que TODO lo anterior ocurrió; si algo falló, **alerta por Telegram** diciendo exactamente qué | `data/vigia.log` |
 
-## Instalación (una sola vez, ~2 minutos)
+Los `.plist` de esta carpeta son **plantillas**: llevan `__MKI_DIR__` en vez
+de una ruta fija, así el repo no depende de la máquina de nadie.
 
-1. Abre la aplicación **Terminal**.
-
-2. Copia los archivos de configuración al lugar donde macOS busca tareas
-   programadas del usuario (pega estas líneas completas y presiona Enter):
-
-   ```bash
-   cp /Users/nicolasaraneda/Downloads/StockScreenerMKI/launchd/com.mki.snapshot.plist ~/Library/LaunchAgents/
-   cp /Users/nicolasaraneda/Downloads/StockScreenerMKI/launchd/com.mki.reporte.plist ~/Library/LaunchAgents/
-   ```
-
-3. Actívalos:
-
-   ```bash
-   launchctl load ~/Library/LaunchAgents/com.mki.snapshot.plist
-   launchctl load ~/Library/LaunchAgents/com.mki.reporte.plist
-   ```
-
-4. Verifica que quedaron registrados (deben aparecer las dos líneas):
-
-   ```bash
-   launchctl list | grep com.mki
-   ```
-
-5. (Opcional) Pruébalos ahora mismo sin esperar al horario:
-
-   ```bash
-   launchctl start com.mki.snapshot     # toma el snapshot (idempotente)
-   launchctl start com.mki.reporte     # envía el reporte a Telegram AHORA
-   ```
-
-   Y mira el resultado en los logs:
-
-   ```bash
-   tail -20 /Users/nicolasaraneda/Downloads/StockScreenerMKI/data/snapshot.log
-   tail -20 /Users/nicolasaraneda/Downloads/StockScreenerMKI/data/reporte.log
-   ```
-
-## Cómo desactivarlos (si algún día quieres)
+## Instalación (un solo comando)
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.mki.snapshot.plist
-launchctl unload ~/Library/LaunchAgents/com.mki.reporte.plist
+zsh launchd/instalar.sh
 ```
 
-## Limitaciones que debes conocer
+El script deduce la ruta real del proyecto, genera los `.plist` finales en
+`~/Library/LaunchAgents/` y los activa. Es idempotente: si ya estaban
+instalados, los reinstala limpio. Al final imprime la lista de jobs
+registrados (deben aparecer los 5).
 
-- **Si el Mac está dormido a las 18:15**, launchd ejecuta la tarea apenas
-  despierte, siempre que sea el mismo día. El snapshot es idempotente: si por
-  cualquier motivo corre dos veces, no duplica nada.
-- **Si el Mac está apagado a las 18:15**, esa ejecución se pierde (launchd no
-  "recuerda" tareas de cuando estaba apagado). Red de seguridad: al abrir el
-  dashboard, si no existe el snapshot del día, se toma uno automáticamente
-  (queda marcado con origen "dashboard" y su hora real de emisión — el
-  verificador de timing decide después si esas predicciones son evaluables).
-- **El reporte NO tiene anti-duplicados** (decisión de la Etapa 4.5: es una
-  acción explícita): si además del horario lo fuerzas con `launchctl start`
-  o con el botón del dashboard, recibirás el mensaje de nuevo. El snapshot
-  sí es idempotente.
-- **Si el Mac despierta después de las 18:25**, launchd ejecuta el reporte
-  atrasado ese mismo día: llegará más tarde, pero con el contenido sellado
-  del snapshot (que corre primero, a las 18:15 o al despertar).
-- **Si mueves la carpeta del proyecto**, las rutas de los .plist quedan
-  rotas: edítalos con las rutas nuevas y repite los pasos 2 y 3 (con
-  `unload` antes del `load`).
-- El registro de cada corrida queda en `data/snapshot.log` y
-  `data/reporte.log`.
+## Probar un job ahora mismo (sin esperar al horario)
+
+```bash
+launchctl start com.mki.snapshot    # idempotente: si ya hay sello hoy, no duplica
+launchctl start com.mki.vigia       # revisa el día y alerta si falta algo
+tail -20 data/snapshot.log
+tail -20 data/vigia.log
+```
+
+## Desinstalar
+
+```bash
+for j in noticias snapshot reporte backup vigia; do
+  launchctl unload ~/Library/LaunchAgents/com.mki.$j.plist
+  rm ~/Library/LaunchAgents/com.mki.$j.plist
+done
+```
+
+## Limitaciones conocidas (y qué hacer)
+
+- **Si el Mac está dormido a la hora del job**, launchd lo ejecuta apenas
+  despierte (mismo día). Pero ojo con el **DarkWake**: la auditoría del
+  13–24 jul demostró que un despertar "a medias" (pantalla apagada, con
+  batería) deja la red funcionando parcialmente y Yahoo devuelve lotes
+  incompletos. Dos mitigaciones recomendadas:
+  1. Mantén el Mac **enchufado** en la tarde de días hábiles.
+  2. Programa un despertar COMPLETO antes del primer job (pide contraseña):
+     ```bash
+     sudo pmset repeat wakeorpoweron MTWRF 17:48:00
+     ```
+- **Si el Mac está apagado**, esa ejecución se pierde (launchd no revive el
+  pasado). Red de seguridad del snapshot: al abrir el dashboard, si no
+  existe el sello del día, se toma uno con origen "dashboard" y su hora
+  real — el verificador de timing decide después, como siempre.
+- **El reporte NO tiene anti-duplicados** (decisión 4.5: es una acción
+  explícita): si además del horario lo fuerzas con `launchctl start` o el
+  botón del dashboard, llega de nuevo. El snapshot y el backup sí son
+  idempotentes.
+- **Si mueves la carpeta del proyecto**, basta correr de nuevo
+  `zsh launchd/instalar.sh` desde la ubicación nueva.
+- Desde la Etapa 5.0 el sistema **nunca falla en silencio**: la salud de
+  descarga queda sellada en cada snapshot y el vigía manda alerta de
+  Telegram si algo del día no ocurrió.

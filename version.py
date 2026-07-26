@@ -15,3 +15,9 @@
 MODELO_VERSION = "4.6.0"
 FEATURE_VERSION = "4.6.0"
 UNIVERSO_VERSION = "4.6.0"
+
+# Etapa 5.0: versionado DUAL. La plataforma (infraestructura, jobs, UI,
+# reporte) evoluciona; el MODELO sigue congelado en 4.6.0 — el track record
+# limpio está encadenado a esa versión y las métricas jamás mezclan
+# versiones. Subir MODELO_VERSION es una decisión aparte (Etapa 5.1+).
+PLATAFORMA_VERSION = "5.0.0"
