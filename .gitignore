@@ -1,10 +1,28 @@
+# --- Entorno y secretos (JAMÁS se versionan) ---
+.env
+.env.local
+.env.*.local
+
+# --- Python ---
 venv/
 __pycache__/
 *.pyc
-.env
+.pytest_cache/
+
+# --- Bases de datos locales (el respaldo versionado son los CSV de data/backups/) ---
+*.db
 noticias.db
 senales.db
 alertas.db
+
+# --- Logs (pueden contener detalles de errores; nunca al repo) ---
+*.log
+data/*.log
+
+# --- Node / frontend (frontend/.gitignore cubre lo suyo; esto es red de seguridad) ---
+node_modules/
+dist/
+
+# --- Sistema y herramientas ---
+.DS_Store
 .claude/
-data/snapshot.log
-data/reporte.log

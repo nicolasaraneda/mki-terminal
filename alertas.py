@@ -19,6 +19,8 @@ from datetime import date, datetime, timezone
 
 import requests
 
+from seguridad import enmascarar_secretos, ultimos4
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "alertas.db")
 
 UMBRAL_SENTIMIENTO_EXTREMO = 0.6
@@ -105,15 +107,18 @@ def enviar_mensaje(texto: str) -> tuple:
         )
         if resp.status_code == 200 and resp.json().get("ok"):
             return True, "enviado"
-        return False, f"Telegram respondió {resp.status_code}: {resp.text[:200]}"
+        return False, enmascarar_secretos(
+            f"Telegram respondió {resp.status_code}: {resp.text[:200]}")
     except requests.exceptions.ConnectionError as e:
         # La petición NUNCA llegó al servidor (DNS caído, sin red): reenviar
         # no puede duplicar. Es el único caso que el CLI reintenta (4.7.3).
-        return False, f"Error de conexión (el mensaje no salió): {e}"
+        # El texto de la excepción lleva la URL con el token — se enmascara
+        # SIEMPRE (Etapa 5.0: así se fugó el token a reporte.log el 11-jul).
+        return False, enmascarar_secretos(f"Error de conexión (el mensaje no salió): {e}")
     except requests.RequestException as e:
         # Timeout u otros: el mensaje PUDO haber llegado — jamás se reintenta
         # (un reporte duplicado fantasma es peor que uno perdido).
-        return False, f"Error de red: {e}"
+        return False, enmascarar_secretos(f"Error de red: {e}")
 
 
 def _alerta_unica(clave: str, texto: str, enviadas: list) -> None:
@@ -218,8 +223,9 @@ def _cli_estado() -> None:
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat = os.environ.get("TELEGRAM_CHAT_ID", "")
     if esta_configurado():
-        print(f"Telegram configurado: token {token[:6]}…{token[-4:]} · "
-              f"chat id {chat[:2]}…{chat[-2:]} (leídos desde .env)")
+        # Solo los últimos 4 caracteres de cada secreto (Etapa 5.0).
+        print(f"Telegram configurado: token {ultimos4(token)} · "
+              f"chat id {ultimos4(chat)} (leídos desde .env)")
     else:
         faltan = [n for n, v in (("TELEGRAM_BOT_TOKEN", token),
                                  ("TELEGRAM_CHAT_ID", chat)) if not v]
