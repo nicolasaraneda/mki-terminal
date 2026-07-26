@@ -905,3 +905,27 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
 5. **./mki reutiliza, no reimplementa**: `estado` y `auditoria` llaman a
    los MISMOS chequeos del vigía y helpers de senales/costos — una sola
    definición de "¿el sistema está bien?" en todo el proyecto.
+
+## WS7 — Documentación y vitrina
+
+1. **El README lidera con la integridad, no con los aciertos.** La sección
+   central es "Integridad de medición" (regla maestra, errata documentada,
+   Wilson, palabra prohibida) y TODO acierto aparece con su intervalo y su
+   caveat de régimen único — incluso el número estrella (78.8% [68.6–86.3]).
+   El humo del backtest se cita CON su parte incómoda (ninguna cartera
+   sobrevivió a los costos en la ventana): "así se ve un experimento real"
+   es la tesis de marketing Y la verdad.
+
+2. **Los badges son estáticos** (shields.io sin CI): el repo no tiene
+   remoto todavía y un badge dinámico mentiría. Tests contados a mano del
+   último run local (49) — se actualiza con las etapas.
+
+3. **La captura hero es /hoy de un sábado** — deliberado: muestra el
+   sistema en reposo con el sello del viernes (SOX −4.25%, predicciones
+   apuntando al lunes de Seúl, noticias del día analizadas) — el estado
+   MÁS común en que un visitante lo encontraría.
+
+4. **CLAUDE.md ganó la constitución 5.0 al inicio** (para futuras
+   sesiones: las 6 reglas antes que cualquier arquitectura) y una sección
+   Etapa 5.0 con los módulos nuevos; las secciones 4.6/4.7 quedan como
+   referencia histórica vigente.

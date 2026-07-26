@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**MKI Terminal** — a Streamlit dashboard analyzing the full semiconductor value chain (rock→chip→data center) with market regime, competitor divergences, AI news sentiment, an openings anticipator, and a **verified, timestamp-sealed track record**. Built in "Etapas" (currently **4.6**). `DECISIONES.md` logs every autonomous design decision with rationale — consult it before "fixing" anything that looks arbitrary. The README describes Etapa 1 only; trust code/CLAUDE.md.
+**MKI Terminal** — a self-running research platform analyzing the full semiconductor value chain (rock→chip→data center) with market regime, competitor divergences, AI news sentiment, an openings anticipator, and a **verified, timestamp-sealed track record**. Built in "Etapas" (currently **plataforma 5.0.0 / modelo 4.6.0 — DUAL versioning**: the platform evolves, the signal model is FROZEN; bumping `MODELO_VERSION` is a separate human decision that restarts the clean track record). `DECISIONES.md` logs every autonomous design decision with rationale — consult it before "fixing" anything that looks arbitrary. README.md is the public portfolio page.
+
+**Constitution 5.0 (inviolable):** (1) motor.py signal logic untouchable, model stays 4.6.0; (2) dual versioning everywhere (DB, report, UI); (3) sealed rows are NEVER rewritten — historical errors become documented erratas in DECISIONES.md; (4) every prediction shows signal + uncertainty (n, R², 80% interval) + regime, and the word "confianza" is banned system-wide (tested); (5) nothing is pushed to GitHub by Claude — publishing is the user's manual act; no real money, no broker orders, disclaimer everywhere; (6) Anthropic spend always under a hard daily cap (`NOTICIAS_PRESUPUESTO_USD_DIA` in .env, default 0.50, ledger in data/costos_ia.log, hard brake + Telegram notice at the cap).
 
 ## THE MASTER RULE (Etapa 4.6 — read before touching señales/verifier/motor)
 
@@ -13,33 +15,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
+# Un comando para todo (Etapa 5.0):
+./mki arrancar    # API :8000 + Vite :5173
+./mki estado      # jobs, último sello + salud de descarga, presupuesto IA
+./mki tests       # pytest completo + anti-look-ahead del motor
+./mki auditoria   # revisión de solo lectura (chequeos del vigía + sellos)
+./mki reporte     # reporte Telegram AHORA (100% desde el sello)
+./mki instalar    # 5 jobs launchd + hook pre-commit
+
 # Setup
 python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt        # versiones FIJADAS (pip freeze curado)
 
 # Dashboard (Streamlit, kept as fallback)
 streamlit run app.py
 
-# React terminal (Etapa 4.7): API :8000 + Vite :5173 — see README-DEV.md
-uvicorn api.main:app --reload
-export PATH="$HOME/.local/node/bin:$PATH" && cd frontend && npm run dev
-
-# Daily snapshot + verifier + CSV backups, WITHOUT Streamlit (what launchd runs)
+# Daily snapshot + verifier + CSV backups (what launchd runs at 18:15)
 python snapshot.py --origen manual     # "programado" is the launchd default
 
 # Anti-look-ahead test of the signal engine (must stay green)
 python tests/test_motor.py
 
-# API parity tests (pytest) + frontend typecheck
-python -m pytest tests/test_api.py -q
+# Full pytest suite (api parity, seguridad, autonomía, reporte, backtest)
+python -m pytest tests/ -q
 cd frontend && npm run build
 
-# Backend layers standalone
-python -c "import noticias; print(noticias.actualizar_titulares())"
-python -c "import senales; senales.init_db(); print(senales.verificar_pendientes())"
+# Backtest (dry-run; verdict runs are Etapa 5.1, human-triggered)
+python -m backtest.motorbt --desde 2026-06-01 --hasta 2026-07-18
 ```
 
-`tests/test_motor.py` is a plain-assert script; `tests/test_api.py` is pytest. Node lives in `~/.local/node` (no brew/sudo). The launchd job (Mon–Fri 18:15 Chile) lives in `launchd/` with beginner install instructions.
+`tests/test_motor.py` is a plain-assert script; everything else is pytest. Node lives in `~/.local/node` (no brew/sudo). The five launchd jobs (Mon–Fri, Chile time: noticias 17:50 · snapshot 18:15 · reporte 18:25 · backup 18:40 · vigía 19:00) live in `launchd/` as `__MKI_DIR__` templates — install with `zsh launchd/instalar.sh`. The pre-commit hook (installed by `./mki instalar`) scans staged changes for secret patterns always, and runs the test suite unless the commit only touches `data/backups/` (the daily backup job must never be blocked) or `SKIP_TESTS=1`.
+
+## Etapa 5.0 "Plataforma" — autonomy, security, science-ready
+
+- **`seguridad.py`** — `enmascarar_secretos()` / `ultimos4()`: a secret is never printed whole; ALL error details that can reach a log pass through it (the 11-jul token leak into reporte.log is the reason it exists). Git history was audited clean (GATE A); author identity rewritten to the GitHub noreply.
+- **`costos.py`** — the budget guardrail: JSONL ledger `data/costos_ia.log`, `estado_presupuesto()`, hard cap from .env (typo-proof: falls back to 0.50). `mki_noticias.py` checks the cap BETWEEN batches (it drives noticias.py's own functions — internal logic untouched).
+- **`registro.py`** — copy-truncate log rotation (2 MB × 2 copies), called by each job for its own log at startup (launchd keeps the fd; append lands clean after truncate).
+- **Jobs** — `mki_noticias.py` (RSS + Haiku under budget), `mki_backup.py` (commits ONLY data/backups via pathspec, "Backup diario {fecha}"), `mki_vigia.py` (5 read-only checks; ONE Telegram alert naming exactly what failed; weekends exempt). snapshot.py gained sealed download health (`salud_descarga`, surgical exception #1) and pre-seal partial retry 60/120s on the launchd path only (exception #2) — both with byte-identical no-contamination tests.
+- **Sealed extras (additive)** — snapshots: `descarga_ok/total/caidos`, `plataforma_version`, `sox_usado_pct/fecha`; senales_ticker: `beta`; new TERMINAL state `sin_datos_mercado` (≥5 later sessions closed and the source never published the target session — audit-visible, out of ALL metrics; the two stuck Korean rows of 16-jul went there).
+- **Telegram report 2.0** — `alertas.componer_reporte_sellado()` builds EVERYTHING from senales.db + noticias.db cache; job, CLI and dashboard button send the same text; sealed gaps are DECLARED ("sin dato sellado hoy ⚠"), never refilled — a test nukes every motor function and the report still composes.
+- **`backtest/`** — walk-forward engine B0→B5, design FROZEN in `backtest/DISEÑO.md` (GATE B: staggered verdict layer-vs-layer, mandatory SMH buy-and-hold benchmark, 5.1 trigger = N≥150 live + one regime change, or 3 months — whichever first; execution is the user's call). Read-only by construction (sqlite `mode=ro`), frozen data source per run, PIT features via backward-only rolling ops with a hard `ErrorLookAhead` guard, B2 calls the production model verbatim (reproduces real sealed predictions within 0.05 pp mean). Results in `backtest/resultados/` (resumen.md versioned); every non-5.1 run is stamped NO-CONCLUYENTE.
+- **New views** — `/salud` (the 5 jobs by their artifacts — same checks as the vigía —, sealed download health, stuck verifications, AI budget, DB sizes; weekends shown neutral, not red) and `/laboratorio` (the experiment design + 5.1 trigger progress). `/historial` shows Wilson 95% on every hit rate, the calibration curve (rescaled sealed sigma), and region/regime breakdowns with the single-regime honesty caveat. `meta` carries `plataforma_version`; the cinta shows a download-health badge.
 
 ## Etapa 4.7 "Fachada" — React frontend + read-only API
 
