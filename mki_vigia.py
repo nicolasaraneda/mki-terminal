@@ -99,6 +99,8 @@ def chequear_backup() -> tuple:
 
 
 def main() -> int:
+    from registro import rotar_log
+    rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
     hoy = date.today()
     if hoy.weekday() >= 5:
         _log("fin de semana — nada que vigilar")

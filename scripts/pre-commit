@@ -1,0 +1,44 @@
+#!/bin/zsh
+# ============================================================
+# Hook pre-commit de MKI Terminal (Etapa 5.0 WS6).
+# Se instala con `./mki instalar` (copia a .git/hooks/pre-commit).
+#
+# 1. SIEMPRE: escanea lo stageado por patrones de secretos reales
+#    (clave Anthropic completa, token de bot de Telegram). Los ejemplos
+#    de documentación y los secretos FALSOS de tests/test_seguridad.py
+#    no disparan (patrones exigen largo real; ese test se excluye).
+# 2. Corre la suite de tests, SALVO que:
+#    - el commit sea SOLO de data/backups (el job diario de backup no
+#      puede quedar bloqueado por un test que falla por otra razón), o
+#    - se fuerce con SKIP_TESTS=1 (documentado en README-DEV.md).
+# ============================================================
+set -u
+RAIZ="$(git rev-parse --show-toplevel)"
+STAGED="$(git diff --cached --name-only)"
+[ -z "$STAGED" ] && exit 0
+
+# --- 1) secretos en lo stageado (excluye los secretos FALSOS del test) ---
+if git diff --cached -- . ':(exclude)tests/test_seguridad.py' \
+    | grep -qE 'sk-ant-api[0-9]{2}-[A-Za-z0-9_-]{30,}|[0-9]{8,12}:AA[A-Za-z0-9_-]{20,}'; then
+  echo "pre-commit BLOQUEADO: hay un patrón de secreto real en lo stageado."
+  echo "Revisa con: git diff --cached | grep -nE 'sk-ant-|:AA'"
+  exit 1
+fi
+
+# --- 2) tests (con las excepciones de arriba) ---
+if [ "${SKIP_TESTS:-0}" = "1" ]; then
+  echo "pre-commit: tests saltados por SKIP_TESTS=1"
+  exit 0
+fi
+if ! echo "$STAGED" | grep -qvE '^data/backups/'; then
+  exit 0  # solo respaldos: el escaneo de secretos basta
+fi
+
+cd "$RAIZ"
+source venv/bin/activate 2>/dev/null || true
+if ! python -m pytest tests/ -q; then
+  echo "pre-commit BLOQUEADO: la suite de tests falló."
+  echo "(Para un commit de emergencia consciente: SKIP_TESTS=1 git commit ...)"
+  exit 1
+fi
+exit 0

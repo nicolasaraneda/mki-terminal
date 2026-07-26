@@ -39,6 +39,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Manejo homogéneo de errores (Etapa 5.0 WS6, CONTRATO.md):
+#     siempre {"detail": causa, "codigo": ...}; los 500 pasan por el
+#     enmascarador de secretos — un traceback jamás filtra una clave.
+from fastapi import Request  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
+
+from seguridad import enmascarar_secretos  # noqa: E402
+
+_CODIGOS_HTTP = {400: "parametros_invalidos", 404: "no_encontrado"}
+
+
+@app.exception_handler(HTTPException)
+async def _error_http(request: Request, exc: HTTPException):
+    return JSONResponse(status_code=exc.status_code, content={
+        "detail": exc.detail,
+        "codigo": _CODIGOS_HTTP.get(exc.status_code, f"http_{exc.status_code}"),
+    })
+
+
+@app.exception_handler(Exception)
+async def _error_interno(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={
+        "detail": enmascarar_secretos(f"{type(exc).__name__}: {exc}"),
+        "codigo": "error_interno",
+    })
+
 EXCHANGES_CINTA = [
     ("XKRX", "KRX · Seúl", "asia"),
     ("XTKS", "TSE · Tokio", "asia"),

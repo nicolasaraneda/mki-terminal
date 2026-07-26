@@ -194,6 +194,8 @@ def respaldar_a_csv() -> list:
 
 
 def main() -> int:
+    from registro import rotar_log
+    rotar_log(os.path.join(DIRECTORIO, "data", "snapshot.log"))
     parser = argparse.ArgumentParser(description="Snapshot diario MKI Terminal")
     parser.add_argument("--origen", default="programado",
                         choices=["programado", "manual"])

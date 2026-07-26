@@ -1,0 +1,91 @@
+#!/bin/zsh
+# ============================================================
+# mki — un comando para todo (Etapa 5.0 WS6). Uso: ./mki <subcomando>
+#
+#   arrancar   API (:8000) + frontend Vite (:5173)
+#   estado     jobs launchd, último sello, salud, presupuesto IA
+#   reporte    envía el reporte de Telegram AHORA (compuesto del sello)
+#   tests      suite completa: pytest + anti-look-ahead del motor
+#   auditoria  revisión de SOLO LECTURA del sistema completo
+#   instalar   jobs de launchd (5) + hook pre-commit
+# ============================================================
+set -u
+DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$DIR"
+export PATH="$HOME/.local/node/bin:$PATH"
+
+case "${1:-ayuda}" in
+  arrancar)
+    echo "API en :8000 y frontend en :5173 — Ctrl+C corta ambos."
+    source venv/bin/activate
+    uvicorn api.main:app --port 8000 &
+    API_PID=$!
+    trap "kill $API_PID 2>/dev/null" EXIT
+    cd frontend && npm run dev
+    ;;
+  estado)
+    echo "== Jobs launchd =="
+    launchctl list | grep com.mki || echo "  (ninguno instalado — ./mki instalar)"
+    echo "\n== Último sello y salud =="
+    source venv/bin/activate
+    python - <<'PY'
+import senales, costos
+info = senales.info_snapshot_hoy()
+if info:
+    d = (f" · descarga {info['descarga_ok']}/{info['descarga_total']}"
+         if info.get("descarga_ok") is not None else "")
+    print(f"  snapshot HOY: sellado {info['timestamp_utc']} ({info['origen']}){d}")
+else:
+    hist = senales.historial_snapshots(1)
+    ultimo = hist.iloc[0]["Fecha"] if not hist.empty else "nunca"
+    print(f"  snapshot HOY: no hay (último: {ultimo})")
+p = costos.estado_presupuesto()
+print(f"  IA hoy: {p['gasto_usd']:.4f}/{p['tope_usd']:.2f} USD"
+      + (" — FRENO" if p["agotado"] else ""))
+est = dict(senales.conteo_por_estado().itertuples(index=False, name=None))
+print(f"  predicciones: {est}")
+PY
+    echo "\n== Últimas líneas del vigía =="
+    tail -6 data/vigia.log 2>/dev/null || echo "  (sin log del vigía aún)"
+    ;;
+  reporte)
+    source venv/bin/activate && python alertas.py reporte
+    ;;
+  tests)
+    source venv/bin/activate
+    python -m pytest tests/ -q && python tests/test_motor.py
+    ;;
+  auditoria)
+    echo "== Auditoría de solo lectura =="
+    source venv/bin/activate
+    python - <<'PY'
+from datetime import date
+import senales, costos, mki_vigia
+print(f"fecha: {date.today().isoformat()}")
+for chequeo in (mki_vigia.chequear_snapshot, mki_vigia.chequear_descarga,
+                mki_vigia.chequear_noticias, mki_vigia.chequear_reporte,
+                mki_vigia.chequear_backup):
+    ok, detalle = chequeo()
+    print(f"  {'OK   ' if ok else 'FALLA'} {detalle}")
+print("\nsellos de la última semana (fecha, origen, régimen, descarga):")
+conn = senales.get_connection()
+for f in conn.execute("""SELECT fecha, origen, regimen,
+        COALESCE(descarga_ok || '/' || descarga_total, 'pre-5.0')
+        FROM snapshots ORDER BY fecha DESC LIMIT 7"""):
+    print(f"  {f}")
+conn.close()
+print(f"\ngasto IA del mes: {costos.gasto_del_mes():.2f} USD")
+PY
+    echo "\n== git =="
+    git status --short | head -10
+    git log --oneline -3
+    ;;
+  instalar)
+    zsh launchd/instalar.sh
+    cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+    echo "hook pre-commit instalado (.git/hooks/pre-commit)"
+    ;;
+  *)
+    grep '^#   ' "$0" | sed 's/^#   /  /'
+    ;;
+esac

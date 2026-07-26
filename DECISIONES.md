@@ -874,3 +874,34 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
 6. **resultados/**: resumen.md versionable, datos crudos (CSV/JSON)
    gitignorados — se regeneran con el mismo commit (queda anotado el hash
    en cada resumen).
+
+## WS6 — Calidad de ingeniería
+
+1. **El hook pre-commit tiene un camino rápido para el backup diario**: un
+   commit que SOLO toca data/backups/ pasa con el escaneo de secretos y
+   sin tests — si no, un test rojo por cualquier otra razón bloquearía la
+   red de seguridad de datos de las 18:40, que es exactamente lo que no
+   puede pasar. `SKIP_TESTS=1` existe para emergencias conscientes y
+   queda documentado. Los secretos FALSOS de tests/test_seguridad.py se
+   excluyen del escaneo por pathspec (los patrones del hook exigen largo
+   de secreto real, pero el fake del test lo cumple a propósito).
+
+2. **Rotación de logs por copy-truncate, sin demonios**: launchd mantiene
+   el descriptor del log abierto, así que renombrar no sirve; cada job
+   rota SU log al arrancar (registro.rotar_log, 2 MB × 2 copias) copiando
+   a .1 y truncando en el lugar — el siguiente write de launchd (append)
+   cae limpio al inicio. Cero sudo, cero newsyslog.
+
+3. **Errores homogéneos en la API**: {"detail", "codigo"} para 400/404 y
+   un handler global de 500 cuya causa pasa SIEMPRE por
+   enmascarar_secretos — un traceback no puede filtrar una clave.
+   Contrato enmendado antes del código, con test.
+
+4. **Versiones fijadas en ambos mundos**: requirements.txt es un pip
+   freeze curado (solo dependencias directas, con secciones comentadas) y
+   package.json quedó en versiones exactas (las instaladas del lock).
+   Subir una versión pasa a ser una decisión visible en un diff.
+
+5. **./mki reutiliza, no reimplementa**: `estado` y `auditoria` llaman a
+   los MISMOS chequeos del vigía y helpers de senales/costos — una sola
+   definición de "¿el sistema está bien?" en todo el proyecto.

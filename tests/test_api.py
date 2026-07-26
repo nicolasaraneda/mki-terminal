@@ -285,3 +285,11 @@ def test_historial_curva_y_desgloses():
         assert sum(f["n"] for f in datos[clave]) == len(df)
         for f in datos[clave]:
             assert f["wilson_lo_pct"] <= f["gap_pct"] <= f["wilson_hi_pct"]
+
+
+def test_errores_homogeneos_con_codigo():
+    r = cliente.get("/api/detalle/NOEXISTE")
+    assert r.status_code == 404 and r.json()["codigo"] == "no_encontrado"
+    r = cliente.get("/api/comparador?tickers=NVDA")  # falta el segundo ticker
+    assert r.status_code == 400 and r.json()["codigo"] == "parametros_invalidos"
+    assert "detail" in r.json()

@@ -41,6 +41,8 @@ def _avisar_telegram(texto: str) -> None:
 
 
 def main() -> int:
+    from registro import rotar_log
+    rotar_log(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "noticias.log"))
     import alertas  # noqa: F401 (carga temprana: falla visible si falta requests)
     import noticias
 

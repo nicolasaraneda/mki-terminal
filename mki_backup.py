@@ -25,6 +25,8 @@ def _git(*args) -> subprocess.CompletedProcess:
 
 
 def main() -> int:
+    from registro import rotar_log
+    rotar_log(os.path.join(DIRECTORIO, "data", "backup.log"))
     print(f"[{datetime.now(timezone.utc).isoformat()}] mki_backup.py", flush=True)
     r = _git("add", "--", "data/backups")
     if r.returncode:

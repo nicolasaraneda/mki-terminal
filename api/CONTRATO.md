@@ -276,7 +276,10 @@ entidad. **Solo cache** — nunca dispara análisis nuevo.
 
 - `400` parámetros inválidos (ticker fuera del universo, base desconocida).
 - `404` ticker inexistente en `/api/detalle/{ticker}`.
-- Formato: `{"detail": "mensaje en español"}` (estándar FastAPI).
+- Formato (enmienda 5.0 — homogéneo, con causa y código):
+  `{"detail": "mensaje en español", "codigo": "parametros_invalidos" |
+  "no_encontrado" | "error_interno"}`. Los 500 llevan el tipo y el mensaje
+  de la causa, SIEMPRE pasados por el enmascarador de secretos.
 
 ## Paridad
 
