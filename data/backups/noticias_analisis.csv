@@ -555,8 +555,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 626,-0.4,000660.KS,medio,"Caída en acciones europeas de chips tras debut de SK Hynix, indicando contagio del sentimiento negativo en el sector global.",2026-07-26T02:35:56.864398+00:00,0.75
 627,-0.7,000660.KS,alto,Caída récord de SK Hynix genera ondas negativas masivas a través del mercado global de semiconductores por su rol crítico en memoria.,2026-07-26T02:35:56.864430+00:00,0.9
 628,0.4,,medio,"Allegro MicroSystems ve tendencias positivas de contenido de chip, reflejando demanda creciente en aplicaciones automotrices e industriales.",2026-07-26T02:35:56.864485+00:00,0.6
-629,0.5,IFX.DE,medio,Infineon abre nueva fábrica de smart power con narrativa de alto costo pero potencial de crecimiento en electrónica de potencia.,2026-07-26T02:35:56.864525+00:00,0.8
-630,-0.2,IFX.DE,bajo,Análisis crítico sugiere que valuation de Infineon puede permanecer elevada a pesar de noticias positivas de fabricación.,2026-07-26T02:35:56.864534+00:00,0.7
 631,0.3,,bajo,Musashi Seimitsu como proveedor para datacenters es positivo pero la noticia carece de ticker específico y es análisis especulativo.,2026-07-26T02:36:10.409874+00:00,0.3
 634,-0.3,BHP,bajo,Análisis de valoración de minería BHP tiene relevancia mínima para la cadena de valor de semiconductores.,2026-07-26T02:35:17.610188+00:00,0.1
 635,0.4,,bajo,Enfoque en cobre para data centers de IA tiene relación tangencial; no menciona semiconductores específicos aunque beneficia a fabricantes de equipos.,2026-07-26T02:35:32.496134+00:00,0.2
@@ -564,8 +562,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 637,0.35,BHP,bajo,Expansión de minería de hierro en Pilbara es ajena al ecosistema de semiconductores.,2026-07-26T02:35:44.008993+00:00,0.05
 638,0.25,BHP,bajo,Aprobación de gasto en hierro de BHP está completamente desconectada de la industria semiconductora.,2026-07-26T02:35:44.009057+00:00,0.05
 639,0.2,BHP,bajo,Recuperación de producción de hierro en BHP no impacta la cadena de valor semiconductora.,2026-07-26T02:35:44.009084+00:00,0.05
-640,-0.4,BHP,bajo,Huelga en minería de hierro de BHP no tiene impacto directo en sector de semiconductores.,2026-07-26T02:35:44.009111+00:00,0.05
-641,0.5,BHP,bajo,Permiso ambiental para expansión minera de BHP; relevancia mínima para la cadena de suministro de semiconductores.,2026-07-26T02:35:56.864462+00:00,0.15
 642,0.3,,bajo,Artículo sobre minería de plata sin conexión con industria de semiconductores.,2026-07-26T02:35:56.864476+00:00,0.05
 643,0.0,FCX,bajo,"Freeport-McMoRan es minero de cobre, no semiconductor; sin relación directa al sector de chips.",2026-07-26T02:32:58.186392+00:00,0.05
 644,0.4,FCX,bajo,"Empresa minera sin relación directa con fabricación de semiconductores, impacto tangencial en cadena de suministro de materias primas.",2026-07-26T02:33:49.963603+00:00,0.2
@@ -580,13 +576,10 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 653,0.3,FCX,bajo,Noticia de minería de cobre; impacto marginal en la cadena de valor de semiconductores.,2026-07-26T02:34:38.654810+00:00,0.1
 654,0.7,NVDA,medio,"CEO de Nvidia cultiva relaciones con proveedores japoneses para expansión de $5.1T en IA, fortaleciendo cadena de valor.",2026-07-26T02:35:44.008981+00:00,0.85
 655,0.3,4063.T,bajo,Movimiento de fondo en Shin-Etsu Chemical (productor químico para semiconductores) indica interés institucional pero noticia es débil.,2026-07-26T02:36:10.410098+00:00,0.5
-656,0.5,4063.T,medio,Recompra de acciones de Shin-Etsu combinada con nueva demanda de tierras raras mejora perspectivas de inversores.,2026-07-26T02:36:22.608571+00:00,0.7
 657,0.6,NVDA,alto,"Optimismo de Nvidia en IA impulsa a proveedores asiáticos de chips, elevando toda la cadena de suministro.",2026-07-26T02:36:22.608579+00:00,0.8
 658,0.7,4063.T,alto,Crecimiento proyectado de 26% en mercado de obleas de silicio EPI impulsado por IA y 5G beneficia directamente a Shin-Etsu Chemical.,2026-07-26T02:36:29.218941+00:00,0.9
 659,0.5,7970.T,medio,Anuncio de recompra de acciones y aumento de dividendo en Shin-Etsu Polymer señala confianza de management pero relevancia limitada para sector.,2026-07-26T02:36:29.219021+00:00,0.5
 660,0.15,4063.T,bajo,Análisis de métricas de valuación de Shin-Etsu Chemical proporciona perspectiva fundamental sin catalizador de noticias específico.,2026-07-26T02:36:29.219033+00:00,0.35
-661,-0.3,3436.T,medio,"Sumco enfrenta contradicciones analíticas y debilidad del sector tecnológico, afectando la demanda de obleas de silicio.",2026-07-26T02:36:22.607702+00:00,0.7
-662,0.3,3436.T,medio,Compras pre-ganancias en Sumco reflejan expectativas de cambio narrativo en demanda de obleas de silicio.,2026-07-26T02:36:22.608648+00:00,0.7
 663,0.4,,medio,Aumento de envíos de obleas de silicio del 13% YoY indica recuperación de la demanda del sector de semiconductores.,2026-07-26T02:36:22.608682+00:00,0.85
 664,-0.05,3436.T,bajo,Análisis de valuación de SUMCO tras volatilidad de precios refleja incertidumbre sin información operativa concreta nueva.,2026-07-26T02:36:29.219006+00:00,0.4
 665,0.3,MSFT,bajo,Recomendación de compra de Microsoft antes de resultados afecta tangencialmente semiconductores como cliente de procesadores y chips IA.,2026-07-26T02:32:20.827049+00:00,0.4
@@ -939,7 +932,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1012,0.65,NVDA,medio,Posicionamiento bullish sobre acciones de infraestructura de IA con NVIDIA como principal beneficiario del crecimiento del sector.,2026-07-28T22:09:33.154359+00:00,0.85
 1013,0.7,NVDA,alto,Plan de gasto de $750 mil millones de NVIDIA para infraestructura de IA indica ciclo alcista sostenido similar a booms tecnológicos previos.,2026-07-28T22:09:33.154736+00:00,0.95
 1014,0.8,"TSM,2330.TW",alto,"TSMC aumenta capex 2026 anticipando demanda IA/HPC, confirmando liderazgo y confianza en crecimiento.",2026-07-28T22:09:45.465791+00:00,0.95
-1015,0.0,UMC,bajo,Reporte de ventas de UMC para junio es dato regular de desempeño sin información de dirección o sorpresas.,2026-07-28T22:10:23.579029+00:00,0.4
 1016,-0.45,ASML,medio,"ASML se reduce por avances chinos en chips, aunque analistas ven sobreventa con potencial de recuperación del 70%.",2026-07-28T22:07:53.104256+00:00,0.85
 1017,-0.55,ASML,alto,ASML cae por debajo de nivel técnico clave en contexto de volatilidad energética y presión de mercado.,2026-07-28T22:07:53.104300+00:00,0.75
 1018,0.8,ASML,alto,"Predicción alcista de ASML a $3,000 en 3 años refleja confianza en demanda continua de equipos de litografía críticos para industria.",2026-07-28T22:08:06.342614+00:00,0.85
@@ -950,7 +942,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1023,0.6,8035.T,medio,Partnership de Teradyne con Tokyo Electron en tecnología AI representa oportunidad de crecimiento en cadena de valor de semiconductores.,2026-07-28T22:07:32.854201+00:00,0.8
 1024,-0.8,"005930.KS,000660.KS,2330.TW,NVDA,AMD",alto,"Crash del KOSPI por venta de chips de IA golpea fabricantes asiáticos y globals, evento sistémico del sector.",2026-07-28T22:09:09.625694+00:00,0.95
 1025,0.5,,medio,Pausa en conflictos de Oriente Medio genera ambiente de riesgo reducido favorable para recuperación de stocks tecnológicos con exposición geográfica.,2026-07-28T22:09:59.126359+00:00,0.4
-1026,0.65,IFX.DE,alto,"Infineon completa adquisición de cartera de sensores ams Osram por €570m, consolidando capacidades en I+D de sensores críticos.",2026-07-28T22:10:23.579042+00:00,0.85
 1027,0.3,,bajo,Análisis de ETF de cobre tiene relevancia tangencial indirecta a semiconductores a través de cadena de suministro de materiales.,2026-07-28T22:09:59.126424+00:00,0.15
 1028,-0.55,BHP,medio,Huelga potencial en Port Hedland amenaza suministros críticos aunque impacto indirecto en sector semiconductor es moderado.,2026-07-28T22:10:23.578909+00:00,0.25
 1029,-0.3,FCX,bajo,Volatilidad implícita en opciones de minería (no semiconductores); impacto tangencial en el sector de chips.,2026-07-28T22:08:28.809204+00:00,0.1
@@ -1054,7 +1045,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1127,0.3,005930.KS,bajo,Lanzamiento de tarjeta de crédito Samsung es iniciativa financiera con impacto limitado en el negocio de semiconductores.,2026-07-28T22:10:23.578764+00:00,0.2
 1128,0.65,005930.KS,medio,"Samsung expande en robótica e IA física, posicionándose en mercados emergentes de alto crecimiento con potencial de diversificación rentable.",2026-07-28T22:10:23.578343+00:00,0.7
 1129,-0.5,"005930.KS,000660.KS",medio,Volatilidad y cautela en ETFs de Samsung y SK Hynix reflejan estrés en fabricantes de memoria coreanos.,2026-07-28T22:09:09.625488+00:00,0.7
-1130,-0.8,005930.KS,alto,"Caída significativa de Samsung Electronics, líder mundial en memoria DRAM y NAND, impacta directamente el sector.",2026-07-28T22:09:09.625407+00:00,0.9
 1131,-0.55,"000660.KS,005930.KS",alto,Riesgo de restricciones comerciales estadounidenses contra fabricantes de memoria surcoreanos.,2026-07-28T22:08:17.708333+00:00,0.85
 1132,-0.7,000660.KS,alto,Caída de SK Hynix bajo precio IPO indica debilidad en sector de memoria y demanda global menor a esperada.,2026-07-28T22:09:20.624094+00:00,0.8
 1133,-0.55,"005930.KS,000660.KS",medio,"Fuga de talento de Samsung a SK Hynix afecta competitividad de Samsung pero fortalece a rival, generando volatilidad relativa.",2026-07-28T22:08:56.728518+00:00,0.78
@@ -1096,13 +1086,11 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1169,0.5,ASML,medio,"ASML sobvendida por temores a restricciones DUV en China, pero su moat tecnológico de largo plazo permanece intacto según analistas.",2026-07-28T22:08:06.342503+00:00,0.85
 1170,-0.25,ASML,medio,Analistas ajustan evaluaciones de ASML como parte de actualizaciones sectoriales mixtas.,2026-07-28T22:07:53.104191+00:00,0.65
 1171,-0.65,8035.T,medio,Caída accionaria de Tokyo Electron refleja presiones en demanda de equipos de semiconductores y ciclo de capex débil.,2026-07-28T22:08:56.728607+00:00,0.7
-1172,-0.55,"TSM,2330.TW,8035.T",medio,"Tokyo Electron no apelará fallo en caso de secretos comerciales de TSMC, afectando dinámicas competitivas y confianza en proveedores de equipos.",2026-07-28T22:07:21.179279+00:00,0.75
 1173,0.35,8035.T,bajo,"Tokyo Electron abre laboratorio educativo para talentos en semiconductores, iniciativa de imagen positiva con impacto económico limitado corto plazo.",2026-07-28T22:08:56.728549+00:00,0.5
 1174,0.2,8035.T,bajo,Desglose de ingresos de Tokyo Electron proporciona información financiera neutra sobre fabricante de equipos para semiconductores,2026-07-28T22:10:10.964157+00:00,0.4
 1175,0.4,8035.T,bajo,Programa de divulgación de Tokyo Electron para talento futuro es iniciativa positiva pero tangencial al negocio actual.,2026-07-28T22:09:09.625671+00:00,0.4
 1176,0.4,8035.T,bajo,Iniciativa educativa de Tokyo Electron es noticia positiva de relaciones públicas pero con impacto comercial limitado.,2026-07-28T22:09:09.625663+00:00,0.4
 1177,0.7,8035.T,alto,Rating de compra para Tokyo Electron confirma optimismo sobre demanda de equipos de fabricación de chips semiconductores,2026-07-28T22:10:10.964288+00:00,0.85
-1178,0.7,6857.T,alto,"Advantest expande ecosistema SiConic para pruebas DFT, fortaleciendo posición crítica en cadena de valor de test de semiconductores.",2026-07-28T22:10:23.578828+00:00,0.85
 1179,-0.75,"8035.T,6857.T",alto,Advantest y Tokyo Electron caen con venta masiva en Wall Street; equipomakers asiáticos afectados por corrección global.,2026-07-28T22:08:28.810667+00:00,0.9
 1180,0.3,IFX.DE,bajo,Lanzamiento de nuevo producto Infineon para aplicaciones industriales representa innovación incremental con adopción gradual.,2026-07-28T22:08:56.728558+00:00,0.6
 1181,0.4,IFX.DE,medio,Apertura temprana de fabrica de Smart Power de Infineon es positiva pero valoración al alza genera escepticismo sobre retorno.,2026-07-28T22:10:23.578978+00:00,0.75
