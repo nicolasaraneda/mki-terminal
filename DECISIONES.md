@@ -951,3 +951,101 @@ reintento parcial antes de sellar (WS2.3) y el vigía nocturno (WS2.7).
   (BotFather) y el push manual a GitHub. La Etapa 5.1 (backtest con
   veredicto) espera su gatillo: N ≥ 150 verificadas en vivo + un cambio
   de régimen, o 3 meses continuos (25-oct-2026) — y su decisión.
+
+## Etapa 5.0.1 — Vigía con retractación (03-ago-2026)
+
+Motivación: las noches del 29 y 31-jul el vigía pasó lista a las 19:00
+mientras snapshot.py seguía vivo reintentando; alertó "NO se selló hoy",
+el sello llegó más tarde (21:23 y 19:40) y la alerta quedó abierta para
+siempre. Regla nueva: **una alerta jamás queda sin epílogo.**
+
+1. **El epílogo tiene tres caminos y un solo marcador.** Si a las 19:00
+   el snapshot no está sellado, el vigía deja `data/vigia_pendiente.json`
+   (fecha, fallas, si había reintentos activos — gitignorado, estado de
+   runtime) y la alerta anuncia el re-chequeo. A las 20:30 el pase
+   `--rechequeo`: sin marcador → silencio absoluto; sellado → retractación
+   "recuperado: sellado HH:MM, descarga N/N"; sin sellar → epílogo "sigue
+   sin sellar" y el marcador QUEDA. Si el sello llega aún más tarde (el
+   caso real del 29-jul: 21:23), snapshot.py encuentra el marcador al
+   terminar y envía la retractación él mismo (`_epilogo_vigia()`, blindado:
+   jamás puede romper el camino del sello). Solo la retractación consume
+   el marcador; un marcador de otra fecha se ignora (una alerta no cruza
+   de día).
+2. **"En curso" lo prueba el PROCESO, no el log.** El stdout de launchd
+   viaja bufferizado (por eso los bloques del snapshot.log parecen
+   desordenados); los anuncios de reintento sí llevan flush=True y sirven
+   de detalle, pero la evidencia de "aún peleando" es `pgrep -f
+   snapshot.py`, y el estado del sello viene SIEMPRE de senales.db.
+3. **El re-chequeo es un job launchd diario (20:30), no un sleep de 90
+   min.** El vigía del 27-jul murió con "database is locked": un sleep
+   interno habría muerto con él. Y un sleep se congela si el Mac vuelve a
+   dormir — exactamente las noches en que más se lo necesita. El sexto job
+   es idempotente (sin marcador pendiente sale en silencio) y sobrevive a
+   la muerte del proceso de las 19:00.
+4. Alcance: el epílogo cubre la alerta con snapshot sin sellar (el
+   artefacto central del día); las demás fallas (noticias, backup) siguen
+   con la alerta única de las 19:00.
+5. Versionado dual: plataforma 5.0.0 → 5.0.1; el modelo sigue en 4.6.0.
+6. De paso: `test_verificador_marca_atascadas` usaba fechas FIJAS
+   (16/23-jul) y se pudrió solo cuando el calendario avanzó (ambas filas
+   pasaron a terminales). Ahora calcula sus sesiones contra el calendario
+   XKRX real, relativas a hoy.
+
+## Auditoría de sellos tardíos 29–31 jul (solo lectura, 03-ago-2026)
+
+Verificado contra senales.db y los logs de los 5 jobs. Ninguna fila
+sellada se toca (constitución); esto es una nota documentada.
+
+- **29-jul**: launchd disparó el snapshot 18:21 (6 min tarde — despertar).
+  Primer lote 27/28: solo ^SOX caído CON LA RED SANA (los otros 27 bajaron
+  en el mismo lote) → fallo del lado de Yahoo. Los 2 reintentos parciales
+  (60/120 s) fallaron igual, y ahí el proceso quedó CONGELADO — el Mac
+  volvió a dormir — hasta ~21:23, cuando despertó, bajó 28/28 y selló con
+  su timestamp honesto (01:23:34 UTC). Evidencia del congelamiento, no de
+  Yahoo: noticias arrancó 18:05 y su fetch RSS murió a las 20:57 con
+  "Remote end closed connection without response" (2h52m para un fetch =
+  conexión cortada durante el sueño); su reintento de las 21:47 chocó con
+  "database is locked" (el verificador tardío corriendo). El backup de las
+  18:44 no tenía CSVs nuevos que commitear (se exportaron recién a las
+  ~21:30) — por eso el vigía también acusó backup.
+- **Costo en el track record del 29**: NINGUNA predicción quedó
+  `no_verificable_timing` — al sellar 21:23, `proxima_sesion_despues_de`
+  asignó honestamente la próxima sesión FUTURA: las sesiones asiáticas del
+  30-jul ya habían abierto (20:00–21:00 Chile), así que las 7 predicciones
+  XKRX/XTAI/XTKS saltaron a la sesión del **31-jul** con el SOX del 29
+  (−5.33%) como insumo — dato de dos días para esa sesión; solo IFX.DE
+  (XETR abre 03:00 Chile) conservó su objetivo natural 30-jul. Resultado
+  verificado: las 7 asiáticas rancias predijeron caídas y el 31-jul abrió
+  masivamente al alza (gaps +2.8 a +28.4 pp) → **0/7 en gap y 0/7 en
+  dirección** (errores 4.8–33 pp). Las 7 frescas del sello del 30 (SOX
+  +8.19%) para la MISMA sesión: 7/7 y 7/7. IFX.DE del 29 acertó su gap
+  (error 0.43 pp). Doble consecuencia estructural: la sesión asiática del
+  30-jul quedó SIN predicción, y la del 31-jul con DOS por ticker (una
+  fresca y una rancia) — ambas legítimas bajo la regla maestra, ambas en
+  las métricas.
+- **31-jul**: launchd 18:20 (5 min tarde), lote 25/28 (TSM, SMH, IFX.DE —
+  de nuevo Yahoo con red sana), un reintento parcial anunciado y de nuevo
+  congelado: selló 19:40 (23:40:37 UTC). El vigía pasó lista TARDE también
+  (19:16 — otra huella del sueño irregular) y alertó; 24 min después el
+  día estaba recuperado, sin retractación. Al ser viernes, el sello de las
+  19:40 apuntó a las sesiones del lunes 03-ago — el retraso no costó
+  cobertura esta vez. Los CSVs exportados a las ~19:45 quedaron sin
+  commitear todo el fin de semana (el backup había corrido 18:41): son los
+  cambios pendientes en git de hoy; el job de hoy los recoge.
+- **30-jul**: día sano de punta a punta (18:15:05 exacto, 28/28 a la
+  primera, sellado 18:15:10) — la diferencia entre una tarde con el Mac
+  despierto y una con DarkWake.
+- **Veredicto red local vs Yahoo: ambos, en capas distintas.** Los caídos
+  puntuales (^SOX; TSM/SMH/IFX.DE) fallaron con la red demostradamente
+  funcional → Yahoo. Las HORAS de retraso no las explican los reintentos
+  (máx. 3 min de esperas parciales): las explica el proceso congelado por
+  el sueño del Mac — arranques tardíos de 4–16 min en todos los jobs de
+  esas noches, un fetch RSS de casi 3 horas muerto por conexión cortada.
+  El patrón DarkWake de la errata 8–24 jul sigue vivo; la 5.0.1 no lo cura
+  (eso es energía/pmset, fuera del repo — ver INSTALACION.md), le pone
+  epílogo.
+- **Pregunta abierta para el usuario** (decisión de modelo — NO se toca
+  sola): ¿debería un sello tardío abstenerse de emitir predicciones cuyo
+  objetivo saltó una sesión completa (insumo de 2 días, fuera del diseño
+  próxima-sesión de la regresión)? Cambiarlo toca la lógica de emisión;
+  queda para la conversación de la 5.1.

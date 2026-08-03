@@ -193,6 +193,21 @@ def respaldar_a_csv() -> list:
     return exportados
 
 
+def _epilogo_vigia() -> None:
+    """5.0.1: si el vigía alertó "NO sellado" hoy (marcador pendiente) y el
+    sello ya existe, este mismo proceso envía la retractación — una alerta
+    jamás queda sin epílogo, aunque el sello llegue después de las 20:30
+    (el caso real del 29-jul: sellado 21:23). Jamás puede romper el camino
+    del sello: cualquier error queda en el log, enmascarado."""
+    try:
+        import mki_vigia
+        if mki_vigia.enviar_retractacion_si_corresponde():
+            print("  retractación del vigía enviada (sello tardío)", flush=True)
+    except Exception as e:
+        from seguridad import enmascarar_secretos
+        print(f"  epílogo del vigía falló: {enmascarar_secretos(str(e))}", flush=True)
+
+
 def main() -> int:
     from registro import rotar_log
     rotar_log(os.path.join(DIRECTORIO, "data", "snapshot.log"))
@@ -226,6 +241,8 @@ def main() -> int:
     if resultado.get("caidos"):
         print(f"  ⚠ descarga degradada {resultado['descarga']} — caídos: "
               f"{', '.join(resultado['caidos'])} (sellado igual, salud visible)")
+
+    _epilogo_vigia()
 
     verif_apertura, verif_puntaje = senales.verificar_pendientes()
     print(f"  verificador apertura: {verif_apertura}")

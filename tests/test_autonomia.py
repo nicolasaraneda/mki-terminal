@@ -154,7 +154,8 @@ def test_reintento_parcial_recupera(entorno, monkeypatch):
                         "plataforma_version FROM snapshots").fetchone()
     conn.close()
     assert fila[0] == fila[1] and fila[2] is None
-    assert fila[3] == "5.0.0"
+    from version import PLATAFORMA_VERSION
+    assert fila[3] == PLATAFORMA_VERSION
 
 
 def test_reintento_agotado_sella_degradado(entorno, monkeypatch):
@@ -189,18 +190,33 @@ def test_dashboard_jamas_espera(entorno, monkeypatch):
 # WS2.6 — verificaciones atascadas → estado terminal
 # ------------------------------------------------------------
 def test_verificador_marca_atascadas(entorno, monkeypatch):
+    # Fechas calculadas contra el calendario XKRX REAL, relativas a hoy: la
+    # versión original (fechas fijas 16/23-jul) se pudrió cuando el
+    # calendario avanzó y ambas filas pasaron a terminales (03-ago-2026).
+    import calendarios
     entorno([set()])
     monkeypatch.setattr(senales, "_ohlc_local", lambda *a, **k: pd.DataFrame())
+
+    d = date.today()
+    while not (calendarios.es_sesion("XKRX", d.isoformat())
+               and calendarios.sesion_ya_cerro("XKRX", d.isoformat())):
+        d -= timedelta(days=1)
+    fresca = d.isoformat()          # última sesión cerrada: < 5 posteriores
+    vieja = fresca                  # 8 sesiones antes: ≥ 5 posteriores cerradas
+    for _ in range(8):
+        vieja = calendarios.sesion_anterior("XKRX", vieja)
+
     senales.init_db()
     conn = senales.get_connection()
-    for ticker, fecha, ts, sesion in (
-            ("005930.KS", "2026-07-16", "2026-07-16T22:15:05+00:00", "2026-07-17"),
-            ("000660.KS", "2026-07-23", "2026-07-23T22:15:05+00:00", "2026-07-24")):
+    for ticker, sesion in (("005930.KS", vieja), ("000660.KS", fresca)):
+        # Emitida la víspera a las 22:15 UTC — siempre ANTES de la apertura
+        # XKRX (00:00 UTC), como manda la regla maestra.
+        emision = (date.fromisoformat(sesion) - timedelta(days=1)).isoformat()
         conn.execute("""INSERT INTO senales_ticker
             (fecha, ticker, puntaje_v0, apertura_estimada_pct, timestamp_utc,
              exchange, sesion_objetivo, estado, modelo_version)
             VALUES (?, ?, 0.5, -1.0, ?, 'XKRX', ?, 'pendiente', '4.6.0')""",
-            (fecha, ticker, ts, sesion))
+            (emision, ticker, f"{emision}T22:15:05+00:00", sesion))
     conn.commit()
     conn.close()
 
@@ -210,7 +226,7 @@ def test_verificador_marca_atascadas(entorno, monkeypatch):
     estados = dict(conn.execute(
         "SELECT ticker, estado FROM senales_ticker").fetchall())
     conn.close()
-    # 16-jul → sesión 17-jul: ya cerraron ≥5 sesiones XKRX posteriores sin
-    # datos → TERMINAL. 23-jul → sesión 24-jul: recién cerró, sigue pendiente.
+    # Sesión vieja sin datos publicados tras ≥5 sesiones cerradas → TERMINAL.
+    # Sesión recién cerrada → sigue pendiente (5 sesiones de paciencia).
     assert estados["005930.KS"] == senales.ESTADO_SIN_DATOS
     assert estados["000660.KS"] == senales.ESTADO_PENDIENTE

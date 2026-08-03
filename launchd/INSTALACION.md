@@ -1,6 +1,6 @@
 # Tareas automáticas de MKI Terminal (macOS launchd)
 
-Cinco jobs, de lunes a viernes, para que el sistema corra solo — el día
+Seis jobs, de lunes a viernes, para que el sistema corra solo — el día
 operativo completo, en orden:
 
 | Job | Hora (Chile) | Qué hace | Log |
@@ -10,6 +10,7 @@ operativo completo, en orden:
 | `com.mki.reporte` | 18:25 | Envía el reporte de Telegram con lo que el snapshot acaba de **sellar** — antes de que abra Asia (~20:00 Chile) | `data/reporte.log` |
 | `com.mki.backup` | 18:40 | Commitea `data/backups/*.csv` si cambiaron ("Backup diario {fecha}") — solo esos paths, jamás push | `data/backup.log` |
 | `com.mki.vigia` | 19:00 | Revisa que TODO lo anterior ocurrió; si algo falló, **alerta por Telegram** diciendo exactamente qué | `data/vigia.log` |
+| `com.mki.vigia.rechequeo` | 20:30 | El **epílogo** de la alerta (5.0.1): si a las 19:00 el snapshot no había sellado, re-chequea — retractación "recuperado: sellado HH:MM" si ya selló, o "sigue sin sellar". Sin alerta pendiente, sale en silencio | `data/vigia.log` |
 
 Los `.plist` de esta carpeta son **plantillas**: llevan `__MKI_DIR__` en vez
 de una ruta fija, así el repo no depende de la máquina de nadie.
@@ -23,7 +24,7 @@ zsh launchd/instalar.sh
 El script deduce la ruta real del proyecto, genera los `.plist` finales en
 `~/Library/LaunchAgents/` y los activa. Es idempotente: si ya estaban
 instalados, los reinstala limpio. Al final imprime la lista de jobs
-registrados (deben aparecer los 5).
+registrados (deben aparecer los 6).
 
 ## Probar un job ahora mismo (sin esperar al horario)
 
@@ -37,7 +38,7 @@ tail -20 data/vigia.log
 ## Desinstalar
 
 ```bash
-for j in noticias snapshot reporte backup vigia; do
+for j in noticias snapshot reporte backup vigia vigia.rechequeo; do
   launchctl unload ~/Library/LaunchAgents/com.mki.$j.plist
   rm ~/Library/LaunchAgents/com.mki.$j.plist
 done

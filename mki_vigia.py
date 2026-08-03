@@ -1,5 +1,6 @@
 # ============================================================
-# El vigía del sistema (Etapa 5.0 WS2.7) — com.mki.vigia, 19:00 hábiles.
+# El vigía del sistema (Etapa 5.0 WS2.7; retractación 5.0.1) —
+# com.mki.vigia 19:00 hábiles + com.mki.vigia.rechequeo 20:30.
 #
 # Verifica que el día operativo ocurrió COMPLETO:
 #   1. ¿snapshot sellado hoy?          (senales.db)
@@ -11,9 +12,21 @@
 # Si algo falló → UN mensaje de Telegram de ALERTA (distinto del reporte
 # diario) diciendo exactamente qué. El sistema deja de fallar en silencio.
 # El vigía solo LEE — jamás corrige nada por su cuenta.
+#
+# 5.0.1 — una alerta jamás queda sin epílogo. Las noches del 29 y 31-jul
+# el vigía alertó "NO se selló hoy" mientras snapshot.py seguía vivo
+# reintentando; el sello llegó tarde (21:23 y 19:40) y la alerta quedó
+# abierta para siempre. Ahora: si el snapshot no está sellado al pasar
+# lista, queda el marcador data/vigia_pendiente.json y el pase de las
+# 20:30 (--rechequeo) envía el epílogo — retractación si ya selló, o
+# "sigue sin sellar". Si el sello llega aún más tarde, snapshot.py mismo
+# envía la retractación al encontrar el marcador.
 # ============================================================
 
+import argparse
+import json
 import os
+import re
 import subprocess
 import sys
 from datetime import date, datetime, timezone
@@ -27,6 +40,9 @@ from seguridad import enmascarar_secretos  # noqa: E402
 
 DIRECTORIO = os.path.dirname(os.path.abspath(__file__))
 RUTA_REPORTE_LOG = os.path.join(DIRECTORIO, "data", "reporte.log")
+RUTA_SNAPSHOT_LOG = os.path.join(DIRECTORIO, "data", "snapshot.log")
+RUTA_PENDIENTE = os.path.join(DIRECTORIO, "data", "vigia_pendiente.json")
+HORA_RECHEQUEO = "20:30"
 
 
 def _log(msg: str) -> None:
@@ -98,28 +114,189 @@ def chequear_backup() -> tuple:
     return False, f"backup: sin commit hoy (último: {ultima or 'ninguno'})"
 
 
-def main() -> int:
-    from registro import rotar_log
-    rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
+# ------------------------------------------------------------
+# 5.0.1 — snapshot en curso, marcador pendiente y retractación
+# ------------------------------------------------------------
+def _hay_proceso_snapshot() -> bool:
+    """¿Hay un snapshot.py vivo AHORA? pgrep -f mira la línea de comando
+    completa (cubre venv/bin/python snapshot.py y variantes)."""
+    try:
+        r = subprocess.run(["pgrep", "-f", "snapshot.py"],
+                           capture_output=True, text=True, timeout=10)
+        return bool(r.stdout.strip())
+    except Exception:
+        return False
+
+
+def _ultimo_reintento_en_log(hoy: date) -> str | None:
+    """Última línea de reintento del bloque de HOY en data/snapshot.log.
+    Los anuncios de reintento se imprimen con flush=True — están en el log
+    en tiempo real aunque el resto de la corrida siga bufferizado."""
+    if not os.path.exists(RUTA_SNAPSHOT_LOG):
+        return None
+    with open(RUTA_SNAPSHOT_LOG, encoding="utf-8", errors="replace") as f:
+        lineas = f.readlines()[-400:]
+    inicio = None
+    for i, linea in enumerate(lineas):
+        if "snapshot.py (origen=" in linea and hoy.isoformat() in linea:
+            inicio = i
+    if inicio is None:
+        return None
+    reintentos = [ln.strip() for ln in lineas[inicio:] if "reintento" in ln]
+    return reintentos[-1] if reintentos else None
+
+
+def snapshot_en_curso(hoy: date = None) -> tuple:
+    """(activo, detalle): ¿snapshot.py sigue corriendo? La prueba de "en
+    curso" es el PROCESO vivo; el log solo aporta el detalle de qué pelea.
+    El estado del sello viene SIEMPRE de senales.db, nunca de aquí."""
+    hoy = hoy or date.today()
+    if not _hay_proceso_snapshot():
+        return False, "sin proceso de snapshot vivo"
+    reintento = _ultimo_reintento_en_log(hoy)
+    if reintento:
+        m = re.search(r"descarga parcial \(([^)]+)\)", reintento)
+        if m:
+            return True, m.group(1)
+        return True, "fallo total de descarga, reintentos largos en curso"
+    return True, "proceso vivo, sin reintento anunciado en el log"
+
+
+def _escribir_pendiente(hoy: date, fallas: list, reintentos_activos: bool) -> None:
+    with open(RUTA_PENDIENTE, "w", encoding="utf-8") as f:
+        json.dump({"fecha": hoy.isoformat(),
+                   "creado_utc": datetime.now(timezone.utc).isoformat(),
+                   "fallas": fallas,
+                   "reintentos_activos": reintentos_activos},
+                  f, ensure_ascii=False, indent=1)
+
+
+def _leer_pendiente(hoy: date) -> dict | None:
+    """El marcador de OTRA fecha se ignora (una alerta jamás cruza de día:
+    al amanecer siguiente el epílogo que no llegó ya no tiene sentido)."""
+    if not os.path.exists(RUTA_PENDIENTE):
+        return None
+    try:
+        with open(RUTA_PENDIENTE, encoding="utf-8") as f:
+            datos = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return datos if datos.get("fecha") == hoy.isoformat() else None
+
+
+def _consumir_pendiente() -> None:
+    try:
+        os.remove(RUTA_PENDIENTE)
+    except FileNotFoundError:
+        pass
+
+
+def enviar_retractacion_si_corresponde(hoy: date = None) -> bool:
+    """Si el vigía dejó una alerta pendiente HOY y el snapshot YA está
+    sellado, envía la retractación y consume el marcador. La llaman el
+    pase de las 20:30 y snapshot.py tras un sello tardío — solo la
+    retractación cierra la alerta."""
+    hoy = hoy or date.today()
+    if _leer_pendiente(hoy) is None:
+        return False
+    import senales
+    info = senales.info_snapshot_hoy()
+    if not info:
+        return False
+    ts = info.get("timestamp_utc") or info.get("creado_en")
+    hora_local = datetime.fromisoformat(ts).astimezone().strftime("%H:%M")
+    ok_n, total = info.get("descarga_ok"), info.get("descarga_total")
+    descarga = f"{ok_n}/{total}" if ok_n is not None else "sin dato de salud"
+    caidos = info.get("descarga_caidos")
+    texto = (f"✅ <b>VIGÍA MKI — retractación {hoy.isoformat()}</b>\n"
+             f"recuperado: sellado {hora_local}, descarga {descarga}"
+             + (f" (caídos: {caidos})" if caidos else ""))
+    import alertas
+    ok, detalle = alertas.enviar_mensaje(texto)
+    _log(f"retractación Telegram: {'enviada' if ok else 'NO enviada — ' + detalle}")
+    if ok:
+        _consumir_pendiente()
+    return ok
+
+
+def rechequeo(hoy: date) -> int:
+    """Pase de las 20:30: el epílogo de la alerta de las 19:00. Sin
+    marcador de hoy → silencio absoluto (el job launchd corre a diario)."""
+    _log("mki_vigia.py --rechequeo — pase de las 20:30")
+    if _leer_pendiente(hoy) is None:
+        _log("sin alerta pendiente de hoy — nada que re-chequear")
+        return 0
+    import senales
+    if senales.info_snapshot_hoy():
+        ok = enviar_retractacion_si_corresponde(hoy)
+        return 0 if ok else 1
+    # Sigue sin sellar: se dice, y el marcador QUEDA — si el sello llega
+    # más tarde por su cuenta, snapshot.py enviará la retractación.
+    activo, detalle = snapshot_en_curso(hoy)
+    estado = (f"reintentos aún activos ({detalle})" if activo
+              else "sin proceso de snapshot vivo")
+    texto = (f"🟠 <b>VIGÍA MKI — re-chequeo {hoy.isoformat()}</b>\n"
+             f"sigue sin sellar a las {HORA_RECHEQUEO}: {estado}. "
+             "Si sella más tarde, llegará la retractación.")
+    import alertas
+    ok, det = alertas.enviar_mensaje(texto)
+    _log(f"epílogo Telegram: {'enviado' if ok else 'NO enviado — ' + det}")
+    return 0 if ok else 1
+
+
+def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
+    """Texto de la alerta de las 19:00. Si el snapshot no selló, la línea
+    anuncia el re-chequeo de las 20:30 — y si hay reintentos EN CURSO, lo
+    dice en vez de dar el día por perdido (5.0.1)."""
+    fallas = []
+    for ok, d in resultados:
+        if ok:
+            continue
+        if d.startswith("snapshot:"):
+            if en_curso[0]:
+                d = ("snapshot: NO sellado — aún peleando con la descarga, "
+                     f"reintentos activos ({en_curso[1]}) — "
+                     f"re-chequeo a las {HORA_RECHEQUEO}")
+            else:
+                d = f"{d} — re-chequeo a las {HORA_RECHEQUEO}"
+        fallas.append(d)
+    bien = [d.split(":")[0] for ok, d in resultados if ok]
+    return (f"🛑 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
+            + "Falló hoy:\n" + "\n".join(f"· {f}" for f in fallas)
+            + (f"\nOK: {', '.join(bien)}" if bien else ""))
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="El vigía MKI — revisión del día operativo")
+    parser.add_argument("--rechequeo", action="store_true",
+                        help="pase de las 20:30: epílogo de la alerta pendiente (5.0.1)")
+    args = parser.parse_args(argv)
     hoy = date.today()
     if hoy.weekday() >= 5:
         _log("fin de semana — nada que vigilar")
         return 0
+    if args.rechequeo:
+        return rechequeo(hoy)
+
+    from registro import rotar_log
+    rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
     _log("mki_vigia.py — revisión del día operativo")
     resultados = [chequear_snapshot(), chequear_descarga(), chequear_noticias(),
                   chequear_reporte(), chequear_backup()]
     for ok, detalle in resultados:
         _log(f"  {'OK ' if ok else 'FALLA'} {detalle}")
-    fallas = [d for ok, d in resultados if not ok]
-    bien = [d.split(":")[0] for ok, d in resultados if ok]
-    if not fallas:
+    if all(ok for ok, _ in resultados):
         _log("todo OK — sin alerta")
         return 0
 
+    sin_sellar = not resultados[0][0]
+    en_curso = snapshot_en_curso(hoy) if sin_sellar else (False, "")
+    if sin_sellar:
+        _escribir_pendiente(hoy, [d for ok, d in resultados if not ok], en_curso[0])
+        _log(f"marcador escrito — el pase de las {HORA_RECHEQUEO} enviará el epílogo")
+
     import alertas
-    texto = (f"🛑 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
-             + "Falló hoy:\n" + "\n".join(f"· {f}" for f in fallas)
-             + (f"\nOK: {', '.join(bien)}" if bien else ""))
+    texto = componer_alerta(hoy, resultados, en_curso)
     ok, detalle = alertas.enviar_mensaje(texto)
     _log(f"alerta Telegram: {'enviada' if ok else 'NO enviada — ' + detalle}")
     return 0 if ok else 1

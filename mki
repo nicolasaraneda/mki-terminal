@@ -7,7 +7,7 @@
 #   reporte    envía el reporte de Telegram AHORA (compuesto del sello)
 #   tests      suite completa: pytest + anti-look-ahead del motor
 #   auditoria  revisión de SOLO LECTURA del sistema completo
-#   instalar   jobs de launchd (5) + hook pre-commit
+#   instalar   jobs de launchd (6) + hook pre-commit
 # ============================================================
 set -u
 DIR="$(cd "$(dirname "$0")" && pwd)"

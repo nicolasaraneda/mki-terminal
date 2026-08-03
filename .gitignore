@@ -19,6 +19,9 @@ alertas.db
 *.log
 data/*.log
 
+# --- Estado de runtime (marcador de alerta pendiente del vigía, 5.0.1) ---
+data/vigia_pendiente.json
+
 # --- Node / frontend (frontend/.gitignore cubre lo suyo; esto es red de seguridad) ---
 node_modules/
 dist/

@@ -1,6 +1,6 @@
 #!/bin/zsh
 # ============================================================
-# Instala (o reinstala) los 5 jobs automáticos de MKI Terminal.
+# Instala (o reinstala) los 6 jobs automáticos de MKI Terminal.
 #
 #   zsh launchd/instalar.sh
 #
