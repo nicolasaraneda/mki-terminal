@@ -1263,15 +1263,9 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1348,-0.8,"NVDA,AMD,MU,000660.KS",alto,Decepción de SK Hynix genera venta masiva en principales fabricantes de chips incluyendo líderes IA.,2026-07-30T22:21:23.637170+00:00,1.0
 1349,0.5,SWKS,alto,Earnings beat en Q3 de Skyworks con crecimiento en AI datacenter posiciona positivamente a proveedor de semiconductores analógicos.,2026-07-30T22:21:35.530423+00:00,0.8
 1350,0.55,,bajo,"Teradyne muestra fortaleza en pruebas de semiconductores, segmento crítico pero sin relación directa a fabricantes de chips.",2026-07-30T22:19:27.812659+00:00,0.6
-1351,0.4,IFX.DE,medio,"Infineon abre fab de potencia inteligente, demostrando expansión de capacidad pero con valoración cara.",2026-07-30T22:22:15.398111+00:00,0.75
-1352,-0.1,IFX.DE,bajo,"Infineon sigue valuado caro a pesar de nueva fab en Dresden, reflejando escepticismo sobre justificación del precio.",2026-07-30T22:22:15.398222+00:00,0.7
-1353,-0.4,BHP,bajo,"Huelga en BHP afecta suministro de materias primas, con impacto indirecto y limitado en semiconductores.",2026-07-30T22:22:15.398045+00:00,0.15
 1354,0.0,,bajo,Estrategia de cobre no afecta directamente semiconductores aunque cobre es insumo secundario en manufactura de chips.,2026-07-30T22:19:14.192384+00:00,0.1
 1355,0.2,FCX,bajo,Comparativa de acciones mineras con impacto indirecto en suministro de materias primas para semiconductores.,2026-07-30T22:20:19.678323+00:00,0.2
 1356,0.0,FCX,bajo,Análisis de Freeport-McMoRan (minería) no tiene relación directa con semiconductores.,2026-07-30T22:21:35.530605+00:00,0.1
-1357,0.3,4063.T,bajo,"Shin-Etsu se beneficia de recompra y nuevas oportunidades en tierras raras, apoyando perspectiva a largo plazo.",2026-07-30T22:22:15.398297+00:00,0.6
-1358,-0.35,3436.T,medio,"Sumco bajo presión por conflicto de analistas y caída del sector tecnológico, impactando demanda de silicio.",2026-07-30T22:22:15.398283+00:00,0.65
-1359,0.55,3436.T,medio,"Análisis sobre compras pre-earnings de Sumco sugiere revisor de narrativa de demanda de obleas de silicio, señalizando potencial cambio positivo en perspectivas de la compañía y el sector.",2026-07-30T22:22:17.817633+00:00,0.85
 1360,0.6,"MSFT,GOOGL,ORCL,TSLA",medio,Recuperación amplia del Nasdaq liderada por tech y AI beneficia a fabricantes de semiconductores y sus clientes principales.,2026-07-30T22:18:37.387772+00:00,0.8
 1361,0.6,META,medio,Rally de chips compensado por caída de Meta sugiere giro relativo del mercado hacia fabricantes sobre consumidores IA.,2026-07-30T22:18:37.387973+00:00,0.75
 1362,0.75,MSFT,alto,Momentum de Azure en infraestructura IA convierte a Microsoft en catalizador principal de demanda de chips avanzados.,2026-07-30T22:18:37.388002+00:00,0.88
@@ -1418,7 +1412,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 1503,0.8,8035.T,alto,Tokyo Electron eleva proyecciones de ganancia por aumento de demanda global de equipamiento chipmaker.,2026-07-30T22:20:19.678269+00:00,0.9
 1504,0.85,8035.T,alto,"Tokyo Electron supera estimaciones en ingresos operacionales y netos, señal fuerte de demanda en equipamiento de semiconductores.",2026-07-30T22:20:53.254701+00:00,0.9
 1505,0.7,8035.T,alto,Tokyo Electron revisa ganancias al alza reflejando fuerte demanda de equipos de manufactura semiconductor impulsada por IA.,2026-07-30T22:20:40.371181+00:00,0.9
-1506,-0.5,"TSM,2330.TW,8035.T",medio,"Unidad taiwanesa de Tokyo Electron no apelará sentencia en caso de secretos de TSMC, cerrando disputa legal significativa.",2026-07-30T22:20:40.371193+00:00,0.8
 1507,-0.6,8035.T,medio,"Tokyo Electron detiene operaciones por inspecciones de seguridad tras terremoto, afectando la producción de equipos semiconductores críticos.",2026-07-30T22:22:15.397427+00:00,0.8
 1508,0.8,8035.T,alto,"Tokyo Electron eleva ganancias y dividendos impulsado por demanda de IA, confirmando recuperación fuerte del ciclo.",2026-07-30T22:20:40.371351+00:00,0.95
 1509,0.85,8035.T,alto,Tokyo Electron reporta ventas y ganancias récord en Q1 con guía elevada y retornos accionistas confirmando ciclo expansivo.,2026-07-30T22:20:40.371383+00:00,0.95
