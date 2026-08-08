@@ -230,3 +230,20 @@ def test_verificador_marca_atascadas(entorno, monkeypatch):
     # Sesión recién cerrada → sigue pendiente (5 sesiones de paciencia).
     assert estados["005930.KS"] == senales.ESTADO_SIN_DATOS
     assert estados["000660.KS"] == senales.ESTADO_PENDIENTE
+
+
+# ------------------------------------------------------------
+# 5.0.2 — el job de noticias jamás se cuelga para siempre
+# ------------------------------------------------------------
+def test_timeout_global_de_red_en_noticias():
+    """El 3-ago un socket hacia Yahoo que nunca murió dejó mki_noticias.py
+    vivo 4 días, y launchd no re-dispara un label mientras su proceso siga
+    vivo: noticias "no corrió" del 4 al 7. feedparser usa urllib SIN
+    timeout — el default global del módulo socket (fijado al importar el
+    entrypoint) es la única palanca que lo cubre sin tocar noticias.py."""
+    import socket
+
+    import mki_noticias
+
+    assert mki_noticias.TIMEOUT_RED_SEG > 0
+    assert socket.getdefaulttimeout() == mki_noticias.TIMEOUT_RED_SEG

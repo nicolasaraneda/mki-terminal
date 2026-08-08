@@ -14,6 +14,7 @@
 # ============================================================
 
 import os
+import socket
 import sys
 import time
 from datetime import datetime, timezone
@@ -24,6 +25,16 @@ load_dotenv()
 
 import costos  # noqa: E402
 from seguridad import enmascarar_secretos  # noqa: E402
+
+# Etapa 5.0.2 — un fetch jamás puede colgarse para siempre. El 3-ago un
+# socket hacia Yahoo que nunca murió dejó este proceso vivo 4 días con la
+# corrida a medias, y launchd no re-dispara un label mientras su proceso
+# siga vivo: noticias "no corrió" del 4 al 7 de agosto. feedparser usa
+# urllib SIN timeout — el default global del módulo socket es la única
+# palanca que lo cubre sin tocar noticias.py. Anthropic (600 s) y Telegram
+# (10 s) fijan su timeout explícito por socket y no se ven afectados.
+TIMEOUT_RED_SEG = 30
+socket.setdefaulttimeout(TIMEOUT_RED_SEG)
 
 TAM_LOTE = 20
 HOLGURA_RESUMEN_USD = 0.05     # el resumen del día solo si queda esta holgura

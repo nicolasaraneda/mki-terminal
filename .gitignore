@@ -11,6 +11,7 @@ __pycache__/
 
 # --- Bases de datos locales (el respaldo versionado son los CSV de data/backups/) ---
 *.db
+*.db-journal
 noticias.db
 senales.db
 alertas.db

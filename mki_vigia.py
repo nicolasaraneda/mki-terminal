@@ -75,9 +75,32 @@ def chequear_descarga() -> tuple:
     return False, f"descarga: {ok_n}/{total} DEGRADADA (caídos: {caidos})"
 
 
+def _proceso_noticias_colgado() -> str | None:
+    """5.0.2 — si hay un mki_noticias.py vivo, launchd NO vuelve a disparar
+    el job (un label = un proceso): el 3-ago un fetch sin timeout quedó
+    colgado 4 días y "noticias no corrió" del 4 al 7 sin que la alerta
+    dijera por qué. Devuelve 'proceso PID vivo desde ...' o None."""
+    try:
+        r = subprocess.run(["pgrep", "-f", "mki_noticias.py"],
+                           capture_output=True, text=True, timeout=10)
+        pid = r.stdout.strip().split("\n")[0] if r.stdout.strip() else None
+        if not pid:
+            return None
+        r2 = subprocess.run(["ps", "-p", pid, "-o", "lstart="],
+                            capture_output=True, text=True, timeout=10)
+        inicio = r2.stdout.strip()
+        return f"proceso {pid} vivo" + (f" desde {inicio}" if inicio else "")
+    except Exception:
+        return None
+
+
 def chequear_noticias() -> tuple:
     corridas = costos.corridas_del_dia("noticias")
     if not corridas:
+        colgado = _proceso_noticias_colgado()
+        if colgado:
+            return False, (f"noticias: el job NO corrió hoy — {colgado}; "
+                           "launchd no re-dispara mientras siga vivo")
         return False, "noticias: el job NO corrió hoy"
     ultima = corridas[-1]
     resultado = ultima.get("resultado", "?")
@@ -195,7 +218,16 @@ def enviar_retractacion_si_corresponde(hoy: date = None) -> bool:
     """Si el vigía dejó una alerta pendiente HOY y el snapshot YA está
     sellado, envía la retractación y consume el marcador. La llaman el
     pase de las 20:30 y snapshot.py tras un sello tardío — solo la
-    retractación cierra la alerta."""
+    retractación cierra la alerta.
+
+    5.0.2 — el mensaje distingue EMISIÓN de CONFIRMACIÓN. El 6-ago el
+    snapshot se congeló ~44 min entre estampar timestamp_utc (18:24) y
+    commitear la fila (~19:08): la retractación dijo "sellado 18:24"
+    mientras el reporte de las 18:40 decía —con razón— "sin snapshot
+    sellado hoy". timestamp_utc es la emisión sellada; que el sello YA es
+    visible lo prueba esta misma lectura, y esa es la hora que cierra la
+    contradicción. Además declara cuántas predicciones viajaron en el
+    sello: un día "recuperado" con 0 predicciones no es un día normal."""
     hoy = hoy or date.today()
     if _leer_pendiente(hoy) is None:
         return False
@@ -203,15 +235,21 @@ def enviar_retractacion_si_corresponde(hoy: date = None) -> bool:
     info = senales.info_snapshot_hoy()
     if not info:
         return False
+    import alertas
     ts = info.get("timestamp_utc") or info.get("creado_en")
-    hora_local = datetime.fromisoformat(ts).astimezone().strftime("%H:%M")
+    hora_emision = alertas._hora_chile(ts)
+    hora_confirmada = alertas._hora_chile(datetime.now(timezone.utc).isoformat())
     ok_n, total = info.get("descarga_ok"), info.get("descarga_total")
     descarga = f"{ok_n}/{total}" if ok_n is not None else "sin dato de salud"
     caidos = info.get("descarga_caidos")
+    n_pred = len(senales.predicciones_selladas_del_dia(hoy.isoformat()))
     texto = (f"✅ <b>VIGÍA MKI — retractación {hoy.isoformat()}</b>\n"
-             f"recuperado: sellado {hora_local}, descarga {descarga}"
-             + (f" (caídos: {caidos})" if caidos else ""))
-    import alertas
+             f"recuperado: snapshot sellado (emisión {hora_emision}, "
+             f"confirmada a las {hora_confirmada}), descarga {descarga}"
+             + (f" (caídos: {caidos})" if caidos else "")
+             + f", predicciones {n_pred}"
+             + ("" if n_pred else
+                " ⚠ — el sello no trae ninguna: la próxima sesión queda sin cobertura"))
     ok, detalle = alertas.enviar_mensaje(texto)
     _log(f"retractación Telegram: {'enviada' if ok else 'NO enviada — ' + detalle}")
     if ok:

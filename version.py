@@ -21,4 +21,7 @@ UNIVERSO_VERSION = "4.6.0"
 # limpio está encadenado a esa versión y las métricas jamás mezclan
 # versiones. Subir MODELO_VERSION es una decisión aparte (Etapa 5.1+).
 # 5.0.1: vigía con retractación (una alerta jamás queda sin epílogo).
-PLATAFORMA_VERSION = "5.0.1"
+# 5.0.2: cierre de heridas pre-migración — timeout global de red en el job
+#   de noticias (un fetch jamás cuelga el label de launchd) y retractación
+#   que distingue emisión de confirmación (la discrepancia del 06-ago).
+PLATAFORMA_VERSION = "5.0.2"

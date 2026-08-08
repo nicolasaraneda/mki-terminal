@@ -1049,3 +1049,216 @@ sellada se toca (constitución); esto es una nota documentada.
   objetivo saltó una sesión completa (insumo de 2 días, fuera del diseño
   próxima-sesión de la regresión)? Cambiarlo toca la lógica de emisión;
   queda para la conversación de la 5.1.
+
+---
+
+# Etapa 5.0.2 — Cierre de heridas pre-migración (08-ago-2026)
+
+Última etapa en este Mac antes de migrar los jobs a otra máquina. Solo
+lectura salvo dos fixes explícitos (noticias y el mensaje de retractación).
+
+## 1. Noticias muerto (03–07 ago): causa raíz y fix
+
+**Síntoma:** el vigía reportó "noticias: el job NO corrió hoy" los 5 días
+hábiles, pese a que com.mki.noticias quedó instalado en la 5.0.
+
+**Causa raíz (con evidencia):** la corrida del lunes 03-ago disparó bien
+(17:52:38, dos minutos tarde por el despertador pmset de las 17:48 —
+launchd dispara TARDE los eventos perdidos, jamás los salta), registró su
+línea de presupuesto en el log… y se colgó PARA SIEMPRE dentro de
+`noticias.actualizar_titulares()`: `feedparser.parse()` usa urllib SIN
+timeout, y un socket hacia Yahoo quedó ESTABLISHED sin que el otro lado
+respondiera ni cortara jamás (verificado con `lsof` el 08-ago: la conexión
+seguía viva tras 4 días y 7 horas, con una transacción de noticias.db a
+medio camino — el `noticias.db-journal` visible en el árbol). Como
+**launchd no re-dispara un label mientras su proceso siga vivo** (un label
+= un proceso; `launchctl list` mostraba el PID 53783 ocupando el slot),
+las 17:50 del 4 al 7 de agosto se saltaron en silencio. El patrón venía
+de antes: las corridas del 27-jul, 29-jul y 31-jul también colgaron horas
+en el fetch (la del 31-jul murió 42 HORAS después, el domingo 02-ago, con
+"Remote end closed") — solo que sus sockets eventualmente murieron y el
+proceso terminó; el del 03-ago nunca murió. Hipótesis descartadas: el
+job SÍ estaba cargado en launchd; SÍ disparó; el ledger de costos es el
+lugar correcto donde mirar (el job nunca llegó a escribirlo); y el margen
+pmset 17:48/17:50 solo explica arranques tardíos de minutos, no la muerte.
+
+**Decisiones del fix:**
+
+1. **`socket.setdefaulttimeout(30)` en el ENTRYPOINT** (mki_noticias.py),
+   no en noticias.py — misma doctrina del WS2.4 (cero cambios de lógica
+   interna). Cubre feedparser/urllib Y requests (ambos heredan el default
+   global cuando no fijan timeout propio); Anthropic (600 s) y Telegram
+   (10 s) fijan el suyo explícito por socket y no se ven afectados. Con
+   44 feeds y 30 s de peor caso por operación, el job termina SIEMPRE.
+2. **El proceso colgado se mató a mano** (kill 53783). La transacción
+   colgada de noticias.db se revirtió sola (journal frío, cabecera en
+   ceros; `integrity_check` ok, 1514 titulares, último del 30-jul). Los
+   titulares no commiteados del 03-ago se perdieron — irrecuperables, los
+   feeds RSS rotaron. La semana 03–07 quedó sin capa de noticias: hueco
+   documentado, no rellenado.
+3. **El vigía ahora nombra el proceso colgado**: si el ledger está vacío
+   Y hay un mki_noticias.py vivo, la alerta dice "proceso PID vivo desde
+   {inicio}; launchd no re-dispara mientras siga vivo" en vez del ambiguo
+   "NO corrió hoy" que estos 5 días no diagnosticaba nada.
+4. **Verificación real:** corrida manual del 08-ago con el timeout activo:
+   402 titulares en 2.5 min, 402 analizados por 0.2034 USD (bajo el tope),
+   resumen regenerado, ledger escrito, chequeo del vigía en verde y el
+   slot de launchd libre. Tests nuevos: timeout global fijado al importar
+   el entrypoint; alerta del vigía con y sin proceso colgado.
+
+## 2. Forense de sellos tardíos, semana 03–07 ago (solo lectura)
+
+Verificado contra senales.db y los logs. Ninguna fila sellada se toca.
+
+| Día | Disparo | Sello visible (Chile) | Descarga por intento | Predicciones |
+|-----|---------|----------------------|----------------------|--------------|
+| lun 03 | 18:15:16 | **22:57** | 0/28 → 22/28 → 28/28 | 4 de 8 (3 saltaron a la sesión del 05) |
+| mar 04 | 18:19:45 | 18:19 | 28/28 a la primera | 8 frescas (→ 05) |
+| mié 05 | 18:20:12 | **21:38** | 26/28 → 16/28 → 28/28 | 8 (7 saltaron a la sesión del 07) |
+| jue 06 | 18:24:48 | **~19:08** (la fila dice 18:24) | 28/28 en 4 s; luego caché expirada y re-descarga caída | **0 de 8** |
+| vie 07 | 18:21:48 | 18:21 | 28/28 a la primera | 8 frescas (→ lun 10) |
+
+**Atribución red-dormida vs Yahoo-real, por capas (mismo veredicto que la
+auditoría 29–31 jul):**
+
+- **Red dormida / DarkWake**: el lote 0/28 del 03 (TODO caído, ^SOX y
+  futuros incluidos), el 16/28 del segundo intento del 05 (la red
+  degradándose al re-dormirse el Mac), y TODAS las horas de retraso — las
+  esperas de 60/120 s se estiraron horas porque el proceso se congela con
+  el sueño del Mac (pmset: `sleep 1`, powernap 1 — se duerme al minuto).
+- **Yahoo con red sana**: los caídos puntuales — AMD/QCOM en el primer
+  intento del 05 (los otros 26 bajaron en el mismo lote), y las descargas
+  por-ticker caídas al COMPUTAR el 03 (000660.KS, 005930.KS, 8035.T,
+  6857.T → por eso solo 4 predicciones ese día).
+- **Anatomía del 06-ago** (el caso nuevo): el lote de salud bajó limpio
+  28/28 en 4 segundos (18:24:48→52); el proceso se congeló ~44 minutos EN
+  PLENO CÓMPUTO; al despertar (~19:08) el TTL de 15 min de la caché del
+  motor había expirado y la re-descarga en la red a medias del despertar
+  falló (12 tickers + ^KS11 + ^SOX) → `prediccion_apertura_al` devolvió
+  vacío → **0 predicciones y sox_usado_pct NULL**, con régimen y
+  Roca→Chip bien sellados (se computaron antes del congelamiento, con la
+  caché sana). Hallazgo de honestidad: la salud sellada 28/28 describe el
+  lote de las 18:24 que las predicciones nunca llegaron a usar.
+
+**Saltos de sesión y cómo les fue (gap, el objetivo primario):**
+
+- **Sesión del 05-ago** — rancias del 03 (insumo: SOX del 03, +1.05%):
+  3/3 en dirección de gap pero **MAE 2.74 pp** (predijeron +0.4/+0.8/+0.4
+  y abrió +2.8/+6.5/+0.3 — la dirección la salvó el rebote sostenido, la
+  magnitud fue ciega). Frescas del 04 (SOX +6.55%): **8/8 con MAE 0.80
+  pp**. Mismo objetivo, mismo mercado: el insumo fresco redujo el error
+  3.4×.
+- **Sesión del 07-ago** — rancias del 05 (SOX −1.40%): predijeron caídas
+  y la sesión abrió mayormente al alza → **1/7 en gap, MAE 2.57 pp**. Y
+  NO hubo frescas contra las cuales compararlas: el hueco del 06 dejó esa
+  sesión cubierta SOLO por predicciones rancias — el peor de los dos
+  mundos a la vez.
+- **Acumulado con el precedente 29-jul** (0/7 con errores 4.8–33 pp):
+  predicciones con salto de sesión **4/17 (23.5%)** en gap vs **15/15
+  (100%)** de las frescas de esas mismas sesiones. Los IFX.DE de sellos
+  tardíos que NO saltaron (XETR abre 03:00 Chile) acertaron su gap las
+  dos veces (errores 3.21 y 0.03 pp) — el problema es el salto, no la
+  hora del sello per se.
+
+**Costo de cobertura de la semana:** 28 de 40 predicciones posibles; 10
+de las 28 emitidas con salto de sesión; 12 perdidas (4 del 03 por
+descargas caídas, 8 del 06 por el congelamiento).
+
+## 3. La discrepancia del 06-ago: reconstrucción y fix
+
+**Los dos mensajes:** la retractación dijo "recuperado: sellado 18:24";
+el reporte de las 18:40 dijo "sin snapshot sellado hoy". La secuencia
+real (logs + senales.db) muestra que **el reporte dijo la verdad y la
+retractación mintió**:
+
+1. 18:24:48 — snapshot.py arranca (tarde); baja el lote 28/28 en 4 s.
+2. 18:24:52 — `ejecutar_snapshot` estampa `ts_emision` (será `creado_en`
+   Y `timestamp_utc` de la fila) y empieza a computar. El Mac se
+   re-duerme: el proceso queda CONGELADO ~44 minutos con el timestamp ya
+   estampado y NADA escrito en la base.
+3. 18:40:18 — el job del reporte (disparado tarde, en una ventana de
+   DarkWake) lee senales.db: no hay fila → compone el reporte corto de
+   400 caracteres "⚠ sin snapshot sellado hoy". **Verdad al momento de
+   leer.**
+4. 19:08:50 — el Mac despierta; launchd dispara el vigía atrasado (19:00).
+   A las 19:08:51.21 lee senales.db: AÚN no hay fila → "FALLA snapshot:
+   NO se selló hoy", escribe el marcador y envía la alerta.
+5. ~19:08:52 — el snapshot.py descongelado termina de computar (con la
+   caché expirada y la re-descarga caída: 0 predicciones), COMMITEA la
+   fila y `_epilogo_vigia()` encuentra el marcador recién escrito — UN
+   SEGUNDO antes — y envía la retractación 19:08:52.31: "recuperado:
+   sellado 18:24, descarga 28/28".
+
+**El bug exacto:** la retractación presentaba `timestamp_utc` (la emisión
+estampada ANTES del cómputo) como si fuera el momento en que el sello
+EXISTE. En operación normal ambos instantes difieren en segundos; con un
+congelamiento entre el estampado y el commit divergen 44 minutos, y el
+mensaje contradice a todo lector honesto de la base (el reporte de las
+18:40). Ni timezone ni otro día: mismo campo, semántica equivocada.
+
+**Fix (mki_vigia.enviar_retractacion_si_corresponde, con tests):** el
+mensaje ahora distingue los dos instantes — "recuperado: snapshot sellado
+(emisión 18:24, confirmada a las 19:08), descarga 28/28, predicciones 0
+⚠ — el sello no trae ninguna: la próxima sesión queda sin cobertura".
+La hora de confirmación es la del propio envío (la lectura que probó que
+la fila existe); el conteo de predicciones se añadió porque el
+"recuperado" del 06-ago también engañaba por omisión: un día con 0
+predicciones no es un día recuperado. La conversión horaria usa la misma
+`_hora_chile` del reporte (una sola definición de "hora local").
+
+**Preguntas abiertas para el usuario (NO tocadas — semántica de medición):**
+
+- `ts_emision` se estampa antes del cómputo y `creado_en = timestamp_utc`
+  por construcción: ningún campo registra cuándo la fila se hizo VISIBLE.
+  Si un congelamiento cruzara la apertura de una sesión objetivo, una
+  predicción committeada DESPUÉS de esa apertura pasaría el chequeo de
+  timing con su timestamp pre-congelamiento (el 06-ago no pasó: selló 0
+  predicciones). ¿Debe estamparse la emisión justo antes de guardar?
+  Interactúa con la regla maestra — decisión humana, no de plataforma.
+- La retractación del 03-ago (23:44) murió con "Connection reset" y NO se
+  reintenta (el reintento de conexión existe solo en el CLI del reporte):
+  esa alerta quedó sin epílogo pese a la 5.0.1. ¿Merece la retractación
+  el mismo reintento-solo-ante-error-de-conexión?
+
+## 4. Propuesta formal: regla de abstención de sellos tardíos (NO implementada)
+
+**Regla propuesta:** *un sello tardío se abstiene de emitir predicciones
+cuya sesión objetivo saltó una sesión completa* — es decir, cuando entre
+el cierre del SOX usado (`available_at`) y la apertura de la sesión
+objetivo media una sesión entera de ese exchange que ya transó sin
+predicción. La abstención se registra como estado auditable propio (p.
+ej. `abstenida_timing`), fuera de todas las métricas, igual que
+`no_verificable_timing`: el hueco se declara, jamás se rellena.
+
+**Fundamento de diseño:** la regresión de contagio está especificada como
+"próxima apertura tras el cierre del SOX". Con salto de sesión el insumo
+tiene dos días de edad y el mercado objetivo ya absorbió una sesión
+completa de información nueva (incluida la sesión de EE.UU. de en medio):
+la predicción emitida está estructuralmente fuera de especificación, no
+es simplemente "más incierta".
+
+**Evidencia acumulada (29-jul + semana 03–07 ago):**
+
+| Emisión | Saltadas | Gap acertado | Error | Frescas misma sesión |
+|---------|----------|--------------|-------|----------------------|
+| 29-jul (sello 21:23) | 7 | 0/7 | 4.8–33 pp | 7/7 (las del 30-jul) |
+| 03-ago (sello 22:57) | 3 | 3/3 | MAE 2.74 pp | 8/8, MAE 0.80 pp (las del 04) |
+| 05-ago (sello 21:38) | 7 | 1/7 | MAE 2.57 pp | no hubo (hueco del 06) |
+| **Total** | **17** | **4/17 (23.5%)** | | **15/15 (100%)** |
+
+Contras honestos, dichos con todas sus letras: n=17 es chico; toda la
+ventana es un mismo régimen (rebote alcista fuerte — el caveat de régimen
+único del Historial aplica entero); y el 03-ago muestra que la dirección
+a veces sobrevive por inercia del mercado (3/3 con magnitud ciega — la
+regla habría abstenido 3 aciertos). El costo de abstenerse es perder esos
+aciertos de suerte direccional; el beneficio es no inyectar al track
+record una clase de predicción que el diseño de la regresión no cubre.
+
+**Qué NO se hace (explícito):** esta regla NO se implementa en el modelo
+4.6.0. Cambia qué se emite → es lógica de emisión → regla cero: el modelo
+está congelado y el track record limpio encadenado a esa versión. Es
+**candidata a nacer en el modelo retador de la próxima etapa** (la
+conversación de la 5.1), donde además el backtest puede simularla
+marcando retrospectivamente las emisiones que habrían sido abstenidas
+(B2 reproduce las selladas; el flag es presentación, no re-emisión) para
+medir su efecto exacto sobre las métricas antes de adoptarla.

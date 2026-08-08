@@ -57,7 +57,20 @@ def _sellar_hoy(ts_utc: str, ok: int = 28, total: int = 28,
 
 TS_TARDIO = datetime(HOY.year, HOY.month, HOY.day, 1, 23,
                      tzinfo=timezone.utc).isoformat()
-HORA_LOCAL = datetime.fromisoformat(TS_TARDIO).astimezone().strftime("%H:%M")
+HORA_EMISION = alertas._hora_chile(TS_TARDIO)
+
+
+def _predicciones_selladas(n: int) -> None:
+    """Inserta n filas de predicción sellada para HOY (para el conteo de
+    la retractación 5.0.2)."""
+    conn = senales.get_connection()
+    for i in range(n):
+        conn.execute("""INSERT INTO senales_ticker
+                        (fecha, ticker, apertura_estimada_pct, timestamp_utc)
+                        VALUES (?, ?, ?, ?)""",
+                     (HOY.isoformat(), f"TK{i}", 1.0 + i, TS_TARDIO))
+    conn.commit()
+    conn.close()
 
 
 # ------------------------------------------------------------
@@ -134,11 +147,46 @@ def test_retractacion_tras_sello(entorno):
     mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], True)
     assert mki_vigia.enviar_retractacion_si_corresponde(HOY) is True
     assert len(entorno) == 1
-    assert f"recuperado: sellado {HORA_LOCAL}, descarga 28/28" in entorno[0]
+    assert f"emisión {HORA_EMISION}" in entorno[0]
+    assert "descarga 28/28" in entorno[0]
     assert mki_vigia._leer_pendiente(HOY) is None  # consumido
     # Segundo llamado: sin pendiente → silencio (jamás duplica).
     assert mki_vigia.enviar_retractacion_si_corresponde(HOY) is False
     assert len(entorno) == 1
+
+
+def test_retractacion_distingue_emision_de_confirmacion(entorno):
+    # 5.0.2 — el caso del 6-ago: timestamp estampado 18:24, fila visible
+    # 19:08. El mensaje viejo ("recuperado: sellado 18:24") presentaba la
+    # emisión como si fuera el momento en que el sello EXISTE, y chocaba
+    # con el reporte de las 18:40 que dijo —verazmente— "sin snapshot".
+    # Ahora ambos instantes viajan con su nombre.
+    _sellar_hoy(TS_TARDIO)
+    mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], True)
+    assert mki_vigia.enviar_retractacion_si_corresponde(HOY) is True
+    texto = entorno[0]
+    assert f"emisión {HORA_EMISION}" in texto
+    assert "confirmada a las " in texto
+    assert "recuperado: sellado " not in texto  # la forma que mintió
+
+
+def test_retractacion_cuenta_predicciones(entorno):
+    _sellar_hoy(TS_TARDIO)
+    _predicciones_selladas(8)
+    mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], True)
+    assert mki_vigia.enviar_retractacion_si_corresponde(HOY) is True
+    assert "predicciones 8" in entorno[0]
+    assert "sin cobertura" not in entorno[0]
+
+
+def test_retractacion_advierte_sello_sin_predicciones(entorno):
+    # El caso real del 6-ago: "recuperado" con 0 predicciones no es un día
+    # normal — la sesión objetivo quedó sin cobertura y el mensaje lo dice.
+    _sellar_hoy(TS_TARDIO)
+    mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], True)
+    assert mki_vigia.enviar_retractacion_si_corresponde(HOY) is True
+    assert "predicciones 0" in entorno[0]
+    assert "sin cobertura" in entorno[0]
 
 
 def test_retractacion_declara_descarga_degradada(entorno):
@@ -173,7 +221,7 @@ def test_rechequeo_con_sello_retracta(entorno):
     _sellar_hoy(TS_TARDIO)
     mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], False)
     assert mki_vigia.rechequeo(HOY) == 0
-    assert len(entorno) == 1 and "recuperado: sellado" in entorno[0]
+    assert len(entorno) == 1 and "recuperado: snapshot sellado" in entorno[0]
     assert mki_vigia._leer_pendiente(HOY) is None
 
 
@@ -206,3 +254,30 @@ def test_epilogo_jamas_rompe_el_sello(entorno, monkeypatch, capsys):
     monkeypatch.setattr(mki_vigia, "enviar_retractacion_si_corresponde", bomba)
     snapshot._epilogo_vigia()  # no debe levantar jamás
     assert "epílogo del vigía falló" in capsys.readouterr().out
+
+
+# ------------------------------------------------------------
+# 5.0.2 — la alerta de noticias nombra el proceso colgado
+# ------------------------------------------------------------
+def test_noticias_nombra_proceso_colgado(entorno, monkeypatch):
+    # El caso del 3–7 ago: un fetch sin timeout dejó mki_noticias.py vivo
+    # 4 días; launchd no re-dispara un label con proceso vivo, y la alerta
+    # "NO corrió hoy" no decía por qué. Ahora lo nombra.
+    import costos
+    monkeypatch.setattr(costos, "corridas_del_dia",
+                        lambda origen=None, fecha=None: [])
+    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado",
+                        lambda: "proceso 53783 vivo desde Mon Aug  3 17:52:38 2026")
+    ok, detalle = mki_vigia.chequear_noticias()
+    assert not ok
+    assert "proceso 53783 vivo" in detalle
+    assert "launchd no re-dispara" in detalle
+
+
+def test_noticias_sin_proceso_mantiene_mensaje_simple(entorno, monkeypatch):
+    import costos
+    monkeypatch.setattr(costos, "corridas_del_dia",
+                        lambda origen=None, fecha=None: [])
+    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado", lambda: None)
+    ok, detalle = mki_vigia.chequear_noticias()
+    assert not ok and detalle == "noticias: el job NO corrió hoy"
