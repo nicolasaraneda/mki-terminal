@@ -1,0 +1,18 @@
+[Unit]
+Description=MKI — revisa que el día operativo ocurrió; alerta por Telegram si algo falló (timer)
+
+[Timer]
+# Hábiles, hora de Chile declarada explícitamente: el timer no depende de
+# que la zona del sistema sea la correcta.
+OnCalendar=Mon..Fri 19:00 America/Santiago
+
+# Si la VM estaba abajo a la hora del disparo, se ejecuta al volver.
+# Validado el 14-ago: tras el wsl --shutdown de Docker Desktop, los 6
+# timers de MKI conservaron su LAST mientras los de Ubuntu la perdieron.
+Persistent=true
+AccuracySec=1s
+
+Unit=mki-vigia.service
+
+[Install]
+WantedBy=timers.target

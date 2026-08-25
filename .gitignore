@@ -1,7 +1,6 @@
 # --- Entorno y secretos (JAMÁS se versionan) ---
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
 
 # --- Python ---
 venv/

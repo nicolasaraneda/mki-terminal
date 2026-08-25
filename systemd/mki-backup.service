@@ -1,0 +1,22 @@
+[Unit]
+Description=MKI — commitea data/backups/*.csv si cambiaron (jamás push)
+Documentation=file://__MKI_DIR__/systemd/INSTALACION.md
+
+[Service]
+Type=oneshot
+WorkingDirectory=__MKI_DIR__
+ExecStart=__MKI_DIR__/venv/bin/python __MKI_DIR__/mki_backup.py
+
+# El job termina SIEMPRE. La herida del 03-ago (feedparser sin timeout dejó
+# un proceso vivo 4 días y launchd nunca re-disparó el label) se cierra en
+# dos capas: socket.setdefaulttimeout(30) en el entrypoint, y este techo.
+TimeoutStartSec=120
+KillMode=mixed
+
+# El log va al MISMO archivo que en macOS: registro.rotar_log hace
+# copy-truncate sobre él y ./mki estado y el vigía lo leen.
+StandardOutput=append:__MKI_DIR__/data/backup.log
+StandardError=append:__MKI_DIR__/data/backup.log
+
+Environment=PYTHONUNBUFFERED=1
+Environment=TZ=America/Santiago

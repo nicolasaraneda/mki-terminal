@@ -1,0 +1,18 @@
+[Unit]
+Description=MKI — envía el reporte de Telegram compuesto desde el sello (timer)
+
+[Timer]
+# Hábiles, hora de Chile declarada explícitamente: el timer no depende de
+# que la zona del sistema sea la correcta.
+OnCalendar=Mon..Fri 18:25 America/Santiago
+
+# Si la VM estaba abajo a la hora del disparo, se ejecuta al volver.
+# Validado el 14-ago: tras el wsl --shutdown de Docker Desktop, los 6
+# timers de MKI conservaron su LAST mientras los de Ubuntu la perdieron.
+Persistent=true
+AccuracySec=1s
+
+Unit=mki-reporte.service
+
+[Install]
+WantedBy=timers.target
