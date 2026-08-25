@@ -1,18 +1,33 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 # ============================================================
 # mki — un comando para todo (Etapa 5.0 WS6). Uso: ./mki <subcomando>
 #
 #   arrancar   API (:8000) + frontend Vite (:5173)
-#   estado     jobs launchd, último sello, salud, presupuesto IA
+#   estado     jobs del planificador, último sello, salud, presupuesto IA
 #   reporte    envía el reporte de Telegram AHORA (compuesto del sello)
 #   tests      suite completa: pytest + anti-look-ahead del motor
 #   auditoria  revisión de SOLO LECTURA del sistema completo
-#   instalar   jobs de launchd (6) + hook pre-commit
+#   instalar   jobs automáticos (6) + hook pre-commit
+#
+# PORTABILIDAD (Etapa 5.0.3): este script corre en macOS (el titular) y en
+# Linux/WSL2 (la máquina sombra). Ramifica por `uname -s`, no por reemplazo:
+# el Mac sigue en producción y ejecuta exactamente este mismo archivo.
+#  · macOS → launchd  (launchctl · launchd/instalar.sh)
+#  · Linux → systemd  (systemctl --user · systemd/instalar.sh)
 # ============================================================
 set -u
-DIR="$(cd "$(dirname "$0")" && pwd)"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
-export PATH="$HOME/.local/node/bin:$PATH"
+
+# Node del Mac vive en ~/.local/node (sin brew/sudo); en Linux viene del
+# sistema. Se antepone solo si existe, para no ensuciar el PATH ajeno.
+[ -d "$HOME/.local/node/bin" ] && export PATH="$HOME/.local/node/bin:$PATH"
+
+case "$(uname -s)" in
+  Darwin) MKI_SO="mac"   ;;
+  Linux)  MKI_SO="linux" ;;
+  *)      MKI_SO="desconocido" ;;
+esac
 
 case "${1:-ayuda}" in
   arrancar)
@@ -24,9 +39,42 @@ case "${1:-ayuda}" in
     cd frontend && npm run dev
     ;;
   estado)
-    echo "== Jobs launchd =="
-    launchctl list | grep com.mki || echo "  (ninguno instalado — ./mki instalar)"
-    echo "\n== Último sello y salud =="
+    case "$MKI_SO" in
+      mac)
+        echo "== Jobs launchd =="
+        launchctl list | grep com.mki || echo "  (ninguno instalado — ./mki instalar)"
+        ;;
+      linux)
+        echo "== Jobs systemd (--user) =="
+        # Se distingue "no hay timers" de "systemd no responde": decir
+        # "ninguno instalado" cuando en realidad no se puede preguntar
+        # sería una falsa tranquilidad justo en el chequeo de salud.
+        if ! command -v systemctl >/dev/null 2>&1; then
+          echo "  NO SE PUDO PREGUNTAR: no hay systemctl en esta máquina."
+        elif [ "$(ps -p 1 -o comm= 2>/dev/null)" != "systemd" ]; then
+          echo "  NO SE PUDO PREGUNTAR: PID 1 no es systemd" \
+               "(es '$(ps -p 1 -o comm= 2>/dev/null)')."
+          echo "   Remedio: /etc/wsl.conf → [boot] systemd=true, y luego"
+          echo "   'wsl --shutdown' desde Windows para reiniciar la VM."
+        else
+          TABLA="$(systemctl --user list-timers 'mki-*' --all --no-pager 2>&1)"
+          if printf '%s' "$TABLA" | grep -q 'mki-'; then
+            printf '%s\n' "$TABLA"
+          elif printf '%s' "$TABLA" | grep -qi 'failed to connect'; then
+            echo "  NO SE PUDO PREGUNTAR: el bus de usuario de systemd no responde."
+            echo "   $TABLA"
+          else
+            echo "  (ninguno instalado — ./mki instalar)"
+          fi
+        fi
+        ;;
+      *)
+        echo "== Jobs =="
+        echo "  (SO no reconocido: $(uname -s) — sin planificador conocido)"
+        ;;
+    esac
+    echo ""
+    echo "== Último sello y salud =="
     source venv/bin/activate
     python - <<'PY'
 import senales, costos
@@ -45,7 +93,8 @@ print(f"  IA hoy: {p['gasto_usd']:.4f}/{p['tope_usd']:.2f} USD"
 est = dict(senales.conteo_por_estado().itertuples(index=False, name=None))
 print(f"  predicciones: {est}")
 PY
-    echo "\n== Últimas líneas del vigía =="
+    echo ""
+    echo "== Últimas líneas del vigía =="
     tail -6 data/vigia.log 2>/dev/null || echo "  (sin log del vigía aún)"
     ;;
   reporte)
@@ -76,12 +125,43 @@ for f in conn.execute("""SELECT fecha, origen, regimen,
 conn.close()
 print(f"\ngasto IA del mes: {costos.gasto_del_mes():.2f} USD")
 PY
-    echo "\n== git =="
+    echo ""
+    echo "== git =="
     git status --short | head -10
     git log --oneline -3
     ;;
   instalar)
-    zsh launchd/instalar.sh
+    case "$MKI_SO" in
+      mac)
+        bash launchd/instalar.sh
+        ;;
+      linux)
+        # El Mac es el titular. Instalar los timers aquí convierte a esta
+        # máquina en un SEGUNDO titular esa misma noche: manda su propio
+        # reporte de Telegram, commitea backups y sella en paralelo. El
+        # modo sombra (Fase 3) es lo que lo evita. Por eso, y solo en
+        # Linux, la instalación de timers se confirma.
+        echo "AVISO: vas a instalar los 6 timers de systemd en esta máquina."
+        echo "  Si el Mac sigue siendo titular y aquí NO está activo el modo"
+        echo "  sombra (MKI_MODO=sombra), esta máquina duplicará el reporte de"
+        echo "  Telegram y commiteará backups en paralelo desde la próxima noche."
+        if [ -t 0 ]; then
+          printf "  ¿Instalar los timers igualmente? [escribe: si] "
+          read -r RESPUESTA
+        else
+          RESPUESTA="${MKI_INSTALAR_TIMERS:-no}"
+        fi
+        if [ "$RESPUESTA" = "si" ]; then
+          bash systemd/instalar.sh
+        else
+          echo "  timers NO instalados (solo se instala el hook pre-commit)."
+        fi
+        ;;
+      *)
+        echo "SO no reconocido ($(uname -s)): no hay instalador de jobs."
+        echo "  Se instala solo el hook pre-commit."
+        ;;
+    esac
     cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
     echo "hook pre-commit instalado (.git/hooks/pre-commit)"
     ;;

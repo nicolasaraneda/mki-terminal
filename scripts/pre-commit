@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 # ============================================================
 # Hook pre-commit de MKI Terminal (Etapa 5.0 WS6).
 # Se instala con `./mki instalar` (copia a .git/hooks/pre-commit).
@@ -11,6 +11,10 @@
 #    - el commit sea SOLO de data/backups (el job diario de backup no
 #      puede quedar bloqueado por un test que falla por otra razón), o
 #    - se fuerce con SKIP_TESTS=1 (documentado en README-DEV.md).
+#
+# PORTABILIDAD (Etapa 5.0.3): bash, no zsh. Este archivo se copia tal cual
+# a .git/hooks/pre-commit en las dos máquinas (macOS titular y Linux/WSL2);
+# no tiene nada específico de plataforma, así que no ramifica por uname.
 # ============================================================
 set -u
 RAIZ="$(git rev-parse --show-toplevel)"

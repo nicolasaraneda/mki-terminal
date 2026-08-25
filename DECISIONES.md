@@ -1262,3 +1262,257 @@ conversación de la 5.1), donde además el backtest puede simularla
 marcando retrospectivamente las emisiones que habrían sido abstenidas
 (B2 reproduce las selladas; el flag es presentación, no re-emisión) para
 medir su efecto exacto sobre las métricas antes de adoptarla.
+
+# Etapa 5.0.3 — Reactivación en PC: entorno y portabilidad (Fases 0–2, 25-ago-2026)
+
+Contexto completo en `docs/REACTIVACION.md`. Tras la pérdida del SSD del
+PC —y con ella los 4 commits locales de la migración, nunca pusheados— el
+repo se reclonó limpio desde GitHub. **El Mac sigue siendo titular** y
+sella todas las noches. Esta etapa toca solo entorno y plataforma:
+`motor.py`, `snapshot.py`, `noticias.py`, `alertas.py`, `senales.py` y las
+bases quedaron intactos (regla cero). Todo el trabajo vive en la rama
+`migracion-wsl`; `main` es el carril del Mac, y si `main` avanzara con los
+scripts portados el titular se los llevaría en su próximo pull.
+
+Las secciones 1–3 registran hallazgos de las Fases 0 y 1 (entorno
+restaurado); las 4–11, el port de la Fase 2.
+
+## 1. Asimetría de intérprete, declarada ANTES de ver resultados
+
+El Mac (titular) corre **Python 3.11.15**; el PC corre **3.14.4**, que es
+el `python3` que trae esta Ubuntu y era también el del PC que se perdió.
+Nunca se igualó al titular: **la migración introdujo esa diferencia desde
+el día uno sin declararla**.
+
+**Decisión: NO igualarla.** Tres razones:
+
+1. El PC perdido corrió 3.14.4 con este mismo `requirements.txt` y dejó la
+   suite en verde. No es territorio inexplorado.
+2. Las librerías que hacen el álgebra son **idénticas** en ambas máquinas.
+   Verificado en destino: `pandas 3.0.3`, `numpy 2.4.6`, `yfinance 1.5.1`,
+   `exchange-calendars 4.13.2`. El intérprete no hace la aritmética; esas
+   librerías sí, y están fijadas.
+3. Existe ahora un control **más fuerte** que igualar intérpretes: las dos
+   máquinas parten de la **misma `senales.db`**, copiada del Mac. Comparar
+   sellos sobre la misma historia es una prueba mejor que suponer
+   equivalencia por igualdad de versión.
+
+Queda como **asimetría conocida**, de la misma familia que el
+`TimeoutStartSec` finito del PC frente a launchd (que no tiene
+equivalente). **Escalamiento definido de antemano:** si el modo sombra
+vuelve a mostrar β sistemáticamente distintas, el siguiente experimento es
+instalar `pyenv` con 3.11.15 — ya con hipótesis formada, no a ciegas.
+
+**Por qué se escribe AHORA:** antes de que abra la ventana de sombra. Una
+asimetría anotada *después* de ver resultados no vale lo mismo: deja de
+ser una predicción sobre qué puede salir mal y pasa a ser una explicación
+buscada para lo que ya salió. Es el mismo criterio que la regla maestra
+aplica a las predicciones del modelo.
+
+## 2. Pendiente #2 del acta 5.0.2: CERRADO
+
+`NOTICIAS_PRESUPUESTO_USD_DIA` **tampoco está definida en el `.env` del
+Mac.** El acta suponía que el PC caía al default de 0.50 mientras el Mac
+tenía valor propio; resulta que **ambas máquinas estaban en 0.50**. No hay
+nada que igualar.
+
+Consecuencia para el diagnóstico pendiente: queda **descartada una de las
+dos causas candidatas** de la divergencia del 14-ago. La otra —el desfase
+de una sesión en los datos de precio, coherente con el `N=148 vs 147`—
+sigue en pie y **pasa a ser la principal**.
+
+Se dejó fuera del `.env` del PC **a propósito**: igualar por omisión
+también es igualar, y añadir la variable con su propio default habría
+introducido una diferencia de forma donde no hay diferencia de fondo.
+
+## 3. Deuda declarada: `pd.concat` y el futuro pandas 4
+
+La suite emite `Pandas4Warning` en dos lugares — `motor.py:215`, que es
+**la regresión de betas**, y `api/main.py:666-668`:
+
+> *Sorting by default when concatenating all DatetimeIndex is deprecated.
+> In the future, pandas will respect the default of `sort=False`.*
+
+**Hoy es inofensivo** porque `requirements.txt` fija `pandas==3.0.3` en
+ambas máquinas, y para eso existe el pin. El riesgo aparece **el día que
+alguien suba pandas a 4**: el `concat` cambia su default y las β pueden
+moverse **en silencio**, sin que ningún test lo grite — el anti-look-ahead
+prueba no-contaminación temporal, no estabilidad numérica entre versiones
+de librería.
+
+`motor.py` es intocable, así que hacer el `sort=` explícito **no es un fix
+casual**: es preservación del comportamiento actual y hay que demostrarla
+**byte-idéntica**, como el proyecto ya hizo con las dos excepciones
+quirúrgicas del WS2. **NO se arregla ahora.**
+
+Queda registrado como deuda y como **bloqueador explícito de cualquier
+upgrade de pandas**: subir pandas sin esa demostración previa es una
+operación prohibida.
+
+## 4. Ramificar por `uname`, no reemplazar
+
+Tres archivos eran `#!/bin/zsh`: `mki`, `scripts/pre-commit` y
+`launchd/instalar.sh`. En la Ubuntu del PC **no hay zsh instalado**, así
+que el port no era cosmético: los tres eran inejecutables aquí.
+
+La tentación era escribir una versión Linux y listo. **Se descartó.** El
+Mac corre en producción exactamente estos mismos archivos: si `main`
+recibiera scripts Linux-only, el titular perdería sus jobs de launchd en
+su próximo pull. La decisión es que **un solo archivo sirva a las dos
+máquinas y ramifique por `uname -s`**:
+
+| | macOS (titular) | Linux/WSL2 (sombra) |
+|---|---|---|
+| `./mki estado` | `launchctl list \| grep com.mki` | `systemctl --user list-timers 'mki-*'` |
+| `./mki instalar` | `bash launchd/instalar.sh` | `bash systemd/instalar.sh` (con confirmación, §6) |
+
+Lo demás (`arrancar`, `reporte`, `tests`, `auditoria`) no era específico
+de plataforma y quedó **idéntico salvo los zsh-ismos**: el `echo "\n== ..."`
+de zsh, que en bash imprime la barra invertida literal, se partió en un
+`echo ""` más el `echo` del título. Mismo texto en pantalla, en las dos
+máquinas.
+
+**Compatibilidad hacia atrás con el titular — la línea exacta.** macOS
+todavía trae **bash 3.2** (por licencia: las versiones 4+ son GPLv3). Los
+tres portados se escribieron para ese piso. Lo que **sí** existe en 3.2 y
+por tanto era usable: `[[ ]]` (desde 2.02) y los **arreglos indexados**
+(desde 2.0). Lo que **no** existe hasta bash 4 y queda prohibido en estos
+tres archivos: **arreglos asociativos** (`declare -A`), **`mapfile`/
+`readarray`** y la **modificación de caso** (`${var,,}`, `${var^^}`).
+
+En la práctica se fue más conservador que la línea real —tampoco se usan
+`[[ ]]` ni arreglos— y no costó nada, pero la línea que importa es la de
+arriba: es la que hay que verificar antes de tocar estos archivos.
+(`systemd/instalar.sh` sí usa `[[ ]]` y arreglos, y puede: nunca se
+ejecuta en macOS.)
+
+Dos detalles menores del mismo criterio:
+
+- El `export PATH="$HOME/.local/node/bin:$PATH"` era la convención del
+  Mac (node sin brew/sudo). Ahora se antepone **solo si el directorio
+  existe**; en Linux node viene del sistema (`/usr/bin/node`) y el PATH no
+  se ensucia. El Mac no nota diferencia.
+- `dirname "$0"` pasó a `dirname "${BASH_SOURCE[0]}"`.
+
+## 5. `launchd/instalar.sh` sigue siendo de macOS, pero ahora lo dice
+
+Este instalador no se "porta" en sentido fuerte: launchd no existe en
+Linux, y su equivalente es `systemd/instalar.sh` (ya escrito y trackeado).
+Lo que cambió es el shebang a bash y **una guarda al inicio**: si
+`uname -s` no es `Darwin`, aborta con exit 1 y nombra el reemplazo. Es
+para el humano que lo invoque a mano en la máquina equivocada; `./mki
+instalar` ya elige bien solo.
+
+## 6. `./mki instalar` bajo Linux pide confirmación — y cuándo se retira
+
+**El riesgo:** instalar los 6 timers en el PC antes de que exista el modo
+sombra (Fase 3) lo convierte esa misma noche en un **segundo titular**:
+manda su propio reporte de Telegram duplicado, commitea backups y sella en
+paralelo con el Mac. Es la advertencia central del brief de reactivación, y
+es una acción hacia afuera (Telegram) difícil de deshacer.
+
+Por eso, **solo en la rama Linux**, `./mki instalar` explica el riesgo y
+pide escribir `si` antes de correr `systemd/instalar.sh`. Sin TTY no
+instala salvo `MKI_INSTALAR_TIMERS=si` explícito. El hook pre-commit se
+instala siempre, en las dos ramas — nunca fue el peligro.
+
+**Condición de retiro (explícita, porque la guarda protege un estado
+transitorio y su justificación caduca).** Se retira en dos tiempos:
+
+1. **En la Fase 3 deja de ser una asimetría de plataforma.** La condición
+   real de la guarda **no es "estoy en Linux"** sino **"el modo sombra no
+   está configurado"**. Hoy las dos coinciden y por eso se codificó la
+   primera —el modo sombra no existe todavía, así que preguntar por él
+   sería circular—, pero la forma correcta es la segunda: es un chequeo de
+   *estado*, válido en ambas máquinas, no un juicio sobre el sistema
+   operativo. Ver §10.
+2. **Se retira entera cuando termine la migración**: cuando el switch de
+   la Fase 5 esté hecho, el PC sea titular y **el Mac haya dejado de
+   sellar**. En ese momento ya no existe la posibilidad de dos titulares
+   —que es lo único contra lo que la guarda protege— y quedaría como
+   fricción que nadie recuerda por qué está.
+
+Mientras tanto se queda. Este párrafo existe para que el retiro sea una
+decisión con criterio escrito, y no un hallazgo arqueológico dentro de un
+año.
+
+## 7. El hook no ramifica, y el Mac no lo hereda solo
+
+`scripts/pre-commit` no tenía nada específico de plataforma: solo el
+shebang. Quedó en bash, sin ramas. Verificado en Linux que las tres rutas
+siguen intactas: bloquea ante patrón de secreto real (exit 1), salta con
+`SKIP_TESTS=1`, y salta los tests cuando lo stageado es *solo*
+`data/backups/` (para que el backup diario jamás quede bloqueado).
+
+**Detalle operativo que conviene tener escrito:** `./mki instalar` *copia*
+`scripts/pre-commit` a `.git/hooks/pre-commit`. El Mac conserva su copia
+zsh instalada —que sigue funcionando, allá zsh existe— hasta que alguien
+corra `./mki instalar` en el Mac. No hay ventana de rotura: la versión
+vieja funciona hasta ser reemplazada por una que también funciona.
+
+## 8. `PLATAFORMA_VERSION` sube a 5.0.3
+
+`version.py` pasa de `5.0.2` a **`5.0.3`**. `MODELO_VERSION` sigue en
+**4.6.0**, intocado.
+
+**Por qué subir y no renombrar la sección.** `plataforma_version` se sella
+en cada snapshot (columna 14 de `senales_snapshots.csv`; hoy hay filas en
+5.0.0 ×5, 5.0.1 ×5 y 5.0.2 ×11, más 14 pre-5.0 en blanco). Ese campo es
+una **afirmación de procedencia**: dice qué código produjo la fila. El
+código del PC genuinamente ya no es el que describe 5.0.2 —los tres
+scripts cambiaron de intérprete y de comportamiento por plataforma—, así
+que sellar 5.0.2 desde aquí sería una afirmación falsa. Y como **las filas
+selladas jamás se reescriben**, la única oportunidad de que ese campo sea
+correcto es en el momento de la emisión. Es exactamente el mecanismo para
+el que existe el versionado dual: la plataforma evoluciona, el modelo no.
+
+**Durante la ventana de sombra el Mac sellará `5.0.2` y el PC `5.0.3`.**
+Esa diferencia es **LEGÍTIMA**: el código genuinamente difiere entre las
+dos máquinas mientras `migracion-wsl` no se funda con `main`. No es una
+divergencia a diagnosticar; es la etiqueta que dice qué máquina produjo
+cada fila, y durante la migración eso es información útil, no ruido.
+
+**Requisito para `comparar_sombra.py` (Fase 3):** debe **esperar** esa
+diferencia en vez de reportarla. En la comparación del día 1 la plataforma
+figuraba entre los campos que coincidían — **ese campo cambia de
+significado durante la migración**: deja de ser un invariante que valida
+la comparación y pasa a ser un discriminador esperado. Un comparador que
+lo trate como antes va a gritar divergencia todas las noches y a enterrar
+la señal que sí importa. Ver §10.
+
+## 9. Lo que esta fase NO resuelve
+
+- **Los timers NO se instalaron.** El PC no tiene jobs y no sella. El
+  orden es sombra (Fase 3) → timers (Fase 4), nunca al revés.
+- **Bloqueador de la Fase 4:** en esta WSL **systemd no está activo como
+  PID 1** (`ps -p 1 -o comm=` devuelve `init(Ubuntu)`), así que
+  `systemctl --user` no tiene bus al que hablar y los timers no se pueden
+  instalar. Remedio conocido: `[boot] systemd=true` en `/etc/wsl.conf` y
+  `wsl --shutdown` desde Windows. `systemd/instalar.sh` ya aborta con ese
+  mensaje; ahora `./mki estado` también lo **distingue de "ninguno
+  instalado"** — decir "ninguno instalado" cuando en realidad no se puede
+  preguntar sería falsa tranquilidad justo en el chequeo de salud, y es el
+  mismo criterio de honestidad que rige el resto del sistema ("pendiente"
+  jamás se rellena con un número).
+- Las asimetrías declaradas siguen en pie: intérprete 3.14.4 (PC) vs
+  3.11.15 (Mac) (§1) y `TimeoutStartSec` finito en systemd frente a
+  launchd, que no tiene equivalente.
+- La deuda de `pd.concat` (§3) sigue abierta y sigue siendo bloqueador
+  explícito de cualquier upgrade de pandas.
+
+## 10. Requisitos que esta fase deja escritos para la Fase 3
+
+1. **La guarda de `./mki instalar` cambia de condición**: de "estoy en
+   Linux" a "el modo sombra no está configurado" (§6.1). Deja de ser
+   asimetría de plataforma y pasa a ser chequeo de estado, correcto en
+   ambas máquinas.
+2. **`comparar_sombra.py` debe esperar `plataforma_version` distinta**
+   entre Mac (5.0.2) y PC (5.0.3), no reportarla como divergencia (§8).
+
+## 11. GATE 1 repetido tras el port
+
+`python -m pytest tests/ -q` → **70 en verde**, y `python
+tests/test_motor.py` → anti-look-ahead limpio en las tres fechas de
+prueba. Ejecutados vía `./mki tests` ya portado, y además con el hook
+portado en el camino real (`bash scripts/pre-commit` sobre lo stageado),
+no solo a mano.

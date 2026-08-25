@@ -5,11 +5,11 @@
 | Subcomando | Qué hace |
 |---|---|
 | `./mki arrancar` | API (:8000) + frontend Vite (:5173), un Ctrl+C corta ambos |
-| `./mki estado` | jobs launchd, último sello con salud de descarga, presupuesto IA, estados de predicciones, cola del vigía |
+| `./mki estado` | jobs del planificador (launchd en macOS, systemd --user en Linux), último sello con salud de descarga, presupuesto IA, estados de predicciones, cola del vigía |
 | `./mki reporte` | envía el reporte de Telegram AHORA (compuesto 100% del sello) |
 | `./mki tests` | pytest completo + test anti-look-ahead del motor |
 | `./mki auditoria` | revisión de SOLO LECTURA: los 5 chequeos del vigía, sellos de la semana, gasto del mes, git |
-| `./mki instalar` | los 5 jobs de launchd + el hook pre-commit |
+| `./mki instalar` | los 6 jobs automáticos (launchd o systemd según `uname -s`) + el hook pre-commit |
 
 Los tres procesos, a mano si se prefiere:
 
@@ -41,8 +41,9 @@ frontend/               Vite + React + TS + Tailwind 4 (versiones exactas)
 backtest/               motor B0→B5 (DISEÑO.md congelado en el GATE B);
                         SOLO LECTURA, resultados/ propios, ejecución con
                         veredicto diferida a la Etapa 5.1
-jobs (launchd, hábiles) noticias 17:50 · snapshot 18:15 · reporte 18:25 ·
-                        backup 18:40 · vigía 19:00  (launchd/INSTALACION.md)
+jobs (hábiles)          noticias 17:50 · snapshot 18:15 · reporte 18:25 ·
+                        backup 18:40 · vigía 19:00 · re-chequeo 20:30
+                        (launchd/INSTALACION.md · systemd/INSTALACION.md)
 ```
 
 Reglas que el código respeta y toda contribución debe respetar:

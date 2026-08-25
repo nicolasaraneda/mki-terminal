@@ -24,4 +24,12 @@ UNIVERSO_VERSION = "4.6.0"
 # 5.0.2: cierre de heridas pre-migración — timeout global de red en el job
 #   de noticias (un fetch jamás cuelga el label de launchd) y retractación
 #   que distingue emisión de confirmación (la discrepancia del 06-ago).
-PLATAFORMA_VERSION = "5.0.2"
+# 5.0.3: reactivación en PC — scripts portados de zsh a bash con ramificación
+#   por `uname -s` (launchd en macOS / systemd en Linux). El campo sellado
+#   `plataforma_version` es una afirmación de PROCEDENCIA: dice qué código
+#   produjo la fila, y las filas selladas jamás se reescriben. Durante la
+#   ventana de sombra el Mac sellará 5.0.2 y el PC 5.0.3; esa diferencia es
+#   LEGÍTIMA (el código difiere mientras `migracion-wsl` no se funda con
+#   `main`) y `comparar_sombra.py` debe esperarla, no reportarla como
+#   divergencia. Detalle en DECISIONES.md, Etapa 5.0.3 §8.
+PLATAFORMA_VERSION = "5.0.3"
