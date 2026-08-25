@@ -39,6 +39,11 @@ case "${1:-ayuda}" in
     cd frontend && npm run dev
     ;;
   estado)
+    # El modo va PRIMERO y solo: durante la ventana de sombra, leer el
+    # estado sin saber en qué modo está la máquina es leerlo mal.
+    source venv/bin/activate
+    python -c "import modo; print('== Modo ==\n  ' + modo.descripcion())"
+    echo ""
     case "$MKI_SO" in
       mac)
         echo "== Jobs launchd =="
@@ -75,7 +80,6 @@ case "${1:-ayuda}" in
     esac
     echo ""
     echo "== Último sello y salud =="
-    source venv/bin/activate
     python - <<'PY'
 import senales, costos
 info = senales.info_snapshot_hoy()

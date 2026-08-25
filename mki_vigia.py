@@ -129,6 +129,13 @@ def chequear_reporte() -> tuple:
 
 
 def chequear_backup() -> tuple:
+    # 5.0.3 — en modo sombra el backup NO commitea a propósito. Marcarlo
+    # como falla era una falsa alarma diaria que ensuciaba la señal justo
+    # en los días que hay que leer con cuidado: el vigía habría gritado
+    # todas las noches de la ventana por el comportamiento correcto.
+    import modo
+    if modo.en_sombra():
+        return True, "backup: sin commit por modo sombra (correcto)"
     r = subprocess.run(["git", "-C", DIRECTORIO, "log", "-1", "--format=%cs",
                         "--", "data/backups"], capture_output=True, text=True)
     ultima = r.stdout.strip()

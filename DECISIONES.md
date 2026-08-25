@@ -1484,11 +1484,15 @@ la señal que sí importa. Ver §10.
 
 - **Los timers NO se instalaron.** El PC no tiene jobs y no sella. El
   orden es sombra (Fase 3) → timers (Fase 4), nunca al revés.
-- **Bloqueador de la Fase 4:** en esta WSL **systemd no está activo como
-  PID 1** (`ps -p 1 -o comm=` devuelve `init(Ubuntu)`), así que
-  `systemctl --user` no tiene bus al que hablar y los timers no se pueden
-  instalar. Remedio conocido: `[boot] systemd=true` en `/etc/wsl.conf` y
-  `wsl --shutdown` desde Windows. `systemd/instalar.sh` ya aborta con ese
+- **Bloqueador de la Fase 4 — RESUELTO el 25-ago.** Cuando se escribió
+  esta sección, en esta WSL **systemd no estaba activo como PID 1**
+  (`ps -p 1 -o comm=` devolvía `init(Ubuntu)`) y `systemctl --user` no
+  tenía bus al que hablar. Tras aplicar `[boot] systemd=true` en
+  `/etc/wsl.conf` y `wsl --shutdown`, PID 1 es `systemd` y
+  `systemctl --user list-timers` responde («0 timers listed» — sin
+  instalar, que es lo correcto en esta fase). Se deja escrito el hallazgo
+  y su cierre en vez de borrarlo: la próxima máquina va a tropezar con lo
+  mismo. `systemd/instalar.sh` ya aborta con ese
   mensaje; ahora `./mki estado` también lo **distingue de "ninguno
   instalado"** — decir "ninguno instalado" cuando en realidad no se puede
   preguntar sería falsa tranquilidad justo en el chequeo de salud, y es el
@@ -1516,3 +1520,304 @@ tests/test_motor.py` → anti-look-ahead limpio en las tres fechas de
 prueba. Ejecutados vía `./mki tests` ya portado, y además con el hook
 portado en el camino real (`bash scripts/pre-commit` sobre lo stageado),
 no solo a mano.
+
+
+---
+
+# Etapa 5.0.3 (continuación) — Fase 3: el modo sombra
+
+Reconstrucción de lo que se perdió con el SSD: `MKI_MODO=sombra`,
+`comparar_sombra.py` y `docs/SOMBRA.md`. `motor.py` y la lógica de señales,
+sin tocar. Timers sin instalar (eso es la Fase 4).
+
+## 12. Por qué esto NO abre una 5.0.4
+
+`PLATAFORMA_VERSION` se queda en **5.0.3** y esta fase extiende esa etapa
+en vez de abrir una nueva. Razón: **ninguna fila ha sellado jamás 5.0.3**.
+El PC todavía no ha sellado nada y el Mac sigue en 5.0.2, así que 5.0.3 no
+es todavía una afirmación hecha sobre filas existentes — es una **etiqueta
+en definición**. Ampliar su alcance mientras nadie la ha usado no
+contradice ninguna fila sellada; abrir una 5.0.4 antes de que la 5.0.3
+sellara una sola vez habría dejado un número muerto en el historial de
+versiones.
+
+El criterio completo, para la próxima vez, tiene dos mitades y la segunda
+importa más que la primera:
+
+1. **Una versión de plataforma se congela en el momento en que la primera
+   fila la sella.** Antes de eso sigue siendo editable: nadie ha afirmado
+   nada todavía.
+2. **Una vez congelada, no se reabre.** Desde el instante en que existe una
+   fila sellada con la versión X, cualquier cambio posterior de plataforma
+   —por pequeño que sea— exige una versión **nueva**. Ampliar el alcance de
+   X después de que X ya etiquetó filas convertiría esas filas en
+   afirmaciones falsas de forma retroactiva, y como las filas selladas
+   jamás se reescriben, no habría manera de corregirlo: quedarían diciendo
+   que las produjo un código que no es el que las produjo.
+
+Es el mismo principio que ya rige las filas selladas, aplicado al
+versionado que las etiqueta. La primera mitad es la que permitió esta
+decisión; la segunda es la que impide abusar de ella la próxima vez. En
+cuanto el PC selle su primera fila, la 5.0.3 queda cerrada y el siguiente
+cambio de plataforma es 5.0.4 sin discusión.
+
+Consecuencia práctica: lo escrito en §8 sigue vigente palabra por palabra
+—el Mac sella 5.0.2, el PC 5.0.3, la diferencia es legítima y
+`comparar_sombra.py` la espera—, y esa expectativa es también la que el
+brief de la Fase 3 fijó.
+
+## 13. `modo.py`: un solo lugar donde vive el modo
+
+El modo no se lee con `os.environ.get("MKI_MODO")` esparcido por cuatro
+archivos, sino en `modo.py`. Tres razones: el default correcto (titular)
+tiene que estar en un solo sitio; `snapshot.py` y `mki_backup.py` **no
+cargan `.env`** por su cuenta (sí lo hacen el vigía, noticias y el
+dashboard), así que `modo.py` llama a `load_dotenv()` al importarse y el
+modo se lee igual desde cualquier entrypoint; y el texto de estado
+(`descripcion()`) es uno solo para logs y para `./mki estado`.
+
+`load_dotenv()` no pisa lo que ya está en el entorno, así que
+`MKI_MODO=sombra python ...` sigue mandando sobre el `.env`.
+
+**Falla segura ante typo — la decisión que más importa aquí.** Un
+`MKI_MODO=sombrra` que cayera silenciosamente a titular convertiría al PC
+en un segundo titular esa misma noche: Telegram duplicado y commits en
+paralelo. Por eso un valor **puesto pero ilegible cae a SOMBRA**, con
+aviso ruidoso, nunca a titular. Ausente sigue siendo titular — el Mac no
+define la variable y no debe tener que definirla, y ese es el caso que no
+puede romperse. Es el mismo criterio del tope de gasto de `costos.py`, que
+ante `.env` ilegible cae al valor conservador: **el error barato es
+abstenerse, el caro es emitir.**
+
+## 14. Telegram se intercepta en UN punto, y devuelve `ok=True`
+
+`alertas.enviar_mensaje()` es el único punto de salida a la red del
+sistema entero: el reporte, las alertas del vigía, las retractaciones y el
+aviso de tope de gasto pasan todos por ahí. La interceptación va **solo**
+en esa función. Una segunda vía de salida sería una fuga, y hay un test
+que hace explotar `requests.post` para probar que en sombra nadie lo
+llama.
+
+Se intercepta **antes** del chequeo de configuración de Telegram: el log
+de sombra debe registrar todo lo que la máquina habría emitido,
+independientemente de si tenía credenciales.
+
+**Devuelve `ok=True` a propósito.** Es contraintuitivo —el mensaje no
+salió— pero es lo correcto: en sombra el resto del sistema debe
+comportarse **exactamente** igual que en producción. Con `ok=True` el
+anti-duplicados de `alertas.db` registra igual y el vigía consume su
+marcador pendiente igual. Si devolviera `False`, la sombra ejercitaría los
+caminos de error en vez de los caminos normales, y la ventana estaría
+comparando dos sistemas que no hacen lo mismo. El detalle devuelto dice
+`interceptado por MKI_MODO=sombra (no salió a la red)`, así que ningún log
+afirma "enviado".
+
+El texto pasa por `enmascarar_secretos()` antes de llegar al log, como
+todo lo que puede terminar en un archivo (regla de `seguridad.py`), y el
+registro nunca levanta: que falle el log no puede convertirse en un envío
+real ni tumbar el job.
+
+## 15. El backup en sombra no toca ni el índice de git
+
+`mki_backup.py` en sombra registra el modo en su log y **retorna antes de
+`git add`**. No es solo "no commitear": no se toca el índice. El árbol de
+trabajo es el código que los timers ejecutan esa misma noche, y dejar
+cosas stageadas es exactamente la clase de efecto lateral que la ventana
+no puede permitirse.
+
+**El bug conocido, corregido de entrada:** el vigía reportaba *"backup:
+sin commit hoy"* como falla. En sombra, no commitear **es** el
+comportamiento correcto, así que `chequear_backup()` devuelve OK con el
+motivo explícito. Era una falsa alarma que habría sonado las tres noches
+de la ventana —justo los días que hay que leer con cuidado— y habría
+enseñado a ignorar al vigía. Hay contraprueba en los tests: en titular el
+chequeo real sigue vivo, para que la corrección no lo apague para el Mac.
+
+## 16. El comparador: qué se comparó, con qué criterio, y qué se negó a comparar
+
+### La fecha de corte es lo primero que se evalúa
+
+`FECHA_CORTE = 2026-08-24`, constante declarada arriba del archivo con su
+justificación. Las bases del PC son copia por pendrive de las del Mac
+hasta ese día **inclusive**: para cualquier fecha anterior las dos
+máquinas no tienen datos parecidos, tienen **el mismo archivo**. El
+comparador **se niega** y lo dice en el veredicto. Un comparador que
+reportara esa paridad trivial sin avisar sería peor que no tenerlo:
+produciría tres días verdes en una tarde y habilitaría un switch sobre
+evidencia vacía.
+
+Queda anotado en `docs/SOMBRA.md`: **si se recopian las bases del Mac
+antes de abrir la ventana, hay que subir `FECHA_CORTE` al nuevo día de
+copia.**
+
+### La tolerancia amplia era la trampa
+
+La intuición ingenua —"son floats, pon tolerancia amplia"— habría
+escondido justo lo que la ventana existe para detectar. Las dos máquinas
+corren pandas 3.0.3 y numpy 2.4.6 **idénticos** sobre la misma ventana de
+120 sesiones: con los mismos insumos los números deben salir iguales.
+Nivel 1 usa tolerancia relativa `1e-9`.
+
+**Observación de precisión real, que hace el nivel 1 más fuerte de lo que
+suena:** estos campos se sellan **ya redondeados** (beta y apertura a 2
+decimales, R² a 4). Sobre valores redondeados, `1e-9` relativo equivale a
+exigir el **mismo valor almacenado**. La diferencia más pequeña
+representable en beta es `0.01`, que no es ruido de coma flotante sino
+insumos distintos — y hay un test que lo fija: `beta 0.38 vs 0.39` rompe
+la paridad.
+
+**La contracara honesta:** un valor que caiga justo en el borde del
+redondeo podría inclinarse a un lado en una máquina y al otro en la otra.
+Por eso todo hallazgo de nivel 1 reporta ambos valores **y su delta**: un
+delta de exactamente una unidad del último decimal merece mirarse antes de
+tratarlo como evidencia dura. Pero se reporta igual — **jamás se
+silencia**, que es la diferencia entre una tolerancia y una excusa.
+
+### Tres campos añadidos al criterio del brief
+
+El brief fijó las listas; se le agregaron tres campos, y conviene que
+quede escrito por qué:
+
+- **`puntaje_v0` al nivel 1.** Se deriva solo de precios, igual que beta y
+  la apertura. Dejarlo fuera habría dejado una señal derivada de precios
+  sin vigilar, justo la clase de cosa que el desfase de una sesión mueve.
+- **`n_muestra` al nivel 2.** Es la **firma exacta** de la divergencia del
+  14-ago (`N=148 vs 147`), que es la hipótesis principal viva tras
+  cerrarse el pendiente #2. Es el campo más diagnóstico disponible.
+- **`sox_fecha` al nivel 2.** Si las dos máquinas usaron cierres del SOX
+  de días distintos, todo lo demás da igual: ahí está la causa.
+
+Y tres exclusiones, también deliberadas: `id` (rowid local, sin
+significado compartido) queda fuera por completo; `estado` va al nivel 3
+porque lo escribe el verificador después, en cada máquina por su cuenta y
+en momentos distintos —compararlo sería comparar relojes de verificación,
+no sellos—; y `origen` al nivel 3 porque describe cómo se disparó la
+corrida, no qué se calculó.
+
+**Diferencia de esquema ≠ diferencia de valor.** Si una columna existe en
+una máquina y no en la otra, se reporta como hallazgo de esquema en vez de
+dejar que un `.get()` devuelva `None` y parezca un valor distinto.
+
+### Los tres veredictos, y por qué no son dos
+
+`PARIDAD` / `DIVERGENCIA` / `DIA_NO_COMPUTABLE`. El tercero existe porque
+**"nada = nada" nunca es paridad**: si el titular no selló esa noche, no
+hay contra qué comparar y el día es **perdido**, no bueno. El comparador
+verifica explícitamente que exista fila del titular antes de evaluar nada.
+
+La asimetría que importa: **si el titular selló y la sombra no, eso es
+`DIVERGENCIA`, no día perdido.** Es la sombra fallando, que es exactamente
+lo que la ventana existe para detectar; esconderlo como "no computable"
+sería el mismo autoengaño que la paridad trivial.
+
+**Racha:** `PARIDAD` suma; `DIVERGENCIA` la vuelve a cero (así se comportó
+el día 1 del 14-ago); `DIA_NO_COMPUTABLE` no suma **ni rompe** — es un día
+perdido, y no es evidencia ni a favor ni en contra. El contador muestra
+las dos cifras (días con paridad y racha actual) para que un
+`DIA_NO_COMPUTABLE` intercalado no se lea como progreso.
+
+### Lectura sin `pull`, y salida a archivo
+
+`git fetch` + `git show origin/main:data/backups/<archivo>.csv`. **Nunca
+`git pull`** (pendiente #3 del acta): el árbol de trabajo es el código que
+los timers ejecutan esa misma noche y un merge lo alteraría bajo los pies.
+Hay un test que **falla si la cadena `pull` reaparece** en el archivo — la
+regla se vigila sola, no depende de que alguien la recuerde.
+
+El lado local sale de `senales.db` en `mode=ro`: es la base que va a
+convertirse en el track record, y los CSV son su exportación. Se lee la
+fuente, no la copia. Nada del comparador escribe en el árbol ni en el
+índice.
+
+La salida es un **reporte por fecha** en `data/sombra/comparacion_<fecha>.md`
+que declara el criterio completo, la revisión de `origin/main` usada, la
+procedencia de los dos lados y la fecha de corte — para que se pueda
+releer en tres semanas y entender qué se comparó. El veredicto se acumula
+además en `data/sombra/veredictos.jsonl` para el contador. Un veredicto en
+pantalla y nada más habría sido inauditable.
+
+## 17. `docs/SOMBRA.md` deja una pregunta SIN responder, a propósito
+
+El checklist de switch plantea, y **no resuelve**, qué pasa con los días
+de solapamiento: las dos máquinas sellan las mismas fechas, y al pasar el
+PC a titular su base tendrá la historia copiada del Mac **más** sus
+propios sellos de sombra para esos días. ¿Cuáles son canónicos? Las filas
+selladas jamás se reescriben, así que no se puede sobreescribir — **¿y
+borrar cuenta como reescribir?**
+
+Es decisión humana y tiene que quedar resuelta y escrita **antes** del
+switch; si no, el track record se corrompe en silencio. El documento
+aporta el material para decidir (que las filas de un día en paridad
+igualmente difieren en `plataforma_version`/`timestamp_utc`/`creado_en`, y
+que el proyecto ya tiene precedente de estados terminales conservados y
+fuera de todas las métricas) pero **no elige**. Está marcada **SIN
+RESOLVER** y en el checklist como bloqueante.
+
+## 18. La fecha de corte no puede depender de la memoria de nadie
+
+`FECHA_CORTE` es una constante que alguien tiene que acordarse de subir si
+las bases se vuelven a copiar del Mac. **Depender de la memoria humana
+justo para el chequeo que evita la paridad falsa es apoyarse en el punto
+débil equivocado**: el día que se recopien las bases es un día de trabajo
+manual con pendrive, exactamente el contexto en que una constante en un
+archivo se olvida.
+
+Por eso hay además una defensa **estructural**, que no depende de nadie.
+Dos filas selladas independientemente en dos máquinas **jamás comparten
+`creado_en` ni `timestamp_utc`**: son marcas de tiempo con precisión de
+microsegundos, tomadas por procesos distintos en momentos distintos. Que
+coincidan al microsegundo no es una coincidencia asombrosa — es la MISMA
+fila copiada. Si la fila local y la de `origin/main` coinciden en
+`creado_en`, `timestamp_utc` **y** `plataforma_version`, el comparador se
+niega, **aunque la fecha sea posterior al corte**, y el motivo apunta a
+subir `FECHA_CORTE`.
+
+**Por qué los tres campos y no solo los timestamps.** Los dos timestamps
+solos ya bastarían: la probabilidad de colisión al microsegundo entre dos
+procesos independientes es despreciable. Se exigen los tres para que la
+negativa sea **inapelable** cuando se dispara — durante la ventana real el
+Mac sella 5.0.2 y el PC 5.0.3, así que la tercera condición por sí sola ya
+hace imposible el falso positivo. El precio de pedir de más aquí es cero;
+el de un falso positivo sería negarse a comparar un día legítimo.
+
+**Cinturón y tirantes:** los dos mecanismos son independientes y basta que
+se dispare **uno**. La fecha de corte atrapa el caso conocido; la huella
+atrapa el caso que nadie anticipó — incluida la copia hecha por una razón
+distinta a la prevista. Hay test para cada uno por separado, y uno que
+verifica que la huella NO se dispara cuando solo coinciden los timestamps
+pero la plataforma difiere.
+
+## 19. Un cuarto veredicto: `PENDIENTE_PUBLICACION`
+
+El comparador lee del titular a través de `origin/main`, y **el push del
+Mac es manual y va después de las 20:30**. Por eso la ausencia de fila ahí
+es **ambigua**: o el titular no selló, o selló y todavía no publicó. Con
+tres veredictos, esa ambigüedad se resolvía en el peor sentido posible —
+el día caía en `DIA_NO_COMPUTABLE` y **se quemaba en silencio** por un push
+que aún no había llegado. En una ventana de tres días, perder uno así es
+perder un tercio de la evidencia por un artefacto de sincronización.
+
+`PENDIENTE_PUBLICACION` es el estado honesto para eso: **no suma a la
+racha, no la rompe, y NO ES FINAL**. Se resuelve re-ejecutando el
+comparador para esa fecha cuando llegue el push. Ahí está la diferencia
+con `DIA_NO_COMPUTABLE`, que es un veredicto **cerrado**: ese día ya no
+puede dar otra cosa.
+
+**Cómo se desambigua sin mirar el reloj.** Un veredicto que dependiera de
+la hora sería frágil (zonas horarias, corridas tardías, re-ejecuciones al
+día siguiente). En vez de eso se usa la evidencia que ya está en los
+datos: **si el titular ya publicó algún sello de una fecha POSTERIOR, su
+historia está publicada más allá de este día**, y entonces la ausencia
+deja de ser ambigua — es definitiva, y el veredicto pasa a
+`DIA_NO_COMPUTABLE`. Sin esto, un feriado quedaría marcado "pendiente"
+para siempre.
+
+El contador lista los días sin cerrar aparte, con el comando exacto para
+re-ejecutarlos, y usa **la última corrida de cada fecha**: un pendiente
+que se resuelve queda sobrescrito por su veredicto definitivo.
+
+## 20. GATE 1 tras la Fase 3
+
+`python -m pytest tests/ -q` → **107 en verde** (70 previos + 37 de
+`tests/test_sombra.py`), y `python tests/test_motor.py` → anti-look-ahead
+limpio en las tres fechas.

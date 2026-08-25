@@ -19,6 +19,7 @@ from datetime import date, datetime, timezone
 
 import requests
 
+import modo
 from seguridad import enmascarar_secretos, ultimos4
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "alertas.db")
@@ -94,7 +95,22 @@ def _registrar(clave: str, mensaje: str) -> None:
 # Envío
 # ------------------------------------------------------------
 def enviar_mensaje(texto: str) -> tuple:
-    """Envía un mensaje por Telegram. Devuelve (ok, detalle)."""
+    """Envía un mensaje por Telegram. Devuelve (ok, detalle).
+
+    Punto ÚNICO de salida a la red del sistema entero: el reporte, las
+    alertas del vigía, las retractaciones y el aviso de tope de gasto pasan
+    todos por aquí. Por eso el modo sombra se intercepta en esta función y
+    en ninguna otra — una segunda vía de salida sería una fuga.
+    """
+    # 5.0.3 — modo sombra: se intercepta ANTES de mirar la configuración.
+    # Devuelve ok=True a propósito: en sombra el resto del sistema debe
+    # comportarse EXACTAMENTE igual que en producción (el anti-duplicados
+    # de alertas.db registra, el vigía consume su marcador pendiente), y
+    # eso es justo lo que la ventana de sombra existe para comparar. Lo
+    # único que cambia es que el texto va al log en vez de a la red.
+    if modo.en_sombra():
+        modo.registrar_telegram_interceptado(texto)
+        return True, "interceptado por MKI_MODO=sombra (no salió a la red)"
     if not esta_configurado():
         return False, "Telegram no está configurado (falta token o chat id en .env)."
     token = os.environ["TELEGRAM_BOT_TOKEN"]

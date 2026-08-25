@@ -25,7 +25,12 @@ UNIVERSO_VERSION = "4.6.0"
 #   de noticias (un fetch jamás cuelga el label de launchd) y retractación
 #   que distingue emisión de confirmación (la discrepancia del 06-ago).
 # 5.0.3: reactivación en PC — scripts portados de zsh a bash con ramificación
-#   por `uname -s` (launchd en macOS / systemd en Linux). El campo sellado
+#   por `uname -s` (launchd en macOS / systemd en Linux), y MODO SOMBRA:
+#   MKI_MODO=sombra intercepta Telegram y suprime el commit del backup
+#   (modo.py). La 5.0.3 cubre la reactivación entera y todavía NO ha
+#   sellado ninguna fila: es una etiqueta en definición, no una
+#   afirmación ya hecha. Por eso la Fase 3 la extiende en vez de abrir
+#   una 5.0.4 — ver DECISIONES.md, Etapa 5.0.3 §12. El campo sellado
 #   `plataforma_version` es una afirmación de PROCEDENCIA: dice qué código
 #   produjo la fila, y las filas selladas jamás se reescriben. Durante la
 #   ventana de sombra el Mac sellará 5.0.2 y el PC 5.0.3; esa diferencia es

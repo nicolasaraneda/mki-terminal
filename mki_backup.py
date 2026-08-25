@@ -26,8 +26,18 @@ def _git(*args) -> subprocess.CompletedProcess:
 
 def main() -> int:
     from registro import rotar_log
+    import modo
     rotar_log(os.path.join(DIRECTORIO, "data", "backup.log"))
     print(f"[{datetime.now(timezone.utc).isoformat()}] mki_backup.py", flush=True)
+    print(f"  {modo.descripcion()}", flush=True)
+    # 5.0.3 — en sombra no se commitea NADA: dos máquinas commiteando los
+    # mismos CSV sobre la misma historia es exactamente lo que la ventana
+    # debe evitar. Ni siquiera se toca el índice de git (sin `git add`):
+    # el árbol de trabajo es el código que los timers ejecutan.
+    if modo.en_sombra():
+        print("  modo sombra: NO se commitea (comportamiento correcto, "
+              "no es una falla)", flush=True)
+        return 0
     r = _git("add", "--", "data/backups")
     if r.returncode:
         print(f"  git add falló: {r.stderr.strip()}")
