@@ -121,11 +121,25 @@ system start up, S4U, cada 15 min, `wsl.exe -d Ubuntu --exec
 —**no** con `HiberbootEnabled`—, horas activas 13:00–07:00 y *"Get me up
 to date"* en Off.
 
-### GATE A-bis — arranque en frío
+### GATE A-bis — arranque en frío · **CERRADO: APROBADO el 25-ago-2026**
 
 Reiniciar, **no** iniciar sesión, esperar 3 min en la pantalla de bloqueo,
-y recién ahí entrar y mirar el `Last Run Time` de la tarea. Es la variante
-estricta que quedó pendiente en agosto.
+y recién ahí entrar y mirar. Era la variante estricta que quedó pendiente
+en agosto; **ya no lo está.**
+
+Evidencia: VM arriba desde las 20:14:12 sin login · `sleep infinity` con
+PID **396** nacido 13 s después del boot · PID 1 = systemd · 6 timers
+vivos · `who` vacío · `mki-vigia-rechequeo.timer` disparó a las
+**20:30:00** con nadie logueado (systemd +157 ms, primera línea del job
++244 ms, dentro del `AccuracySec=1s`).
+
+Además, dos hallazgos que este gate destapó y que el acta no tenía:
+`Last Result: 0x800710E0` en la tarea de Windows es estado **sano** con
+`MultipleInstances=IgnoreNew` (hay que mirar `Status: Running`), y
+`powercfg /h off` **no basta** — S3 seguía disponible y hubo que fijar
+`standby-timeout-ac 0`.
+
+Detalle completo en `DECISIONES.md` §21–22 y `systemd/INSTALACION.md`.
 
 ## FASE 5 — Tres días hábiles con paridad
 

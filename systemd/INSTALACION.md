@@ -148,37 +148,101 @@ Comprobación de que quedó bien:
 schtasks /query /tn MKI-WSL-KeepAlive /v /fo LIST
 ```
 
-`Last Result: 267009` (`0x41301`, SCHED_S_TASK_RUNNING) es lo correcto:
-significa que la tarea sigue corriendo, no que falló. Del lado Linux,
-`pgrep -a "sleep infinity"` con un PID bajo confirma que arrancó junto
-con la VM.
+### ⚠ El `Last Result` de esta tarea NO se lee como en las demás
+
+**Mira `Status: Running`, no `Last Result`.** En régimen normal esta tarea
+muestra un código que parece un error y no lo es:
+
+| Código | Significa | ¿Sano? |
+|---|---|---|
+| `267009` (`0x41301`, `SCHED_S_TASK_RUNNING`) | la instancia está corriendo | sí |
+| **`0x800710E0`** (`-2147020576`, Win32 **4320**) | la repetición de 15 min intentó arrancar, encontró la instancia viva y **se negó a lanzar otra** | **sí** |
+
+El `0x800710E0` es la consecuencia directa y esperada de
+**`MultipleInstances=IgnoreNew`**: es literalmente lo que `IgnoreNew`
+hace. Es el estado que vas a ver casi siempre, porque la instancia buena
+lleva viva desde el arranque y cada repetición posterior rebota contra
+ella.
+
+**Por qué está escrito aquí:** un código hexadecimal negativo en el campo
+`Last Result` se lee como avería. Quien lo vea sin este contexto va a
+"arreglar" un keep-alive que funciona — y arreglarlo probablemente
+signifique quitar `IgnoreNew`, que es lo único que impide acumular una
+instancia de `sleep infinity` cada 15 minutos.
+
+Del lado Linux la confirmación real: `pgrep -a "sleep infinity"` con un
+**PID bajo** y una hora de arranque pegada a la del boot (`uptime -s`)
+prueba que nació con la VM y no con tu sesión.
 
 ### Blindaje de energía
 
 ```powershell
-powercfg /h off      # Fast Startup e hibernación fuera
-powercfg /a          # <- el indicador AUTORITATIVO
+powercfg /h off               # Fast Startup e hibernación fuera
+powercfg /a                   # <- el indicador AUTORITATIVO
+powercfg /change standby-timeout-ac 0   # <- IMPRESCINDIBLE, ver abajo
 ```
 
 **`powercfg /a` es la verdad, no `HiberbootEnabled`.** Ese registro es la
 casilla de preferencia de la interfaz y `powercfg /h off` no lo modifica;
 mirarlo a él lleva a concluir que el blindaje falló cuando sí funcionó.
 
+**`powercfg /h off` NO BASTA (hallazgo del 25-ago).** Esa orden desactiva
+hibernación y Fast Startup, pero **deja S3 (standby) disponible**: el PC
+puede dormirse por inactividad **a las 18:10**, en plena ventana de jobs, y
+reproducir el patrón de DarkWake que en el Mac dejó sellos a las 21:23 y
+19:40 en julio. Por eso se fija `standby-timeout-ac 0`.
+
+Hibernación y standby son **dos blindajes distintos**, y desactivar uno no
+desactiva el otro. Lee `powercfg /a` entero, no solo la línea de
+hibernación. Sin el standby apagado, todo lo demás da igual: no importa
+que la VM sobreviva al arranque si la máquina se duerme sola cuarenta
+minutos antes del snapshot.
+
 Horas activas manuales **13:00–07:00** (`ActiveHoursStart=13`,
 `ActiveHoursEnd=7`, `SmartActiveHoursState=0`), y **"Get me up to date" en
 Off** — ese interruptor anula las horas activas y reinicia igual.
 
-### GATE A-bis — arranque en frío
+### GATE A-bis — arranque en frío · **APROBADO 25-ago-2026**
 
-La prueba estricta, que quedó pendiente en agosto porque esa vez se
-inició sesión después del boot:
+La prueba estricta quedó pendiente en agosto porque esa vez se inició
+sesión después del boot, y con sesión iniciada un keep-alive que en
+realidad dependiera del login pasa la prueba igual.
+
+El procedimiento:
 
 1. Reiniciar el PC
 2. **No iniciar sesión.** Esperar 3 minutos en la pantalla de bloqueo
-3. Recién entonces entrar y mirar el `Last Run Time` de la tarea
+3. Recién entonces entrar y mirar el `Status` de la tarea
 4. En Ubuntu: `systemctl --user list-timers 'mki-*'` con los 6 vivos
 
-Sin esto, "el sistema arranca solo" es una hipótesis, no un hecho.
+**Resultado del 25-ago-2026 — aprobado, con esta evidencia:**
+
+| Hecho | Evidencia |
+|---|---|
+| La VM arrancó sin login | `uptime -s` = `2026-08-25 20:14:12` |
+| El keep-alive nació con la VM | `sleep infinity` **PID 396**, `STARTED Tue Aug 25 20:14:25` — 13 s tras el boot, PID de tres cifras |
+| systemd es PID 1 | `ps -p 1 -o comm=` → `systemd` |
+| Los 6 timers vivos | `systemctl --user list-timers 'mki-*'` → `6 timers listed` |
+| Nadie logueado al disparar | `who` vacío |
+| Disparo en hora | `mki-vigia-rechequeo.timer` → `LastTriggerUSec = Tue 2026-08-25 20:30:00 -04` |
+
+El disparo de las 20:30, al milisegundo — **dos latencias distintas**, y
+conviene compararlas por separado en corridas futuras:
+
+```
+20:30:00.156819  systemd: Starting mki-vigia-rechequeo.service   (+157 ms)
+20:30:00.244073  primera línea del proceso en data/vigia.log     (+244 ms)
+20:30:00.250213  systemd: Finished                               (+250 ms)
+```
+
+Los **157 ms** son latencia de systemd, holgadamente dentro del
+`AccuracySec=1s` de la unit. Los **87 ms** siguientes son el arranque del
+intérprete. Los **244 ms** son lo que tarda el job en dejar rastro propio:
+la cifra correcta para "cuánto tarda el sistema en empezar a trabajar",
+pero **no** el retraso de systemd, que es la mitad.
+
+Con esto, "el sistema arranca solo" deja de ser hipótesis y pasa a ser
+hecho medido. Detalle en `DECISIONES.md`, Etapa 5.0.3 §21.
 
 ---
 
@@ -191,5 +255,9 @@ Sin esto, "el sistema arranca solo" es una hipótesis, no un hecho.
 - **Efecto estampida:** varios días caídos disparan varias corridas al
   volver. Qué corridas perdidas se descartan en vez de ejecutarse tarde es
   una **decisión humana pendiente**, previa al switch.
-- **`./mki instalar` sigue apuntando a launchd.** Portarlo con detección
-  de plataforma (`uname`) es parte de la Fase 2 de la reactivación.
+- **El modo de la máquina no está en las units.** Los timers corren en
+  sombra porque `MKI_MODO=sombra` está en `.env` y `modo.py` lo carga con
+  `load_dotenv()`; las units **no** declaran `Environment=MKI_MODO`, a
+  propósito (el modo vive en un solo sitio). Consecuencia operativa: quitar
+  esa línea del `.env` con los timers instalados convierte a esta máquina
+  en titular esa misma noche. El orden del switch está en `docs/SOMBRA.md`.

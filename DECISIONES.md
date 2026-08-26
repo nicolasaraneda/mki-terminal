@@ -1821,3 +1821,99 @@ que se resuelve queda sobrescrito por su veredicto definitivo.
 `python -m pytest tests/ -q` → **107 en verde** (70 previos + 37 de
 `tests/test_sombra.py`), y `python tests/test_motor.py` → anti-look-ahead
 limpio en las tres fechas.
+
+
+---
+
+# Etapa 5.0.3 (continuación) — Fase 4: timers instalados y GATE A-bis
+
+## 21. GATE A-bis APROBADO (25-ago-2026) — el pendiente de agosto, cerrado
+
+El acta de migración dejó abierta la variante estricta del arranque en
+frío: en agosto la prueba se hizo **iniciando sesión después del boot**, lo
+que no distingue "el sistema arranca solo" de "el sistema arranca cuando
+alguien entra". Con sesión iniciada, un keep-alive que en realidad
+dependiera del login pasaría la prueba igual. La hipótesis quedó sin
+verificar y así estaba escrita.
+
+**Procedimiento de la prueba estricta:** reiniciar, **no iniciar sesión**,
+esperar en la pantalla de bloqueo, y recién entonces entrar a mirar. Lo
+que ocurra antes de ese login es lo único que prueba algo.
+
+**Evidencia recogida (toda comprobable en la máquina):**
+
+| Hecho | Evidencia |
+|---|---|
+| La VM arrancó sin login | `uptime -s` = `2026-08-25 20:14:12` |
+| El keep-alive nació con la VM | `sleep infinity` con **PID 396**, `STARTED Tue Aug 25 20:14:25` — 13 s después del boot y PID de tres cifras |
+| systemd es PID 1 | `ps -p 1 -o comm=` → `systemd` |
+| Los 6 timers vivos | `systemctl --user list-timers 'mki-*'` → `6 timers listed` |
+| Nadie logueado al disparar | `who` vacío |
+| El timer disparó a su hora | `LastTriggerUSec` = `Tue 2026-08-25 20:30:00 -04` |
+
+**El disparo de las 20:30, al milisegundo.** Conviene registrar la cadena
+entera y no un solo número, porque son dos latencias distintas y la
+próxima vez habrá que compararlas por separado:
+
+```
+20:30:00.156819  systemd: Starting mki-vigia-rechequeo.service   (+157 ms)
+20:30:00.244073  primera línea de data/vigia.log del proceso     (+244 ms)
+20:30:00.250213  systemd: Finished                               (+250 ms)
+```
+
+Los **157 ms** son la latencia de systemd, holgadamente dentro del
+`AccuracySec=1s` declarado en la unit. Los **87 ms** siguientes son el
+arranque del intérprete hasta su primera escritura al log. El total de
+**244 ms** hasta que el job deja rastro propio es el número que el acta
+recoge, y es la cifra correcta para "cuánto tarda el sistema en empezar a
+trabajar" — pero no es el retraso de systemd, que es la mitad.
+
+**Con esto el arranque en frío deja de ser hipótesis y pasa a ser hecho
+medido.** El pendiente queda cerrado.
+
+**Nota de coherencia con el modo sombra:** los timers corren con
+`MKI_MODO=sombra` (línea 18 de `.env`), pese a que las units **no**
+declaran `Environment=MKI_MODO`. Funciona porque `modo.py` llama
+`load_dotenv()` al importarse — que es exactamente la razón por la que se
+puso ahí (§13). Se decidió **no** duplicar la variable en las units:
+tenerla en dos sitios reintroduce la posibilidad de que discrepen, y el
+modo debe vivir en un solo lugar.
+
+## 22. Dos hallazgos del blindaje, ambos de la familia "el indicador miente"
+
+Los dos son de la misma clase que el `HiberbootEnabled` del acta: un
+número que se lee como falla cuando el sistema está sano, o un blindaje
+que se da por hecho cuando no está.
+
+### `Last Result: 0x800710E0` NO es una falla
+
+Con `MultipleInstances=IgnoreNew` en la tarea `MKI-WSL-KeepAlive`, el
+estado de régimen no es el `267009` (`0x41301`, `SCHED_S_TASK_RUNNING`)
+que documenta el acta, sino **`0x800710E0`** (`-2147020576`, Win32
+**4320**): la repetición de 15 minutos intenta arrancar, encuentra la
+instancia anterior viva y **se niega a lanzar otra**. Es precisamente lo
+que `IgnoreNew` significa, y por tanto es **estado SANO**.
+
+Se documenta porque el modo de fallo es humano y previsible: quien abra
+`schtasks /query /v` y vea un código de error hexadecimal negativo va a
+concluir que el keep-alive está roto, y va a "arreglar" algo que funciona.
+**El campo que hay que mirar no es `Last Result` sino `Status: Running`.**
+
+### `powercfg /h off` no basta: faltaba el standby
+
+El acta daba el blindaje de energía por resuelto con `powercfg /h off`
+verificado por `powercfg /a`. **No alcanza.** Esa orden desactiva la
+hibernación y el Fast Startup, pero **S3 (standby) seguía disponible**: el
+PC podía dormirse por inactividad a las 18:10 —en plena ventana de jobs—
+y reproducir exactamente el patrón de DarkWake que en el Mac dejó los
+sellos de las 21:23 y 19:40 en julio.
+
+Se fijó `standby-timeout-ac 0`. Sin eso, todo el resto del blindaje es
+irrelevante: no importa que la VM sobreviva al arranque si la máquina se
+duerme sola cuarenta minutos antes del snapshot.
+
+La lección que queda escrita: **hibernación y standby son dos blindajes
+distintos y desactivar uno no desactiva el otro.** `powercfg /a` sigue
+siendo el indicador autoritativo, pero hay que leerlo entero, no solo la
+línea de hibernación.
+
