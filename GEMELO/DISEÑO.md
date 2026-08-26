@@ -337,6 +337,27 @@ auditable propio, fuera de todas las métricas, jamás se rellena.
 **Nivel 6 — ensemble.** El campeón 4.6.0 entra como componente con peso
 variable en el tiempo. **No se descarta: se incorpora.**
 
+### 4.2 bis Conteo de intentos para el DSR — declarado ANTES de correr
+
+**Añadido el 26-ago (WS2a), antes de evaluar una sola configuración.**
+
+**Cada configuración que se evalúe en WS2b cuenta como un intento para el
+Deflated Sharpe.** No solo las que "funcionan", no solo las que se
+reportan: **todas**. Una configuración es cualquier variante que se mida
+contra los datos — un subconjunto distinto de features, otra
+regularización, otra ventana, otro criterio de abstención.
+
+**El número de variantes se declara ANTES de correr ninguna.** Declararlo
+después es contar los intentos a conveniencia, y un DSR con el N mal
+contado **miente hacia arriba**: es exactamente el sesgo que el DSR existe
+para corregir, así que subestimar N no es un descuido menor sino la
+inutilización del instrumento.
+
+El conteo arrastra: los intentos de WS2b se **suman** a las seis baselines
+B0→B5 que ya se evaluaron sobre los mismos folds. `sr0_deflacionado` no
+tiene valor por defecto para `N_intentos` precisamente para forzar que
+alguien escriba el número a mano cada vez (DECISIONES.md §26.1).
+
 ### 4.3 El control lineal, obligatorio
 
 Junto a todo lo anterior corre una regresión lineal regularizada sobre el

@@ -26,6 +26,9 @@ data/vigia_pendiente.json
 node_modules/
 dist/
 
+# --- Caché de investigación de GEMELO (megas de CSV, regenerable) ---
+GEMELO/cache/
+
 # --- Sistema y herramientas ---
 .DS_Store
 .claude/

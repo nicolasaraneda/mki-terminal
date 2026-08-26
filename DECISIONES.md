@@ -2258,3 +2258,123 @@ misma regla que rige las filas selladas de `senales.db`, aplicada a un
 artefacto de backtest. El diff sobre ese archivo es de **34 inserciones y
 cero borrados**, y hay un test que verifica que sus cifras originales
 siguen ahí.
+
+
+## 29. WS2a — la capa de datos del retador, aislada del sello
+
+`GEMELO/datos.py` y `GEMELO/features.py` construyen el conjunto de
+información de la §4.1 del pre-registro: quince series en seis bloques
+—contagio, overnight US, divisa, mercado local, volatilidad, crédito— y
+dieciséis features causales y estacionarias. **No hay modelo**: eso es
+WS2b.
+
+### 29.1 Aislamiento: se duplica la descarga a propósito
+
+`GEMELO/` **no importa** `snapshot.py`, `senales.py`, `alertas.py`,
+`noticias.py` ni `motor.py`, y no escribe en ninguna base. Hay tres tests
+que lo verifican recorriendo el AST de cada archivo del paquete.
+
+**Trece feeds nuevos son trece formas nuevas de que Yahoo falle a las
+18:15**, y el sello nocturno del campeón no puede depender de ninguna. Eso
+obligó a **duplicar** la lógica de descarga de `motor._datos_crudos` en
+vez de reutilizarla. Es duplicación deliberada: el acoplamiento cuesta más
+que la copia cuando lo que está en juego es que el titular selle.
+
+### 29.2 La asincronía de las barras diarias, sellada como dato
+
+Dos barras de yfinance con la misma etiqueta de fecha pueden estar
+separadas por **catorce horas**: ^KS11 del día D cerró a las 06:30 UTC y
+^SOX del día D a las 21:00 UTC, bajo el mismo rótulo. Es la vía por la que
+entra look-ahead sin que ninguna guarda se queje — la misma familia del
+problema que cerró el embargo (§27).
+
+Cada serie lleva su hora de cierre y su `available_at` **calculado**, no
+asumido, y `verificar_conocibles()` es la guarda dura. La tabla vive como
+**dato** (`tabla_disponibilidad()`) y no solo como comentario, que es lo
+que permite testearla.
+
+**Se sella el peor caso, no el habitual.** El UTC de cada cierre usa el
+offset más tardío del año — horario de invierno para ET (EST, UTC-5) y CET
+(UTC+1) — para que la afirmación "conocible a las 22:15" valga los 365
+días y no solo en verano. KST, TWT y JST no tienen horario de verano.
+
+**Los futuros son la serie más ajustada del conjunto:** ES=F y NQ=F
+cierran 17:00 ET, que en invierno son las 22:00 UTC — **quince minutos**
+antes de la emisión. Es holgura real pero mínima. No se retrocedió a la
+barra D-1 porque eso vaciaría de sentido justo el bloque que más aporta:
+los futuros valen precisamente por moverse entre el cierre del SOX y la
+apertura asiática, que es la información que hoy se tira. Queda declarado
+como el punto frágil a vigilar en las primeras corridas reales.
+
+### 29.3 Hallazgo: el margen de 2 h es criterio de verificación, no de insumo
+
+Al escribir la guarda apareció una tensión con `calendarios.sesion_ya_cerro`,
+que exige **2 h** de margen de publicación. Con ese criterio aplicado a los
+insumos caerían **11 de las 15 series, incluido ^SOX** — que es el insumo
+primario que el campeón usa hoy a las 22:15.
+
+La lectura correcta es que **son dos criterios distintos para dos
+preguntas distintas**: las 2 h responden "¿ya se puede saber cómo cerró la
+sesión objetivo?" (verificación de un resultado), mientras que el insumo
+solo necesita que su barra haya cerrado — y así lo sella producción, con
+`available_at` = cierre UTC de la sesión de SOX usada, sin sumarle margen.
+Aplicar el criterio de verificación a los insumos descalificaría al propio
+campeón.
+
+`MARGEN_PUBLICACION_H = 0.0` deja el parámetro a la vista y un test declara
+exactamente qué series caen con cada margen: la tensión queda **medida**,
+no como nota al pie.
+
+### 29.4 Las dos compuertas de robustez
+
+- **ffill acotado a 5 días.** Un ffill sin tope alimenta para siempre el
+  último valor de una serie muerta y el modelo nunca se entera: la feature
+  sigue existiendo, constante, aparentando dato.
+- **Cobertura mínima del 80%, con aviso.** ^VIX3M arranca ~2017; sin esta
+  compuerta un `dropna()` posterior alinearía por la serie más corta y
+  **borraría años de todas las demás en silencio**. Se descarta la serie
+  corta nombrándola, no el histórico de las buenas.
+
+Ambas se incorporan de `vcalderone/equity-direction-research` (MIT, §24),
+junto con la caché en disco con TTL — sin la cual cada iteración de
+investigación vuelve a bajar años de historia y Yahoo acaba limitando.
+
+### 29.5 El GATE: causalidad feature por feature
+
+El test de propiedad de `tests/test_motor.py` se extendió a **cada feature
+nueva**: el valor en t debe ser invariante a borrar todo dato posterior a
+t. Se prueba en las mismas tres fechas que el motor, y además en su forma
+fuerte —truncar no puede alterar **ningún** valor anterior, no solo el del
+corte—.
+
+**Y hay una contraprueba del propio test**: se inyecta una feature con
+`shift(-1)` y se verifica que el criterio la detecta. Un test de fuga que
+no puede fallar no prueba nada.
+
+`construir(series)` es una **función pura** de la matriz de series a la
+matriz de features. Ese diseño es lo que permite al test truncar la
+entrada sin parchear nada — el equivalente al punto único
+`motor._datos_crudos` que hace testeable al campeón.
+
+Se añadió además un test de **estacionariedad operativa**: ninguna feature
+puede correlacionar más de 0.85 con el índice temporal. Un nivel deriva
+monótonamente y el modelo lo usa como proxy del calendario — aprende "más
+adelante en el tiempo" en vez de "más riesgo", y eso no generaliza.
+
+### 29.6 `credit_ratio` es la feature menos estacionaria, y está anotada
+
+`credit_ratio = ln(HYG/LQD)` se implementa **como lo especifica la §4.1**,
+pero es una razón de dos NIVELES y puede derivar — es la única exceptuada
+del test de correlación con el calendario. Queda anotada como candidata a
+pasar a forma de distancia (separación de su mediana móvil) si el control
+lineal de WS2b la muestra derivando. **No se cambió por cuenta propia**:
+la especificación está congelada y corregirla exige medirla primero.
+
+### 29.7 El conteo de intentos, declarado antes de correr
+
+Se añadió la §4.2 bis al pre-registro: **cada configuración evaluada en
+WS2b cuenta como un intento para el DSR**, el número se declara **antes**
+de correr ninguna, y los intentos se **suman** a las seis baselines B0→B5
+ya evaluadas sobre los mismos folds. Un DSR con el N mal contado miente
+hacia arriba, que es el sesgo exacto que el instrumento existe para
+corregir: subestimar N no lo degrada, lo inutiliza.
