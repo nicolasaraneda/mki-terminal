@@ -247,8 +247,17 @@ def test_construir_con_entrada_vacia_no_revienta():
 # ============================================================
 # 4. AISLAMIENTO — una falla aquí no puede tocar el sello
 # ============================================================
+# El camino de ESCRITURA: nada de GEMELO puede importarlo, ni el runner.
 PROHIBIDOS = {"snapshot", "senales", "alertas", "mki_backup", "mki_vigia",
               "mki_noticias", "noticias", "app"}
+
+# Los módulos de adquisición y modelado no importan NADA de producción.
+# `experimento.py` (el runner, WS2b) sí importa `backtest.linea_base` —la
+# capa de solo lectura ya auditada, sqlite `mode=ro`— y `universo`
+# (constantes puras, sin efectos). Esa dependencia no pone en riesgo el
+# sello: la dirección que lo protege es la contraria, y la cubre
+# tests/test_control_lineal.py::test_el_camino_de_sellado_no_importa_GEMELO.
+ESTRICTOS = {"__init__.py", "datos.py", "features.py", "control_lineal.py"}
 
 
 def _importados(ruta):
@@ -273,24 +282,44 @@ def test_gemelo_no_importa_el_camino_de_sellado():
         assert not prohibidos, f"GEMELO/{archivo} importa {prohibidos}"
 
 
-def test_gemelo_no_importa_motor_ni_universo():
+def test_los_modulos_estrictos_no_importan_nada_de_produccion():
     """La descarga se DUPLICA a propósito: el acoplamiento cuesta más que
-    la duplicación cuando lo que está en juego es el sello nocturno."""
+    la duplicación cuando lo que está en juego es el sello nocturno. Estos
+    módulos no importan ni motor ni universo."""
     carpeta = os.path.join(RAIZ, "GEMELO")
-    for archivo in os.listdir(carpeta):
-        if archivo.endswith(".py"):
-            assert "motor" not in _importados(os.path.join(carpeta, archivo))
+    for archivo in sorted(ESTRICTOS):
+        ruta = os.path.join(carpeta, archivo)
+        if not os.path.exists(ruta):
+            continue
+        imp = _importados(ruta)
+        assert "motor" not in imp, archivo
+        assert "universo" not in imp, archivo
+        assert imp <= {"math", "hashlib", "json", "os", "time", "datetime",
+                       "numpy", "pandas", "yfinance", "GEMELO", "backtest"}, \
+            f"{archivo}: {imp}"
 
 
 def test_gemelo_no_escribe_en_ninguna_base():
+    """Ningún módulo de GEMELO abre una conexión de escritura ni ejecuta
+    SQL de escritura. El runner LEE las filas selladas, pero lo hace por
+    `backtest.linea_base`, que abre en `mode=ro` — no por su cuenta."""
     carpeta = os.path.join(RAIZ, "GEMELO")
     for archivo in os.listdir(carpeta):
         if not archivo.endswith(".py"):
             continue
         fuente = open(os.path.join(carpeta, archivo), encoding="utf-8").read()
-        for prohibido in ("sqlite3", "senales.db", "noticias.db", "alertas.db",
-                          "INSERT ", "UPDATE ", "get_connection"):
+        for prohibido in ("sqlite3", "INSERT ", "UPDATE ", "DELETE ",
+                          "get_connection", "init_db"):
             assert prohibido not in fuente, f"GEMELO/{archivo}: {prohibido}"
+
+
+def test_el_runner_solo_llega_a_las_bases_por_la_capa_de_solo_lectura():
+    ruta = os.path.join(RAIZ, "GEMELO", "experimento.py")
+    if not os.path.exists(ruta):
+        return
+    imp = _importados(ruta)
+    assert not (imp & PROHIBIDOS), imp & PROHIBIDOS
+    assert "backtest" in imp        # la lectura va por la capa auditada
 
 
 def test_la_cache_de_gemelo_esta_gitignoreada():

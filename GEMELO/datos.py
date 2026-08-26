@@ -261,6 +261,55 @@ def filtrar_por_cobertura(df: pd.DataFrame, minimo: float = COBERTURA_MINIMA,
     return df[quedan], descartadas
 
 
+def descargar_gaps(tickers, anios: int = ANIOS_DATOS,
+                   ttl_horas: float = TTL_CACHE_HORAS,
+                   usar_cache: bool = True) -> pd.DataFrame:
+    """Gaps de apertura históricos por ticker: `Open(S)/Close(S-1) - 1` en pp.
+
+    Son las ETIQUETAS del retador — la misma cantidad que el verificador de
+    producción sella como `gap_pct`. Una etiqueta es futura por definición
+    respecto de la emisión que la anticipa; lo que impide la fuga es que el
+    walk-forward solo entrene con sesiones ya cerradas y que el embargo
+    purgue la frontera.
+
+    Devuelve un frame largo: (sesion, ticker, gap_pct).
+    """
+    tickers = tuple(tickers)
+    ruta = os.path.join(DIR_CACHE, f"gaps_{hashlib.sha256(json.dumps([sorted(tickers), anios]).encode()).hexdigest()[:16]}.csv")
+    if usar_cache and _cache_vigente(ruta, ttl_horas):
+        return pd.read_csv(ruta, parse_dates=["sesion"])
+
+    data = yf.download(list(tickers), period=f"{anios}y", interval="1d",
+                       auto_adjust=True, progress=False, group_by="column")
+    if data.empty:
+        return pd.DataFrame(columns=["sesion", "ticker", "gap_pct"])
+
+    filas = []
+    for t in tickers:
+        try:
+            if isinstance(data.columns, pd.MultiIndex):
+                ap, ci = data["Open"][t], data["Close"][t]
+            else:
+                ap, ci = data["Open"], data["Close"]
+        except KeyError:
+            continue
+        ap, ci = pd.to_numeric(ap, errors="coerce"), pd.to_numeric(ci, errors="coerce")
+        gap = (ap / ci.shift(1) - 1.0) * 100.0
+        gap = gap.dropna()
+        filas.append(pd.DataFrame({"sesion": gap.index, "ticker": t,
+                                   "gap_pct": gap.values}))
+    if not filas:
+        return pd.DataFrame(columns=["sesion", "ticker", "gap_pct"])
+    out = pd.concat(filas, ignore_index=True).sort_values(["sesion", "ticker"])
+    if usar_cache:
+        try:
+            os.makedirs(DIR_CACHE, exist_ok=True)
+            out.to_csv(ruta, index=False)
+        except OSError:
+            pass
+    return out.reset_index(drop=True)
+
+
 def series_para_investigacion(tickers=TICKERS, anios: int = ANIOS_DATOS,
                               ttl_horas: float = TTL_CACHE_HORAS,
                               usar_cache: bool = True,

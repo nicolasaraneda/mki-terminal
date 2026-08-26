@@ -2378,3 +2378,129 @@ de correr ninguna, y los intentos se **suman** a las seis baselines B0→B5
 ya evaluadas sobre los mismos folds. Un DSR con el N mal contado miente
 hacia arriba, que es el sesgo exacto que el instrumento existe para
 corregir: subestimar N no lo degrada, lo inutiliza.
+
+
+## 30. WS2b — el control lineal: resultado NEGATIVO, publicado tal cual
+
+Las tres configuraciones se declararon **antes** de correr ninguna, con su
+N para el DSR: **N = 9** (3 configuraciones + las 6 baselines B0→B5 ya
+evaluadas sobre los mismos folds), según el §4.2 bis.
+
+- **C1** — ridge agrupada, SOLO el SOX (t y t−1): el **control de
+  información**.
+- **C2** — ridge agrupada, catálogo completo (16 features).
+- **C3** — ridge por ticker, catálogo completo.
+
+### 30.1 Por qué C1 no era opcional
+
+Correr solo C2 y verlo ganar al campeón no habría respondido nada: podría
+ser la información nueva, o podría ser que ridge con walk-forward expansivo
+y embargo sea mejor **maquinaria** que una OLS rodante de 120 sesiones. Son
+dos explicaciones distintas y la diferencia lo es todo — una dice que la
+tesis tiene dónde crecer, la otra que el campeón está mal implementado.
+
+C1 usa el mismo insumo que el campeón con la maquinaria nueva, así que
+**la comparación que responde la pregunta real es C2 contra C1**.
+
+### 30.2 El hallazgo que hizo el control: el campeón ES el signo del SOX
+
+**C1 y el campeón aciertan la dirección en las MISMAS filas de las 215
+comparables: McNemar `0 vs 0`.** Cero
+desacuerdos.
+
+No es un error: la predicción del campeón es βᵢ·SOX con βᵢ>0, así que su
+signo **es** el signo del retorno del SOX; y una ridge agrupada sobre el
+mismo insumo lo reproduce exactamente. Lo que el campeón aporta sobre "el
+SOX subió, todo abrirá al alza" no está en la dirección.
+
+Consecuencia metodológica: **cualquier diferencia direccional entre C2/C3 y
+el campeón es INFORMACIÓN, no maquinaria**. Es exactamente lo que C1
+existía para separar, y lo separó.
+
+### 30.3 El resultado: la información expandida no aporta
+
+| Comparación | Ventaja dir. | McNemar p | ΔMAE | IC del ΔMAE |
+|---|---|---|---|---|
+| C2 vs C1 | 2.8 pp | 0.3613 | 0.1559 | [-0.0389, 0.4232] |
+| C3 vs C1 | 5.1 pp | 0.1273 | 0.2702 | [0.0665, 0.4729] |
+| C3 vs C2 | 2.3 pp | 0.3588 | 0.1143 | [0.0564, 0.3071] |
+
+**C2 vs C1 no da nada**: el IC del ΔMAE incluye el cero y la dirección no
+es significativa. Con el mismo motor y la misma ventana, **añadir las
+catorce features nuevas a las dos del SOX no produce una mejora
+detectable**.
+
+Lo único que mueve la aguja es la **estructura por ticker** (C3), y **solo
+en magnitud**: su IC del ΔMAE contra C1 excluye el cero, pero la dirección
+no es significativa. Coincide con la §2.5 — la contribución medible está
+en la magnitud, no en el signo.
+
+### 30.4 El único p<0.05 no sobrevive a R2
+
+C3 contra la baseline sobre la ventana completa marca
+**11.2 pp con p=0.0298** — por
+debajo del 0.05 de V1. Aplicando R2 (excluir 15–23 jul) cae a
+**1.8 pp con p=0.8321**.
+
+**La significancia venía de la misma ventana afortunada que sostiene la del
+campeón**, que es literalmente lo que R2 fue escrito para detectar. Bajo
+R2 pierden su ventaja C1, C2 y el propio CAMPEÓN; C3 sobrevive con
++1.8 pp y p=0.8321, que no es
+superar una valla sino rozarla sin evidencia.
+
+**Nadie supera V1 con R2 aplicado.** El resultado es NEGATIVO.
+
+### 30.5 Hallazgo: el DSR no aplica a 30 días, y decirlo importa
+
+Las tres configuraciones y el campeón dieron Sharpe anualizados en torno a
+**5.5** sobre **30 días** de retornos. Ese número no es una estimación: es
+un artefacto de multiplicar por √252 una muestra diminuta. Y el PSR y el
+DSR salieron **1.0000** — la saturación de Phi documentada en §26.3.
+
+El riesgo de lectura es grave y concreto: **un DSR de 1.000 se leería como
+que V5 (DSR ≥ 0.95) está superado**, cuando lo que significa es que el
+instrumento no aplica a esta muestra. Por eso se añadió
+`MINIMO_DIAS_SHARPE = 60` y por debajo de ese umbral el PSR y el DSR se
+reportan como **NO INTERPRETABLE** en vez de emitir el número. Un
+instrumento que se niega vale más que uno que emite una cifra que no
+sostiene.
+
+También queda declarado que **`V_intentos` está subestimada** —los Sharpe
+de las seis baselines vienen de una corrida legacy no comparable (§28.5)—
+y que por tanto el SR0 sale bajo y el DSR sería, de aplicar, una cota
+optimista.
+
+### 30.6 Lo que se declaró y no se supuso
+
+- **La asimetría de ventana**, en el reporte y no en una suposición: el
+  retador entrena sobre años con ventana expansiva y el campeón usa 120
+  sesiones rodantes. Es parte de lo que se mide.
+- **El CRPS usa una predictiva NORMAL**, declarado como primera pasada:
+  ridge da punto más varianza residual, pero la §2.7 ya mostró colas más
+  gruesas, así que es una cota optimista. La Student-t es Nivel 4 del
+  retador, no de este control.
+- **El proxy económico no tiene costos**: `sharpe_ls_sin_costos` es
+  long-short equiponderado y NO es la prueba del benchmark obligatorio
+  (V6, que exige SMH y 25 pb por lado).
+- **La búsqueda de alpha no suma a N**: se resuelve por CV temporal dentro
+  de cada ventana de entrenamiento sin tocar filas de evaluación. Lo que el
+  DSR debe contar son las decisiones tomadas MIRANDO el resultado de
+  evaluación, y ésta no lo es. Los alphas efectivamente elegidos van
+  sellados en el reporte.
+- **El reporte se sella como NO-veredicto de la 5.1** en su primera línea,
+  con un test que lo verifica.
+
+### 30.7 No se probó una cuarta variante
+
+Las tres primeras no dieron positivo. **No se buscó la configuración que sí
+diera**: esa tentación es exactamente el sesgo que el DSR mide, y habría
+subido N a 10 con obligación de recalcular todo. El §6.3 del pre-registro
+ya dice que un negativo no es un fracaso de la etapa sino la etapa
+funcionando, y así se publica.
+
+El aislamiento se refinó respecto del WS2a: `datos.py`, `features.py` y
+`control_lineal.py` siguen sin importar nada de producción, mientras que
+`experimento.py` —el runner— importa `backtest.linea_base` (solo lectura,
+`mode=ro`) y `universo` (constantes puras). La dirección que protege el
+sello es la contraria y ahora tiene su propio test: **nada del camino de
+sellado importa GEMELO**.
