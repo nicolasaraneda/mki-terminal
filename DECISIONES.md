@@ -1967,3 +1967,99 @@ obligatorio** con sus tres afirmaciones falsables (§4.3).
 de copyright. Cada archivo derivado de esa fuente lleva la atribución en
 su encabezado, además de este registro. Un archivo derivado sin
 encabezado es un incumplimiento de licencia, no un descuido de estilo.
+
+
+## 25. La §2 reproducida: 21 de 21, y dos hallazgos que corrigen la línea base
+
+`backtest/linea_base.py` recalcula la §2 del pre-registro desde
+`senales.db` en `mode=ro` — la autoridad, no los CSV de respaldo. Es lo
+único que la §9 autorizaba a empezar, y se hizo antes de escribir una
+línea del retador.
+
+**Reproducen 21 de 21 cifras titulares** bajo la convención con que se
+escribieron: n, aciertos, McNemar, los tres MAE, cobertura, ratio de
+ancho, R², zona muerta, régimen, β, y los cuatro cortes por bolsa dígito a
+dígito. De paso quedó identificada la variante exacta del test: el
+documento usó **chi-cuadrado con corrección de continuidad** (67 vs 55 →
+0.3193; sin corrección habría dado 0.2773).
+
+**Sin `scipy`.** Añadirlo habría roto la invariante de dependencias
+idénticas entre el Mac y el PC (§1). χ² con 1 gl tiene forma cerrada:
+`sf(x) = erfc(sqrt(x/2))`, y `math.erfc` es stdlib.
+
+### 25.1 El campeón se medía con una regla y la baseline con otra
+
+Hay 5 filas con `gap_pct == 0.00` exacto: apertura idéntica al cierre
+previo, la firma del **ffill de feriados** (Supuesto #1). Cuatro de las
+cinco son 2330.TW.
+
+El verificador puntúa al campeón con `>=` (`senales.py:373`), así que en
+esas filas le da el acierto. La baseline de la §2.1 usaba `>` estricto y
+no se lo daba. **Los dos lados se puntuaban con reglas distintas, y la
+diferencia favorecía al campeón.** No es un error de cálculo —las cifras
+reproducen exactas— sino un sesgo de medición, que es peor: reproduce
+perfectamente y aun así engaña.
+
+| Convención | n | Ventaja | p |
+|---|---|---|---|
+| `estricta` (la original) | 228 | +5.3 pp | 0.3193 |
+| `verificador` (simétrica) | 228 | +3.1 pp | 0.5854 |
+| **`excluir_cero` (CONGELADA)** | **223** | **+4.0 pp** | **0.4633** |
+
+**Se congeló `excluir_cero`** en `GEMELO/DISEÑO.md` §2.8. La razón no es
+que una regla de empate sea mejor que la otra: es que **la apertura de un
+feriado no informa sobre nada**. Excluir es la única salida que no obliga
+a elegir a quién se le regala el empate.
+
+**La exclusión vive en la capa de medición, y `senales.py` NO se toca.**
+`acierto_gap` es un valor sellado; cambiar el scoring reescribiría el
+significado de filas ya selladas. Un campeón cuyo histórico cambia de
+valor cuando cambiamos de opinión sobre los empates no tiene track record.
+Hay un test que fija que las filas de gap cero conservan su
+`acierto_gap` original.
+
+**La conclusión de fondo no se movió, se reforzó:** bajo las tres
+convenciones la ventaja del campeón sobre una constante no es
+distinguible de cero. Hay un test que lo exige en las tres — si alguna
+diera p < 0.05, la corrección habría cambiado la conclusión y no solo la
+cifra.
+
+### 25.2 Un índice de bloque no puede sostener un criterio
+
+Los límites de la tabla de la §2.2 reproducen exactos (seis fechas, seis
+n) y los totales reconcilian (150 y 138 en ambas particiones). El
+**reparto interno no reproduce**: se probaron cuatro órdenes de fila —por
+`id`, por `(fecha, ticker)` y el `merge` de los dos CSV en ambas
+direcciones— y ninguno da los bloques 0, 1, 4 y 5. Es la misma partición
+cortada distinto: en las fechas que caen sobre una frontera, el orden
+interno decide de qué lado quedan.
+
+Por eso **R2 quedó operacionalizado por RANGO DE FECHAS** (15–23 jul), que
+es estable, y no por índice de bloque.
+
+### 25.3 R2 descalifica al campeón, y se mantiene igual
+
+Aplicada al titular, esa misma prueba lo deja en **n = 184 · 62.0% contra
+una base de 65.2% · ventaja −3.3 pp (p = 0.60)**: no pierde su ventaja, la
+vuelve **negativa**.
+
+**R2 se mantiene tal cual, deliberadamente.** Que el titular no pase una
+valla es un resultado **sobre el titular**, no un defecto del criterio.
+Bajarla para que el campeón entre sería exactamente lo que un pre-registro
+existe para impedir: mover la barra hasta donde ya está el que queremos
+aprobar.
+
+Lo mismo con **V1**: se actualizó la vara **descriptiva** (+4.0 pp,
+p = 0.4633, n = 223) y se dejó **escrito explícitamente que el criterio no
+se movió** — sigue siendo McNemar p < 0.05. La tentación al corregir una
+línea base es ajustar de paso la barra que esa línea no alcanza; queda
+anotado que aquí no se hizo.
+
+### 25.4 La corrección va en commit aparte, nunca en un amend
+
+El pre-registro se commiteó en `e2e49f2` y la corrección va **después**,
+en su propio commit. La historia tiene que mostrar la secuencia —
+pre-registro primero, medición después— porque un amend borraría
+justamente la prueba de anterioridad que le da valor al documento. La §2.8
+lleva su fecha (26-ago) y dice de sí misma que es posterior; el encabezado
+del documento también lo avisa.

@@ -1,6 +1,9 @@
 # GEMELO 6.0.0 — Diseño del modelo retador
 
 **Estado:** PRE-REGISTRO. Congelado antes del primer resultado.
+**Corrección posterior:** la §2.8 (26-ago) corrige la línea base con lo
+medido en el harness, y actualiza V1 y R2 en consecuencia. Las cifras de
+la §2.1–§2.7 se conservan como se escribieron: se corrigen ahí, no aquí.
 **Fecha:** 25-ago-2026 · **Campeón vigente:** modelo 4.6.0
 **Insumos:** track record sellado al 24-ago (228 verificaciones) ·
 `vcalderone/equity-direction-research` v2.1.0 (MIT)
@@ -182,6 +185,82 @@ que casi siempre está quieto, pero el **11.3%** de los pares salta más de 0.10
 y el máximo observado es 0.280. Es la firma de una ventana rodante de 120
 sesiones dejando entrar y salir observaciones influyentes.
 
+### 2.8 Corrección de la línea base — medida en el harness
+
+**Añadida el 26-ago, después del pre-registro y en commit aparte.** La §9
+ordenaba reproducir la §2 dentro de `backtest/` antes de construir nada.
+Se hizo: `backtest/linea_base.py` recalcula todo desde `senales.db` en
+`mode=ro`. **21 de 21 cifras titulares reproducen exactas** — n, aciertos,
+McNemar, MAE, cobertura, ratio de ancho, R², zona muerta, régimen y β,
+más los cuatro cortes por bolsa dígito a dígito.
+
+Aparecieron dos problemas, y ninguno se arregla editando las cifras de
+arriba: las de la §2 se quedan como se escribieron, y esta sección las
+corrige con fecha posterior y a la vista.
+
+#### 2.8.1 La convención del empate — el campeón se medía con otra regla
+
+Hay **5 filas con `gap_pct == 0.00` exacto**. Apertura idéntica al cierre
+previo es la firma del **ffill de feriados** (Supuesto #1 de `CLAUDE.md`:
+"un feriado se ve como +0.00%"). Cuatro de las cinco son 2330.TW.
+
+El verificador de producción puntúa al campeón con `>=`:
+
+```
+acierto_gap = 1 si (est_pct >= 0) == (gap >= 0)        senales.py:373
+```
+
+o sea que en esas filas **le da el acierto** a cualquier predicción ≥ 0.
+La baseline de la §2.1 usaba `>` estricto, así que en esas mismas filas
+**no se lo daba**. Los dos lados se estaban puntuando **con reglas
+distintas, y la diferencia favorecía al campeón**. No es un error de
+cálculo —las cifras reproducen— sino un sesgo de medición.
+
+| Convención | n | Modelo | Base | Ventaja | McNemar | p |
+|---|---|---|---|---|---|---|
+| `estricta` — base con `>` (la de la §2.1) | 228 | 65.8% | 60.5% | +5.3 pp | 67 vs 55 | 0.3193 |
+| `verificador` — base con `>=`, simétrica | 228 | 65.8% | 62.7% | +3.1 pp | 64 vs 57 | 0.5854 |
+| **`excluir_cero` — fuera de ambos lados** | **223** | **65.9%** | **61.9%** | **+4.0 pp** | **64 vs 55** | **0.4633** |
+
+**CONGELADA: `excluir_cero`.** Las filas con `gap == 0.00` se excluyen de
+**ambos** lados. Razón: no son eventos de mercado, son artefactos del
+ffill; el problema no es cuál de las dos reglas de empate es mejor, sino
+que la apertura de un feriado no informa sobre nada. Excluir es la única
+salida que no obliga a elegir a quién se le regala el empate.
+
+**La línea base oficial pasa a: n = 223 · modelo 65.9% · base 61.9% ·
+ventaja +4.0 pp · McNemar 64 vs 55, p = 0.4633.**
+
+**Dónde vive la exclusión.** En la **capa de medición**
+(`backtest/linea_base.py`), no en el verificador. **`senales.py` NO se
+toca.** Cambiar el scoring reescribiría el significado de filas ya
+selladas: `acierto_gap` es un valor sellado, y las filas selladas jamás se
+reescriben. Un campeón cuyo histórico cambia de valor cuando cambiamos de
+opinión sobre los empates no tiene track record.
+
+La conclusión de la §2.1 no se mueve, se refuerza: bajo cualquiera de las
+tres convenciones la ventaja del campeón sobre una constante **no es
+distinguible de cero** con esta n.
+
+#### 2.8.2 El reparto por bloques depende del orden de las filas
+
+Los **límites** de la tabla de la §2.2 reproducen exactos: las seis
+fechas y los seis n (40/40/40/40/40/28). Los **totales** reconcilian: la
+partición de la §2.2 suma 150 aciertos del modelo y 138 de la base, igual
+que el harness. Pero el **reparto interno no reproduce**: solo el bloque 2
+coincide, y el 3 únicamente bajo un orden de filas concreto.
+
+Se probaron cuatro órdenes —por `id` de la verificación, por
+`(fecha, ticker)`, y el `merge` de los dos CSV en ambas direcciones— y
+ninguno reproduce los bloques 0, 1, 4 y 5. Es la **misma partición de
+filas cortada distinto**: en las fechas que caen sobre una frontera de
+bloque, el orden interno decide de qué lado quedan.
+
+**Consecuencia:** un índice de bloque no es una referencia estable y no
+puede sostener un criterio. Por eso **R2 queda operacionalizado por
+FECHAS**: la ventana **15–23 jul**, que sí es estable y no depende de
+ningún orden. Ver §6.2.
+
 ---
 
 ## 3. Qué se concluye — las seis decisiones de diseño
@@ -303,8 +382,19 @@ ahora, sin resultados a la vista.
 ### 6.1 Barreras de entrada
 
 - **V1 — Habilidad sobre la base.** Ventaja sobre "siempre al alza" evaluada
-  en la misma ventana, con McNemar **p < 0.05**. El campeón hoy marca +5.3 pp
-  con p = 0.32 (§2.1): esa es la vara a superar, y no está superada por nadie.
+  en la misma ventana, con McNemar **p < 0.05**.
+
+  *Actualizado el 26-ago con la línea base corregida de la §2.8.* La vara
+  **descriptiva** pasa a **+4.0 pp con p = 0.4633 sobre n = 223**, bajo la
+  convención `excluir_cero` congelada allí — antes se citaba +5.3 pp con
+  p = 0.32, medido con reglas de empate distintas para cada lado.
+
+  **El criterio NO se movió: sigue siendo McNemar p < 0.05.** Lo que cambió
+  es la descripción de dónde está hoy el campeón, no la exigencia. Se dice
+  explícitamente porque la tentación al corregir una línea base es ajustar
+  de paso la barra que esa línea no alcanza: aquí no se hizo. El campeón
+  sigue sin superar V1 —ahora por más margen— y el retador tendrá que
+  superarla igual.
 - **V2 — CRPS.** Mejora del CRPS de la densidad predictiva sobre el campeón,
   con intervalo de confianza por bootstrap de bloques que excluya el cero.
 - **V3 — Calibración.** Cobertura empírica del intervalo 80% dentro de
@@ -326,9 +416,23 @@ El retador se descarta, sin apelación, si:
 
 - **R1** — el control lineal le gana. Significa que la capacidad grande está
   ajustando ruido.
-- **R2** — su ventaja desaparece al excluir el bloque 1 (15–23 jul), la
-  ventana que sostiene casi toda la ventaja del campeón (§2.2). Un retador que
-  solo repita esa suerte no aporta.
+- **R2** — su ventaja desaparece al excluir la ventana **15–23 jul**, que
+  sostiene casi toda la ventaja del campeón (§2.2). Un retador que solo
+  repita esa suerte no aporta. *La regla se aplica por RANGO DE FECHAS y no
+  por índice de bloque: el índice depende del orden de las filas y el rango
+  no (§2.8.2).*
+
+  **Hallazgo del 26-ago, y no ablanda la regla:** aplicada al **campeón**,
+  esa misma prueba lo descalifica. Sin la ventana 15–23 jul queda en
+  **n = 184 · modelo 62.0% · base 65.2% · ventaja −3.3 pp (p = 0.60)**: no
+  pierde su ventaja, la vuelve **negativa**.
+
+  **R2 se mantiene tal cual, deliberadamente.** Es una valla que hoy no pasa
+  nadie, y que el titular tampoco la pase **es un resultado sobre el
+  titular, no un defecto del criterio**. Bajarla para que el campeón entre
+  sería exactamente lo que un pre-registro existe para impedir: mover la
+  barra hasta donde ya está el que queremos aprobar. Si el retador la pasa y
+  el campeón no, eso es precisamente la información que la etapa busca.
 - **R3** — cualquier fuga detectada por el test de causalidad. Sin discusión y
   sin excepción.
 
