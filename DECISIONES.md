@@ -1917,3 +1917,53 @@ distintos y desactivar uno no desactiva el otro.** `powercfg /a` sigue
 siendo el indicador autoritativo, pero hay que leerlo entero, no solo la
 línea de hibernación.
 
+
+---
+
+# Etapa 6.0.0 — GEMELO: el pre-registro se congela antes del primer resultado
+
+## 23. Por qué la 6.0.0 abre con un documento y no con código
+
+`GEMELO/DISEÑO.md` es un **pre-registro**, y se commitea **antes** de
+construir nada. Su valor entero depende de eso: unos criterios de victoria
+publicados después de ver resultados no son criterios, son una descripción
+de lo que pasó. El commit fechado es la prueba de anterioridad.
+
+Es la misma tradición que `backtest/DISEÑO.md` en el GATE B —diseño
+congelado, ejecución después— pero llevada un paso más lejos: allá se
+congeló el procedimiento, acá se congelan además **las barras numéricas
+que el retador tiene que superar** (§6.1 V1–V7 y §6.2 R1–R3).
+
+**El documento no se edita para que cuadre.** Si el harness contradice
+alguna cifra de su §2, manda el harness y la corrección se documenta como
+tal, con fecha posterior y a la vista — jamás reescribiendo el
+pre-registro. La §2 misma lo dice y la §9 lo ordena: reproducir esas
+cifras dentro de `backtest/` es lo único autorizado a empezar.
+
+**Lo que este documento hace con el campeón, y conviene no perder de
+vista:** mide el 65.8% de acierto de gap contra una baseline de "siempre
+al alza" que en la misma ventana marca 60.5%, y concluye que la ventaja de
++5.3 pp no es distinguible de cero (McNemar p = 0.32). Es el proyecto
+midiendo su propio número publicado contra el denominador honesto y
+publicando que no sale bien parado. La regla cero sigue intacta:
+`motor.py` no se toca y el 4.6.0 sigue sellando durante toda la etapa
+(§7).
+
+## 24. Atribución: `vcalderone/equity-direction-research` (MIT)
+
+La maquinaria de inferencia de la **§5** del pre-registro se incorpora de
+**`vcalderone/equity-direction-research` v2.1.0**, bajo licencia **MIT**.
+Ninguna de esas piezas existía en MKI antes de esta etapa.
+
+Piezas tomadas: Deflated Sharpe Ratio, holdout libre de sesgo de
+selección, PSR con error estándar del Sharpe, bootstrap de bloques,
+embargo en el walk-forward, importancia por permutación y vol targeting.
+De la misma fuente vienen tres elementos de la especificación: la
+estructura temporal del VIX (`VIX3M/VIX`) y el spread de crédito
+`ln(HYG/LQD)` como regresores prospectivos (§4.1), y el **control lineal
+obligatorio** con sus tres afirmaciones falsables (§4.3).
+
+**Obligación que queda escrita:** la licencia MIT exige conservar el aviso
+de copyright. Cada archivo derivado de esa fuente lleva la atribución en
+su encabezado, además de este registro. Un archivo derivado sin
+encabezado es un incumplimiento de licencia, no un descuido de estilo.
