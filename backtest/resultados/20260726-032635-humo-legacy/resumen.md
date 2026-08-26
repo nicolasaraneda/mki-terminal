@@ -35,5 +35,39 @@ Generado 2026-07-26T03:26:35.476591+00:00 · commit 79176cb · descartes sin dat
 50 predicciones comparadas · diferencia media 0.053 pp · máx 0.28 pp. las diferencias reflejan deriva de datos de la fuente entre el sello y hoy (hallazgo 4.7.1), no necesariamente un bug.
 
 
+
+---
+
+## ERRATA documentada (añadida el 26-ago-2026) — NO se recalculó nada
+
+**Las cifras de arriba se conservan exactamente como se generaron.** Esta
+nota se añade al pie; ninguna columna, tabla ni veredicto de este documento
+fue tocado. Es la regla de siempre: los registros sellados no se reescriben,
+los errores históricos se documentan como erratas.
+
+**Qué cambió después de esta corrida.** Los intervalos `[IC90]` del Sharpe
+de este resumen se calcularon con el bootstrap de bloques **NO circular**
+que tenía `metricas.bootstrap_sharpe` antes de la Etapa 6.0.0 WS1. Aquel
+remuestreo elegía inicios de bloque en `[0, n - bloque)`, de modo que las
+últimas `bloque-1` observaciones de la serie **no podían iniciar ningún
+bloque** y quedaban sistemáticamente submuestreadas. En una serie financiera
+esa cola es el tramo más reciente, que es justo el que más pesa al juzgar
+una estrategia.
+
+Desde el 26-ago el bootstrap es **circular** (Politis & Romano 1994,
+`backtest/inferencia.py`): los bloques envuelven por el final y toda
+observación tiene la misma probabilidad de entrar. Los intervalos de las
+corridas posteriores **no son directamente comparables** con los de este
+documento.
+
+Además, esta corrida es anterior al **embargo** entre entrenamiento y prueba
+(`EMBARGO_DIAS = 5`), y sus parámetros no quedaron sellados en el reporte —
+las corridas posteriores los declaran en su cabecera.
+
+Esta corrida ya estaba marcada **NO-CONCLUYENTE** desde su origen: era una
+corrida de humo para probar que la maquinaria funciona, no un veredicto.
+Ninguna conclusión publicada depende de estos números. Ver `DECISIONES.md`
+§28.
+
 ---
 Herramienta de análisis — no constituye asesoría financiera. Diseño congelado en backtest/DISEÑO.md.

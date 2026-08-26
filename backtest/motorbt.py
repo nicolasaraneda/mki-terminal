@@ -31,7 +31,8 @@ COSTOS_PB = (10, 25, 50)
 
 def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B4", "B5"),
            etiqueta: str = "dry-run", fuente: FuenteCongelada | None = None,
-           escribir: bool = True, embargo_dias: int = bl.EMBARGO_DIAS) -> dict:
+           escribir: bool = True, embargo_dias: int = bl.EMBARGO_DIAS,
+           semilla_bootstrap: int = 500, alpha_bootstrap: float = 0.10) -> dict:
     no_concluyente = etiqueta != "5.1"
     fuente = fuente or FuenteCongelada()
     with fuente:
@@ -87,7 +88,9 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
 
     dfs = {n: pd.DataFrame(f) for n, f in filas.items() if f}
     reporte = _evaluar(dfs, smh, descartes, etiqueta, no_concluyente,
-                       desde, hasta, embargo_dias=embargo_dias)
+                       desde, hasta, embargo_dias=embargo_dias,
+                       semilla_bootstrap=semilla_bootstrap,
+                       alpha_bootstrap=alpha_bootstrap)
     if escribir:
         reporte["ruta"] = _escribir(reporte, dfs)
     return reporte
@@ -95,7 +98,9 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
 
 def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
              no_concluyente: bool, desde: date, hasta: date,
-             embargo_dias: int = bl.EMBARGO_DIAS) -> dict:
+             embargo_dias: int = bl.EMBARGO_DIAS,
+             semilla_bootstrap: int = 500,
+             alpha_bootstrap: float = 0.10) -> dict:
     ics = {n: metricas.rank_ic_diario(df) for n, df in dfs.items()}
     resumen_bl = {}
     for n, df in dfs.items():
@@ -106,7 +111,10 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
             carteras[costo] = {
                 lado: {
                     "sharpe": metricas.sharpe_anual(series[lado]),
-                    "sharpe_ic90": metricas.bootstrap_sharpe(series[lado]),
+                    # el nombre ya no fija el nivel: el alpha es parámetro
+                    "sharpe_ic": metricas.bootstrap_sharpe(
+                        series[lado], semilla=semilla_bootstrap,
+                        alpha=alpha_bootstrap),
                     "mdd_pct": metricas.max_drawdown(series[lado]),
                     "acumulado_pct": round(float(
                         ((1 + series[lado] / 100).prod() - 1) * 100), 1)
@@ -173,7 +181,12 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
         # embargo cambia los resultados.
         "parametros": {"embargo_dias": embargo_dias,
                        "ventana_entrenamiento": bl.VENTANA_ENTRENAMIENTO,
-                       "dias_reajuste": bl.DIAS_REAJUSTE},
+                       "dias_reajuste": bl.DIAS_REAJUSTE,
+                       "bootstrap": {"metodo": "circular de bloques "
+                                                "(Politis & Romano 1994)",
+                                     "semilla": semilla_bootstrap,
+                                     "alpha": alpha_bootstrap,
+                                     "bloque_dias": 10, "replicas": 2000}},
         "descartes_sin_datos": descartes,
         "baselines": resumen_bl,
         "benchmark_smh": bench,
@@ -202,6 +215,14 @@ def _escribir(reporte: dict, dfs: dict) -> str:
     return ruta
 
 
+def _ic(par) -> str:
+    """Redondeo de PRESENTACIÓN del intervalo. La métrica se guarda con toda
+    su precisión en metricas.json; aquí se recorta para que la tabla se lea."""
+    if not par:
+        return "—"
+    return f"[{par[0]:.2f}, {par[1]:.2f}]"
+
+
 def _resumen_md(r: dict) -> str:
     lineas = []
     if r["no_concluyente"]:
@@ -215,19 +236,25 @@ def _resumen_md(r: dict) -> str:
     par = r.get("parametros", {})
     lineas.append(f"Generado {r['generado_utc']} · commit {r['commit']} · "
                   f"descartes sin datos: {r['descartes_sin_datos']}\n")
+    bs = par.get("bootstrap", {})
+    nivel = (f"{100 * (1 - bs['alpha']):.0f}" if "alpha" in bs else "?")
     lineas.append(f"Parámetros: embargo {par.get('embargo_dias', '?')} días · "
                   f"ventana entrenamiento {par.get('ventana_entrenamiento', '?')} · "
                   f"reajuste cada {par.get('dias_reajuste', '?')} días\n")
+    lineas.append(f"Bootstrap: {bs.get('metodo', '?')} · bloque "
+                  f"{bs.get('bloque_dias', '?')} días · "
+                  f"{bs.get('replicas', '?')} réplicas · semilla "
+                  f"{bs.get('semilla', '?')} · IC {nivel}%\n")
     lineas.append("\n## Baselines\n")
-    lineas.append("| B | n | %grado B | IC medio | t(NW) | MAE gap | "
-                  "Sharpe LS 25pb [IC90] | acum. LS 25pb |")
+    lineas.append(f"| B | n | %grado B | IC medio | t(NW) | MAE gap | "
+                  f"Sharpe LS 25pb [IC{nivel}] | acum. LS 25pb |")
     lineas.append("|---|---|---|---|---|---|---|---|")
     for n, b in r["baselines"].items():
         ls = b["carteras"][25]["long_short"]
         lineas.append(
             f"| {n} | {b['n_pares']} | {b['grado_B_pct']}% | {b['ic_medio']} | "
             f"{b['ic_t_nw']} | {b['mae_gap_pp']} | {ls['sharpe']} "
-            f"{ls['sharpe_ic90']} | {ls['acumulado_pct']}% |")
+            f"{_ic(ls['sharpe_ic'])} | {ls['acumulado_pct']}% |")
     smh = r["benchmark_smh"]
     lineas.append(f"\n**Benchmark obligatorio — comprar {smh['ticker']} y no "
                   f"hacer nada**: acumulado {smh['acumulado_pct']}% · Sharpe "
@@ -261,10 +288,16 @@ if __name__ == "__main__":
     parser.add_argument("--embargo-dias", type=int, default=bl.EMBARGO_DIAS,
                         help="jornadas purgadas entre entrenamiento y prueba "
                              "(López de Prado 2018 cap. 7); 0 lo desactiva")
+    parser.add_argument("--semilla-bootstrap", type=int, default=500,
+                        help="semilla del bootstrap; queda sellada en el reporte")
+    parser.add_argument("--alpha-bootstrap", type=float, default=0.10,
+                        help="1-alpha es el nivel del IC del Sharpe (0.10 → IC90)")
     args = parser.parse_args()
     reporte = correr(date.fromisoformat(args.desde), date.fromisoformat(args.hasta),
                      tuple(args.baselines.split(",")), args.etiqueta,
-                     embargo_dias=args.embargo_dias)
+                     embargo_dias=args.embargo_dias,
+                     semilla_bootstrap=args.semilla_bootstrap,
+                     alpha_bootstrap=args.alpha_bootstrap)
     print(f"resultados en {reporte['ruta']}")
     if reporte["no_concluyente"]:
         print("⚠ NO-CONCLUYENTE (ver resumen.md)")

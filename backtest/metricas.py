@@ -2,9 +2,13 @@
 # Métricas del backtest (DISEÑO.md §8) — fijadas antes de correr.
 #
 # Rank IC diario, hit rate condicionado con Wilson, MAE, calibración,
-# Sharpe neto con bootstrap por bloques (semilla fija), max drawdown,
-# turnover, y el VEREDICTO ESCALONADO (ajuste del GATE B): cada capa
-# contra la anterior con test t Newey-West de las diferencias de IC.
+# Sharpe neto con bootstrap CIRCULAR de bloques, max drawdown, turnover, y
+# el VEREDICTO ESCALONADO (ajuste del GATE B): cada capa contra la anterior
+# con test t Newey-West de las diferencias de IC.
+#
+# 6.0.0 WS1: el bootstrap delega en backtest/inferencia.py. La semilla y el
+# alpha son PARÁMETROS de quien llama, no constantes escondidas aquí, y la
+# corrida los sella en su reporte. Ver DECISIONES.md §28.
 # ============================================================
 
 import numpy as np
@@ -12,7 +16,7 @@ import pandas as pd
 
 from api.utilidades import Z_POR_NOMINAL, intervalo_wilson
 
-SEMILLA_BOOTSTRAP = 5_0_0  # fija: misma corrida → mismos intervalos
+from backtest import inferencia
 
 
 def rank_ic_diario(df: pd.DataFrame) -> pd.Series:
@@ -96,25 +100,42 @@ def sharpe_anual(retornos_pct: pd.Series) -> float | None:
     return round(float(r.mean() / r.std() * np.sqrt(252)), 2)
 
 
-def bootstrap_sharpe(retornos_pct: pd.Series, bloques: int = 10,
+MINIMO_DIAS_BOOTSTRAP = 40
+
+
+def bootstrap_sharpe(retornos_pct: pd.Series, semilla: int, *,
+                     alpha: float = 0.10, bloque: int = 10,
                      replicas: int = 2000) -> tuple | None:
-    """IC 90% del Sharpe por bootstrap de bloques (semilla fija)."""
+    """IC del Sharpe anualizado por bootstrap CIRCULAR de bloques.
+
+    Delega en `inferencia.bootstrap_bloques` (Politis & Romano 1994). La
+    versión anterior NO era circular: sus bloques arrancaban en
+    `[0, n - bloque)`, así que las últimas `bloque-1` observaciones no
+    podían iniciar ninguno y **la cola de la serie quedaba
+    submuestreada** — y en una serie financiera la cola es lo más
+    reciente, justo el tramo que más pesa al juzgar una estrategia.
+
+    `semilla` es OBLIGATORIA: la determinística que pide `DISEÑO.md` §9 se
+    consigue pasándola explícitamente y sellándola en el reporte, no
+    escondiéndola en una constante de módulo que ningún resultado declara.
+
+    `bloque=10` y `replicas=2000` son los valores CONGELADOS en
+    `backtest/DISEÑO.md` §8.5 y no se tocan aquí. (`inferencia` usa 20 por
+    defecto porque es lo que especifica `GEMELO/DISEÑO.md` §5 para la
+    maquinaria del retador: son dos ámbitos distintos.)
+
+    Devuelve `(lo, hi)` SIN redondear — el redondeo es presentación y vive
+    en la capa de presentación — o `None` si no hay días suficientes.
+    """
     r = (retornos_pct.dropna() / 100).values
-    n = len(r)
-    if n < 40:
+    if len(r) < MINIMO_DIAS_BOOTSTRAP:
         return None
-    rng = np.random.default_rng(SEMILLA_BOOTSTRAP)
-    sharpes = []
-    n_bloques = int(np.ceil(n / bloques))
-    for _ in range(replicas):
-        inicios = rng.integers(0, n - bloques, n_bloques)
-        muestra = np.concatenate([r[i:i + bloques] for i in inicios])[:n]
-        if muestra.std() > 0:
-            sharpes.append(muestra.mean() / muestra.std() * np.sqrt(252))
-    if not sharpes:
+    res = inferencia.bootstrap_bloques(
+        r, semilla=semilla, n_draws=replicas, bloque=bloque, alpha=alpha,
+        anualizar=252)
+    if res["n_validos"] == 0:
         return None
-    return (round(float(np.percentile(sharpes, 5)), 2),
-            round(float(np.percentile(sharpes, 95)), 2))
+    return (res["lo"], res["hi"])
 
 
 def max_drawdown(retornos_pct: pd.Series) -> float | None:

@@ -189,3 +189,123 @@ def test_dry_run_humo_no_concluyente(entorno):
     assert "NO-CONCLUYENTE" in resumen
     assert "SMH" in resumen
     assert os.path.exists(os.path.join(ruta, "metricas.json"))
+
+
+# ============================================================
+# Migración del bootstrap al circular (Etapa 6.0.0 WS1 · DECISIONES.md §28)
+# ============================================================
+import inspect as _inspect
+
+import numpy as _np
+import pandas as _pd
+
+from backtest import inferencia as _inf
+from backtest import metricas as _met
+
+
+def _serie(n=200, semilla=3):
+    return _pd.Series(_np.random.default_rng(semilla).normal(0.05, 1.0, n))
+
+
+def test_el_bootstrap_cubre_la_cola_de_la_serie():
+    """EL test de la migración. Se construye una serie cuya señal vive
+    ENTERA en las últimas observaciones. Un bootstrap circular la recupera;
+    el esquema anterior —inicios en [0, n-bloque)— no podía empezar un
+    bloque ahí y submuestreaba la cola. En una serie financiera la cola es
+    lo más reciente, que es lo que más pesa al juzgar una estrategia."""
+    x = _np.zeros(200)
+    x[-5:] = 10.0                      # media real = 0.25
+    n, bloque, draws = len(x), 10, 4000
+
+    rng = _np.random.default_rng(0)
+    ini = rng.integers(0, n, size=(draws, n // bloque))
+    idx = (ini[:, :, None] + _np.arange(bloque)[None, None, :]) % n
+    media_circular = float(x[idx.reshape(draws, -1)[:, :n]].mean())
+
+    rng2 = _np.random.default_rng(0)
+    ini2 = rng2.integers(0, n - bloque, size=(draws, n // bloque))
+    idx2 = ini2[:, :, None] + _np.arange(bloque)[None, None, :]
+    media_no_circular = float(x[idx2.reshape(draws, -1)[:, :n]].mean())
+
+    assert media_circular == pytest.approx(x.mean(), abs=0.02)
+    assert media_no_circular < 0.5 * x.mean()   # el viejo pierde la cola
+
+
+def test_bootstrap_sharpe_exige_semilla_explicita():
+    """Ni constante de módulo ni default: quien llama la pasa, y la corrida
+    la sella en su reporte (DISEÑO.md §9 pide determinismo, no ocultación)."""
+    p = _inspect.signature(_met.bootstrap_sharpe).parameters["semilla"]
+    assert p.default is _inspect.Parameter.empty
+    assert not hasattr(_met, "SEMILLA_BOOTSTRAP")
+
+
+def test_bootstrap_sharpe_no_redondea():
+    """El redondeo es presentación y vive en la capa de presentación."""
+    lo, hi = _met.bootstrap_sharpe(_serie(), semilla=500)
+    assert (round(lo, 2) != lo) or (round(hi, 2) != hi)
+
+
+def test_bootstrap_sharpe_es_reproducible_y_depende_de_la_semilla():
+    s = _serie()
+    assert (_met.bootstrap_sharpe(s, semilla=500)
+            == _met.bootstrap_sharpe(s, semilla=500))
+    assert (_met.bootstrap_sharpe(s, semilla=500)
+            != _met.bootstrap_sharpe(s, semilla=501))
+
+
+def test_bootstrap_sharpe_respeta_el_alpha():
+    s = _serie(n=400)
+    a90 = _met.bootstrap_sharpe(s, semilla=500, alpha=0.10)
+    a99 = _met.bootstrap_sharpe(s, semilla=500, alpha=0.01)
+    assert (a99[1] - a99[0]) > (a90[1] - a90[0])
+
+
+def test_bootstrap_sharpe_conserva_los_valores_congelados_del_diseno():
+    """backtest/DISEÑO.md §8.5 congela bloques de 10 días y 2.000 réplicas.
+    La migración cambió el MÉTODO (circular), no la parametrización."""
+    par = _inspect.signature(_met.bootstrap_sharpe).parameters
+    assert par["bloque"].default == 10
+    assert par["replicas"].default == 2000
+
+
+def test_bootstrap_sharpe_devuelve_None_con_pocos_dias():
+    assert _met.bootstrap_sharpe(_serie(n=10), semilla=500) is None
+
+
+def test_bootstrap_sharpe_delega_en_inferencia():
+    """Un solo bootstrap en el repo: si metricas volviera a tener el suyo,
+    volverían a divergir."""
+    fuente = open(_met.__file__, encoding="utf-8").read()
+    assert "inferencia.bootstrap_bloques" in fuente
+    assert "rng.integers" not in fuente      # ya no remuestrea por su cuenta
+
+
+def test_la_corrida_sella_semilla_y_alpha_del_bootstrap():
+    from datetime import date as _date
+    r = motorbt.correr(_date(2026, 7, 1), _date(2026, 7, 8),
+                       cuales=("B0",), etiqueta="dry-run", escribir=False,
+                       semilla_bootstrap=77, alpha_bootstrap=0.05)
+    bs = r["parametros"]["bootstrap"]
+    assert bs["semilla"] == 77 and bs["alpha"] == 0.05
+    assert bs["bloque_dias"] == 10 and bs["replicas"] == 2000
+    assert "circular" in bs["metodo"]
+    md = motorbt._resumen_md(r)
+    assert "semilla 77" in md and "IC 95%" in md
+
+
+def test_el_redondeo_del_intervalo_vive_en_presentacion():
+    assert motorbt._ic((-2.092099002889191, 0.27820064420958623)) == "[-2.09, 0.28]"
+    assert motorbt._ic(None) == "—"
+
+
+def test_la_errata_del_registro_historico_esta_al_pie_y_no_reescribe():
+    """El resumen histórico conserva sus cifras; la errata se añade al pie."""
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "backtest", "resultados",
+                        "20260726-032635-humo-legacy", "resumen.md")
+    texto = open(ruta, encoding="utf-8").read()
+    assert "ERRATA documentada" in texto
+    assert "NO circular" in texto
+    assert "NO-CONCLUYENTE" in texto
+    # las cifras originales siguen ahí
+    assert "B2 vs B1 | 0.384 | 2.57 | 35 | aporta" in texto

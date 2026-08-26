@@ -146,7 +146,13 @@ Por baseline y por período (total, por régimen del SOX, por región):
    nominal vs real (la misma re-escala del sigma que usa /historial).
 5. **Sharpe neto de costos** (retornos diarios de cartera, anualizado
    √252), con intervalo por block-bootstrap (bloques de 10 días, 2.000
-   réplicas).
+   réplicas). *Corregido el 26-ago-2026 (Etapa 6.0.0 WS1): el bootstrap
+   pasó a ser **circular** (Politis & Romano 1994). El anterior no lo era y
+   submuestreaba la cola de la serie — que en una serie financiera es lo
+   más reciente. **Los parámetros congelados aquí no cambian**: siguen
+   siendo bloques de 10 días y 2.000 réplicas; lo que cambió es el método.
+   Semilla y nivel del IC pasaron a ser parámetros de la corrida y se
+   sellan en su reporte. Ver DECISIONES.md §28.*
 6. **Max drawdown** y **turnover** promedio diario.
 7. **Conteo de descartes**: emisiones sin datos de outcome (el
    sin_datos_mercado del backtest) — se reportan, no se esconden.

@@ -2172,3 +2172,89 @@ escrito no es reproducible, y el embargo cambia los resultados.
 **No se ejecutó ningún backtest con veredicto.** El gatillo de la 5.1
 sigue sin cumplirse (N=228 sí, cambio de régimen no) y es decisión humana.
 Construir la maquinaria no es ejecutarla.
+
+
+## 28. Migración del bootstrap: de bloques no circulares a circulares
+
+`metricas.bootstrap_sharpe` tenía su propio remuestreo y **no era
+circular**: los inicios de bloque salían de `[0, n - bloque)`, así que las
+últimas `bloque-1` observaciones **no podían iniciar ningún bloque** y
+quedaban submuestreadas.
+
+**Por qué ese defecto es el que importa.** En una serie financiera la cola
+es **lo más reciente**: el tramo que más pesa al juzgar si una estrategia
+sirve hoy. Un intervalo que la subrepresenta describe mejor el pasado
+lejano que el presente, que es justo al revés de lo que hace falta.
+
+Medido con una serie construida para aislarlo —200 observaciones en cero
+salvo las 5 últimas, media real 0.25—: el bootstrap **circular** recupera
+0.246; el **no circular**, 0.0535. Pierde el 79% de la señal de la cola.
+Ese contraste quedó como test.
+
+Los otros dos defectos eran menores pero reales: semilla en una constante
+de módulo que ningún reporte declaraba, y nivel del IC fijo al 90% dentro
+de la función.
+
+### 28.1 Por qué AHORA es el momento correcto
+
+**Ninguna corrida con veredicto se ha ejecutado.** No hay conclusión
+publicada que dependa del método viejo. Después del primer veredicto,
+cambiar el estimador del intervalo sería cambiar la regla de medición a
+mitad del experimento — y entonces habría que tratarlo como una versión
+nueva, no como un arreglo.
+
+### 28.2 Qué NO cambió: los parámetros congelados
+
+`backtest/DISEÑO.md` §8.5 congela **bloques de 10 días y 2.000 réplicas**.
+**Se conservan.** La migración cambió el **método**, no la
+parametrización: mezclar las dos cosas habría hecho imposible atribuir
+cualquier diferencia futura a una u otra.
+
+Nota de coherencia entre ámbitos: `inferencia.bootstrap_bloques` usa
+`bloque=20` por defecto porque es lo que especifica `GEMELO/DISEÑO.md` §5
+para la maquinaria del retador; `metricas.bootstrap_sharpe` le pasa 10,
+que es lo congelado para el backtest B0→B5. Son dos ámbitos distintos con
+dos diseños congelados distintos, y cada uno respeta el suyo.
+
+### 28.3 Semilla y alpha: parámetros sellados, no constantes escondidas
+
+`SEMILLA_BOOTSTRAP` desapareció de `metricas.py`. Ahora `semilla` es
+**argumento obligatorio** —sin default, igual que en `inferencia`— y
+`alpha` es configurable. Ambos se sellan en `parametros.bootstrap` del
+reporte junto al método, el largo de bloque y las réplicas, y aparecen en
+la cabecera de `resumen.md`.
+
+El `DISEÑO.md` §9 pide determinismo: "mismo commit + mismos datos → mismos
+resultados". Eso se consigue **pasando la semilla y declarándola**, no
+escondiéndola donde ningún resultado la menciona. Un número irreproducible
+y un número reproducible cuya semilla nadie sabe son igual de inútiles
+para auditar.
+
+El campo `sharpe_ic90` pasó a llamarse `sharpe_ic`: con el nivel
+configurable, un nombre que fija el 90% mentiría en cuanto alguien pase
+otro alpha. La cabecera del resumen calcula la etiqueta desde el alpha
+real.
+
+### 28.4 El redondeo se fue a presentación
+
+`bootstrap_sharpe` ya no redondea: devuelve el intervalo completo, que es
+lo que se guarda en `metricas.json`. El recorte a 2 decimales vive en
+`motorbt._ic()`, que es la capa que arma la tabla. Una métrica redondeada
+en origen pierde precisión para siempre; una redondeada al imprimir, no.
+
+### 28.5 Qué corridas quedaron con el método viejo
+
+**Una sola: `backtest/resultados/20260726-032635-humo-legacy/`.** Es la
+única corrida que existe en el repo, y ya estaba marcada **NO-CONCLUYENTE
+desde su origen** — era humo para probar que la maquinaria arranca, no un
+veredicto.
+
+**Su `resumen.md` NO se recalculó ni se reescribió.** Se le añadió una
+**nota al pie** que declara que sus `[IC90]` salieron del bootstrap no
+circular, que sus intervalos no son directamente comparables con los de
+corridas posteriores, y que además es anterior al embargo y a los
+parámetros sellados. Errata documentada, no corrección retroactiva: es la
+misma regla que rige las filas selladas de `senales.db`, aplicada a un
+artefacto de backtest. El diff sobre ese archivo es de **34 inserciones y
+cero borrados**, y hay un test que verifica que sus cifras originales
+siguen ahí.
