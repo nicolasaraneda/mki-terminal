@@ -2504,3 +2504,198 @@ El aislamiento se refinó respecto del WS2a: `datos.py`, `features.py` y
 `mode=ro`) y `universo` (constantes puras). La dirección que protege el
 sello es la contraria y ahora tiene su propio test: **nada del camino de
 sellado importa GEMELO**.
+
+
+## 31. El README se actualiza entero, no solo con el negativo del WS2b
+
+Publicar el resultado negativo del retador mientras la portada seguía
+diciendo **78.8% con n=80** habría sido **honestidad selectiva**: contar
+el fracaso del experimento nuevo y callar que el número estrella del
+titular estaba viejo y sin denominador. El cambio es más grande que WS2b
+a propósito.
+
+### 31.1 Qué se corrigió
+
+- **El track record al día.** 78.8% con n=80 era cierto el 25-jul; hoy son
+  **65.9% con n=223** bajo la convención congelada en la §2.8. La sección
+  dice explícitamente que el número anterior era correcto en su momento y
+  que bajó al crecer la muestra — no se borra el pasado, se fecha.
+- **El denominador, al lado del número y no en una nota.** "Siempre al
+  alza" saca **61.9%** sobre las mismas filas: ventaja **+4.0 pp con
+  McNemar p = 0.4633**, no significativa. Va en la misma tabla, en negrita,
+  antes que cualquier otra métrica.
+- **Qué aporta el modelo y qué no.** La dirección la pone el SOX: C1 y el
+  campeón aciertan en las mismas 215 filas, McNemar 0 vs 0. La regresión
+  de betas aporta a la **magnitud**, no a la dirección.
+- **El conjunto de información expandido no mejora nada detectable**
+  (C2 vs C1, p = 0.3613, IC del ΔMAE incluye cero), y el único p<0.05 del
+  experimento **no sobrevive a R2** (1.8 pp, p = 0.8321).
+- **La magnitud sí aporta**: MAE 3.12 pp contra 3.50 de predecir cero.
+- **El caveat de régimen se endureció.** Decía "casi entera de un solo
+  régimen"; la medición dice que es **entera** —una sola etiqueta en 35
+  snapshots— y que la etiqueta no detecta la variación que sí existe.
+
+### 31.2 Convenciones sin mezclar
+
+El encargo citaba el MAE de **3.064 vs 3.423**, que son cifras de n=228
+(convención original), mientras el titular es n=223 (convención congelada
+§2.8). Presentarlas juntas habría mezclado denominadores en la misma
+tabla. Se resolvió publicando las de n=223 (**3.12 vs 3.50**) como
+titulares y las de n=228 en una nota, señalando que la mejora relativa es
+**−10.7% y −10.5%**: la conclusión es **robusta a cómo se traten los
+empates**, y decirlo la refuerza en vez de diluirla.
+
+### 31.3 Badges
+
+`tests` 49 → **236**; `plataforma` 5.0.0 → **5.0.3**. Y uno nuevo, que es
+el que más dice: **`ventaja sobre la base · +4.0 pp · p=0.46`**. Un badge
+de acierto sin denominador es publicidad; éste es medición.
+
+### 31.4 El tono: no es una retractación
+
+Queda escrito en el propio README que esto **no es una disculpa sino el
+instrumento funcionando**: un sistema que mide su ventaja contra el
+denominador correcto y responde "todavía no distinguible de cero" dice más
+sobre su calidad que cualquier tasa de acierto. Es el argumento del README
+desde el WS7 —liderar con la integridad, no con los aciertos— y esta
+versión lo cumple mejor que la anterior, que lideraba con un 78.8% sin
+rival contra el cual leerlo.
+
+Se enlazan [`GEMELO/DISEÑO.md`](GEMELO/DISEÑO.md) y
+[`GEMELO/resultados/control_lineal.md`](GEMELO/resultados/control_lineal.md)
+para que cualquiera audite, y se declara que toda la sección se reproduce
+con `python -m backtest.linea_base`. Una afirmación de integridad que no se
+puede recomputar es una afirmación de marketing.
+
+
+## 32. WS3 — la ventana larga: la potencia cambia las respuestas
+
+El WS2b concluyó que el conjunto de información expandido no aporta, pero
+esa conclusión estaba **sub-potenciada**: +2.8 pp con p=0.36 sobre 215
+filas no distingue "no hay señal" de "la señal no se ve". El cuello de
+botella no era información: era muestra.
+
+La ventana larga pasa de **215 a 14.711 filas de evaluación**
+(2018-08-27 → 2026-08-25, 2.076 fechas de emisión).
+
+### 32.1 El N se declaró antes, y subió de 9 a 13
+
+Regla escrita en `GEMELO/DISEÑO.md` §4.2 bis **antes de correr nada**:
+**cuenta como un intento cada par (configuración × ventana de evaluación)
+con resultado reportable.**
+
+Re-evaluar las mismas tres configuraciones sobre otra ventana no es
+gratis: produce un segundo conjunto de resultados publicables entre los
+cuales se puede elegir, y elegir entre resultados es lo que el DSR
+deflacta. Una regla que contara "3 configuraciones" sin importar cuántas
+ventanas se prueben permitiría buscar la ventana favorable sin coste — la
+misma trampa por otra puerta.
+
+6 (B0–B5) + 3 (WS2b) + 3 (WS3) + 1 (campeón sobre la ventana larga) =
+**13**. No cuenta la baseline "siempre al alza" —es la hipótesis nula, no
+un modelo ajustado— ni la búsqueda interna de alpha.
+
+### 32.2 El campeón se reconstruye, no se imita
+
+Se llama a `motor.prediccion_apertura_al` vía `B2Produccion`. Lo único que
+cambia es la **profundidad de la serie que se le sirve**, inyectada por
+`FuenteCongelada(series=..., ohlc=...)`, que es su punto de extensión
+declarado. Como `betas_al` usa una ventana rodante de 120 sesiones, **el
+cómputo en cada fecha es idéntico al que haría en vivo**; solo se amplía
+el rango de fechas computables. `motor.py` no se toca.
+
+### 32.3 Las tres respuestas
+
+**1. La ventaja del campeón sobre la tasa base SÍ sobrevive.** Sobre
+14.711 filas: 70.1% contra una base de 54.2%, **+15.9 pp con McNemar
+p≈0**. En la ventana sellada eran +4.0 pp con p=0.4633.
+
+La diferencia no es que el modelo cambie: es que la ventana sellada tenía
+una **tasa base del 61.9%** (siete semanas de deriva alcista fuerte)
+mientras que sobre ocho años la base cae al 54.2%. Con 223 filas y un
+rival inflado por la deriva, el efecto real quedaba enterrado en el ruido.
+
+**2. C2 vs C1 SE REVIERTE.** Con 12.628 filas: **+1.3 pp con p=0.0003**, y
+el IC del ΔMAE excluye el cero. El efecto **encogió** respecto del +2.8 pp
+del WS2b —el patrón clásico: una muestra chica sobreestima el tamaño del
+efecto— pero ahora es detectable. **La información expandida sí aporta, y
+aporta poco.**
+
+Ambas cosas importan: el WS2b acertó al no declarar victoria, y se
+equivocó al leer "no significativo" como "no hay nada".
+
+**3. R2 con potencia: la ventaja está REPARTIDA, no concentrada.** Medida
+como distribución sobre sub-ventanas de 200 filas, el campeón tiene
+ventaja positiva en el **90.4%** de sus 73 sub-ventanas; quitando la mejor
+pasa de 15.90 a 15.61 pp, y quitando el mejor decil, a 13.98. En la
+ventana corta, excluir una semana la volvía negativa. **Con siete semanas,
+R2 era casi una anécdota; con ocho años es una medición.**
+
+### 32.4 La limitación, MEDIDA en vez de declarada
+
+Yahoo reescribe la historia y sus precios ajustados se recalculan con
+dividendos y splits posteriores, así que **una reconstrucción a años vista
+NO es point-in-time**. En vez de dejarlo como prosa, se midió: sobre las
+198 filas comunes con el track record sellado, la reconstrucción de hoy
+**coincide en el 91.4%** (a menos de 0.01 pp) y **difiere en 17**, con un
+máximo de **31.2 pp**.
+
+Ése es el número que hay que tener delante al leer el resto: la ventana
+larga da **potencia**; la ventana sellada da **validez**. Ninguna
+reemplaza a la otra, y la evidencia fuera de muestra de verdad siguen
+siendo las 223 filas selladas.
+
+### 32.5 HALLAZGO NO BUSCADO: el 29-jul huele a sello corrupto
+
+Las mayores discrepancias no están repartidas: **se concentran en
+2026-07-29**, y ese día es uno de los de **sello tardío con descarga
+parcial de Yahoo** que la auditoría de julio ya documentó (§ de la Etapa
+5.0.1: sellos a las 21:23 tras el re-sleep del Mac).
+
+Las ocho filas selladas de ese día tienen **|gap| medio de 13.68 pp contra
+3.12 del resto** —4.4× la magnitud normal, en los ocho tickers a la vez— y
+el modelo acertó 1 de 8. La reconstrucción de hoy da para ese día gaps
+normales (−2.9%, +2.6%, −0.1%…). El patrón es el de un **cierre previo
+rancio**: si la descarga trajo un `close` viejo, el gap calculado se
+dispara en todos los tickers simultáneamente.
+
+**No se toca nada.** Las filas selladas jamás se reescriben; si se
+confirma, es una **errata documentada**, y la decisión de cómo tratarla en
+las métricas es humana. Queda escrito aquí porque esas ocho filas están
+dentro de las 223 que producen el 65.9% publicado, y porque el hallazgo
+salió de una validación que existía para otra cosa.
+
+### 32.6 El Sharpe de esta etapa es ficción económica, y se marca
+
+Las cuatro configuraciones dieron Sharpe anualizados de **9 a 10.6**. No
+es un hallazgo: `sharpe_ls_sin_costos` se construye sobre el **gap**, y el
+gap es precisamente lo que **no se puede capturar** — es el salto entre el
+cierre previo y la apertura, y nadie transa a ese precio. El propio
+proyecto lo sabe: por eso su verificador mide el **doble objetivo**
+(`gap_pct` = ¿existe la señal?, `retorno_real_pct` = ¿es capturable?).
+
+Se reporta porque el PSR y el DSR necesitan una serie de retornos, y se
+marca con un aviso propio para que nadie lo lea como rendimiento. La
+prueba económica de verdad es V6 (SMH, 25 pb por lado) y no está hecha.
+
+Consecuencia sobre el DSR: con 1.500–2.000 días **sí** es interpretable
+(supera `MINIMO_DIAS_SHARPE`), pero saturó en 1.0000 por la razón de
+§26.3. Un DSR de 1.000 construido sobre un Sharpe no capturable **no
+demuestra nada sobre V5**.
+
+### 32.7 La línea con la 5.1, defendida por código
+
+El reporte se sella en su primera línea, y la distinción se escribe
+completa: el veredicto de la 5.1 es el criterio **escalonado
+capa-contra-capa sobre B0→B5**, con reglas propias del GATE B y ejecución
+humana. Aquí **no se calcula el veredicto escalonado ni se emite juicio
+sobre B0→B5**; el campeón reconstruido aparece solo como término de
+comparación. Hay tests que verifican que el módulo no importa
+`backtest.motorbt` ni `backtest.cartera` y que no invoca
+`veredicto_escalonado`.
+
+### 32.8 No se modeló nada nuevo
+
+Las tres configuraciones son las del WS2b sin un solo cambio, y hay un
+test que falla si el módulo del WS3 redefine o extiende `CONFIGURACIONES`.
+No se añadió una cuarta.

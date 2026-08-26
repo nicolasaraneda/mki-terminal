@@ -358,6 +358,37 @@ B0→B5 que ya se evaluaron sobre los mismos folds. `sr0_deflacionado` no
 tiene valor por defecto para `N_intentos` precisamente para forzar que
 alguien escriba el número a mano cada vez (DECISIONES.md §26.1).
 
+#### La regla de conteo, hecha explícita (declarada el 26-ago, antes del WS3)
+
+**Cuenta como UN intento cada par (configuración × ventana de evaluación)
+cuyo resultado sea reportable.**
+
+Re-evaluar las mismas tres configuraciones sobre una ventana distinta
+**no es gratis**: produce un segundo conjunto de resultados publicables
+entre los cuales se puede elegir, y elegir entre resultados es
+exactamente lo que el DSR deflacta. Una regla que contara "3
+configuraciones" sin importar cuántas ventanas se prueben permitiría
+buscar la ventana favorable sin coste, que es la misma trampa por otra
+puerta.
+
+**NO cuenta** la baseline "siempre al alza": no es un modelo ajustado ni
+seleccionado, es la hipótesis nula contra la que se mide. Tampoco cuenta
+la búsqueda interna de `alpha` por CV temporal, que se resuelve sin mirar
+una sola fila de evaluación (§4.3).
+
+Conteo al abrir el WS3, **antes de correr nada**:
+
+| Intento | Ventana | Cuenta |
+|---|---|---|
+| B0–B5 | backtest walk-forward | 6 |
+| C1, C2, C3 | ventana sellada (WS2b, n=223) | 3 |
+| C1, C2, C3 | ventana larga (WS3) | 3 |
+| Campeón reconstruido (= B2) | ventana larga (WS3) | 1 |
+| **N total** | | **13** |
+
+Ser conservador aquí es gratis: un N de más sube el umbral `SR0` y hace
+al DSR más exigente. Un N de menos lo inutiliza.
+
 ### 4.3 El control lineal, obligatorio
 
 Junto a todo lo anterior corre una regresión lineal regularizada sobre el
