@@ -31,6 +31,30 @@ Z80 = motor.Z80
 VENTANA_ENTRENAMIENTO = 250   # sesiones de train para B1/B3-B5 (congelado)
 DIAS_REAJUSTE = 7             # re-ajuste semanal (congelado en el diseño)
 
+# EMBARGO (Etapa 6.0.0 WS1 · López de Prado 2018 cap. 7)
+# ------------------------------------------------------------
+# El framework ya impedía el look-ahead duro: ninguna fila con fecha
+# posterior a la emisión entra (validar_sin_futuro). Pero eso no basta.
+# La FRONTERA entre entrenamiento y prueba sigue contaminada: las features
+# son rodantes (medias, momentum, residuales a 20/50/200 sesiones), así que
+# una etiqueta del día anterior a la emisión se construyó con una ventana
+# que se solapa casi entera con la ventana de las features con que se
+# predice HOY. El modelo entrena sobre información que es, en la práctica,
+# la misma que va a usar para predecir — y su error de entrenamiento sale
+# optimista sin que ninguna guarda se queje.
+#
+# El embargo purga las últimas `EMBARGO_DIAS` jornadas antes de la emisión.
+# Se paga en datos (se entrena con menos historia) y se cobra en honestidad.
+#
+# Por qué 5 y por qué ahora: 5 días hábiles cubren una semana completa, que
+# es el reajuste (DIAS_REAJUSTE=7 corridos) y el horizonte de las features
+# más cortas. Es una ELECCIÓN NUEVA, no un valor recuperado: revisar contra
+# las primeras corridas reales. Y se introduce ahora porque **ninguna
+# corrida con veredicto se ha ejecutado todavía**: cambiarlo hoy no
+# invalida ningún resultado publicado. Después del primer veredicto, tocar
+# esto sería cambiar las reglas a mitad del experimento.
+EMBARGO_DIAS = 5
+
 
 class ContextoRun:
     """Features point-in-time del run completo, construidas UNA vez.
@@ -40,8 +64,11 @@ class ContextoRun:
     entrenamiento solo para sesiones ya CONOCIBLES a la emisión (a las
     22:15 UTC toda sesión de Asia/Europa del mismo día ya cerró +2h)."""
 
-    def __init__(self, fuente: FuenteCongelada):
+    def __init__(self, fuente: FuenteCongelada, embargo_dias: int = EMBARGO_DIAS):
         self.fuente = fuente
+        if int(embargo_dias) < 0:
+            raise ValueError("embargo_dias no puede ser negativo")
+        self.embargo_dias = int(embargo_dias)
         self.sentimiento = SentimientoPIT()
         self._memo_sent = {}
         cierres = fuente.cierres(tuple(UNIVERSO.keys()))
@@ -281,8 +308,11 @@ class _BaselineAjustada:
                 continue
             # etiquetas: gaps de sesiones <= fecha (conocibles a las 22:15);
             # features: al cierre de la sesión ANTERIOR a cada etiqueta.
-            gaps_t = gaps[gaps.index.date <= fecha].tail(VENTANA_ENTRENAMIENTO)
-            validar_sin_futuro(gaps_t, fecha)
+            # EMBARGO: se purga la frontera. Sin esto, la etiqueta de ayer
+            # comparte casi toda su ventana rodante con las features de hoy.
+            corte = fecha - timedelta(days=self.ctx.embargo_dias)
+            gaps_t = gaps[gaps.index.date <= corte].tail(VENTANA_ENTRENAMIENTO)
+            validar_sin_futuro(gaps_t, corte)
             fechas_sesion = list(gaps_t.index)
             for k in range(1, len(fechas_sesion)):
                 f_label = fechas_sesion[k]

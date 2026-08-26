@@ -31,11 +31,11 @@ COSTOS_PB = (10, 25, 50)
 
 def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B4", "B5"),
            etiqueta: str = "dry-run", fuente: FuenteCongelada | None = None,
-           escribir: bool = True) -> dict:
+           escribir: bool = True, embargo_dias: int = bl.EMBARGO_DIAS) -> dict:
     no_concluyente = etiqueta != "5.1"
     fuente = fuente or FuenteCongelada()
     with fuente:
-        ctx = bl.ContextoRun(fuente)
+        ctx = bl.ContextoRun(fuente, embargo_dias=embargo_dias)
         modelos = bl.construir_baselines(ctx, cuales)
         instantes = emision.emisiones(desde, hasta)
 
@@ -87,14 +87,15 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
 
     dfs = {n: pd.DataFrame(f) for n, f in filas.items() if f}
     reporte = _evaluar(dfs, smh, descartes, etiqueta, no_concluyente,
-                       desde, hasta)
+                       desde, hasta, embargo_dias=embargo_dias)
     if escribir:
         reporte["ruta"] = _escribir(reporte, dfs)
     return reporte
 
 
 def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
-             no_concluyente: bool, desde: date, hasta: date) -> dict:
+             no_concluyente: bool, desde: date, hasta: date,
+             embargo_dias: int = bl.EMBARGO_DIAS) -> dict:
     ics = {n: metricas.rank_ic_diario(df) for n, df in dfs.items()}
     resumen_bl = {}
     for n, df in dfs.items():
@@ -167,6 +168,12 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
         "periodo": {"desde": desde.isoformat(), "hasta": hasta.isoformat()},
         "generado_utc": datetime.now(timezone.utc).isoformat(),
         "commit": _commit_actual(),
+        # Los parámetros que definen la corrida van SELLADOS en el reporte:
+        # una corrida cuyo embargo no queda escrito no es reproducible, y el
+        # embargo cambia los resultados.
+        "parametros": {"embargo_dias": embargo_dias,
+                       "ventana_entrenamiento": bl.VENTANA_ENTRENAMIENTO,
+                       "dias_reajuste": bl.DIAS_REAJUSTE},
         "descartes_sin_datos": descartes,
         "baselines": resumen_bl,
         "benchmark_smh": bench,
@@ -205,8 +212,12 @@ def _resumen_md(r: dict) -> str:
                       "funciona.\n")
     lineas.append(f"# Backtest MKI — {r['etiqueta']} · "
                   f"{r['periodo']['desde']} → {r['periodo']['hasta']}\n")
+    par = r.get("parametros", {})
     lineas.append(f"Generado {r['generado_utc']} · commit {r['commit']} · "
                   f"descartes sin datos: {r['descartes_sin_datos']}\n")
+    lineas.append(f"Parámetros: embargo {par.get('embargo_dias', '?')} días · "
+                  f"ventana entrenamiento {par.get('ventana_entrenamiento', '?')} · "
+                  f"reajuste cada {par.get('dias_reajuste', '?')} días\n")
     lineas.append("\n## Baselines\n")
     lineas.append("| B | n | %grado B | IC medio | t(NW) | MAE gap | "
                   "Sharpe LS 25pb [IC90] | acum. LS 25pb |")
@@ -247,9 +258,13 @@ if __name__ == "__main__":
     parser.add_argument("--etiqueta", default="dry-run",
                         help="'5.1' SOLO cuando el usuario dispare la corrida "
                              "con veredicto (gatillo del GATE B cumplido)")
+    parser.add_argument("--embargo-dias", type=int, default=bl.EMBARGO_DIAS,
+                        help="jornadas purgadas entre entrenamiento y prueba "
+                             "(López de Prado 2018 cap. 7); 0 lo desactiva")
     args = parser.parse_args()
     reporte = correr(date.fromisoformat(args.desde), date.fromisoformat(args.hasta),
-                     tuple(args.baselines.split(",")), args.etiqueta)
+                     tuple(args.baselines.split(",")), args.etiqueta,
+                     embargo_dias=args.embargo_dias)
     print(f"resultados en {reporte['ruta']}")
     if reporte["no_concluyente"]:
         print("⚠ NO-CONCLUYENTE (ver resumen.md)")

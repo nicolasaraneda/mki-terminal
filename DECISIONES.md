@@ -2063,3 +2063,112 @@ pre-registro primero, medición después— porque un amend borraría
 justamente la prueba de anterioridad que le da valor al documento. La §2.8
 lleva su fecha (26-ago) y dice de sí misma que es posterior; el encabezado
 del documento también lo avisa.
+
+
+## 26. WS1 — la maquinaria de juzgar va ANTES que lo juzgado
+
+`backtest/inferencia.py` implementa la §5 del pre-registro: PSR, DSR,
+error estándar del Sharpe y bootstrap circular de bloques. Verificado por
+grep que nada de eso existía en el repo.
+
+**Por qué primero.** Si el retador se construyera antes que los
+instrumentos para juzgarlo, su primer resultado se evaluaría con las
+herramientas que ya sabemos que no alcanzan — y esa primera lectura
+contamina todo lo que viene después: fija una expectativa, y a partir de
+ahí cada instrumento nuevo se compara contra ella en vez de contra la
+teoría. Construir el juez antes que el acusado no es orden estético, es lo
+que impide que el primer número mande.
+
+**Sin `scipy`.** La normal sale de `math.erfc` y su inversa de una
+bisección de 400 iteraciones. Se prefirió la bisección a una aproximación
+racional a propósito: no tiene coeficientes mágicos y se audita contra
+valores tabulados. En el módulo que decide si un modelo gana, poder
+verificar a mano importa más que la velocidad. Los 14 valores de
+referencia del encargo reproducen **exactos a 10 decimales**.
+
+### 26.1 `N_intentos` sin valor por defecto
+
+`sr0_deflacionado(N_intentos, V_intentos)` y `dsr(...)` **no tienen
+default para N**, y hay un test que falla si alguien se lo pone. Un DSR
+calculado con un N que alguien olvidó actualizar **miente, y miente hacia
+arriba**: declara habilidad donde solo hubo búsqueda. Obligar a escribir
+el número en cada llamada es la única defensa barata contra ese olvido, y
+es coherente con V5 del diseño, que exige contar **todos** los intentos —
+las seis baselines B0→B5 más cada configuración del retador evaluada.
+
+Con `N < 2` no hay selección que deflactar: `SR0 = 0` por definición y el
+DSR se reduce al PSR contra cero. Está documentado y testeado.
+
+### 26.2 El bootstrap: circular, con semilla obligatoria
+
+Se implementó **circular** (Politis & Romano). El `bootstrap_sharpe` que
+ya existía en `metricas.py` **no lo es**: sus bloques arrancan en
+`[0, n - bloque)`, así que las últimas `bloque-1` observaciones no pueden
+iniciar ninguno y la cola queda submuestreada. Además su semilla es una
+constante de módulo, su IC está fijo al 90% y redondea a 2 decimales.
+
+El nuevo es de propósito general: semilla **obligatoria** como argumento
+—nada de estado global de `numpy`—, `alpha` configurable, y `bloque=1`
+degenera exactamente en el bootstrap iid, lo que hace trivial comparar uno
+contra otro. **No se tocó `metricas.bootstrap_sharpe`**: está fuera del
+alcance de este WS y cambiarlo movería números de corridas ya escritas.
+Queda anotado como candidato a migrar.
+
+**El test que de verdad prueba el bootstrap** no es un valor de
+referencia: es que sobre un AR(1) con φ alto el IC de bloques salga
+**estrictamente más ancho** que el iid sobre la misma serie. Si no sale
+más ancho, el bloque no está haciendo nada. Medido: φ=0.8 da un IC 2.6×
+más ancho; sobre una serie iid el IC de bloques queda a 1.00× del
+analítico.
+
+### 26.3 Hallazgo: `Phi` satura, y un DSR de 1.000 no es certeza
+
+Tres tests de propiedad fallaron al escribirlos, todos por la misma causa:
+**por encima de z ≈ 8.3, `Phi` devuelve 1.0 EXACTO en doble precisión**,
+así que la monotonía estricta se pierde en esa zona. No es un defecto de
+la implementación sino un límite del punto flotante, pero tiene una
+consecuencia de lectura que conviene tener escrita: **un PSR o un DSR que
+salga 1.000 significa "más allá de lo que el doble distingue", no
+"certeza"**. Los tests se reescribieron para probar la monotonía en la
+zona informativa —que es donde caen los casos reales con n=228— y se
+añadió uno que **documenta la saturación como comportamiento esperado**,
+para que nadie la "arregle" más adelante creyendo que es un bug.
+
+## 27. El embargo: la guarda de look-ahead no bastaba
+
+`backtest/` ya impedía el look-ahead duro (`validar_sin_futuro` revienta
+si entra una fila posterior a la emisión). Pero **la frontera entre
+entrenamiento y prueba seguía contaminada**, que es un problema distinto y
+más sutil: las features son rodantes (medias, momentum, residuales a
+20/50/200 sesiones), así que la etiqueta del día anterior a la emisión se
+construyó con una ventana que se solapa casi entera con la ventana de las
+features con que se predice hoy. El modelo entrena sobre información que
+es, en la práctica, la misma que va a usar para predecir, y su error sale
+optimista **sin que ninguna guarda se queje** — es exactamente el caso del
+capítulo 7 de López de Prado.
+
+`EMBARGO_DIAS = 5` purga las últimas jornadas antes de cada emisión. Se
+paga en datos y se cobra en honestidad. Configurable por
+`ContextoRun(..., embargo_dias=)`, por `motorbt.correr(...)` y por
+`--embargo-dias` en la CLI; `0` lo desactiva.
+
+**Por qué 5:** cubren una semana hábil completa, que es el ciclo de
+reajuste (`DIAS_REAJUSTE = 7` corridos) y el horizonte de las features más
+cortas. Es una **elección nueva**, no un valor recuperado — misma familia
+que los `TimeoutStartSec` de systemd. A revisar contra las primeras
+corridas reales.
+
+**Por qué ahora y no después:** ninguna corrida con veredicto se ha
+ejecutado todavía, así que cambiarlo hoy no invalida ningún resultado
+publicado. Después del primer veredicto, tocar esto sería cambiar las
+reglas a mitad del experimento — y entonces habría que tratarlo como un
+cambio de modelo, con su propia versión.
+
+**Los parámetros de la corrida ahora van SELLADOS en el reporte**
+(`parametros`: embargo, ventana de entrenamiento y días de reajuste), y
+aparecen en la cabecera de `resumen.md`. Una corrida cuyo embargo no queda
+escrito no es reproducible, y el embargo cambia los resultados.
+
+**No se ejecutó ningún backtest con veredicto.** El gatillo de la 5.1
+sigue sin cumplirse (N=228 sí, cambio de régimen no) y es decisión humana.
+Construir la maquinaria no es ejecutarla.
