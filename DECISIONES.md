@@ -2699,3 +2699,118 @@ comparación. Hay tests que verifican que el módulo no importa
 Las tres configuraciones son las del WS2b sin un solo cambio, y hay un
 test que falla si el módulo del WS3 redefine o extiende `CONFIGURACIONES`.
 No se añadió una cuarta.
+
+
+## 33. WS4 — auditoría adversarial del WS3: el +15.9 pp sobrevive, con dos correcciones
+
+Trabajo hecho con la postura invertida: **no verificar que el cálculo
+estuviera bien, sino buscar por qué podría estar inflado.** Informe completo
+en `GEMELO/resultados/auditoria_ws3.md`. **No se modificó ninguna conclusión
+previa ni ninguna fila; esta sección se añade, no reescribe.**
+
+**Veredicto: sobrevive.** +15.90 → **+15.66 pp** bajo la convención
+congelada, p≈0. Pero con una limitación estructural que el WS3 no declaró.
+
+### 33.1 La corrección: el WS3 no aplicó su propia convención congelada
+
+`cl.evaluar` puntúa al modelo con `(pred>=0)==(gap>=0)` y a la baseline con
+`gap > 0`: las filas con `gap == 0.00` se le **regalan al campeón y se le
+niegan a la baseline**. Es el sesgo exacto que la §2.8 congeló para la
+ventana sellada, reintroducido en la ventana larga sin que nadie lo notara —
+yo incluido, al escribir el WS3.
+
+105 filas de 15.033 (0.70%). Efecto: **+0.24 pp de inflación**. Pequeño, real,
+y de la clase que más importa: **una corrección que ya estaba escrita y que
+igual se saltó.**
+
+### 33.2 El hallazgo que el WS3 no vio: el efecto es asiático
+
+| Bolsa | n | Ventaja | p | Margen emisión→apertura |
+|---|---|---|---|---|
+| XTKS | 7.230 | +19.1 pp | ≈0 | 1.75 h |
+| XTAI | 1.807 | +16.8 pp | ≈0 | 2.75 h |
+| XKRX | 3.626 | +15.4 pp | ≈0 | 1.75 h |
+| **XETR** | **1.955** | **+2.5 pp** | **0.111** | **8.75 h** |
+
+**En Fráncfort la ventaja no es distinguible de cero**, y la explicación es
+mecánica y medida: cuanto más tiempo pasa entre la emisión y la apertura,
+menos queda del contagio. Publicar "+15.9 pp" sin este desglose es promediar
+un efecto fuerte con uno ausente.
+
+### 33.3 REFUTADA: mi propia hipótesis del §32.5
+
+El §32.5 propuso que el 29-jul olía a **sello corrupto**. El criterio objetivo
+se declaró por escrito **antes** de correrlo —con el sesgo nombrado: excluir
+esas filas SUBE el 65.9% publicado— y el resultado es inequívoco:
+
+> **0 filas de 223 superan el umbral del 5%. Desviación máxima: 0.00%.**
+
+Los gaps sellados se reproducen **exactamente**. No hubo cierre rancio. Lo que
+pasó el 29-jul es una **predicción emitida tarde cuya sesión objetivo saltó
+una sesión** — el fenómeno que el acta de la 5.0.2 ya documentó y para el que
+ya existe una regla de abstención propuesta. Los +28% y +24% de esa noche son
+movimientos reales de mercado.
+
+**Efecto sobre el número publicado: ninguno.** No hay nada que excluir.
+
+### 33.4 Y el 91.4% del §32.4 era un artefacto del join
+
+La "contaminación por revisión medida" era falsa. Las 17 filas discrepantes no
+eran revisiones de Yahoo: el panel emparejaba cada emisión con la **siguiente
+sesión de calendario** mientras el verificador usa la siguiente sesión **al
+sello real**, que en un sello tardío se salta una. Alineando por
+`sesion_objetivo`, la coincidencia es del **100%** con desviación **0.00%**.
+
+Doble lección: la contaminación por precios ajustados es **cero** (el factor de
+ajuste escala numerador y denominador por igual, así que la razón se conserva),
+y **una medición puede fabricar el hallazgo que va a buscar** si el
+emparejamiento no se audita.
+
+### 33.5 Supervivencia: un canal en cero, el otro NO EVALUABLE
+
+**Entrada tardía: cero, medido.** Los 8 tickers objetivo tienen historia
+completa desde el inicio de la ventana. El único que empieza tarde es ARM
+(OPV 2023) y no es objetivo. La comparación "restringida a historia completa"
+es idéntica a la completa: no hay nada que restringir.
+
+**Salida: cota frágil.** Ajustando ventaja contra retorno del ticker y
+quitando el confusor de bolsa, la relación es **plana** (b=+0.60 pp por unidad
+de log-retorno, R²=0.051, n=7). Incluso suponiendo que el **30%** del universo
+hubieran sido salidas, la ventaja bajaría a 15.7 pp — **menos de 0.2 pp**.
+
+**Pero la cota se declara frágil:** n=7, todos los retornos observados son
+positivos, y extrapolar a −90% es extrapolación pura. Sobre todo, **no captura
+el mecanismo**: una empresa en dificultades se desacopla del sector porque su
+noticia idiosincrática domina, que es justo el régimen donde el contagio
+fallaría. **Esa parte queda NO EVALUABLE**, no acotada.
+
+### 33.6 Tres amenazas inofensivas, con el número que lo demuestra
+
+- **Precios ajustados:** desviación máxima **0.00%** en las 223 filas selladas.
+- **Calendarios a ocho años:** **0 violaciones** en 15.033 pares contra los
+  calendarios históricos reales; margen mínimo 1.75 h, **estable los nueve
+  años** en las cuatro bolsas. Ni el cambio de cierre del TSE de nov-2024 lo
+  movió.
+- **Cambios de instrumento:** 3 splits en la ventana, **ninguno coincide** con
+  un gap extremo; solo 4 filas de 15.033 (0.03%) superan |20 pp| y las cuatro
+  son eventos reales.
+
+### 33.7 Fuga en el camino largo: cerrada con contraprueba
+
+Truncar el panel en T no altera **ninguna** predicción de fecha < T (igualdad
+exacta del frame), y el emparejamiento sesión→emisión es estrictamente
+anterior en el 100% de los casos. **Contraprueba:** con embargo **negativo**
+—que mete futuro en el entrenamiento— el mismo criterio sí detecta la
+diferencia. El test puede fallar, luego prueba algo.
+
+### 33.8 Las preguntas que quedan para Nicolás
+
+Cinco, en el informe: si se corrige la ventana larga a la convención
+congelada; si se corrige la sección de contaminación del WS3; cómo se
+reconcilia el §32.5 refutado; cómo se reporta el hallazgo de Fráncfort; y si
+las 8 filas del 29-jul (sesión saltada) deben seguir en las métricas — que es
+la decisión de abstención pendiente desde la 5.0.2, ahora con un caso concreto
+dentro de las 223.
+
+**No se decidió ninguna.** Nada de estado, ninguna fila, ninguna métrica
+publicada fue tocada.
