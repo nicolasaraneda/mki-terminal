@@ -148,8 +148,16 @@ def elegir_alpha(X: np.ndarray, y: np.ndarray, orden: np.ndarray,
 # ------------------------------------------------------------
 def correr_configuracion(nombre: str, panel: pd.DataFrame,
                          evaluacion: pd.DataFrame,
-                         embargo_dias: int = EMBARGO_DIAS) -> pd.DataFrame:
+                         embargo_dias: int = EMBARGO_DIAS,
+                         cfg: dict | None = None) -> pd.DataFrame:
     """Predice cada fila de `evaluacion` entrenando solo con el pasado.
+
+    `cfg` permite pasar una configuración EXPLÍCITA en vez de buscar
+    `nombre` en CONFIGURACIONES. Se añadió en WS5, donde el conjunto de
+    features depende de la bolsa del objetivo (hay que excluir su propio
+    índice local, que es casi circular) y por tanto no puede vivir en un
+    diccionario fijo. Con `cfg=None` el comportamiento es EXACTAMENTE el
+    de antes — hay un test que lo fija.
 
     `panel`: columnas fecha, ticker, gap_pct + las features. Es el histórico
     completo de entrenamiento (etiquetas ya cerradas).
@@ -161,7 +169,7 @@ def correr_configuracion(nombre: str, panel: pd.DataFrame,
     de ayer comparte casi toda su ventana con las features de hoy
     (DECISIONES.md §27).
     """
-    cfg = CONFIGURACIONES[nombre]
+    cfg = cfg if cfg is not None else CONFIGURACIONES[nombre]
     cols = [c for c in cfg["features"] if c in panel.columns]
     if not cols:
         return pd.DataFrame()

@@ -173,6 +173,65 @@ def sharpe(serie, anualizar: int = 252) -> float:
     return float(r.mean() / sd * math.sqrt(anualizar))
 
 
+def _remuestrear_circular(r: "np.ndarray", semilla: int, n_draws: int,
+                          bloque: int) -> "np.ndarray":
+    """El remuestreo CIRCULAR de bloques, compartido por los estimadores.
+
+    Vive aparte para que `bootstrap_bloques` (IC del Sharpe) y
+    `bootstrap_media` (IC de la media) usen EXACTAMENTE el mismo sorteo
+    con la misma semilla: si divergieran, dos intervalos del mismo dato
+    dejarían de ser comparables sin que nadie lo notara.
+    """
+    n = len(r)
+    rng = np.random.default_rng(semilla)
+    n_bloques = int(math.ceil(n / bloque))
+    inicios = rng.integers(0, n, size=(n_draws, n_bloques))
+    desplaz = np.arange(bloque)
+    idx = (inicios[:, :, None] + desplaz[None, None, :]) % n
+    return r[idx.reshape(n_draws, -1)[:, :n]]
+
+
+def bootstrap_media(serie, semilla: int, n_draws: int = 1000,
+                    bloque: int = 20, alpha: float = 0.05) -> dict:
+    """IC de la MEDIA por bootstrap circular de bloques.
+
+    ============================================================
+    POR QUÉ EXISTE (hallazgo del WS5)
+    ============================================================
+    `bootstrap_bloques` devuelve el IC del SHARPE (media/desv). Usarlo
+    para acompañar una diferencia de MAE —como hacía `comparar` desde el
+    WS2b— imprime un intervalo en escala ESTANDARIZADA junto a un punto
+    estimado en **pp**. Se ve a simple vista: en 8 de 12 pares del WS5 el
+    punto estimado caía FUERA de su propio intervalo.
+
+    La DECISIÓN no cambiaba —«el IC excluye el cero» es exactamente
+    equivalente en ambas escalas, porque `sd > 0` conserva el signo réplica
+    a réplica y el evento depende solo de la proporción de réplicas sobre
+    cero—, pero el número impreso no era el intervalo de lo que decía ser.
+
+    Comparte el sorteo con `bootstrap_bloques`: misma semilla, mismos
+    bloques, mismas réplicas.
+    """
+    r = np.asarray(serie, dtype=float)
+    r = r[~np.isnan(r)]
+    n = len(r)
+    if bloque < 1:
+        raise ValueError("bloque debe ser >= 1")
+    if not 0.0 < alpha < 1.0:
+        raise ValueError("alpha debe estar en (0,1)")
+    if n < 2 or n < bloque:
+        return {"n": n, "media": float("nan"), "lo": float("nan"),
+                "hi": float("nan"), "bloque": bloque, "alpha": alpha,
+                "semilla": semilla}
+    medias = _remuestrear_circular(r, semilla, n_draws, bloque).mean(axis=1)
+    return {
+        "n": n, "media": float(r.mean()),
+        "lo": float(np.quantile(medias, alpha / 2.0)),
+        "hi": float(np.quantile(medias, 1.0 - alpha / 2.0)),
+        "bloque": bloque, "alpha": alpha, "semilla": semilla,
+    }
+
+
 def bootstrap_bloques(serie, semilla: int, n_draws: int = 1000,
                       bloque: int = 20, alpha: float = 0.05,
                       anualizar: int = 252) -> dict:
@@ -204,12 +263,7 @@ def bootstrap_bloques(serie, semilla: int, n_draws: int = 1000,
                 "hi": float("nan"), "n_validos": 0, "bloque": bloque,
                 "alpha": alpha, "semilla": semilla}
 
-    rng = np.random.default_rng(semilla)
-    n_bloques = int(math.ceil(n / bloque))
-    inicios = rng.integers(0, n, size=(n_draws, n_bloques))
-    desplaz = np.arange(bloque)
-    idx = (inicios[:, :, None] + desplaz[None, None, :]) % n
-    muestras = r[idx.reshape(n_draws, -1)[:, :n]]
+    muestras = _remuestrear_circular(r, semilla, n_draws, bloque)
 
     sd = muestras.std(axis=1, ddof=1)
     validas = sd > 0

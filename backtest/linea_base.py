@@ -65,6 +65,38 @@ CONVENCIONES = ("estricta", "verificador", "excluir_cero")
 # significado de filas ya selladas.
 CONVENCION_OFICIAL = "excluir_cero"
 
+# ------------------------------------------------------------
+# EL INSTANTE «A LA FECHA» DE LA §2 — hallazgo del 30-ago (WS5)
+# ------------------------------------------------------------
+# Las cifras de la §2 son una medición PUNTUAL: se tomaron el 25-ago sobre
+# las verificaciones que existían entonces (n=228). El track record sigue
+# creciendo —el 30-ago ya son 245— así que reproducir «la §2» contra la
+# base completa compara una cifra congelada con un denominador que se
+# mueve. Los cinco tests de reproducción llevaban esa dependencia con el
+# reloj sin declararla y empezaron a fallar solos.
+#
+# La corrección NO toca ninguna cifra del documento: le devuelve su
+# instante. Es la misma disciplina que el proyecto ya aplica en todas
+# partes —un dato sin su `available_at` no significa nada— aplicada a una
+# afirmación en vez de a un precio.
+#
+# El instante es UNO SOLO —el último sello anterior al congelamiento— y
+# reproduce las tres familias de cifras a la vez:
+#   verificaciones con `verificado_en` <= 24-ago  → 228 filas exactas
+#     (la última tanda fue la del 24-ago 22:15:39 UTC, acumulado 228; la
+#      siguiente, del 26-ago, ya suma 9 más)
+#   snapshots con `fecha` <= 24-ago               → 35, como dice el doc
+#   betas con `fecha` <= 24-ago                   → |Δβ| 0.0427 (doc 0.043)
+#
+# Filtrar por `verificado_en` y no por `fecha_senal` no es un detalle: el
+# 21-ago tiene filas verificadas a ambos lados del congelamiento, así que
+# NINGÚN corte por fecha de señal reproduce las 228.
+#
+# El corte es OPT-IN a propósito: `cargar()` sin argumentos sigue leyendo
+# el track record VIVO, que es lo correcto para la plataforma. Pinchar el
+# instante es cosa de quien reproduce una afirmación congelada.
+CORTE_SECCION_2 = "2026-08-24"
+
 # La línea base oficial que la §2.8 congela.
 LINEA_BASE_OFICIAL = (
     ("n",                   223,    0),
@@ -111,14 +143,24 @@ def _wilson(aciertos: int, n: int) -> tuple:
 # ------------------------------------------------------------
 # Carga — solo lectura
 # ------------------------------------------------------------
-def cargar(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+def cargar(modelo_version: str = MODELO_VERSION,
+           hasta_sello: str | None = None) -> pd.DataFrame:
     """Une verificacion_apertura con senales_ticker por (fecha, ticker) y
-    con snapshots por fecha. Solo 4.6.0, nunca legacy, solo con gap."""
+    con snapshots por fecha. Solo 4.6.0, nunca legacy, solo con gap.
+
+    `hasta_sello`: fecha UTC (YYYY-MM-DD) de corte sobre `verificado_en`.
+    Sin ella se lee el track record VIVO, que es lo correcto para la
+    plataforma. Con `CORTE_SECCION_2` se recupera el conjunto exacto de
+    filas sobre el que se midió la §2 — ver el comentario de esa constante.
+    """
     if not os.path.exists(RUTA_SENALES):
         return pd.DataFrame()
     conn = _conexion_ro(RUTA_SENALES)
+    filtro = "AND substr(v.verificado_en, 1, 10) <= ?" if hasta_sello else ""
+    params = ([modelo_version, hasta_sello] if hasta_sello
+              else [modelo_version])
     try:
-        df = pd.read_sql_query("""
+        df = pd.read_sql_query(f"""
             SELECT v.fecha_senal AS fecha, v.ticker,
                    v.apertura_estimada_pct, v.gap_pct, v.acierto_gap,
                    v.error_gap_pp, v.retorno_real_pct,
@@ -130,9 +172,9 @@ def cargar(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
                    ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
             LEFT JOIN snapshots snap ON snap.fecha = v.fecha_senal
             WHERE v.legacy = 0 AND v.modelo_version = ?
-              AND v.gap_pct IS NOT NULL
+              AND v.gap_pct IS NOT NULL {filtro}
             ORDER BY v.fecha_senal, v.ticker
-        """, conn, params=(modelo_version,))
+        """, conn, params=params)
     finally:
         conn.close()
     return df
@@ -278,7 +320,8 @@ def por_bloques(df: pd.DataFrame, tam: int = TAM_BLOQUE) -> pd.DataFrame:
 
 
 def salud_r2_regimen_beta(df: pd.DataFrame,
-                          modelo_version: str = MODELO_VERSION) -> dict:
+                          modelo_version: str = MODELO_VERSION,
+                          hasta_sello: str | None = None) -> dict:
     """Las tres afirmaciones sueltas de la §2.6/§2.7: R² medio, cuántas
     etiquetas de régimen distintas hay, y cuánto salta β entre días."""
     out = {"r2_medio": round(df["confianza_r2"].mean(), 4)
@@ -295,6 +338,14 @@ def salud_r2_regimen_beta(df: pd.DataFrame,
             " ORDER BY ticker, fecha", conn, params=(modelo_version,))
     finally:
         conn.close()
+
+    # El mismo instante «a la fecha» que `cargar`: sin él, el conteo de
+    # snapshots y el salto de β se miden sobre una base que sigue creciendo
+    # mientras la cifra del documento está congelada.
+    if hasta_sello:
+        snaps_todos = snaps_todos[snaps_todos["fecha"] <= hasta_sello]
+        snaps = snaps[snaps["fecha"] <= hasta_sello]
+        betas = betas[betas["fecha"] <= hasta_sello]
 
     # El documento dice "35 snapshots"; con el filtro de modelo son 34. La
     # fila de 2026-07-04 es pre-versionado (modelo_version NULL). Se reportan
@@ -413,15 +464,23 @@ def contrastar_linea_oficial(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(filas)
 
 
-def contrastar(df: pd.DataFrame) -> pd.DataFrame:
+def contrastar(df: pd.DataFrame,
+               hasta_sello: str | None = CORTE_SECCION_2) -> pd.DataFrame:
     """Compara cada afirmación ORIGINAL de la §2 contra lo que da el
     harness. Esas cifras se escribieron con la convención `estricta`, así
     que reproducen bajo ella — es la verificación histórica del
-    pre-registro, distinta de la línea base oficial de la §2.8."""
+    pre-registro, distinta de la línea base oficial de la §2.8.
+
+    `hasta_sello` viene pinchado en `CORTE_SECCION_2` por defecto: éstas
+    son afirmaciones CONGELADAS y contrastarlas contra un track record que
+    sigue creciendo compara una cifra fija con un denominador móvil. Quien
+    quiera el contraste contra la base viva pasa `hasta_sello=None` y verá
+    la deriva, que es información distinta y legítima."""
     zm = zona_muerta(df)
     fila25 = zm[zm["umbral"] == 0.25]
     R = {"duelo": duelo(df), "magnitud": magnitud(df),
-         "calibracion": calibracion(df), "salud": salud_r2_regimen_beta(df),
+         "calibracion": calibracion(df),
+         "salud": salud_r2_regimen_beta(df, hasta_sello=hasta_sello),
          "zm25": fila25.iloc[0].to_dict() if not fila25.empty else {}}
     filas = []
     for etiqueta, afirmado, tol, extraer in AFIRMACIONES:

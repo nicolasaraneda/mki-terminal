@@ -2814,3 +2814,264 @@ dentro de las 223.
 
 **No se decidió ninguna.** Nada de estado, ninguna fila, ninguna métrica
 publicada fue tocada.
+
+---
+
+## 34. WS5 — la hipótesis del relevo asiático: REFUTADA, y era mía
+
+**Fecha:** 30-ago-2026 · **Estatus:** POST-HOC, exploratorio.
+**Reporte:** `GEMELO/resultados/relevo_asiatico.md`.
+**Pre-registro:** `GEMELO/resultados/preregistro_ws5.md`, escrito y dejado en
+el árbol **antes** de correr nada.
+
+### 34.1 El origen es post-hoc y eso se declara arriba, no en una nota al pie
+
+La hipótesis nació del §33: el campeón gana +15 a +19 pp en las bolsas que
+abren dentro de 3 h de la emisión y solo +2.5 pp (p=0.111) en Fráncfort, que
+abre 8.75 h después. La explicación candidata no era solo «el contagio decae»,
+sino que para Europa el SOX de hace nueve horas **no es la información más
+fresca**: entre medio Asia operó una sesión entera, y la cadena real sería
+NY → Asia → Europa.
+
+Todo lo anterior de la 6.0.0 declaró sus configuraciones antes de mirar sus
+datos. **El WS5 no puede hacer eso: su pregunta nació de un resultado.** Las
+consecuencias se asumieron por escrito antes de correr —cuenta como intentos
+nuevos, es exploratorio, el techo alcanzable es «NO REFUTADA»— porque una
+hipótesis construida sobre un patrón ya visto no se confirma con los datos que
+la sugirieron.
+
+### 34.2 El N sube de 13 a 25, aplicando la regla mecánicamente
+
+Regla congelada (§4.2 bis): un intento = (configuración × ventana de
+evaluación) con resultado reportable. Tres configuraciones × dos estratos
+(XETR, ASIA) × dos porciones (exploración, holdout) = **12 nuevos**, y las
+doce son reportables.
+
+Contarlas de otro modo —«las porciones son la misma ventana», «los estratos
+son un desglose»— habría dado un N menor y un DSR más benévolo. Elegir el N
+que favorece al DSR es exactamente lo que el DSR existe para castigar. **No se
+probó una cuarta configuración.**
+
+El desglose por bolsa dentro de ASIA se publica como **descriptivo y no
+decisorio**: el ajuste tiene que ser por bolsa (§34.3), pero el resultado
+reportable es el del estrato. Si alguna decisión se tomara mirándolo, N sube a
+31 y hay que decirlo.
+
+### 34.3 La trampa, que habría dado el resultado contrario
+
+Para un objetivo asiático **su propio índice local es casi circular**: Samsung
+está dentro del KOSPI, TSMC dentro del TWSE. Alimentar `ks11_ret` a
+`005930.KS` no es «el relevo asiático»: es una parte del propio retorno del
+objetivo entrando por la puerta de atrás.
+
+Sin la exclusión, E2 habría lucido espectacular en Asia **por la razón
+equivocada**, la prueba de simetría habría dado «E2 mejora en las dos» y la
+conclusión publicada habría sido la contraria a la que los datos sostienen.
+
+Se excluye siempre el índice de la bolsa del objetivo (XKRX→`ks11_ret`,
+XTAI→`twii_ret`, XTKS→`n225_ret`), lo que obliga a **ajustar por bolsa**. Va
+como test y **con contraprueba**: se reconstruye el conjunto sin la regla y se
+verifica que ahí el índice propio sí aparece — luego la regla hace trabajo.
+
+### 34.4 EL HALLAZGO ESTRUCTURAL: la sesión que el relato describe no es conocible
+
+Antes de mirar un solo resultado, la disponibilidad se **midió** contra
+`calendarios.apertura_utc` (calendarios históricos reales) y los cierres
+sellados en `datos.CATALOGO`:
+
+| Barra | Cierre UTC | h antes de la emisión | h antes de la apertura de XETR |
+|---|---|---|---|
+| `^SOX` día D | 21:00 D | **+1.25** | 10.00 |
+| `^KS11` día D | 06:30 D | **+15.75** | 24.50 |
+| `^KS11` día **D+1** | 06:30 D+1 | **−8.25 (NO conocible)** | **0.50** |
+
+De ahí salen dos hechos que gobiernan la lectura de todo el WS5:
+
+1. **La sesión asiática fresca —la del día D+1, que cierra media hora antes de
+   que Fráncfort abra— NO existe a la emisión.** El relato del relevo describe
+   exactamente esa sesión. Este experimento no puede probarla sin mover la
+   hora de emisión, y mover la hora de emisión es territorio del modelo
+   congelado.
+2. **El insumo asiático que sí es conocible es el MÁS VIEJO de los dos.** A
+   las 22:15 UTC el `^SOX` de D tiene 1.25 h y el `^KS11` de D tiene 15.75 h.
+   Peor: el `^KS11` de D cerró **antes** que el `^SOX` de D, así que reacciona
+   al SOX de D−1 — que E1 ya lleva dentro como `sox_t1`.
+
+Es la trampa de la asincronía del §29 en su forma más pura, y **le cambia el
+significado a un resultado nulo**: lo que se prueba aquí es la versión débil y
+compatible con el sistema de la hipótesis.
+
+### 34.5 El resultado: REFUTADA (ausencia)
+
+Regla de decisión declarada en el pre-registro §6, aplicada mecánicamente por
+código: «E2 mejora a E1» ⟺ ventaja direccional > 0 **y** McNemar p < 0.05,
+sobre el **holdout**.
+
+| Estrato (holdout) | n | E2 | E1 | Ventaja | McNemar | p |
+|---|---|---|---|---|---|---|
+| XETR | 393 | 53.4% | 59.0% | **−5.6 pp** | 85 vs 107 | 0.1296 |
+| ASIA | 2.548 | 55.3% | 72.7% | **−17.5 pp** | 321 vs 766 | ≈0 |
+
+**E2 no mejora a E1 en ninguna parte: es peor en las dos.** Cae la rama
+«REFUTADA (ausencia)»: el relevo no aporta donde el mecanismo lo exige.
+
+Y no es que E2 sea simplemente débil — **está por debajo de la tasa base**:
+55.3% contra 56.7% en Asia (p=0.0306) y 53.4% contra 55.2% en Fráncfort.
+
+### 34.6 La lectura precisa: el SOX decae; Asia nunca llevó nada
+
+El desglose separa dos explicaciones que el promedio confunde:
+
+| Holdout | E1 (solo SOX) | E2 (solo Asia) | Base |
+|---|---|---|---|
+| ASIA | **72.5%** | 55.3% | 56.6% |
+| XETR | **58.6%** | 53.4% | 55.1% |
+
+**El SOX pierde 13.9 pp de acierto al pasar de Asia a Fráncfort. Asia se
+queda plana en la tasa base en las dos.** La debilidad de Fráncfort del §33
+**no** se explica porque Asia haya tomado el relevo: se explica porque el SOX
+se degrada con la distancia temporal, **y nada lo reemplaza**.
+
+Dicho de otro modo: el §33 midió correctamente el decaimiento; el §34 refuta
+la explicación que yo le puse encima.
+
+### 34.7 El holdout hizo su trabajo, y se puede señalar dónde
+
+E3 (SOX + Asia) contra E1 en ASIA:
+
+- **Exploración:** +1.2 pp con **p < 0.0001** — parecía un aporte real.
+- **Holdout:** **+0.0 pp con p = 1.0000** — desaparece por completo.
+
+Es el caso de libro de una mejora que no replica, cazada por el único
+mecanismo que puede cazarla. Con 9.481 filas de exploración, «significativo»
+no bastó.
+
+### 34.8 La tentación, declarada y NO tomada
+
+En el holdout de XETR, **E3 marca 62.1% contra una base de 55.2%: +6.9 pp con
+p = 0.0380.** Es el único p<0.05 contra la base de todo el experimento y sería
+el titular obvio.
+
+**No se toma, y por tres razones que estaban escritas antes:**
+
+1. El criterio primario declarado es **E2 vs E1**, no E3 vs la base.
+2. Contra E1 —la comparación que separa información de maquinaria— E3 da
+   +3.1 pp con **p = 0.2188**: no distinguible.
+3. **En exploración E3 era PEOR que E1 en XETR** (59.0% vs 60.3%). El signo se
+   da vuelta entre porciones sobre 393 filas: es la firma del ruido, no la de
+   un hallazgo.
+
+Quedarse con ese número sería elegir el resultado después de verlo, sobre el
+estrato más pequeño, con la comparación que más favorece. Queda registrado
+**como tentación descartada**, que es la única forma honesta de que aparezca.
+
+### 34.9 Hallazgo colateral: el IC del ΔMAE venía en otra escala
+
+`cl.comparar` —escrita en el WS2b, heredada por el WS3— acompaña un
+`delta_mae` en **pp** con un intervalo salido de `inf.bootstrap_bloques`, que
+es el IC del **Sharpe** (media/desv). Son escalas distintas y se ve a simple
+vista: **en 8 de los 12 pares de esta corrida el punto estimado caía FUERA de
+su propio intervalo.**
+
+**Ninguna conclusión previa cambia.** Las decisiones se tomaron con
+`ic_excluye_cero`, que es **exactamente** equivalente en ambas escalas: como
+`sd > 0` conserva el signo réplica a réplica, el evento «el cuantil α/2 está
+sobre cero» depende solo de la proporción de réplicas sobre cero, y ésa es
+idéntica para la media y para media/desv. Lo que estaba mal era el **número
+impreso**, no el veredicto.
+
+Se añadió `inferencia.bootstrap_media` (IC de la media, **compartiendo sorteo
+y semilla** con `bootstrap_bloques`, para que dos intervalos del mismo dato
+sigan siendo comparables), y el WS5 publica los dos con nombres que dicen qué
+es cada uno: `ic_sharpe_dmae` e `ic_delta_mae_pp`. Los 43 valores de
+referencia del WS1 siguen reproduciendo exactos tras la extracción del
+remuestreo compartido.
+
+**Los reportes del WS2b y del WS3 NO se corrigieron** — es criterio humano y
+queda como pregunta abierta.
+
+### 34.10 La §2 perdió su instante «a la fecha»: el GATE 1 se puso rojo solo
+
+Al correr el GATE 1 del WS5, **cinco tests de `test_linea_base.py` fallaban
+sin que nadie hubiera tocado una línea de código.** No eran del WS5 y no los
+rompió el WS5: los rompió **el propio experimento avanzando**.
+
+Las cifras de la §2 son una medición **puntual** del 25-ago sobre n=228. El
+30-ago la base tiene **245** verificaciones y **38** snapshots. Contrastar una
+afirmación congelada contra un denominador que se mueve solo puede terminar
+en rojo, y terminó:
+
+| Afirmación | Documento | Base viva 30-ago |
+|---|---|---|
+| n (verificaciones 4.6.0) | 228 | 245 |
+| modelo: acierto de gap % | 65.8 | 67.8 |
+| ventaja pp | 5.3 | 7.8 |
+| McNemar p | 0.3193 | 0.1158 |
+| snapshots sellados | 35 | 38 |
+
+**La corrección NO toca ninguna cifra del documento: le devuelve su
+instante.** Es la misma disciplina que el proyecto ya aplica en todas partes
+—un dato sin su `available_at` no significa nada— aplicada por primera vez a
+una *afirmación* en vez de a un precio.
+
+`backtest.linea_base.CORTE_SECCION_2 = "2026-08-24"`, el último sello anterior
+al congelamiento, reproduce **las tres familias de cifras a la vez**:
+
+- verificaciones con `verificado_en` ≤ 24-ago → **228 exactas** (223 bajo
+  `excluir_cero`),
+- snapshots con `fecha` ≤ 24-ago → **35**,
+- betas con `fecha` ≤ 24-ago → **|Δβ| 0.0427** (documento 0.043 ± 0.001).
+
+**21 de 21 vuelven a reproducir.**
+
+Un detalle que no es detalle: el corte va sobre **`verificado_en`, no sobre
+`fecha_senal`**. El 21-ago tiene filas verificadas a **ambos lados** del
+congelamiento, así que ningún corte por fecha de señal reproduce las 228. Si
+me hubiera conformado con un corte por fecha de señal habría tenido que
+«ajustar» alguna cifra para que cuadrara — es decir, editar el pre-registro
+para que encajara con los datos, que es justo lo prohibido.
+
+**El corte es OPT-IN.** `cargar()` sin argumentos sigue leyendo el track
+record VIVO, que es lo correcto para la plataforma; `contrastar()` sí viene
+pinchado por defecto, porque contrasta afirmaciones congeladas. Los runners
+del WS2b y del WS3 quedan **sin pinchar a propósito**: re-correrlos hoy sobre
+más filas es una evaluación distinta y mejor, no un error — sus reportes
+llevan su propia fecha y su propio n.
+
+**Nota para la lectura del track record vivo:** el 30-ago la ventaja del
+campeón sobre la constante es **+7.8 pp con p = 0.1158**, contra +5.3 pp y
+p = 0.3193 en el congelado. Sigue **sin ser distinguible de cero** al 5%, así
+que la conclusión de la §2 no cambia — pero se mueve en la dirección del
+campeón y conviene que quede anotado con su fecha en vez de descubrirse dentro
+de tres meses.
+
+### 34.11 Lo que no se tocó
+
+`universo.py` intacto: sacar IFX.DE porque aporta poco sería quitar el dato
+incómodo, y además es cambio de universo → `UNIVERSO_VERSION` → territorio del
+modelo congelado. `motor.py`, `senales.py`, `snapshot.py` y el camino de
+sellado, intactos; hay un test que verifica la dirección que protege el sello
+(**nada del camino de sellado importa el WS5**). No se corrió el veredicto
+escalonado de la 5.1. Ninguna fila sellada, ninguna base, ningún reporte
+anterior ni ninguna conclusión previa fue modificada.
+
+El único cambio fuera de `GEMELO/` es aditivo y retrocompatible:
+`cl.correr_configuracion` acepta una `cfg` explícita (el conjunto de features
+depende de la bolsa y no puede vivir en un diccionario fijo), con un test que
+fija que `cfg=None` reproduce **exactamente** el comportamiento anterior.
+
+### 34.12 Preguntas abiertas — requieren criterio de Nicolás
+
+1. **¿Se corrigen los IC del ΔMAE de los reportes del WS2b y del WS3?** Están
+   en otra escala (§34.9). Ninguna conclusión cambia, pero los intervalos
+   publicados no son los de la columna que acompañan.
+2. **¿Vale la pena medir la versión FUERTE del relevo?** Exigiría usar el
+   cierre asiático del día D+1, que no es conocible a las 22:15 UTC. Sería un
+   experimento sobre **otra hora de emisión** —territorio del modelo
+   congelado— y solo tiene sentido como pregunta de diseño, nunca como
+   modificación del 4.6.0.
+3. **¿Cómo se reporta ahora Fráncfort en el README?** El §33 dejó abierto cómo
+   publicar el +2.5 pp; el §34 añade que la explicación del relevo **no es** la
+   respuesta, y que E1 (solo SOX) rinde 58.6% ahí contra 72.5% en Asia.
+4. **Las cinco preguntas abiertas del §33 siguen abiertas.** Ninguna se
+   decidió aquí.

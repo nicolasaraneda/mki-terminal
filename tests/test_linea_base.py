@@ -169,9 +169,49 @@ def test_el_modulo_no_abre_ninguna_conexion_de_escritura():
 # ------------------------------------------------------------
 # 5. La reproducción de la §2 — guardián de la afirmación
 # ------------------------------------------------------------
+# Las cifras de la §2 son una medición PUNTUAL del 25-ago (n=228). El track
+# record sigue creciendo, así que contrastarlas contra la base VIVA compara
+# una cifra congelada con un denominador móvil — y estos cinco tests
+# empezaron a fallar solos el 30-ago, sin que nadie tocara una línea de
+# código (hallazgo del WS5, DECISIONES.md §34.10).
+#
+# La corrección NO toca ninguna cifra del documento: le devuelve su
+# instante. `CORTE_SECCION_2` es el último sello anterior al congelamiento.
+def _congelado():
+    """El track record TAL COMO ESTABA cuando se midió la §2."""
+    return lb.cargar(hasta_sello=lb.CORTE_SECCION_2)
+
+
+def test_el_corte_congelado_recupera_exactamente_las_228_filas():
+    """Si esto se moviera, las afirmaciones de la §2 dejarían de tener un
+    conjunto de filas identificable y no serían reproducibles."""
+    if not os.path.exists(lb.RUTA_SENALES):
+        pytest.skip("sin senales.db")
+    assert len(_congelado()) == 228
+    assert len(lb.aplicar_convencion(_congelado(), "excluir_cero")) == 223
+
+
+def test_la_base_viva_ya_creció_por_encima_del_corte():
+    """El otro lado del mismo hecho: el experimento sigue corriendo. Si
+    este test fallara, o la base se vació o el sellado se detuvo."""
+    if not os.path.exists(lb.RUTA_SENALES):
+        pytest.skip("sin senales.db")
+    assert len(lb.cargar()) >= len(_congelado())
+
+
+def test_pinchar_el_instante_NO_toca_ninguna_cifra_del_documento():
+    """La corrección es de alcance, no de contenido: las afirmaciones
+    congeladas siguen siendo exactamente las mismas."""
+    afirmadas = {e: v for e, v, _t, _f in lb.AFIRMACIONES}
+    assert afirmadas["n (verificaciones 4.6.0)"] == 228
+    assert afirmadas["modelo: acierto de gap %"] == 65.8
+    assert afirmadas["ventaja pp"] == 5.3
+    assert dict((n, v) for n, v, _ in lb.LINEA_BASE_OFICIAL)["n"] == 223
+
+
 @solo_con_base
 def test_la_seccion_2_reproduce_entera_con_la_convencion_del_documento():
-    df = lb.aplicar_convencion(lb.cargar(), "estricta")
+    df = lb.aplicar_convencion(_congelado(), "estricta")
     contraste = lb.contrastar(df)
     fallan = contraste[contraste["veredicto"] != "reproduce"]
     assert fallan.empty, f"dejaron de reproducir:\n{fallan.to_string(index=False)}"
@@ -182,7 +222,7 @@ def test_los_limites_de_los_bloques_reproducen_aunque_los_porcentajes_no():
     """Hallazgo registrado: las FECHAS y los n de la §2.2 reproducen; los
     PORCENTAJES por bloque no, bajo ningún orden de filas probado. Este
     test fija el hallazgo para que no se pierda ni se 'arregle' solo."""
-    df = lb.aplicar_convencion(lb.cargar(), "estricta")
+    df = lb.aplicar_convencion(_congelado(), "estricta")
     cb = lb.contrastar_bloques(df)
     limites = cb[cb["campo"] == "límites"]
     assert (limites["veredicto"] == "reproduce").all()
@@ -195,7 +235,7 @@ def test_la_ventaja_del_campeon_cambia_segun_la_convencion():
     """El hallazgo de fondo, fijado: la cifra titular de +5.3 pp depende de
     tratar los 5 gaps de cero de forma asimétrica. Con la convención del
     propio verificador la ventaja es menor."""
-    base = lb.cargar()
+    base = _congelado()
     estricta = lb.duelo(lb.aplicar_convencion(base, "estricta"))
     verificador = lb.duelo(lb.aplicar_convencion(base, "verificador"))
     assert estricta["ventaja_pp"] == 5.3
@@ -207,7 +247,7 @@ def test_la_ventaja_del_campeon_cambia_segun_la_convencion():
 def test_el_campeon_no_pasaria_su_propia_regla_R2():
     """R2 (§6.2) descarta al retador si su ventaja desaparece al excluir la
     ventana 15-23 jul. Al campeón, esa prueba lo deja en ventaja NEGATIVA."""
-    df = lb.aplicar_convencion(lb.cargar(), "estricta")
+    df = lb.aplicar_convencion(_congelado(), "estricta")
     r2 = lb.duelo_excluyendo(df, *lb.VENTANA_R2)
     assert r2["ventaja_pp"] < 0
 
@@ -233,7 +273,7 @@ def test_la_convencion_oficial_es_excluir_cero():
 @solo_con_base
 def test_la_linea_base_oficial_coincide_con_lo_congelado():
     """n=223 · 65.9% · 61.9% · +4.0 pp · 64 vs 55 · p=0.4633 (§2.8)."""
-    df = lb.aplicar_convencion(lb.cargar(), lb.CONVENCION_OFICIAL)
+    df = lb.aplicar_convencion(_congelado(), lb.CONVENCION_OFICIAL)
     tabla = lb.contrastar_linea_oficial(df)
     mal = tabla[tabla["veredicto"] != "coincide"]
     assert mal.empty, f"la línea oficial se movió:\n{mal.to_string(index=False)}"
