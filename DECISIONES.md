@@ -3075,3 +3075,137 @@ fija que `cfg=None` reproduce **exactamente** el comportamiento anterior.
    respuesta, y que E1 (solo SOX) rinde 58.6% ahí contra 72.5% en Asia.
 4. **Las cinco preguntas abiertas del §33 siguen abiertas.** Ninguna se
    decidió aquí.
+
+---
+
+## 35. El README se rehace entero: el hallazgo central ya no era el track record
+
+**Fecha:** 30-ago-2026. El README llevaba modificado sin commitear desde el
+25-ago y su contenido se había quedado atrás: se escribió cuando lo único
+medido era la ventana sellada. Cuatro workstreams después hay material
+mejor, y el hallazgo central del proyecto **no estaba en la portada**.
+
+### 35.1 Qué pasa a liderar, y por qué
+
+La versión anterior lideraba con *«el resultado titular es negativo, y ése
+es el punto»*: +4.0 pp con p=0.4633 sobre 223 filas. Era honesto pero
+incompleto — el WS3 y el WS4 ya habían medido algo que ningún número de la
+ventana sellada podía mostrar.
+
+**El efecto se disipa con la distancia**, y eso es cualitativamente
+distinto de una tasa de acierto:
+
+| Bolsa | n | Ventaja | p | Margen emisión→apertura |
+|---|---|---|---|---|
+| Tokio | 7.230 | +19.1 pp | ≈0 | 1.75 h |
+| Taipéi | 1.807 | +16.8 pp | ≈0 | 2.75 h |
+| Seúl | 3.626 | +15.4 pp | ≈0 | 1.75 h |
+| Fráncfort | 1.955 | +2.5 pp | 0.111 | 8.75 h |
+
+**Un artefacto estadístico no tiene por qué desvanecerse con el tiempo
+transcurrido; una propagación de información sí.** Por eso el README pasa
+de reportar un marcador a reportar un mecanismo — y con la cautela puesta
+en el texto y no en una nota: **con n=4 bolsas no se ajusta una curva**, es
+un **escalón medido**, no un gradiente estimado.
+
+Y va **pegada** a esa sección, no en un apartado de descargo, la hipótesis
+del relevo asiático que el WS5 **refutó**. Publicar el hallazgo sin la
+explicación fallida sería contar solo la mitad que favorece.
+
+### 35.2 La discrepancia del encargo: convención `estricta` vs congelada
+
+**El encargo pedía publicar «n=245 al 30-ago · +7.8 pp · p=0.1158».** Esas
+cifras son correctas, pero salen de la convención **`estricta`**. Bajo la
+convención **congelada en la §2.8** (`excluir_cero`, la oficial del
+proyecto) las mismas filas dan:
+
+| Convención | n | Modelo | Base | Ventaja | p |
+|---|---|---|---|---|---|
+| `estricta` | 245 | 67.8% | 60.0% | +7.8 pp | 0.1158 |
+| **`excluir_cero` (congelada)** | **240** | **67.9%** | **61.3%** | **+6.7 pp** | **0.1849** |
+
+**Se publica la congelada.** Poner el +7.8 en la portada habría sido
+exactamente la asimetría del empate que el WS4 acaba de cazarle al WS3 —
+regalarle los `gap == 0.00` al campeón y negárselos a la baseline— tres
+secciones antes de contar que el proyecto se corrigió por hacer eso mismo.
+La cifra más favorable, publicada con la convención equivocada, habría
+desmentido la sección que la acompaña.
+
+Por la misma razón la comparación temporal va **like-for-like**: 25-ago
++4.0 pp / p=0.4633 → 30-ago +6.7 pp / p=0.1849, las dos bajo la congelada.
+Y el multiplicador de muestra baja de 66× a **61×** (14.618/240), porque el
+denominador correcto es 240 y no 223.
+
+### 35.3 El matiz que el WS4 corrigió, publicado como corrección
+
+El WS3 declaró una *«contaminación por revisión»* del 91.4% como
+limitación de la ventana larga. **Es falsa**, y el README lo dice con esa
+palabra: la desviación real es **0.00% en las 223 filas**, porque el factor
+de ajuste de Yahoo escala el *open* y el *close* previo por igual y la
+razón se conserva. **La ventana larga es más válida de lo que su propio
+autor creyó** — que es una frase incómoda de escribir y por eso está.
+
+Lo que sí la limita se publica entero: es reconstrucción con el código y el
+universo de hoy aplicados hacia atrás; el canal de entrada tardía es
+**cero**, el de salida está acotado en **menos de 0.2 pp incluso con un 30%
+de salidas**, y el tercero se declara **NO EVALUABLE** con sus palabras
+exactas — *una empresa en dificultades se desacopla del sector, y ése es
+justamente el régimen donde el contagio fallaría*.
+
+### 35.4 WS3 revisó a WS2b, y el README no se queda con la versión vieja
+
+| | Muestra | C2 vs C1 |
+|---|---|---|
+| WS2b | 223 filas | +2.8 pp, p=0.3613, IC del ΔMAE incluye cero |
+| WS3 | 12.628 filas | **+1.3 pp, p=0.0003**, IC excluye cero |
+
+El efecto **encogió y se volvió significativo** a la vez: el patrón de una
+muestra chica sobreestimando el tamaño de un efecto que no podía detectar.
+La conclusión publicada es **«la información expandida sí aporta, y aporta
+poco»**, con la lección explícita: *«no significativo» no es lo mismo que
+«no hay nada»*. Dejar la versión del WS2b habría sido publicar una
+conclusión que el propio proyecto ya había revisado.
+
+Se conserva el hallazgo de C1 = campeón (McNemar 0 vs 0) pero **acotado a
+la ventana sellada**, porque sobre la ventana larga C1 y el campeón sí
+divergen (+0.5 pp, p=0.0355). Una afirmación sin su ventana es una
+afirmación sin denominador.
+
+### 35.5 Y la corrección que la auditoría le hizo al proyecto
+
+El WS3 publicó +15.90 pp puntuando al modelo con `>=` y a la baseline con
+`>`: 105 filas de 15.033 (0.70%) tienen `gap == 0.00`. Bajo la convención
+congelada son **+15.66 pp**. Infló 0.24 pp por no seguir su propia regla, y
+**una auditoría encargada de derrumbar el hallazgo fue la que lo cazó**.
+
+Va en el README con sección propia. Es la clase de cosa que un README suele
+omitir, y es justo la que sostiene el resto de sus afirmaciones.
+
+### 35.6 Badges y barrido de cifras viejas
+
+`tests` 236 → **299**. El badge de ventaja se **desdobla en dos**, porque
+una sola cifra ya no representa al proyecto: `ventana sellada · +6.7 pp ·
+p=0.18 · n=240` y `ventana larga · +15.66 pp · n=14.618`. Etiquetar la
+ventana en el badge impide leer el 15.66 como si fuera point-in-time.
+
+Barrido con script de las cifras obsoletas: no quedó ninguna de las 16
+buscadas (236, 78.8%, n=80, 3.12/3.50, 89.2%, 1.76×, «35 snapshots», «5
+jobs», «al 24-ago», y las cuatro cifras del WS2b que el WS3 revisó), y las
+53 que deben estar, están. **Hallazgo del barrido:** el README decía «los 5
+jobs de launchd» y el diagrama mostraba cinco — son **seis** desde la 5.0.1
+(el re-chequeo del vigía de las 20:30). Corregido en los dos sitios.
+
+Los 26 enlaces relativos se verificaron uno a uno contra el árbol: ninguno
+roto. Se añade una tabla **«Auditar cada cifra»** con los siete documentos
+de `GEMELO/` más DECISIONES.md, para que cada número del README tenga su
+fuente a un clic.
+
+### 35.7 El tono
+
+No es una retractación ni una disculpa: **es un instrumento funcionando.**
+Mide un efecto, encuentra su firma mecánica, se corrige dos veces, refuta
+una hipótesis propia y declara qué no puede evaluar. El argumento del WS7
+—liderar con la integridad y no con los aciertos— se cumple mejor así que
+con la versión anterior: aquella lideraba con un negativo, ésta lidera con
+un mecanismo **y** con las tres veces que el proyecto se desmintió a sí
+mismo para llegar a él.
