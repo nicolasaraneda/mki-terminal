@@ -1,7 +1,6 @@
-# (corrida sobre la base COMPUESTA en el scratchpad — NO se reemplazó el árbol)
 # Línea base del campeón 4.6.0 — reproducción de la §2
 
-- Generado: 2026-08-30T20:02:47.741662+00:00
+- Generado: 2026-08-30T23:05:31.245012+00:00
 - Fuente: `senales.db` en `mode=ro` (autoridad), NO los CSV de respaldo
 - Convención de empate: **excluir_cero**
 - Filas: **n = 248** · 2026-07-05 → 2026-08-26
@@ -166,3 +165,4 @@ Mejora sobre predecir cero: **10.5%**.
 - **R² sellado medio:** 0.1626
 - **Estabilidad de β:** salto medio entre días consecutivos 0.0369 sobre un nivel medio de 0.5472 — **6.7% del nivel, por día**. Mediana 0.01; el 9.2% de los 173 pares salta más de 0.10; máximo 0.28.
 
+[escrito] linea_base/linea_base_excluir_cero.md

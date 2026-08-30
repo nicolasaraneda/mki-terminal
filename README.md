@@ -13,8 +13,8 @@
 > **+2.5 pp with p = 0.111 in Frankfurt**, which opens **8.75 hours**
 > later. A statistical artifact has no reason to fade with elapsed time;
 > an information cascade does. **The contagion doesn't hand off — it
-> dissipates.** On the point-in-time sealed window (n=240) the edge is
-> **+6.7 pp with p = 0.1849: still not distinguishable from zero.**
+> dissipates.** On the point-in-time sealed window (n=248) the edge is
+> **+6.5 pp with p = 0.1849: still not distinguishable from zero.**
 >
 > Both windows are published, with what each one can and cannot prove.
 > Four workstreams of adversarial auditing sit underneath, including one
@@ -27,7 +27,7 @@
 ![tests](https://img.shields.io/badge/tests-299%20passing-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
 ![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
-![sellada](https://img.shields.io/badge/ventana%20sellada-%2B6.7%20pp%20·%20p%3D0.18%20·%20n%3D240-b45309?style=flat-square)
+![sellada](https://img.shields.io/badge/ventana%20sellada-%2B6.5%20pp%20·%20p%3D0.18%20·%20n%3D248-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
 
@@ -114,32 +114,34 @@ potencia.**
 ### Sellada — la única evidencia point-in-time
 
 Emitida **antes** del hecho, con timestamps UTC en SQLite y filas que
-jamás se reescriben. Al **30-ago-2026**, bajo la convención congelada en
-la §2.8 (`excluir_cero`):
+jamás se reescriben. Al **30-ago-2026**, sobre la **cadena canónica**
+(compuesta el 30-ago bajo la regla de `docs/SOMBRA.md`: hasta el 25-ago
+manda el Mac, desde el 26-ago el PC) y bajo la convención congelada en la
+§2.8 (`excluir_cero`):
 
 | | Acierto de gap | IC95 Wilson |
 |---|---|---|
-| **Modelo 4.6.0** | **67.9%** (163/240) | [61.8 – 73.5] |
-| **"Siempre al alza", mismas filas** | **61.3%** (147/240) | [55.0 – 67.2] |
-| **Ventaja** | **+6.7 pp** | **McNemar p = 0.1849** |
+| **Modelo 4.6.0** | **66.1%** (164/248) | [60.0 – 71.7] |
+| **"Siempre al alza", mismas filas** | **59.7%** (148/248) | [53.5 – 65.6] |
+| **Ventaja** | **+6.5 pp** | **McNemar p = 0.1849** |
 
 **Todavía NO distinguible de cero.** Y que se vea que **se mueve**: el
-25-ago, con n=223, era **+4.0 pp con p = 0.4633**. Cinco días y 17 filas
-después la ventaja subió 2.7 pp y el p bajó a menos de la mitad. Sigue sin
+25-ago, con n=223, era **+4.0 pp con p = 0.4633**. Cinco días y 25 filas
+después la ventaja subió 2.5 pp y el p bajó a menos de la mitad. Sigue sin
 cruzar el 5%, y se publica igual — con su fecha, para que dentro de tres
 meses se pueda leer la trayectoria y no solo el último número.
 
-| Otras métricas (n=240) | Valor | Caveat honesto |
+| Otras métricas (n=248) | Valor | Caveat honesto |
 |---|---|---|
-| Acierto del retorno de sesión | 60.4% · IC95 [54.1–66.4] | un solo régimen observado |
-| **MAE del gap** | **3.02 pp** vs **3.41** de predecir cero | **la magnitud sí aporta: −11.4%** |
-| Cobertura del intervalo 80% | 90.0% (nominal 80%) | intervalos **1.82× más anchos** de lo necesario |
-| Régimen | 1 sola etiqueta en 38 snapshots | la columna no tiene varianza |
+| Acierto del retorno de sesión | 60.9% · IC95 [54.7–66.8] | un solo régimen observado |
+| **MAE del gap** | **2.98 pp** vs **3.33** de predecir cero | **la magnitud sí aporta: −10.5%** |
+| Cobertura del intervalo 80% | 90.3% (nominal 80%) | intervalos **1.84× más anchos** de lo necesario |
+| Régimen | 1 sola etiqueta en 39 snapshots | la columna no tiene varianza |
 
 Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 `senales.db` en modo solo lectura.
 
-### Larga — reconstruida, 61× la muestra
+### Larga — reconstruida, 59× la muestra
 
 **n = 14.618 · +15.66 pp · McNemar p ≈ 0**, sobre ocho años y cuatro
 bolsas, con el modelo de producción reconstruido (misma función, misma
@@ -256,7 +258,7 @@ experimento** alrededor de ella:
 - **Incertidumbre de primera clase:** cada acierto se publica con su
   intervalo de Wilson 95%, la cobertura del intervalo del 80% tiene su
   curva de calibración, y la advertencia va fija en la UI: *la muestra
-  proviene de un solo régimen de mercado* — una sola etiqueta en 38
+  proviene de un solo régimen de mercado* — una sola etiqueta en 39
   snapshots, mientras la volatilidad realizada del SOX recorría un rango
   de 2×. La etiqueta no detecta la variación que sí existe.
 - **El denominador al lado del número**, nunca en una nota al pie. Una

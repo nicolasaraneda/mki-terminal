@@ -3348,3 +3348,128 @@ No se tocó `motor.py`, `senales.py` ni `snapshot.py`. **No se cambió
 5.0.3 quedó congelada al sellarla la primera fila el 26-ago (§12) — no
 corresponde bump, y si correspondiera sería decisión humana. **No se quitó
 `MKI_MODO`.** No se fusionó a `main`. No se pusheó.
+
+---
+
+## 37. El invariante 4 se corrigió, y la composición se ejecutó
+
+**Fecha:** 30-ago-2026, mismo día que el §36. Reporte:
+`data/sombra/switch_20260830.md`.
+
+### 37.1 El invariante estaba mal formulado, no era exigente de más
+
+El original decía:
+
+> *Toda fila con `fecha <= 2026-08-25` tiene `plataforma_version` 5.0.2 o
+> NULL.*
+
+**Afirmaba un VALOR cuando lo que había que verificar era PROCEDENCIA.** La
+región anterior al corte recorre `NULL → 5.0.0 → 5.0.1 → 5.0.2` porque cada
+snapshot **selló la versión vigente esa noche** — es `version.py`
+funcionando exactamente como está documentado, no un defecto de los datos.
+El invariante **contradecía el diseño del propio proyecto**.
+
+**Ninguna base lo cumplió jamás:** el Mac, el PC antes de componer y la
+base compuesta daban **10 «violaciones» las tres, idénticas**. Un
+invariante que ninguna instancia válida del sistema puede satisfacer no
+está midiendo el sistema: está midiendo su propia redacción.
+
+### 37.2 La corrección: 4a + 4b
+
+| | |
+|---|---|
+| **4a** | Toda fila con `fecha >= 2026-08-26` tiene `plataforma_version = 5.0.3` |
+| **4b** | La región `fecha <= 2026-08-25` es **idéntica a su fuente del Mac** en `plataforma_version`, **fila por fila**, sin afirmar ningún valor concreto |
+
+**La distinción que importa: no se relajó porque falló, se corrigió porque
+estaba mal formulado.** No son lo mismo y la diferencia es todo el valor
+del procedimiento:
+
+- **4a es igual de estricta** que la mitad correcta del original: exige un
+  valor exacto donde ese valor sí está definido, la región nueva.
+- **4b verifica fidelidad a la fuente**, que es **lo que el invariante
+  quería decir desde el principio**. Es más fuerte que enumerar valores: no
+  hay que acertarle a la lista histórica, hay que reproducirla entera.
+
+Resultado: **4a, 0 violaciones · 4b, 0 discrepancias sobre 36 filas.**
+
+### 37.3 Por qué esto no fue «arreglar sobre la marcha»
+
+Porque **la corrección no la hizo quien encontró el fallo, y no se hizo en
+el momento del fallo.** La secuencia quedó en dos commits separados:
+
+1. **§36 (`3fea7c4`)** — la composición se **detiene**, se reporta el
+   diagnóstico y **no se toca nada**. El árbol queda byte a byte idéntico.
+2. **§37** — Nicolás decide la nueva redacción, y **recién entonces** se
+   recompone y se ejecuta.
+
+Si hubiera reescrito el invariante al verlo fallar, el registro no
+distinguiría «estaba mal formulado» de «estorbaba». Con la parada de por
+medio, el registro **es** la distinción.
+
+### 37.4 La ejecución
+
+Recomposición desde cero, **nueve invariantes en verde**, reemplazo del
+árbol y **re-verificación contra el árbol real** (no contra la copia del
+scratchpad). SHA-256 antes y después en
+`~/mki-switch/respaldo-pc-20260830/`.
+
+El **invariante 9** volvió a pasar **byte a byte**: el bloque anclado en
+`CORTE_SECCION_2 = 2026-08-24` es idéntico —`excluir_cero` n=223, +4.0 pp,
+p=0.4633— y el contraste de la §2 reproduce **21/21**. La composición no
+movió la §2 ni un decimal, que era exactamente lo que había que demostrar.
+
+**Fidelidad de la composición: TOTAL.** Cada región es idéntica a su fuente
+en todas las columnas salvo el `id` surrogado.
+
+### 37.5 El track record canónico, y qué cambió
+
+| Convención | n | Modelo | Base | Ventaja | McNemar p |
+|---|---|---|---|---|---|
+| `estricta` | 253 | 66.0% | 58.5% | +7.5 pp | 0.1158 |
+| `verificador` | 253 | 66.0% | 60.5% | +5.5 pp | 0.2542 |
+| **`excluir_cero`** | **248** | **66.1%** | **59.7%** | **+6.5 pp** | **0.1849** |
+
+La base gana el **25-ago** (que el PC no tenía) y el **28-ago** (que el Mac
+dejó vacío), y pierde los dos días tardíos del Mac y el sábado espurio.
+**La conclusión no se mueve: la ventaja sigue sin ser distinguible de
+cero.** +6.7 pp con la base del PC sola, **+6.5 pp** con la canónica.
+
+### 37.6 El README se actualizó en el MISMO movimiento
+
+Publicar una portada invalidada por la operación que la acompaña es
+exactamente la clase de desfase que este proyecto documenta como errata en
+vez de cometer. **Doce bloques**, no solo el titular — porque varias cifras
+dependen de `n` y moverlas a medias es peor que no moverlas:
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Duelo sellado | 67.9% (163/240) vs 61.3% · +6.7 pp | **66.1% (164/248) vs 59.7% · +6.5 pp** |
+| Wilson modelo / base | [61.8–73.5] / [55.0–67.2] | **[60.0–71.7] / [53.5–65.6]** |
+| Retorno de sesión | 60.4% [54.1–66.4] | **60.9% [54.7–66.8]** |
+| MAE del gap | 3.02 vs 3.41 (−11.4%) | **2.98 vs 3.33 (−10.5%)** |
+| Cobertura 80% · ratio | 90.0% · 1.82× | **90.3% · 1.84×** |
+| Snapshots (régimen) | 38 | **39** |
+| Ventana larga / sellada | 61× | **59×** |
+| Trayectoria desde el 25-ago | 17 filas, +2.7 pp | **25 filas, +2.5 pp** |
+
+Además, la sección de la ventana sellada declara ahora su **procedencia**:
+que es la **cadena canónica** compuesta bajo la regla de `docs/SOMBRA.md`.
+Un número sin su procedencia, en una base que acaba de componerse de dos
+fuentes, sería un número sin denominador.
+
+Barrido con script: **ninguna de las 16 cifras invalidadas sobrevive** y
+las 17 nuevas están. (El único «17 filas» que queda es el del artefacto del
+join del §33, que no depende de `n`.)
+
+### 37.7 Lo que sigue pendiente, a propósito
+
+**`MKI_MODO=sombra` sigue puesto.** Componer la base canónica y cambiar el
+modo son **dos operaciones distintas**, y esta fue solo la primera: la
+máquina tiene ya la historia correcta, pero todavía no emite. Quitar
+`MKI_MODO` —y apagar antes los timers del Mac, nunca al revés— es el
+segundo movimiento, y es de Nicolás.
+
+No se tocó `motor.py`, `senales.py` ni `snapshot.py`. **No se cambió
+`PLATAFORMA_VERSION`**: 5.0.3 quedó congelada al sellarla la primera fila
+el 26-ago (§12). No se fusionó a `main`. No se pusheó.
