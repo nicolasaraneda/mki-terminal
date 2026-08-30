@@ -164,10 +164,11 @@ comparar los extremos.
 
 ---
 
-## ⚠ PREGUNTA ABIERTA — decisión de Nicolás, ANTES del switch
+## ✅ RESUELTA — la regla de composición canónica (30-ago-2026)
 
-**No la responde Claude. Tiene que quedar resuelta y escrita aquí antes de
-que el PC pase a titular. Si no, el track record se corrompe en silencio.**
+**Decidida por Nicolás el 30-ago-2026.** Estuvo SIN RESOLVER durante toda
+la ventana de sombra, que es como tenía que estar: se escribe aquí, con su
+porqué, **antes** de ejecutarse.
 
 Durante la ventana **las dos máquinas sellan las MISMAS fechas**. Cuando
 el PC pase a titular, su base va a tener la historia copiada del Mac **más
@@ -197,7 +198,103 @@ Notas para la decisión, sin tomarla:
   de TODAS las métricas**. No es una recomendación — es el precedente que
   existe.
 
-**Estado: SIN RESOLVER.**
+### La regla
+
+```
+fecha <= 2026-08-25   →   canónico el MAC
+fecha >= 2026-08-26   →   canónico el PC
+```
+
+**Ninguna fila de ninguna base se modifica.** La cadena canónica se
+**COMPONE** a partir de las dos fuentes bajo esta regla; las copias del Mac
+quedan intactas en `~/mki-switch/` como registro histórico y vía de
+rollback. «Las filas selladas jamás se reescriben» se cumple literalmente:
+no se reescribe ninguna, se elige de cuál de las dos historias viene cada
+tramo.
+
+### Por qué ahí, y por qué no es una preferencia
+
+**a) Desde el 26-ago el PC selló en horario y el Mac no.**
+
+| Fecha | PC | Mac |
+|---|---|---|
+| 26-ago | 22:15:07 · 28/28 | **27-ago 00:05:50 — 1 h 51 tarde** |
+| 27-ago | 22:15:03 · 28/28 | **22:46:08 — 31 min tarde** |
+| 28-ago | 22:15:03 · 28/28 | **no selló** |
+| 29-ago (sábado) | — | **selló** |
+
+**b) La regla CUBRE el 28-ago**, que el Mac dejó vacío.
+
+**c) La regla EXCLUYE la fila espuria del sábado 29-ago** del Mac —emitida
+con datos del viernes por un disparo tardío de launchd— **sin una excepción
+ad hoc**. Una regla que necesita una excepción para el caso incómodo no es
+una regla; ésta lo excluye por construcción.
+
+**d) Ambos conjuntos pasan la regla maestra de timing.** Los del Mac **no
+son inválidos, solo tardíos**, y se conservan íntegros en su propia base.
+No se descarta nada por ser malo: se elige por ser el registro operativo
+correcto de cada tramo.
+
+**Nota:** el corte también recupera el **25-ago**, que el PC no tiene
+(sella 24-ago y salta al 26). Sin la regla, ese día se perdía.
+
+### EL CRITERIO DE 3 DÍAS HÁBILES CON PARIDAD **NO SE CUMPLIÓ**
+
+**La racha quedó en 0/3.** El switch se hace por **fundamento operativo, no
+por paridad alcanzada**, y eso queda escrito con todas las letras.
+
+**Razón:** el criterio suponía **un titular estable contra el cual medir**,
+y el Mac dejó de serlo. No se puede medir paridad contra una referencia que
+sella 1 h 51 tarde, se salta un viernes y sella un sábado. **El criterio se
+volvió inaplicable**, no se incumplió por descuido ni se relajó por
+conveniencia.
+
+**Riesgo aceptado, declarado:** queda **sin verificar** que las dos
+máquinas no discrepen **computacionalmente** bajo alguna condición no
+observada.
+
+**Evidencia en contra del riesgo:** en ~40 predicciones selladas por ambas
+máquinas, la única diferencia de **nivel 1** fue **0.0001 en el R² de
+`6857.T` el 27-ago**, atribuible a que el Mac descargó 31 min más tarde.
+
+### Qué se compone, y con qué predicado
+
+Las **verificaciones acompañan a la señal que verifican**, no a su propia
+fecha: se cortan por `fecha_senal`. Lo mismo en `noticias.db`, donde
+`analisis` acompaña a su titular.
+
+| Base | Tabla | Columna de corte | Nota |
+|---|---|---|---|
+| `senales.db` | `snapshots` | `fecha` | fecha simple |
+| | `senales_ticker` | `fecha` | fecha simple |
+| | `divergencias` | `fecha` | fecha simple |
+| | `verificacion_apertura` | `fecha_senal` | sigue a la señal |
+| | `verificacion_puntaje` | `fecha_senal` | sigue a la señal |
+| `noticias.db` | `titulares` | **`substr(fecha,1,10)`** | ⚠ ver abajo |
+| | `analisis` | *(por `titular_id`)* | sigue a su titular |
+| | `resumen_dia` | `fecha` | fecha simple |
+
+> ⚠ **`titulares.fecha` NO es una fecha: es un timestamp ISO completo**
+> (`2026-08-25T00:10:51+00:00`). Un `fecha <= '2026-08-25'` literal manda
+> **todo el 25-ago al lado equivocado**, porque
+> `'2026-08-25T00:10:51+00:00' > '2026-08-25'` como cadena. El predicado
+> correcto es `substr(fecha,1,10)`. Es la única columna del sistema con
+> esta forma y la trampa es silenciosa: no falla, compone mal.
+
+### Lo único que cambia: los `id` surrogados
+
+Los `id` son claves autoincrementales, **no contenido sellado**. Al
+componer dos historias hay colisiones inevitables, así que:
+
+- **`senales.db`:** los `id` del Mac se conservan **idénticos**; los del PC
+  se desplazan por un offset constante y quedan como continuación
+  contigua. Es exactamente lo que habría pasado si esas filas se hubieran
+  añadido a la base del Mac en su momento.
+- **`noticias.db`:** los `id` de `titulares` del Mac se conservan
+  idénticos; los del PC se **remapean** (no son contiguos y colisionan en
+  139 casos) y el remapeo **se arrastra a `analisis.titular_id`**.
+
+Ningún valor medido —precio, gap, beta, R², timestamp, versión— se toca.
 
 ---
 
@@ -205,11 +302,14 @@ Notas para la decisión, sin tomarla:
 
 Todo esto en verde antes de que el PC pase a titular:
 
-- [ ] Tres días hábiles con `PARIDAD` (`--contador` lo dice), con el
-      titular sellando de verdad esas tres noches.
+- [x] ~~Tres días hábiles con `PARIDAD`~~ — **NO SE CUMPLIÓ, racha 0/3.**
+      Criterio declarado **INAPLICABLE** el 30-ago: suponía un titular
+      estable y el Mac dejó de serlo. Ver la sección de la regla canónica
+      arriba y `DECISIONES.md` §36. El switch se hace por fundamento
+      operativo, con el riesgo aceptado y escrito.
 - [ ] Código congelado durante toda la ventana en ambas máquinas.
-- [ ] La pregunta abierta de arriba, **resuelta y escrita** en
-      `DECISIONES.md`.
+- [x] La pregunta abierta de arriba, **resuelta y escrita** aquí y en
+      `DECISIONES.md` §36, **antes** de ejecutarse.
 - [ ] `data/sombra_telegram.log` revisado: lo que el PC habría mandado es
       lo que el Mac efectivamente mandó.
 - [ ] GATE 1 en verde en el PC.

@@ -3209,3 +3209,142 @@ una hipótesis propia y declara qué no puede evaluar. El argumento del WS7
 con la versión anterior: aquella lideraba con un negativo, ésta lidera con
 un mecanismo **y** con las tres veces que el proyecto se desmintió a sí
 mismo para llegar a él.
+
+---
+
+## 36. La regla canónica del switch, y por qué la composición se detuvo
+
+**Fecha:** 30-ago-2026. Reporte completo:
+`data/sombra/switch_20260830.md`.
+
+### 36.1 La regla, escrita ANTES de ejecutarla
+
+Decidida por Nicolás y escrita en `docs/SOMBRA.md` **antes** de tocar una
+sola fila — que es la mitad del valor de tenerla:
+
+```
+fecha <= 2026-08-25   →   canónico el MAC
+fecha >= 2026-08-26   →   canónico el PC
+```
+
+**Ninguna fila se modifica.** La cadena canónica se **COMPONE** desde dos
+fuentes; las copias del Mac quedan intactas como registro histórico y vía
+de rollback. «Las filas selladas jamás se reescriben» se cumple
+literalmente: no se reescribe ninguna, se elige de cuál de las dos
+historias viene cada tramo.
+
+No es preferencia. Desde el 26-ago el PC selló en horario (22:15:07 /
+22:15:03 / 22:15:03, descarga 28/28) y el Mac llegó **1 h 51 y 31 min
+tarde** y **no selló el 28**. La regla **cubre el 28-ago**, que el Mac dejó
+vacío; **excluye la fila espuria del sábado 29-ago** sin excepción ad hoc
+—una regla que necesita una excepción para el caso incómodo no es una
+regla—; y **recupera el 25-ago**, que el PC no tiene. Los sellos del Mac no
+son inválidos, solo tardíos, y se conservan íntegros en su propia base.
+
+### 36.2 El criterio de 3 días con paridad NO se cumplió: 0/3
+
+Queda escrito con todas las letras. **El switch se hace por fundamento
+operativo, no por paridad alcanzada.** El criterio suponía **un titular
+estable contra el cual medir**, y el Mac dejó de serlo: no se puede medir
+paridad contra una referencia que sella 1 h 51 tarde, se salta un viernes y
+sella un sábado. **El criterio se volvió inaplicable** — no se incumplió
+por descuido ni se relajó por conveniencia.
+
+**Riesgo aceptado:** queda **sin verificar** que las dos máquinas no
+discrepen **computacionalmente** bajo alguna condición no observada.
+**Evidencia en contra:** en ~40 predicciones selladas por ambas, la única
+diferencia de nivel 1 fue **0.0001 en el R² de `6857.T` el 27-ago**,
+atribuible a que el Mac descargó 31 min más tarde.
+
+### 36.3 La trampa que casi compone mal: `titulares.fecha` es un TIMESTAMP
+
+**`noticias.titulares.fecha` no es una fecha: es un ISO completo**
+(`2026-08-25T00:10:51+00:00`). Un `fecha <= '2026-08-25'` literal —el
+predicado que la regla dice, aplicado tal cual— manda **todo el 25-ago al
+lado equivocado**, porque como cadena `'2026-08-25T00:10:51+00:00' >
+'2026-08-25'`. Con el predicado ingenuo la partición daba 4.128/779; con
+`substr(fecha,1,10)`, **4.336/571**.
+
+Es la única columna del sistema con esa forma y **la trampa es silenciosa:
+no falla, compone mal**. Queda escrita en la tabla de predicados de
+`docs/SOMBRA.md` para que la próxima composición no la pise.
+
+### 36.4 Lo único que cambia: los `id` surrogados
+
+Los `id` son claves autoincrementales, **no contenido sellado**. Componer
+dos historias produce colisiones inevitables (24, 6 y 8 en `senales.db`;
+**139** en `titulares`). Se resolvió conservando **idénticos** los `id` del
+Mac y desplazando los del PC: offset constante en `senales.db` —queda una
+continuación contigua, exactamente lo que habría pasado si esas filas se
+hubieran añadido a la base del Mac en su momento— y **remapeo explícito**
+en `titulares`, con el mapa **arrastrado a `analisis.titular_id`**.
+
+**Fidelidad verificada: TOTAL.** Comparando todas las columnas excepto el
+`id`, cada región del compuesto es **idéntica** a su fuente, tabla por
+tabla. Ningún valor medido fue tocado.
+
+### 36.5 ⛔ DETENIDA: el invariante 4 falla, y falla en las tres bases
+
+De las nueve invariantes, **ocho pasan y la 4 falla**: 10 de 36 snapshots
+con `fecha <= 2026-08-25` no tienen `plataforma_version` 5.0.2 ni NULL.
+
+**No es un defecto de la composición: es la historia real de la
+plataforma.**
+
+| `plataforma_version` | n | Rango |
+|---|---|---|
+| `(NULL)` | 14 | 04-jul → 24-jul |
+| **`5.0.0`** | **5** | **27-jul → 31-jul** |
+| **`5.0.1`** | **5** | **03-ago → 07-ago** |
+| `5.0.2` | 12 | 10-ago → 25-ago |
+
+La plataforma evolucionó `NULL → 5.0.0 → 5.0.1 → 5.0.2 → 5.0.3` y cada
+snapshot **selló la versión vigente esa noche**, que es exactamente lo que
+el versionado dual existe para hacer. La prueba de que la composición no lo
+introdujo es que **las tres bases dan 10 violaciones**: el Mac, el PC antes
+de componer, y el compuesto. **El invariante, tal como está redactado,
+nunca lo cumplió ninguna base del proyecto.**
+
+**No se tocó el invariante y no se reemplazó nada.** El protocolo dice
+«restaurar el respaldo y reportar; no se arregla nada sobre la marcha», y
+reescribir un invariante que acaba de fallar es el ejemplo de manual de
+arreglar sobre la marcha. En una operación cuyo objeto es la integridad del
+track record, ese atajo vale menos que el retraso.
+
+Como la composición se construyó **en un archivo aparte** y solo se iba a
+reemplazar el árbol tras pasar las nueve, **no hubo nada que restaurar**:
+`senales.db` y `noticias.db` están **byte a byte idénticos** al respaldo
+(SHA-256 verificado). **El PC sigue en sombra.**
+
+### 36.6 El invariante 9 pasó, y es el que importaba
+
+El bloque anclado en `CORTE_SECCION_2 = 2026-08-24` es **idéntico byte a
+byte** antes y después: `estricta` n=228 +5.3 pp p=0.3193 · `verificador`
+n=228 +3.1 pp p=0.5854 · `excluir_cero` n=223 +4.0 pp p=0.4633. Contraste
+de la §2: **21/21 reproducen** en ambos lados.
+
+Ese ancla existe gracias al §34.10 —el instante «a la fecha» que el WS5
+tuvo que devolverle a la §2 cuatro horas antes—. Sin él, esta verificación
+habría sido imposible: el número de referencia se habría movido solo y no
+se habría podido distinguir «la composición rompió algo» de «el track
+record creció».
+
+### 36.7 Consecuencia que hay que resolver en el mismo movimiento
+
+La base canónica gana el 25-ago y el 28-ago y pierde los dos días tardíos
+del Mac: las verificaciones pasan de **245 a 253**, y el track record vivo
+bajo la convención congelada pasa de **n=240 · +6.7 pp · p=0.1849** a
+**n=248 · +6.5 pp · p=0.1849**.
+
+**El README publica las cifras viejas.** Hay que actualizarlo **en el mismo
+movimiento** que el switch, no después: publicar una portada que dice 240
+mientras la base canónica dice 248 es la clase de desfase que este proyecto
+documenta como errata en vez de cometer.
+
+### 36.8 Lo que NO se hizo
+
+No se tocó `motor.py`, `senales.py` ni `snapshot.py`. **No se cambió
+`PLATAFORMA_VERSION`**: el cambio de modo es configuración, no código, y
+5.0.3 quedó congelada al sellarla la primera fila el 26-ago (§12) — no
+corresponde bump, y si correspondiera sería decisión humana. **No se quitó
+`MKI_MODO`.** No se fusionó a `main`. No se pusheó.
