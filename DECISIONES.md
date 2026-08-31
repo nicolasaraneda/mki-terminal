@@ -3950,3 +3950,195 @@ declarada (`motor.py:215`, `api/main.py:666-668`, `backtest/baselines.py:141`)
 librería, no una preocupación sobre una versión futura no probada.
 
 No se tocó `motor.py`, `senales.py`, `snapshot.py`, ni ningún timer.
+
+---
+
+## 44. Pre-registro de la hipótesis condicional (`GEMELO/CONDICIONAL/DISEÑO.md`)
+
+**Fecha:** 31-ago-2026. Documento nuevo, congelado ANTES de correr ningún
+análisis y antes de caracterizar el bloque de julio (ver §45). Pregunta que
+responde: si la ventaja del track record sellado es condicional a
+condiciones de mercado identificables, en vez de constante en el tiempo —
+hipótesis post-hoc, declarada como tal, en la misma línea del WS5 de GEMELO
+6.0.0 (relevo asiático).
+
+**Qué fija.** Seis condiciones candidatas: volatilidad del SOX, magnitud de
+la sesión de NY, dispersión asiática, densidad de noticias, distancia al
+cierre trimestral, y magnitud predicha por el propio modelo. Criterios de
+victoria y de rechazo congelados antes de cualquier corrida. Declara siete
+intentos nuevos para el DSR acumulado — el N pasaba de 25 a 32 solo con este
+pre-registro, antes de sumar nada de lo que vino después. Congela el umbral
+de corte "alto/bajo" de cada condición como la mediana de la ventaja
+calculada a través de TODAS las fechas de la ventana larga; ese detalle,
+que acá parece un tecnicismo de diseño, resulta central en §45.
+
+**Por qué.** Mismo régimen que el resto de GEMELO: nada se corre sin que los
+criterios de victoria y rechazo estén escritos primero, precisamente para
+poder auditar después si un análisis se desvió de lo que prometió medir.
+
+**Qué se descartó y por qué.** Fijar el umbral "alto/bajo" con datos de
+entrenamiento en vez de con la ventana completa — se descartó porque abriría
+la puerta exacta que un pre-registro existe para cerrar: elegir el corte
+después de ver qué corte conviene.
+
+**Qué queda abierto.** El pre-registro no corre nada. El primer uso real de
+sus criterios, y el primer defecto encontrado por desviarse de ellos sin
+declararlo, se documentan en §45.
+
+**Cómo se revierte.** Es un documento; no toca código ni bases de datos. Se
+puede reescribir mientras no se haya visto un resultado bajo él — una vez
+visto, cualquier cambio a los criterios es el tipo de movimiento que este
+mismo documento existe para impedir.
+
+---
+
+## 45. ERRATA — retractación del veredicto de la concentración de julio (`GEMELO/resultados/concentracion.md`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Retractar públicamente la conclusión original de
+`GEMELO/resultados/concentracion.md`, que citaba la hipótesis condicional del
+§44 como evidencia de que la concentración de julio era compatible con puro
+azar. Tras dos rondas de revisión adversaria, el documento final no sostiene
+esa conclusión: dice, en cambio, que la evidencia disponible hoy no alcanza
+para decidir.
+
+**Contexto.** El documento analiza si la ventaja sellada del campeón (+6.5pp)
+es real o un artefacto de que toda la ventaja vive en un bloque de 6 fechas
+(15 al 23-jul-2026, n=44, +40.9pp, McNemar p=0.001), mientras el resto de la
+ventana (n=204) dio -1.0pp, p=0.920. La primera versión concluyó, entre otras
+cosas, que un modelo condicional basado en las seis condiciones del §44
+"predecía que julio fuera un bloque bajo", y de ahí leyó que la concentración
+de julio era compatible con azar puro.
+
+**El defecto más grave, encontrado por `auditor-lookahead`.** El §44 había
+congelado el umbral "alto/bajo" como la mediana de la ventaja a través de
+TODAS las fechas de la ventana larga — que resulta ser exactamente 0.0,
+porque más de la mitad de las fechas tiene ventaja cero. El análisis
+publicado usó, en cambio, sin declararlo, la mediana calculada solo sobre un
+subconjunto de entrenamiento (12.9). Bajo el umbral realmente congelado,
+julio clasifica como ALTO (el criterio no falla). Bajo el umbral que
+efectivamente se usó, clasifica BAJO (el criterio falla). La conclusión
+publicada dependía por completo de esta desviación no declarada de un
+criterio pre-registrado — exactamente la clase de cosa que un pre-registro
+existe para impedir.
+
+**Defectos adicionales, mismo revisor.** El "bloque de julio" evaluado no
+correspondía a una unidad de la grilla de bloques que el propio análisis
+usaba para todo lo demás (comparación fuera de grilla). Una compuerta de
+causalidad que el pre-registro exigía correr ANTES del análisis (invariancia
+a truncar en el tiempo, para cada condición candidata) nunca se corrió. El
+embargo usado en el split de entrenamiento/prueba no fue la maquinaria de
+purge/embargo que el proyecto ya tiene construida (`backtest/baselines.py`,
+`EMBARGO_DIAS=5`), sino uno hecho a mano. Los conteos de filas y fechas de la
+ventana larga usados no reconciliaban entre los propios pasos internos del
+análisis, ni con la cifra canónica del README (n=14.618). Y el análisis
+completo nunca se guardó como código versionado — vivió en comandos sueltos
+de una sesión de trabajo que se perdieron al cerrarse; solo se pudo auditar
+porque unos archivos intermedios sobrevivieron por casualidad en un
+directorio temporal.
+
+**Lo que encontró `estadistico-adversario`, en la parte del análisis que sí
+se mantuvo.** No en la hipótesis condicional sino en la caracterización de
+la concentración misma: un scan-statistic mal construido, sin estandarizar
+por tamaño de muestra, que hacía que la prueba no midiera nada útil — se
+descartó esa versión y se mantuvo una de ancho fijo que sí es válida. Un
+desglose de la ventaja por bolsa de valores (Fráncfort, Seúl, Taipéi, Tokio)
+que citaba por error la ventana COMPLETA en vez de solo el bloque de julio —
+corregido: el bloque real muestra que Fráncfort no aporta nada al bloque,
+contra lo que el documento afirmaba originalmente. Y una comparación entre
+dos convenciones de medición distintas (`estricta` y `excluir_cero`)
+presentada como si fueran la misma serie temporal, lo que invertía el signo
+de una de las cifras citadas.
+
+**Revisión posterior de `guardian-constitucion` sobre la corrección.** El
+intento de arreglar el intervalo de confianza de la diferencia bloque-resto
+había reintroducido, de forma versionada esta vez, el mismo tipo de defecto
+que la corrección buscaba eliminar: un remuestreo bootstrap hecho a mano
+(iid, fecha por fecha) en vez de la maquinaria de bootstrap circular de
+bloques que el proyecto ya tiene construida (`backtest/inferencia.py`,
+función `_remuestrear_circular`). Se corrigió usando esa maquinaria, con la
+particularidad de que un grupo de solo 6 fechas no admite un tamaño de
+bloque circular mayor a 1 sin degenerar (se comprobó y se documentó).
+También señaló que faltaban los intervalos de Wilson en la tabla por bolsa,
+y que dos comparaciones de McNemar presentadas como significativas no
+sobreviven una corrección por multiplicidad sobre las 8 comparaciones sin
+corregir.
+
+**Resultado final, tras las dos rondas de corrección.** El documento
+retracta explícitamente la conclusión de que la hipótesis condicional
+"falla" o de que la concentración de julio es puro azar. El veredicto final
+es más matizado y más incómodo: la evidencia disponible hoy, medida con el
+rigor correcto, NO ALCANZA para decidir entre "hay una condición
+identificable" y "es una racha de azar" — ambas lecturas quedan abiertas. Lo
+que sí queda sólido: (a) el campeón sigue sin pasar su propio criterio de
+rechazo R2 en ninguna de las tres convenciones de medición; (b) la ventana
+sellada completa sigue sin ser distinguible de cero (McNemar p=0.185); (c) la
+diferencia entre el bloque de julio y el resto de la ventana está al filo de
+la significancia (no es indistinguible de cero, tampoco es una prueba
+limpia), con un intervalo de confianza correctamente calculado de [-2.9pp,
++86.0pp] por bootstrap circular de bloques.
+
+**Deuda declarada: `N_intentos` desactualizado.** El `N_intentos` acumulado
+del DSR (declarado en `GEMELO/relevo_asiatico.py`, constante
+`N_INTENTOS_WS5`, hoy en 25 sin actualizar) debería subir a al menos 43
+contando los intentos de este frente (7 del pre-registro condicional del
+§44, 3 scan-statistics, 8 comparaciones por bolsa). La actualización de esa
+constante de código, coordinada con su test asociado, queda pendiente, fuera
+del alcance de esta corrida.
+
+**Por qué esto no es un fracaso.** Es el proceso funcionando exactamente
+como debe. Un pre-registro con criterios congelados existe precisamente para
+que una desviación como esta se pueda detectar y corregir en vez de pasar
+desapercibida. La retractación pública de una conclusión propia, con el
+detalle completo de por qué, es más valiosa para la integridad del proyecto
+que si la conclusión errónea nunca se hubiera escrito y nadie la hubiera
+podido cazar.
+
+---
+
+## 46. Frente D: registro de divergencias de réplica, ejecutable (`replica.py`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Implementar, sin activar nada, las piezas ejecutables de
+`docs/REPLICA.md` (§41) que no requerían la firma de Nicolás.
+
+**Por qué.** El diseño de §41 ya distinguía qué necesitaba decisión humana y
+qué era mecánica de registro pura; esta tanda ejecuta solo la segunda parte.
+
+**Qué se construyó.** Módulo nuevo `replica.py`, con una base propia
+(`data/divergencias_replica.db`, nunca `senales.db`/`noticias.db`) y una
+tabla `divergencias_replica` (fecha, nivel, ambito, clave, campo,
+valor_titular, valor_sombra, clase, tolerancia_excedida, resuelto_como,
+detectado_en) que registra hallazgos de comparación como auditoría — nunca
+los resuelve. `resuelto_como` queda siempre en NULL, porque la regla de
+"quién gana" ante una divergencia sigue siendo, explícitamente, decisión de
+Nicolás, no de este código. El módulo solo hace INSERT, nunca UPDATE ni
+DELETE.
+
+Se agregó un parámetro opcional `fecha_corte` a
+`comparar_sombra.comparar_fecha()` — aditivo, con un default que preserva el
+comportamiento existente byte a byte, así que ningún llamador existente
+cambia — para que un uso de réplica permanente pueda apoyarse solo en la
+defensa estructural (huella de base copiada) en vez de una fecha de corte
+fija, que `docs/REPLICA.md` ya había señalado como sin sentido para un rol
+permanente.
+
+13 tests nuevos en `tests/test_replica.py`, contra bases sintéticas en
+directorios temporales — nunca contra las bases reales.
+
+**Qué se descartó y por qué.** Conectar esto a algún timer, cron o al script
+`mki`: nada de eso se hizo. Es código que existe y se prueba; nadie lo
+invoca todavía. Activar cualquier réplica sigue siendo decisión de Nicolás.
+
+**Qué queda abierto.** Todo lo que `docs/REPLICA.md` §5 ya marcaba como
+firma de Nicolás: si se activa una réplica en absoluto, con qué máquina, la
+regla de "quién gana" ante una divergencia, el retiro de `FECHA_CORTE`, la
+política de retención.
+
+**Cómo se revierte.** Es aditivo y no está conectado a nada: borrar
+`replica.py` y el parámetro nuevo de `comparar_sombra.comparar_fecha()` no
+rompe ningún llamador existente.
+
+Verificado por `guardian-constitucion`: limpio, sin hallazgos.
