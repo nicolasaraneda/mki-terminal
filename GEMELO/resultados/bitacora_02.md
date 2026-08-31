@@ -268,3 +268,59 @@ por hito, hora UTC. Nicolás no contesta durante esta sesión.
   completo de guardian-constitucion por presupuesto de la corrida — las
   cuatro observaciones puntuales quedaron atendidas y verificadas a mano
   contra el propio script corregido.
+- 20:05 UTC — Commiteado todo (2 commits: `4e81db3` Frente D, `ff3efd7`
+  el resto). `ESTADO.md` regenerado (50 líneas exactas). Actas
+  §44/§45/§46 escritas en DECISIONES.md. Suite completa 329 passed en
+  ambos commits (hook de pre-commit). Nada enviado al remoto.
+
+## Cierre — handoff para Nicolás
+
+**Hecho y commiteado (2 commits nuevos sobre los 3 de la corrida
+anterior, nada enviado al remoto):** Frente A investigó si la ventaja
+sellada (+6.5pp) es real o vive por completo en un bloque de 6 fechas de
+julio. Encontró el bloque (confirmado tres veces), construyó un
+pre-registro post-hoc para probar si hay una condición identificable
+detrás, y publicó una v1 que concluía "es azar" — **esa conclusión no
+sobrevivió dos auditorías independientes** (el criterio de decisión se
+había movido sin declararlo, invirtiendo el veredicto) y una tercera que
+encontró que la primera corrección reintrodujo, versionada, el mismo tipo
+de defecto que corregía. La versión final RETRACTA la conclusión y deja
+un veredicto más incómodo y más honesto: con la evidencia de hoy, no se
+puede decidir si hay una condición real o es una racha de azar. Lo
+sólido: el campeón no pasa su propio criterio de rechazo R2, y la ventana
+completa sigue sin ser distinguible de cero. Frente B diseñó el pipeline
+RTL con presupuesto de recursos medido y pérdida de precisión
+cuantificada. Frente D construyó las piezas ejecutables de la réplica
+(registro de divergencias, nada activado). Frente E consolidó ocho
+decisiones pendientes en un solo documento, priorizadas por costo de
+postergarlas — la réplica queda primera porque es la única cuyo costo ya
+se materializó una vez.
+
+**A medias, y por qué:** el Frente C (parche documental del README) quedó
+desactualizado por la corrección del Frente A y no se reescribió —
+presupuesto de la corrida, no descuido; está marcado explícitamente como
+tal. `GEMELO/relevo_asiatico.py` sigue con `N_INTENTOS_WS5=25` cuando
+debería ser ≥43 — actualizar esa constante junto con su test es trabajo
+de producción-adyacente que quedó fuera de esta corrida a propósito.
+
+**Lo que más vale la pena leer primero, si el tiempo es corto:**
+`GEMELO/resultados/concentracion.md` (el encabezado con la nota de
+corrección resume las tres rondas de revisión) y
+`GEMELO/resultados/cola_decisiones.md` (las ocho decisiones, en orden).
+
+**Espera decisión de Nicolás, en el orden de `cola_decisiones.md`:** (1)
+activar la réplica y con qué máquina; (2) qué hacer con la lectura del
+track record tras esta corrección; (3) umbrales de `RELEVO.md`; (4) placa
+FPGA; (5-8) las preguntas de menor costo de postergar, detalladas en el
+propio documento.
+
+**Lo que le toca a Nicolás, en orden:** revisar `git log --oneline -7`
+(los 5 commits de las dos corridas) y `git diff e815249..HEAD --stat`
+(el diff completo, ambas corridas), y si se ve bien, enviarlo al remoto
+él mismo desde su propia terminal — ese paso es exclusivamente suyo, en
+ningún caso del agente.
+
+Nada se envió al remoto. No se tocó `motor.py`, `senales.py`,
+`snapshot.py`, `universo.py`, `.env`, ningún timer, ni `modo.py`. `.env`
+sigue en 644 (sigue bloqueado para el agente cambiarlo) — pendiente a
+mano.

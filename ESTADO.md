@@ -4,47 +4,47 @@ Resumen curado de dónde está el proyecto. Se regenera al cierre de cada sesió
 con la skill `/cierre-sesion`. **Máximo 50 líneas.** No es historia: la historia
 vive en `DECISIONES.md`. Las cifras publicadas viven en `README.md`.
 
-**Actualizado:** 31-ago-2026 · verificar con el agente `orientador`
+**Actualizado:** 31-ago-2026 (segunda corrida) · verificar con `orientador`
 
 ## Producción
 
 - **Titular: este PC (Windows/WSL), en `main`.** Switch completo, 6 timers
-  activos, emite. El Mac quedó fuera. Al modo se le **pregunta a `modo.py`**.
-- **No hay réplica** (`docs/REPLICA.md`, nuevo, es diseño — nada implementado).
+  activos, emite. Al modo se le **pregunta a `modo.py`**.
+- **No hay réplica activa.** `replica.py` (registro de divergencias) y
+  `fecha_corte` en `comparar_sombra.py` ya existen y están probados (329
+  tests) — nada activado, nada decidido sobre "quién gana".
 - Modelo 4.6.0 congelado, `PLATAFORMA_VERSION` 5.0.3 desde el 26-ago. Último
   sello: 2026-08-28 · N verificaciones: 253 (248 bajo `excluir_cero`).
 
 ## Errata pendiente de registrar
 
-Actas 36/37 y docs del Proyecto dicen `MKI_MODO=sombra` puesto y segundo
-movimiento pendiente. **Ya no es cierto** (30-ago, `modo.py` → `titular`).
-Manda la máquina; se documenta como errata, no se corrige hacia atrás.
+Actas 36/37 dicen `MKI_MODO=sombra` puesto — **ya no es cierto** (30-ago,
+`modo.py` → `titular`). Manda la máquina.
 
 ## Frente · GEMELO 6.0.0
 
-- WS1-WS5 recorridos (WS2b negativo, WS5 REFUTADO). **31-ago:**
-  `GEMELO/RELEVO.md` (protocolo de relevo, sin retador real hoy) y
-  `GEMELO/MICRO/` (microtrading/latencia, comparte pregunta con el proyecto
-  de Arquitectura de Computadores de Nicolás — la captura en vivo muere por
-  3-4 órdenes de magnitud en la red, el pipeline RTL académico sobrevive).
-- **Hallazgo (`dos_ventanas.md`):** toda la ventaja sellada (+6.5pp) vive en
-  6 fechas de 15-23-jul; el resto (n=204) da -1.0pp.
-- §34.9 (IC del ΔMAE): **resuelto, §38**, no cambia en los 12 pares WS2b+WS3.
-- Ningún documento designa el siguiente paso EXPERIMENTAL. Decisión de Nicolás.
+- **La concentración de julio, corregida dos veces (§45):** la v1 de
+  `concentracion.md` concluía "es azar" apoyada en un criterio movido sin
+  declararlo (invertía el veredicto). **Retractado.** Hoy: la evidencia
+  NO alcanza para decidir "hay condición" vs. "es azar" — sí es sólido
+  que el campeón no pasa su propio R2 y que la ventana completa sigue sin
+  ser distinguible de cero (p=0.185).
+- `GEMELO/MICRO/RTL.md` (pipeline RTL) y `GEMELO/RELEVO.md` (relevo)
+  siguen vigentes. `parche_documental.md` quedó **desactualizado** por la
+  corrección de arriba — no aplicar sin revisarlo primero.
+- N del DSR: **≥43** (`relevo_asiatico.py` sigue en 25, sin actualizar).
 
 ## Esperando decisión de Nicolás
 
-1. Las cinco preguntas del WS4 (§33.8, 8 filas del 29-jul); si `.claude/`
-   se versiona o queda local a esta máquina.
-2. Placa FPGA (Go Board vs. Arty A7-100T) — `GEMELO/MICRO/fpga.md`.
-3. Umbrales de `GEMELO/RELEVO.md` (margen 5pp, n≥150/60d) y si se activa una
-   réplica permanente (`docs/REPLICA.md`, con qué máquina).
-4. Expedientes 6B/6C (`GEMELO/resultados/expedientes.md`): visibilidad de
-   `ts_emision`, estampida de `Persistent=true` (sin discusión previa),
-   alcance del pin de pandas.
+Lista consolidada y priorizada por costo de postergar (no tamaño) en
+`GEMELO/resultados/cola_decisiones.md`. Primero: activar la réplica y con
+qué máquina — único ítem cuyo costo de espera ya se materializó una vez
+(el disco que falló). Después: la lectura del track record, y los
+umbrales de `RELEVO.md`.
 
 ## Deudas y asimetrías declaradas
 
-- `pd.concat`/`Pandas4Warning`: contenida por el pin (3 sitios, confirmado
-  en vivo esta noche). Bloquea upgrade — expediente 6C con opciones.
+- `pd.concat`/`Pandas4Warning`: contenida por el pin (3 sitios) — expediente 6C.
 - Intérprete: Mac 3.11.15, PC 3.14.4. Decisión: no igualar.
+- Lección de §45: todo análisis estadístico va a un script versionado
+  desde el primer cómputo, nunca a comandos sueltos.
