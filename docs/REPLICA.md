@@ -159,3 +159,145 @@ ningún agente:
 - **Cualquier cambio de código real** — este documento es puramente de
   diseño; nada de lo descrito acá está implementado, y no se implementa sin
   que Nicolás decida activarlo.
+
+## 6. Ensayo general — qué se probó, con qué datos, qué mostró
+
+Esto es un **registro de lo ya ejecutado**, distinto del §5 (que es la
+lista de lo que todavía espera firma). Nada de lo que sigue activó nada:
+corrió contra bases sqlite sintéticas, temporales, en un directorio
+`tempfile.mkdtemp()` que se borra al final de la corrida — nunca contra
+`senales.db`, `noticias.db` ni la ruta real de producción
+`data/divergencias_replica.db`.
+
+**Script:** `scripts/ensayo_replica.py` (versionado, re-ejecutable con
+`python scripts/ensayo_replica.py`; el motivo de que sea un script y no
+comandos sueltos de una sesión está en su propio encabezado, y en
+`DECISIONES.md` §45 — un análisis completo que vivió solo en comandos
+sueltos de una sesión se perdió al cerrarla).
+
+**Qué construye:** dos fuentes sintéticas — una que hace de **titular**
+(dos `DataFrame`, como si vinieran de `git show
+origin/main:data/backups/*.csv`) y una que hace de **réplica** (una base
+sqlite real y propia del ensayo, con tablas `snapshots` y
+`senales_ticker`) — y una cadena de **8 fechas** (2026-09-01 a 2026-09-10)
+que ejercitan las tres ramas del enunciado más sus sub-casos:
+
+| Fecha | Qué ensaya | Veredicto esperado |
+|---|---|---|
+| 2026-09-01 | ambas sellaron e igual | `PARIDAD` |
+| 2026-09-02 | mismos insumos, `beta` distinto | `DIVERGENCIA` (clase `computo`) |
+| 2026-09-03 | `sox_fecha` distinto | `DIVERGENCIA` (clase `insumos`) |
+| 2026-09-04 | el titular selló, la réplica no | `DIVERGENCIA` (clase `existencia`, sello ausente) |
+| 2026-09-05 | ambas sellaron el snapshot igual, conjunto de tickers distinto | `DIVERGENCIA` (clase `existencia`, conjunto) |
+| 2026-09-08 | el titular no selló (ni la réplica esa noche) | `DIA_NO_COMPUTABLE` |
+| 2026-09-09 | ancla: el titular SÍ publicó esta fecha, por eso 09-08 es ausencia definitiva | `PARIDAD` |
+| 2026-09-10 | el titular no aparece y tampoco hay fecha suya posterior | `PENDIENTE_PUBLICACION` |
+
+**Cómo se acopla al comparador real sin tocar nada vivo:** el único punto
+de acceso a datos "vivos" de `comparar_sombra.py` es
+`leer_tabla_local(tabla, fecha)`, que en producción abre `senales.db` en
+`mode=ro`. El ensayo reemplaza esa función, solo durante su propia
+ejecución y restaurándola en un `finally`, por una versión que lee de la
+base sqlite sintética de la réplica. `comparar_fecha` y
+`replica.registrar_comparacion` corren exactamente igual que en
+producción — es la cadena completa, no una simulación de la cadena.
+
+**Qué mostró, con la salida real de la corrida** (íntegra en
+`data/replica_ensayo/reporte_ensayo.md`, timestamp de esa corrida
+`2026-08-31T19:13:22.862021+00:00`):
+
+Caso 1 (coinciden):
+
+```
+## Caso 1 — coinciden — 2026-09-01
+
+- Veredicto obtenido: **PARIDAD**  (esperado: PARIDAD)
+- Motivo: todos los campos de nivel 1 y 2 coinciden
+- Hallazgos nivel 1/2 de `comparar_fecha`: 0
+- Filas insertadas por `registrar_comparacion`: 0
+```
+
+Caso 2 (difieren), con procedencia completa y clase correcta en los cuatro
+sub-casos ensayados:
+
+```
+## Caso 2 — difieren (cómputo) — 2026-09-02
+- Veredicto obtenido: **DIVERGENCIA**  (esperado: DIVERGENCIA)
+    - campo=beta clase=computo titular='0.38' sombra='0.41' resuelto_como=None
+
+## Caso 2 — difieren (insumos) — 2026-09-03
+- Veredicto obtenido: **DIVERGENCIA**  (esperado: DIVERGENCIA)
+    - campo=sox_fecha clase=insumos titular='2026-09-02' sombra='2026-09-03' resuelto_como=None
+
+## Caso 2 — difieren (existencia, sello ausente) — 2026-09-04
+- Veredicto obtenido: **DIVERGENCIA**  (esperado: DIVERGENCIA)
+- Motivo: el titular selló y la SOMBRA no. No es un día no computable: es
+  la sombra fallando, que es justo lo que la ventana existe para detectar.
+    - campo=sello_ausente clase=existencia titular=None sombra=None resuelto_como=None
+
+## Caso 2 — difieren (existencia, conjunto de tickers) — 2026-09-05
+- Veredicto obtenido: **DIVERGENCIA**  (esperado: DIVERGENCIA)
+- Hallazgos nivel 1/2 de `comparar_fecha`: 4
+    - campo=tickers_sellados clase=existencia titular='2 tickers' sombra='1 tickers' resuelto_como=None
+    - campo=ticker_ausente_en_sombra clase=existencia titular='005930.KS' sombra=None resuelto_como=None
+    - campo=numero_de_predicciones clase=existencia titular='2' sombra='1' resuelto_como=None
+    - campo=filas_selladas clase=existencia titular='2' sombra='1' resuelto_como=None
+```
+
+Caso 3 (una no selló), sin ninguna fila de divergencia falsa por una
+ausencia legítima:
+
+```
+## Caso 3 — no selló (DIA_NO_COMPUTABLE) — 2026-09-08
+- Veredicto obtenido: **DIA_NO_COMPUTABLE**  (esperado: DIA_NO_COMPUTABLE)
+- Motivo: el titular publicó sellos de fechas posteriores pero ninguno de
+  esta, así que la ausencia es DEFINITIVA: no selló. Y la sombra tampoco.
+  Sin sello del titular no hay contra qué comparar: día PERDIDO, no día
+  bueno.
+- Filas insertadas por `registrar_comparacion`: 0
+
+## Caso 3 — no selló (PENDIENTE_PUBLICACION) — 2026-09-10
+- Veredicto obtenido: **PENDIENTE_PUBLICACION**  (esperado: PENDIENTE_PUBLICACION)
+- Motivo: no hay fila del titular en origin/main para esta fecha, y
+  tampoco hay sellos suyos de fechas posteriores: no se puede distinguir
+  'no selló' de 'selló y aún no pusheó'. NO es un día perdido — vuelve a
+  correr después del push del Mac (manual, tras las 20:30) y el día se
+  resuelve de verdad.
+- Filas insertadas por `registrar_comparacion`: 0
+```
+
+Resumen final de la corrida:
+
+```
+## Resumen
+
+- Fechas ensayadas: 8
+- Filas totales en `divergencias_replica` (base temporal del ensayo): 7
+- `resuelto_como` NULL en todas las filas: True
+
+### Sin hallazgos
+
+Los tres casos se comportaron exactamente como predice `docs/REPLICA.md`:
+paridad sin ruido, divergencia con procedencia completa y clase correcta,
+ausencia legítima sin filas falsas.
+```
+
+**Hallazgo del ensayo: ninguno.** Las tres piezas (`comparar_sombra.py`,
+`replica.py`, y el diseño de `docs/REPLICA.md` §1–§3) se comportaron
+exactamente como el diseño predecía, incluyendo los cuatro sub-casos de
+"difieren" (cómputo, insumos, y las dos variantes de existencia) y los dos
+sub-veredictos de "una no selló". El script queda versionado y
+re-ejecutable — una repetición futura, tras cualquier cambio en
+`comparar_sombra.py` o `replica.py`, puede volver a correrlo y comparar
+contra esta misma tabla sin tener que reconstruir el escenario de memoria.
+
+## 7. El runbook de activación
+
+Los pasos exactos para el día que Nicolás decida activar la réplica están
+en `docs/RUNBOOK_REPLICA.md`, no en este documento: este archivo es diseño
+y evaluación de qué hace falta decidir (§1–§6); el runbook es
+procedimiento operativo puro, con verificación paso a paso, en el mismo
+espíritu que `docs/SOMBRA.md` es el procedimiento operativo del switch
+titular/sombra y no su documento de diseño. Separarlos evita que una
+edición operativa (agregar un paso, corregir un comando) se confunda con
+una decisión de diseño nueva, y viceversa.

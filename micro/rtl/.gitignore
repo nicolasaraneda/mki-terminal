@@ -1,0 +1,6 @@
+# Productos de compilación y síntesis: se regeneran con `make` en minutos y
+# pesan (los .json de netlist llegan a varios MB). Lo que SÍ se versiona es el
+# código fuente, los vectores de `vectores/` y los documentos — o sea, todo lo
+# que hace falta para volver a producir estos archivos.
+sim/
+sintesis/

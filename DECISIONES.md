@@ -4142,3 +4142,657 @@ política de retención.
 rompe ningún llamador existente.
 
 Verificado por `guardian-constitucion`: limpio, sin hallazgos.
+
+---
+
+## 47. El diseño secuencial pre-registrado, versión 4 — TERMINADO Y NO CONGELADO (`GEMELO/SECUENCIAL/`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Congelar un diseño secuencial pre-registrado
+(grupo-secuencial, O'Brien-Fleming, K=4 miradas) para responder, con datos
+NUEVOS y reglas escritas antes de verlos, si el modelo 4.6.0 supera a
+"siempre al alza" sobre la ventana sellada — la pregunta que dos rondas de
+análisis pesado sobre las mismas 248 filas ya habían mostrado que no se
+puede seguir respondiendo mirando más el mismo dato.
+
+**Por qué.** El proyecto viene mirando la ventaja sellada del campeón
+contra su baseline sin declarar cada mirada como una oportunidad de cruzar
+un umbral. Reconstruidas de `DECISIONES.md`, `README.md` y el historial de
+commits: doce lecturas distintas, en cinco fechas, con siete valores de n
+(184, 223, 228, 240, 245, 248, 253) — tabla completa en
+`GEMELO/SECUENCIAL/DISEÑO.md` §A1. Entre el 26-jul (n=80) y el 25-ago
+(n=228) no hay registro de cuántas veces se miró el número intermedio: el
+pasivo real es ≥12, no exactamente 12.
+
+El costo de eso, con el umbral nominal 0.05 en cada mirada, es un RANGO, no
+un número: piso 0.0905 usando solo las 12 lecturas reconstruidas, techo
+0.1779 poblando el hueco del mes sin registro — **α ∈ [0.09, 0.18], entre
+1.8× y 3.6× el nominal declarado.** Citar solo el piso habría sido el mismo
+error que el documento reprocha.
+
+Esa inflación nunca produjo un falso positivo en la cifra PRINCIPAL: el p
+más chico jamás observado para la ventaja global de la ventana sellada es
+0.1158. Pero sí lo produjo en subgrupos mirados en la misma sesión, con la
+misma libertad, y hubo que retractarlos: bloque 15–23-jul (n=44, p=0.001),
+Tokio (n=24, p=0.021), Seúl (n=10, p=0.031) — ninguno sobrevive Bonferroni
+×8. Ese es exactamente el falso positivo que un pasivo no declarado
+predice, y ya ocurrió: no es un riesgo futuro, es historial reciente del
+proyecto.
+
+La pregunta queda en forma decidible (§A2): H₀ dice que sobre emisiones
+selladas NUEVAS (fecha de emisión posterior al 2026-08-31) la tasa de
+acierto direccional del modelo 4.6.0 y la de "siempre al alza" son
+iguales; H₁ bilateral. Estadístico: McNemar pareado bajo la convención
+congelada `excluir_cero`, estudentizado por una varianza cluster-robusta
+re-estimada en cada mirada (se pre-registra la fórmula, §A3.2, no un valor
+congelado). Las 248 filas de hoy NO entran en el estadístico ni en la
+decisión; entran solo como tres parámetros de estorbo que fijan el
+calendario (p_d=0.516, DEFF≈3.6, ritmo 6.5 filas/día hábil).
+
+El **MDE de +10 pp es una PROPUESTA, no una decisión tomada acá**, porque
+mueve el horizonte "por un factor de ocho" (palabras del propio documento,
+sección "Qué NO se hace"), según dónde se fije: +15.66 pp llegaría en
+ene-2027, el propuesto +10 pp en jul-2027, +6.45 pp (el punto estimado
+sellado hoy) en sep-2028, el umbral de `RELEVO.md` (+5 pp) en feb-2030, y
++3 pp recién en mar-2036. Elegir el MDE es "exactamente la clase de
+decisión que el encargo prohíbe que tome un agente" (`DISEÑO.md` §A3.1) —
+queda para Nicolás.
+
+Con O'Brien-Fleming se eligió gastar casi nada de alfa temprano (0.00005
+en la primera mirada) para llegar al análisis final con 0.04297, casi el
+nominal completo, contra 0.01819 de Pocock — la apuesta es que si hay
+efecto, se resuelve recién al final, que es el escenario más probable dado
+lo que el proyecto sabe hoy. Las cuatro miradas quedan escritas, con fecha
+y umbral |Z| de OBF, en `GEMELO/SECUENCIAL/DISEÑO.md` §A3.5/§A5:
+2026-11-19 (umbral 4.048), 2027-02-07 (2.862), 2027-04-28 (2.337) y la
+final 2027-07-17 (2.024), sobre N_max=1.485 filas — no 1.450: ese n de
+muestra fija da potencia 0.7906, no 0.80, porque el umbral final del plan
+es 2.024 y no el 1.96 de muestra fija. Hay además una frontera de
+futilidad no vinculante por potencia condicional <20%, y cinco cláusulas
+de "si el diseño se rompe" escritas antes de que pase (cambio de
+`MODELO_VERSION`, cambio de `UNIVERSO_VERSION` que afecte >10% de las
+filas, hueco de sellado, cambio de convención de medición prohibido, y el
+ajuste de N_max —nunca de los umbrales— si el p_d de la ventana nueva se
+aparta ±0.08 de 0.516).
+
+**La lección de método, que es lo más importante de esta acta.** La
+versión 1 de este mismo diseño se escribió y se rechazó el mismo día,
+antes de commitear. `estadistico-adversario` encontró que la v1 sacaba las
+fronteras de un Monte Carlo y las verificaba con el mismo generador, el
+mismo `n_sim` y el mismo modelo, en otra semilla: eso no detecta el sesgo
+del generador, solo lo vuelve a medir. La verificación interna daba 0.0507
+y el documento lo leyó como confirmación de que la frontera estaba bien
+construida; era el sesgo mismo. El α real de las fronteras que la v1 iba a
+congelar era 0.05122, no 0.05. **Regla que sale de esto y vale para todo
+el proyecto: una verificación que usa el mismo mecanismo que produjo la
+cifra no es una verificación.**
+
+La v2 (`fronteras.py`) reemplaza el Monte Carlo por una recursión numérica
+de Armitage-McPherson, sin semilla, validada contra DOS varas externas
+independientes que no son el mismo cómputo: Jennison & Turnbull (2000)
+para las fronteras (Pocock K=4: 2.362 vs 2.361 publicado; OBF K=4: 2.024
+vs 2.024) y Armitage, McPherson & Rowe (1969) tabla 2 para el pasivo (K=2 a
+K=10, diferencia máxima de milésimas). `GEMELO/SECUENCIAL/DISEÑO.md` deja
+tabulados los ocho defectos que corrigió (D1 a D8), incluido que "las 248
+no entran ni como prior" era falso (entran como tres parámetros de
+estorbo) y que el DEFF=3.6 ya no se congela dentro del estadístico: con el
+DEFF congelado, si el verdadero fuera 4.6 el α real sería 0.088, y si
+fuera 7.26 (el extremo teórico ρ=1), 0.193. Un α que se mueve así según un
+parámetro estimado a ojo no era un α controlado. 22 tests nuevos en
+`tests/test_secuencial.py`, en verde, incluida la validación externa de
+las fronteras y el camino de cómputo de `mirada.py` sobre datos
+sintéticos (nunca contra la ventana vieja, que sería exactamente lo
+prohibido).
+
+**Qué se descartó y por qué.** Pocock como método de gasto de alfa:
+detecta antes un efecto grande, pero paga con un umbral final de 0.01819
+que perdería un efecto que llegue recién al final — el escenario más
+probable dado lo que se sabe hoy. Congelar `DEFF=3.6` dentro del propio
+estadístico, como hacía la v1: descartado porque ata el α real a una
+estimación que nadie puede verificar hasta el final; se usa solo para
+planificar N y fechas, nunca para decidir. Publicar la potencia de la
+pregunta condicional con un solo número (como hacía la v1, 3.513 filas
+para sep-2028): descartado porque ese número supone efecto homogéneo entre
+subgrupos, que es precisamente la nula de la pregunta condicional — la v2
+publica tres precios para tres preguntas distintas (interacción, 5.799
+filas, ene-2030; subgrupo homogéneo, 3.513, sep-2028; concentración total,
+864, mar-2027). Usar `mcnemar_exact` en vez del Z asintótico: descartado
+porque su conservadurismo no está caracterizado bajo clustering y daría un
+α real desconocido y menor que el nominal.
+
+**Qué queda abierto.** El MDE definitivo (decisión de Nicolás). Si se
+responde alguna vez la pregunta CONDICIONAL (¿la ventaja es de una
+condición de mercado, no del promedio?): el precio honesto es k=2 →
+sep-2028, k=4 → jul-2031, k=6 → ago-2034 — con el ritmo actual de
+acumulación, esa pregunta no es contestable por esta vía en un plazo
+humano, y se publica igual porque un número desalentador computado vale
+más que una intención. No hay job ni timer que avise cuando se alcanza el
+n de una mirada: la fecha hay que recordarla — deuda declarada
+explícitamente en el propio documento.
+
+**Cómo se revierte.** El documento no toca `motor.py`, `senales.py`,
+`snapshot.py`, `universo.py` ni ninguna fila sellada, y no ejecuta ninguna
+mirada: `mirada.py` existe, corre, y hoy devuelve "TODAVÍA NO" (0 filas
+nuevas de las 371 que hacen falta para la primera). La corrección de la v1
+a la v2 se hizo EN SU SITIO, no como errata fechada, porque la v1 nunca se
+commiteó — la frontera de la errata es el commit. A partir de este
+congelamiento eso cambia: ninguna sección de la v2 se reescribe; una
+corrección futura se agrega como subsección nueva con fecha posterior, y
+dice explícitamente si el criterio se movió o solo se corrigió la
+medición.
+
+**Por qué hay dos juegos de fechas dando vueltas, y cuál rige.** La v1
+del diseño escribió las miradas en 2026-11-17 / 2027-02-03 / 2027-04-22 /
+2027-07-09, con N_max = 1.450. Al corregir la potencia (D2) el N_max subió
+a 1.485 y las cuatro fechas se corrieron a **2026-11-19 / 2027-02-07 /
+2027-04-28 / 2027-07-17**, que son las que rigen y las únicas que aparecen
+en el documento congelado, en `mirada.py` y en esta acta.
+
+Las fechas viejas sobreviven en un solo lugar y a propósito:
+`GEMELO/resultados/bitacora_03.md`, en la entrada de las 19:20, que es el
+registro cronológico de lo que se computó **antes** del rechazo. Una
+bitácora que se reescribe hacia atrás deja de ser una bitácora; la entrada
+de las 20:40 es la que dice en qué se corrigieron. En
+`parche_honestidad.md`, en cambio, la fecha **sí** se corrigió, porque ese
+documento es una propuesta viva y no un registro histórico.
+
+**El segundo rechazo, que es el que más enseña.** La v2 volvió a
+`estadistico-adversario` y **volvió a ser rechazada**. Verificó los seis
+bloques de cómputo por dos caminos propios —recursión de Gauss-Legendre y
+Monte Carlo de 4.000.000 de réplicas— y confirmó siete de los ocho
+defectos como corregidos de verdad. El octavo, el grave, no lo estaba:
+
+> **D3 no estaba corregido: estaba mudado.** Sacar el DEFF de adentro del
+> estadístico y poner en su lugar un bootstrap que sortea FECHAS corrige
+> la dependencia DENTRO de la fecha y es **estructuralmente ciego a la
+> dependencia ENTRE fechas**. O sea: se cambió un α que dependía de un
+> DEFF supuesto por un α que depende de una autocorrelación supuesta. Es
+> el mismo argumento con el que el documento había hundido a su propia v1.
+
+Y el proyecto tiene dos afirmaciones propias de que esa dependencia
+existe: el bloque de seis fechas consecutivas del 15-23-jul, y el criterio
+R2, que *es* una afirmación sobre fechas contiguas.
+
+Medido simulando el plan entero bajo H₀, con los umbrales OBF por mirada y
+V̂ re-estimada en cada una, el α global según la autocorrelación real de
+`d_j`:
+
+| ac1 | con bloque 1 solo | con `max(1, 5, 10)` |
+|---|---|---|
+| +0.00 | 0.0542 | 0.0483 |
+| +0.10 | 0.0858 | 0.0567 |
+| +0.20 | 0.1375 | 0.0717 |
+| +0.30 | 0.1925 | 0.0800 |
+
+La v3 congela `BLOQUES_FECHAS = (1, 5, 10)` y **V̂ = el máximo de los
+tres** —tomar el máximo solo puede inflar la varianza, o sea solo puede
+bajar el α: cuesta potencia y no puede regalar un falso positivo—. Eso
+corta la exposición un ~60% en todos los niveles y **no la elimina**: a
+ac1=+0.30 queda un α de 0.080. Con 53 fechas en la primera mirada eso no
+se arregla con un estimador mejor; es el límite del n. **Se publica con su
+tabla en lugar de prometer un α que el diseño no puede entregar**, que es
+la única salida honesta cuando el arreglo es parcial.
+
+La autocorrelación real, medida sobre la ventana antecedente como
+parámetro de estorbo de varianza (misma clase que `p_d` y el DEFF, ya
+declarada): **ac1 = −0.135 ± 0.171 sobre 34 fechas**. El signo es benigno,
+pero el error estándar dice que los datos no distinguen 0 de +0.2, así que
+"está medido y da negativo" no alcanza como argumento y no se usa como
+tal.
+
+Un rasgo estructural que nadie diseñó a propósito y que amortigua: **la
+mirada donde V̂ es menos confiable (la primera, ~53 fechas) es la que
+tiene el umbral más alto (4.048)**. El conservadurismo temprano de
+O'Brien-Fleming y la debilidad del bootstrap están anti-correlacionados;
+con 204 fechas la exposición residual prácticamente desaparece.
+
+Los otros once defectos del segundo dictamen (E2–E12) están en la tabla
+del propio `DISEÑO.md`. Dos merecen mención acá porque son de clase
+general y no de este documento: **la rama que existía para manejar el caso
+degenerado era la única que fallaba** (devolvía un dict sin las claves que
+quien la llamaba leía, y ningún test la tocaba), y **el documento afirmaba
+tener una verificación por Monte Carlo que no existía en el repo** — el
+módulo declaraba `SEMILLA` y `N_SIM` sin usarlas en ningún lado. Una
+verificación que no está versionada no es una verificación: es una
+afirmación sobre una verificación.
+
+**Contaminación propia, encontrada y arreglada.** Dos tests de veredicto
+escribían en el registro de auditoría REAL del diseño, una de las líneas
+con "CRUZA LA FRONTERA". El día que haya una mirada de verdad, nadie
+podría distinguir cuál línea es real. Se borró el log y el aislamiento
+pasó a ser una fixture `autouse`, para que proteja también a los tests que
+se escriban después sin acordarse, más un test que verifica que la ruta
+real no tenga entradas sintéticas.
+
+**El tercer rechazo, y por qué el documento NO se congela.** La v3 volvió
+al adversario y volvió a ser rechazada. Verificó exactas las fronteras, el
+pasivo, Connor, la futilidad, el calendario y los tres candados de
+`mirada.py`; lo que rompió fue **la única tabla nueva de la v3**, que era
+su razón de ser: no reproducía desde el script sembrado en 7 de 8 celdas,
+publicaba cuatro decimales sobre 1.200 réplicas sin intervalos, y la frase
+"corta ~60% en todos los niveles" estaba contradicha por su propia tabla.
+
+Recomputada con 20.000 réplicas e IC de Wilson, la reducción real de la
+regla del máximo es **17% / 29% / 44% / 55%** para ac1 = 0 / +0.10 / +0.20
+/ +0.30. Es 17% justo donde el proyecto midió que está la autocorrelación.
+**El documento estaba citando el mejor caso como si fuera el promedio**,
+que es el mismo vicio que él le reprocha al proyecto en su §A1.
+
+Y una consecuencia que no se había contado: **la regla del máximo cuesta
+~1,7 pp de potencia, contra los 0,94 pp que la corrección de N_max había
+reparado.** El arreglo del estimador se come al doble el arreglo del
+tamaño de muestra. Queda declarado con sus dos salidas, ambas de Nicolás.
+
+**El defecto de fondo, sin embargo, no es ninguno de esos.** Es que el
+plan declara α = 0.05, publica al lado que entrega hasta 0.079, y **no
+fija ninguna regla de decisión para ese caso**: sólo "reportar la
+autocorrelación". Eso no es un criterio, es un descargo con promesa de
+criterio futuro, y un criterio decidido después de ver datos es
+exactamente lo que un pre-registro existe para prohibir.
+
+La salida está costeada y escrita: **declarar α = 0.10 y mover la primera
+mirada de ~51 a ~100 fechas** (retrasar una mirada solo puede bajar el α,
+regla que el propio documento ya tiene, así que la segunda es gratis).
+Pero eso **cambia el estándar con el que este proyecto va a juzgar su
+propio modelo**, es de la misma clase que el MDE, y por eso **no la toma
+un agente**. El documento queda TERMINADO EN SU ARITMÉTICA Y NO
+CONGELADO, y la decisión pasa a `cola_decisiones.md` §2a como la
+bloqueante.
+
+Nota de gobernanza, porque tres rechazos invitan a leer una tendencia
+donde no la hay: la superficie rota se achicó en cada ronda —v1 las
+fronteras, v2 el estimador, v3 una tabla de ocho celdas—, y el propio
+revisor recomendó corregir y no abandonar. Es convergencia, no deriva. Lo
+que detiene la iteración no es el cansancio: es que lo que queda ya no es
+un defecto corregible sin tomar una decisión ajena.
+
+**Deuda declarada, que NO se aplicó por la regla de los doce bloques:**
+`evaluacion.mcnemar_exact(72, 56)` devuelve **0.1847**, no el **0.1849**
+publicado en el README, en la skill `cifras-canonicas` y siete veces en
+este archivo (se arrastró desde la medición de n=240). No cambia ninguna
+conclusión, pero la regla escrita del proyecto es que el módulo es el
+árbitro. Queda en `cola_decisiones.md` §3-bis, para moverse junto con el
+resto de los bloques y con firma de Nicolás.
+
+---
+
+## 48. Síntesis real del RTL: el campeón no cabe en la Go Board, y dos
+afirmaciones de `RTL.md` refutadas (`GEMELO/MICRO/SINTESIS.md`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Instalar una toolchain de síntesis y simulación FPGA
+sin privilegios de root, sintetizar el RTL de las cinco etapas del
+pipeline de `RTL.md` y medir, con herramientas reales (yosys,
+nextpnr-ice40, Icarus Verilog), si el modelo campeón 4.6.0 entra en la
+placa que el proyecto había propuesto (Lattice iCE40HX1K, Go Board) — sin
+ajustar ninguna cifra para que quepa.
+
+**Por qué.** `RTL.md` §2 eran estimaciones a mano; esta corrida las
+reemplaza por números medidos. Toolchain: OSS CAD Suite portable
+(`~/.local/opt`, sin root ni `apt`), yosys 0.68+136, nextpnr-0.11.1,
+icestorm, Icarus Verilog 14.0, verilator 5.051 (`micro/TOOLCHAIN.md`). El
+RTL de cinco etapas (`micro/rtl/`) se validó contra 181 filas selladas
+reales de `senales_ticker` (beta y `apertura_estimada_pct` no nulas, 24
+fechas, 8 tickers), bit a bit, en cuatro configuraciones (F1, F3, F6,
+F1SP): 0 fallos en los 181 casos de las cuatro. La latencia es 32 ciclos,
+idéntica en los 181 vectores y en las cuatro configuraciones — la
+predicción falsable de `fpga.md` §2 (p50 = p99 = p99.9 = máximo)
+sobrevivió, y el banco marca fallo si mín≠máx.
+
+Colocado y ruteado por nextpnr (medición dura, no estimación): **el
+campeón F1 (`beta × SOX`, una multiplicación, sin intercepto) necesita
+1.545 celdas lógicas contra las 1.280 del iCE40HX1K — 120,7% de la placa,
+no cabe.** El culpable es un multiplicador 16×16 con signo, medido en
+aislamiento en 774 LUT4, contra los 200-300 estimados en `RTL.md` §2:
+entre 2,6 y 3,9 veces más. Se descartó la explicación alternativa (que
+Verilog generara un 32×32 en vez de un 16×16) midiendo la variante de 8
+bits: 177 LUT4 × (16/8)² = 708, del mismo orden que 774 — el costo escala
+como W², la estimación simplemente estaba mal.
+
+Dos afirmaciones de `RTL.md` quedan refutadas por la medición: la
+tolerancia declarada de 0,00188 pp (§3/§4.4) es inalcanzable — medido
+0,00474 pp, 2,5 veces más, porque se derivó para cuantizar UN valor y el
+puntaje es el producto de DOS valores cuantizados más un truncado; y
+§4.4 afirma coincidencia "bit a bit" del 100% en la decisión discreta,
+cuando 2 de 181 casos (1,1%) deciden distinto de la referencia en
+float64 (los dos, casos donde el puntaje real cae a milésimas del umbral
+±0,50 pp) — lo discreto es MÁS frágil cerca de la frontera de decisión,
+no inmune.
+
+Aviso metodológico que vale más allá de este frente: **sumar estimaciones
+por etapa subestima el total en 45%** (1.307 LUTs sumados por separado
+contra 1.892 del pipeline aplanado y optimizado globalmente) — es
+exactamente cómo `RTL.md` §2 construyó sus totales, y es un error
+estructural del método, no de los números individuales.
+
+**Qué se descartó y por qué.** Instalar `nextpnr-xilinx` para tener place
+& route real en Artix-7: no viene en el OSS CAD Suite estándar y
+compilarlo exige además la base de datos de `prjxray`, una descarga y
+compilación aparte — el encargo lo prohibía explícitamente. Se usó en su
+lugar `yosys synth_xilinx -family xc7` (mapeo a celdas reales, sin
+colocar ni rutear), declarado como más blando que un reporte de Vivado:
+1 DSP48E1 y 0,35% de los LUTs para el campeón. Medir throughput
+espalda-con-espalda: el banco de pruebas inserta 8 ciclos de silencio
+entre mensajes para que la medición de latencia sea limpia, así que esa
+medición no se hizo — decir que sí sería mentir sobre el experimento
+corrido. Programar una placa física: no hay hardware conectado.
+
+**Qué queda abierto.** Qué placa comprar, y en el iCE40 qué sacrificar de
+las cinco opciones documentadas para que el campeón entre (angostar la
+aritmética a 8×8 —cerca del límite igual, e invalida la resolución
+justificada de `RTL.md` §3—, multiplicador serie desplazar-y-sumar —la
+opción técnicamente más limpia, no medida—, sacrificar UART y contador
+—no alcanza y el contador ES el instrumento de medición—, quedarse en
+F1SP como un pipeline que ya no es el modelo de MKI, o comprar una Arty
+A7-100T). Qué hacer con la tolerancia de 0,00188 pp: corregirla con
+errata fechada (0,005 pp cubre lo medido con margen) o mantenerla y
+declarar que el criterio de aceptación es la coincidencia de decisiones
+contra el modelo entero. Si vale la pena medir el multiplicador serie
+antes de decidir sobre la placa.
+
+**Asimetría declarada: el toolchain existe en UNA sola máquina.** OSS CAD
+Suite quedó instalado bajo `~/.local/opt` **del PC**, que es donde corrió
+esta síntesis (`micro/TOOLCHAIN.md` registra máquina, release y versiones
+exactas). No está en el Mac, y `micro/rtl/Makefile` asume `yosys` y
+`nextpnr-ice40` en el `PATH`.
+
+**Y se decide NO igualarla**, que es la parte que hay que escribir porque
+igualar por omisión también es una decisión:
+
+- Son **2,5 GB descomprimidos** de herramientas que no participan de
+  ninguna ruta de sellado, ningún job y ningún timer. La asimetría de
+  entorno que este proyecto cuida es la del **intérprete y las
+  dependencias de producción** (`requirements.txt` fijado en dos
+  máquinas), y esto no es ninguna de las dos cosas.
+- El Mac quedó **fuera del rol de titular** y hoy no corre nada. Instalar
+  ahí un toolchain de FPGA sería preparar una máquina para un trabajo que
+  no tiene.
+- **La asimetría no puede romper nada en silencio**: sin las herramientas,
+  `make` en `micro/rtl/` falla con "command not found" en el primer
+  comando. No hay un modo degradado que produzca un número equivocado, que
+  es la clase de asimetría que sí obliga a igualar.
+
+**Condición de retiro de esta asimetría:** el día que la síntesis tenga
+que reproducirse en otra máquina —una revisión externa, o que el PC deje
+de estar disponible— se instala con las cuatro líneas de
+`micro/TOOLCHAIN.md` §2, que existen justamente para eso. El costo de
+igualar después es de minutos; el de mantener 2,5 GB sincronizados en dos
+máquinas, permanente.
+
+**Cómo se revierte.** Nada de esto tocó `motor.py`, `senales.db` (se
+abrió en `mode=ro`) ni ningún archivo fuera de `micro/` y
+`GEMELO/MICRO/`. `referencia.py` reimplementa el álgebra en float64
+aislado y no importa `motor.py`. Es documentación y código de síntesis
+nuevo, sin conexión a ningún job ni timer: borrar `micro/rtl/` y
+`GEMELO/MICRO/SINTESIS.md` no rompe nada del sistema en producción, y el
+toolchain sale con `rm -rf ~/.local/opt/oss-cad-suite` sin tocar el
+sistema.
+
+---
+
+## 49. El dato point-in-time de precios: recomendación de no comprar
+(`GEMELO/resultados/expediente_pit.md`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Publicar, como recomendación —no como decisión, que
+es de Nicolás—, no comprar ningún proveedor de datos point-in-time hoy, y
+registrar aparte, con fecha posterior, la corrección al Riesgo #5
+congelado en `GEMELO/DISEÑO.md` (25-ago): "un proveedor con datos
+point-in-time es un requisito para cualquier conclusión fuerte, y hoy no
+lo hay".
+
+**Por qué.** La premisa de ese riesgo, para el canal de PRECIOS, es falsa
+y ya estaba medida por el propio proyecto cinco días antes de este
+expediente, sin que la corrección hubiera llegado al documento que la
+motivó: el 8,6% de filas "contaminadas por revisión de Yahoo" que medía
+`ventana_larga.md` era un artefacto del join (`auditoria_ws3.md:213-236`);
+alineando por `sesion_objetivo` en vez de por `fecha`+`ticker`, la
+desviación es **0,00% sobre 223 filas**.
+
+Lo que sostiene la conclusión no es esa muestra: es un teorema. El factor
+de ajuste de un split o un dividendo escala `open(t)` y `close(t−1)` por
+igual, y el objetivo del proyecto es un cociente
+(`gap = open(t)/close(t−1) − 1`): si la fecha ex es posterior a `t`,
+numerador y denominador se multiplican por el mismo factor y el cociente
+no cambia. Ese argumento vale para las **14.618 filas** del panel
+completo, no solo para las 223 verificables — la medición empírica
+confirma el teorema, no extrapola una tasa de dos meses a ocho años.
+
+Con esa cota: para borrar los +15,66 pp de la ventana larga haría falta
+que el **15,7%** de las filas estuvieran contaminadas a favor del modelo;
+la regla de tres sobre 0 de 223 acota esa tasa en **≤1,35%**, **11,6
+veces** de holgura. Por bolsa, solo Fráncfort tiene un margen del mismo
+orden (contaminación necesaria 2,5% contra la cota de 1,35%), pero eso no
+cambia ningún veredicto publicado: Fráncfort ya es "no distinguible de
+cero" (p=0,111) con o sin esa duda.
+
+Se consultaron diez proveedores el 31-ago-2026 con precio verificado
+(EODHD $19,99/mes, Sharadar $9-39/mes, Tiingo $30/mes, Norgate
+$270-787,50/año, Databento $199-4.500/mes, LSEG y FactSet sin precio
+público). **Ninguno de los diez vende precios point-in-time de grado (a)
+para las cuatro bolsas del universo, y ninguno vende constituyentes
+históricos del ^SOX.** Lo que promocionan como "point-in-time" LSEG,
+FactSet y Sharadar es exclusivamente de fundamentales.
+
+**Qué se descartó y por qué.** Comprar el empalme más barato posible
+(EODHD $199/año + FirstRate Data $49,95 por el ^SOX): descartado porque el
+resultado seguiría siendo grado (b), no cubriría Tokio con certeza (la
+bolsa que más pesa en el hallazgo central, 7.230 de 14.618 filas), no
+incluiría ni un deslistado asiático ni un constituyente histórico del
+^SOX —las dos cosas que responderían la única pregunta que sigue
+abierta—, y obligaría a revalidar las 223 filas selladas contra una
+segunda fuente sin cerrar nada a cambio. Extrapolar la tasa de
+contaminación medida en 223 filas recientes (2 días a 2 meses de
+antigüedad) a ocho años de historia: descartado explícitamente por no ser
+válido — lo que sostiene la conclusión es el teorema, no esa
+extrapolación.
+
+**Qué queda abierto.** Lo que sigue sin resolver es OTRA cosa: el sesgo
+de composición del universo (¿la ventaja de +15,66 pp sobreviviría si el
+universo de 2018 incluyera empresas de la cadena que desde entonces
+quebraron, fueron absorbidas o dejaron de ser relevantes?), declarado NO
+EVALUABLE por `auditoria_ws3.md:297-301` — y datos PIT de precios no lo
+arreglan. Arreglarlo exigiría (a) valores deslistados con historia
+completa (solo LSEG y Databento lo afirman, ambos enterprise sin precio
+público) y (b) un criterio de pertenencia histórica a la cadena que no
+está en venta, porque `universo.py` es un mapa construido a mano, no un
+índice. Se declara también un canal residual identificado y NO medido:
+fechas ex de dividendos que caen sobre la sesión objetivo (~0,9% de las
+filas del panel), medible gratis con el calendario de acciones
+corporativas de `yfinance` — deliberadamente no medido acá, para no
+repetir el error de citar una cifra sin código versionado.
+
+**Cómo se revierte.** Es un documento sin código tocado: no se modificó
+`motor.py`, `senales.py`, `snapshot.py`, `universo.py`, `ventana_larga.py`
+ni ningún test, no se leyó ni escribió `senales.db` (no existe en esta
+máquina; los conteos salen de los CSV versionados de `data/backups/`), y
+la corrección al Riesgo #5 de `GEMELO/DISEÑO.md` está PROPUESTA, no
+aplicada (el pre-registro congelado no se edita; la corrección va aparte,
+con fecha posterior). Queda declarada una mina viva:
+`GEMELO/ventana_larga.py:314-345` sigue emitiendo la cifra del 8,6% ya
+refutada, y `tests/test_ventana_larga.py:186` la exige por test — volver
+a correr el WS3 republicaría la falsedad, y el test en verde es
+justamente lo que la hace peligrosa. Se identifica también, sin
+corregirla acá, una segunda frase viva y sin revisar
+(`ventana_larga.md:26`, "la contaminación va en la dirección optimista")
+que este expediente argumenta que apunta al lado equivocado (ruido no
+correlacionado atenúa, no infla) — declarado como argumento, no como
+medición.
+
+---
+
+## 50. Ensayo general de la réplica, en entorno aislado, y su runbook de
+activación (`docs/RUNBOOK_REPLICA.md`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Ensayar de punta a punta, contra datos sintéticos y
+sin tocar ninguna base real, el mecanismo que decidiría si una réplica
+permanente de sellado diverge de la titular; y escribir el procedimiento
+operativo para el día en que Nicolás decida activarla. Nada de esto se
+activó.
+
+**Por qué.** `docs/REPLICA.md` (§41 de la corrida anterior) ya
+distinguía qué necesitaba firma humana de qué era mecánica de registro
+pura; esta tanda ejercita esa segunda parte contra un escenario
+controlado antes de que exista una réplica real para probarla. El script
+`scripts/ensayo_replica.py`, versionado y re-ejecutable, construye una
+fuente sintética de "titular" (dos `DataFrame`, como si vinieran de
+`git show origin/main:...`) y una base sqlite real y propia de "réplica"
+(tablas `snapshots` y `senales_ticker`), y encadena 8 fechas
+(2026-09-01 a 2026-09-10) que ejercitan las tres ramas del enunciado:
+PARIDAD, DIVERGENCIA en sus cuatro sabores (cómputo — beta 0,38 contra
+0,41; insumos — `sox_fecha` distinto; existencia por sello ausente;
+existencia por conjunto de tickers distinto), y las dos formas de "una no
+selló" (`DIA_NO_COMPUTABLE`, cuando el titular tiene sellos de fechas
+posteriores y ninguno de ésta; `PENDIENTE_PUBLICACION`, cuando no hay ni
+la fila ni una fecha posterior del titular, así que no se puede
+distinguir "no selló" de "selló y aún no pusheó").
+
+Resultado (`data/replica_ensayo/reporte_ensayo.md`): **7 filas
+registradas en `divergencias_replica` (base temporal del ensayo), las 7
+con `resuelto_como IS NULL`, y cero divergencias falsas** en los casos de
+ausencia legítima. Las tres piezas (`comparar_sombra.py`, `replica.py`,
+el diseño de `docs/REPLICA.md` §1–§3) se comportaron exactamente como el
+diseño predecía. **Cero hallazgos.** 329 tests en verde.
+
+El acoplamiento al comparador real fue quirúrgico: el único punto de
+acceso a datos "vivos" (`leer_tabla_local`) se reemplazó solo durante la
+corrida del ensayo, restaurado en un `finally`, por una versión que lee
+la base sintética — `comparar_fecha` y `replica.registrar_comparacion`
+corrieron exactamente igual que en producción, no una simulación de la
+cadena.
+
+El runbook resultante (`docs/RUNBOOK_REPLICA.md`, 8 pasos) tiene una
+sección 0 de cuatro decisiones bloqueantes que Nicolás tiene que fechar
+en `DECISIONES.md` ANTES de que exista un paso 1 (si se activa una
+réplica en absoluto y con qué máquina; la regla de "quién gana" ante una
+discrepancia; qué máquina queda titular; la política de retención),
+vuelta atrás explícita por paso, y una lista de lo que el runbook NO hace
+en ningún paso (no toca `MKI_MODO` de la titular, no borra nada, no
+decide "quién gana", no hace `git pull` en ninguna máquina con timers
+instalados, no construye el séptimo timer de comparación automática ni
+la política de retención).
+
+**Qué se descartó y por qué.** Conectar el mecanismo a un timer, cron o
+al script `mki`: no se hizo nada de eso — es código que existe y se
+prueba, nadie lo invoca todavía. Automatizar la comparación diaria (paso
+6 del runbook): declarado como código que no existe hoy y que este
+runbook no construye, para no confundir dejar constancia de un hueco con
+llenarlo sin que nadie lo haya pedido.
+
+**Qué queda abierto.** La pregunta de quién gana ante una divergencia
+real sigue sin responder, y es de Nicolás — la propuesta razonada de
+`docs/REPLICA.md` ("la titular gana siempre, sin excepción") sigue siendo
+propuesta hasta que se adopte o se reemplace. Las otras tres decisiones
+bloqueantes de la sección 0 del runbook (si se activa en absoluto, con
+qué máquina; qué máquina queda titular —hoy ya es este PC, pero
+repetirlo en el acta de activación evita que quede implícito—; la
+política de retención de `data/sombra/` y de `divergencias_replica`). El
+séptimo timer de comparación automática y la política de retención,
+ninguno de los dos construido.
+
+**Cómo se revierte.** Todo lo generado por el ensayo vive en un
+directorio temporal (`/tmp/ensayo_replica_.../`) que se borra al final de
+la corrida — nunca tocó `senales.db`, `noticias.db` ni
+`data/divergencias_replica.db`. El runbook y las nuevas secciones §6-§7
+de `docs/REPLICA.md` son documentación pura, sin conexión a ningún timer:
+borrarlos no rompe nada en producción.
+
+---
+
+## 51. El parche de honestidad para el README, preparado y no aplicado
+(`GEMELO/resultados/parche_honestidad.md`)
+
+**Fecha:** 31-ago-2026.
+
+**Qué se decidió.** Redactar completo, y no aplicar, un parche que
+agrega al README dos hechos que el propio proyecto ya había medido y no
+publicaba: que toda la ventaja de la ventana sellada vive en seis fechas
+de julio de 2026, y que el campeón no supera su propio criterio de
+rechazo R2 en ninguna de las tres convenciones de medición del proyecto.
+Reemplaza explícitamente a `GEMELO/resultados/parche_documental.md`, que
+queda RETIRADO: se apoyaba en un scan-statistic que dos auditorías
+posteriores mostraron mal construido.
+
+**Por qué.** El README publica, para la ventana sellada, +6,5 pp,
+McNemar p=0,1849, n=248, y dice honestamente que no es distinguible de
+cero — pero no dice que esa cifra depende casi en su totalidad de un
+bloque de 6 fechas (15 al 23-jul-2026, n=44, +40,9 pp, p=0,001), mientras
+las otras 28 fechas (n=204) dan −1,0 pp, p=0,920 (`concentracion.md`
+§A1, medido cuatro veces por vías independientes). Ni dice que, sobre ese
+mismo dato, el criterio R2 (`GEMELO/DISEÑO.md` §6.2) descalifica al
+campeón sin el bloque de julio: −1,0 pp bajo `excluir_cero`, +0,5 pp bajo
+`estricta`, −1,9 pp bajo `verificador`, ninguna distinguible de cero.
+Ninguna de las dos cifras es nueva ni corrige un cálculo previo: ya
+estaban en el repositorio, fechadas y medidas con el mismo rigor que el
+proyecto exige para todo lo demás. Lo que faltaba es que la vitrina
+pública lo dijera — no es un error aritmético, es una omisión, y en un
+proyecto cuyo producto es la honestidad estadística una omisión pesa más
+que un error: un error se corrige y se publica la errata, una omisión
+deja al lector con una impresión que los propios datos del proyecto no
+sostienen.
+
+El parche lista **doce bloques que se mueven, cada uno con
+archivo:línea**: siete puntos del README (TL;DR, badge, la nueva
+subsección "Dónde vive esa ventaja", el párrafo de trayectoria, la tabla
+de "Otras métricas", el roadmap con la fecha del diseño secuencial), y
+tres archivos vivos de referencia sin los cuales una sesión futura
+—incluida la próxima de este mismo agente— vuelve a citar +6,5 pp sin el
+matiz: `cifras-canonicas`, `estadistica-evaluacion` y
+`estadistico-adversario.md`; más `ESTADO.md` y esta misma acta. Ninguna
+cifra de ninguna tabla del README se mueve: se agrega contexto donde se
+cita la cifra, con la misma regla de "mover una obliga a mover todas" que
+rige cuando sí se mueve una cifra.
+
+**Qué se descartó y por qué.** Mover alguna de las cifras publicadas:
+descartado de plano, porque ninguna estaba mal calculada — mover un
+número correcto para acomodar una narrativa sería el error que este
+parche existe para evitar. Afirmar que la concentración de julio es puro
+azar: descartado porque el scan-statistic corregido por la búsqueda de la
+ventana da p≈0,52 (sin corregir, 0,04 — toda la distancia es el costo de
+haber elegido la ventana después de verla extrema), y el intervalo de
+confianza de la diferencia bloque-resto (+41,9 pp) por bootstrap circular
+de bloques es [−2,9, +86,0] pp: al filo, ni ruido limpio ni señal limpia.
+Reescribir `backtest/resultados/linea_base/*.md` o
+`data/sombra/switch_20260830.md`: son reportes fechados, point-in-time, y
+reescribirlos violaría el mismo principio que protege las filas selladas.
+
+**El punto delicado, con sus dos lecturas escritas para que la decisión
+no se tome con una impresión.** R2 dice que se descarta a un retador si
+su ventaja desaparece al excluir la ventana 15-23-jul, la que sostiene
+casi toda la ventaja del campeón. Esa ventana **se eligió porque se veía
+extrema**, y el scan-statistic corregido (p≈0,52) dice que encontrar una
+ventana de 6 fechas así entre 34, por puro azar, es lo que pasa la mitad
+de las veces — así que R2 congela, como vara permanente, una ventana que
+el propio scan-statistic no logra establecer como especial. Lectura (a):
+dejar R2 tal como está — es un criterio conservador que solo descarta y
+nunca aprueba, y bajarlo justo cuando se descubre que el propio campeón
+tampoco lo pasa sería exactamente la clase de movimiento que un
+pre-registro existe para impedir. Lectura (b): reformularlo sin
+ablandarlo, exigiendo que la ventaja de cualquier retador sobreviva al
+recorte de SU PROPIO bloque más favorable, identificado con el mismo
+procedimiento para todos, en vez de depender de una ventana fija elegida
+mirando al campeón (`GEMELO/RELEVO.md` ya tiene un REL-V5 en esa
+dirección). Ambas lecturas quedan escritas, con su argumento, y la
+elección es de Nicolás.
+
+**Qué queda abierto.** Todo: **este documento no se aplicó.** No se tocó
+ninguna línea del README, de las dos skills, del agente ni de
+`ESTADO.md`. Si el criterio R2 debe reformularse (la decisión de arriba).
+Si la concentración de julio es una condición de mercado identificable o
+una racha de azar — el diseño secuencial del §47 existe justamente porque
+con 248 filas no hay potencia para decidirlo. Y, condicional a que
+Nicolás apruebe el parche, el texto del acta que se copiaría a
+`DECISIONES.md` ya está redactado dentro del propio documento, a la
+espera de esa aprobación.
+
+**Cómo se revierte.** No hay nada que revertir: el documento vive
+únicamente en `GEMELO/resultados/parche_honestidad.md`, no se commiteó
+ningún cambio al README ni a ningún skill, y el acta que propone para
+copiar queda sujeta, si se aprueba, a la misma regla de siempre: la
+frontera de la errata es el commit — corregible en su sitio hasta que se
+commitee, errata fechada después.
