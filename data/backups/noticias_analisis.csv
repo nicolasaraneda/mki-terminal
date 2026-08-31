@@ -154,7 +154,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 165,0.7,8035.T,alto,BofA eleva precio objetivo de Teradyne en contexto de crecimiento industrial refleja expansión de demanda de equipos semiconductores.,2026-07-04T16:30:58.398137+00:00,
 166,0.4,8035.T,medio,Tokyo Electron (TER) con suba de 38% en 3 meses genera incertidumbre sobre continuidad o consolidación de ganancias.,2026-07-04T16:32:49.522223+00:00,
 167,-0.5,8035.T,medio,Caída en stocks semiconductores asiáticos por liquidación sectorial vinculada a datos de empleo estadounidense genera volatilidad temporal.,2026-07-04T16:33:11.653751+00:00,
-168,0.3,8035.T,bajo,Mención de Tokyo Electron en análisis de mercado genera sentimiento levemente positivo pero sin noticias específicas relevantes.,2026-07-04T16:34:10.636735+00:00,
 169,0.2,8035.T,bajo,Enfoque general en mercado japonés sin impacto específico en semiconductores.,2026-07-04T16:34:31.353794+00:00,
 170,0.85,8035.T,alto,"Kioxia experimenta un crecimiento explosivo del 700% impulsado por la demanda de chips de IA, señalando fuerte rendimiento en semiconductores de memoria.",2026-07-04T16:34:42.421948+00:00,
 171,0.5,8035.T,bajo,"Tokyo Electron incluido en lista de mejores acciones momentum para el 22 de junio, sugiriendo desempeño positivo relativo.",2026-07-04T16:34:42.423485+00:00,
@@ -2171,7 +2170,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 2320,0.4,TXN,medio,Análisis de TXN post-acuerdo de GE Appliances sugiere potencial de valor pero con perspectiva neutral.,2026-08-12T00:20:33.766885+00:00,0.6
 2321,-0.3,TXN,bajo,Texas Instruments puede estar sobrevalorada según análisis sugiere presión bajista en semiconductor analógico.,2026-08-12T00:20:46.302541+00:00,0.6
 2322,0.6,,medio,Caso bullish para NXP con predicción de 70% ganancias es positivo pero sin ticker específico mencionado.,2026-08-12T00:21:57.650570+00:00,0.5
-2323,0.4,TXN,bajo,Profundización de sourcing en Texas Instruments por GE Appliances es positivo pero incrementalmente menor.,2026-08-12T00:21:57.650603+00:00,0.6
 2324,0.3,MU,bajo,Micron mencionado en contexto de noticias de mercado general sin evento específico que impulse movimiento de acciones.,2026-08-12T00:20:33.766861+00:00,0.2
 2325,0.6,MU,medio,Micron supera su tendencia bajista sugiere recuperación en demanda de semiconductores de memoria con perspectiva positiva.,2026-08-12T00:20:33.766874+00:00,0.7
 2326,0.75,MU,medio,Titular optimista sobre potencial de apreciación de Micron sugiere confianza en la demanda de memoria semiconductora.,2026-08-12T00:20:46.301865+00:00,0.6
@@ -2422,7 +2420,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 2585,0.6,"INTC,AMD,NVDA,AVGO",medio,"Análisis de toma de ganancias en semiconductores tras rally de 176% de Intel, sugiriendo valuaciones extendidas en el sector",2026-08-14T00:23:42.984893+00:00,0.7
 2586,-0.4,AVGO,medio,Advertencia sobre valoración elevada de Broadcom genera preocupación sobre múltiplos de precio.,2026-08-14T00:23:54.555361+00:00,0.75
 2587,0.3,"TXN,META",bajo,Mención en blog analítico de múltiples acciones sin análisis profundo genera bajo impacto.,2026-08-14T00:23:54.556012+00:00,0.4
-2588,0.6,"NVDA,TSMC,AMD",alto,Gigantesca inversión de $745B en IA CapEx por hyperscalers impulsa demanda estructural para múltiples productores de semiconductores.,2026-08-14T00:24:07.459159+00:00,0.8
 2589,0.6,ARM,medio,Movimiento positivo de Arm Holdings refleja demanda de sus arquitecturas de procesadores.,2026-08-14T00:22:26.286535+00:00,0.7
 2590,0.6,MU,medio,"Micron redefine su estrategia de memoria enfocada en IA, posicionándose en segmento de alto crecimiento y márgenes.",2026-08-14T00:22:02.255111+00:00,0.8
 2591,0.6,"MU,CSCO,SNDK",medio,"Artículo que destaca el desempeño positivo de acciones semiconductoras como Micron en la sesión del día, generando sentimiento alcista moderado.",2026-08-14T00:22:15.327889+00:00,0.7
@@ -3209,7 +3206,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 3443,0.2,FCX,bajo,Minería de cobre tiene relación tangencial con semiconductores; no es sector core.,2026-08-18T22:00:54.837281+00:00,0.1
 3444,0.4,FCX,bajo,Escaseces de materias primas benefician minería pero conexión indirecta y marginal con cadena de valor de semiconductores.,2026-08-18T22:02:36.413726+00:00,0.1
 3445,0.2,,bajo,Análisis de metales de transición con relevancia indirecta a semiconductores por cadena de suministro.,2026-08-18T22:03:09.361476+00:00,0.2
-3447,0.5,3436.T,medio,Sumco mantiene dividendos tras pérdidas sugiriendo confianza en recuperación del mercado de obleas de silicio.,2026-08-18T22:02:36.413733+00:00,0.8
 3448,-0.5,MSFT,bajo,Vulnerabilidad de seguridad en Copilot afecta confianza en IA de Microsoft pero tiene impacto limitado en cadena de suministro de semiconductores.,2026-08-18T22:02:11.950104+00:00,0.3
 3449,-0.4,MSFT,bajo,Decisión de Microsoft afecta a ONGs pero no a semiconductor; impacto reputacional mínimo en ecosistema de chips.,2026-08-18T22:02:24.542597+00:00,0.2
 3450,-0.5,MSFT,bajo,China elimina Windows de agencias del estado impactando Microsoft pero con efectos indirectos limitados en semiconductores.,2026-08-18T22:02:36.413634+00:00,0.3
@@ -4283,452 +4279,564 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 4641,0.85,"TSM,005930.KS,000660.KS,NVDA",alto,Previsión de Gartner de crecimiento 92% en ingresos semiconductores impulsado por IA; noticia muy positiva para todo el sector.,2026-08-25T22:05:30.811995+00:00,0.95
 4642,0.3,000660.KS,medio,"SK Hynix diversifica geografía hacia Japón para nuevos hubs de memoria, reflejando expansión y mitigación de riesgos geopolíticos.",2026-08-25T22:05:43.232474+00:00,0.75
 4643,0.75,"005930.KS,000660.KS",alto,Samsung y SK Hynix generan interés de compra con perspectivas positivas para crecimiento de ventas de memoria en próximo año.,2026-08-25T22:05:15.962643+00:00,0.9
-4645,0.7,"NVDA,CRWD,OKTA,CRM",alto,"NVIDIA lidera movimientos positivos en earnings junto a otros líderes tecnológicos, indicando confianza del mercado en resultados sólidos.",2026-08-27T00:21:36.051479+00:00,0.8
-4646,0.85,"NVDA,META,CRM,CRWD,OKTA",alto,NVIDIA con perspectiva de ingresos FY28 excepcional impulsa futuros y arrastre positivo en todo el sector tecnológico.,2026-08-27T00:21:36.051538+00:00,0.85
-4647,0.9,NVDA,alto,Triplicar pedidos de chips NVIDIA de Amazon confirma demanda extraordinaria de GPUs y validación del ciclo de IA empresarial.,2026-08-27T00:21:36.051642+00:00,0.95
-4648,0.95,NVDA,alto,Resultados récord de $96.2B con previsión de $108B demuestran crecimiento exponencial y dominación de NVIDIA en infraestructura IA.,2026-08-27T00:21:36.051652+00:00,1.0
-4649,0.65,NVDA,medio,Valoración de NVIDIA en niveles de 2019 pese a duplicación de ganancias sugiere oportunidad de compra o presión de realización de ganancias.,2026-08-27T00:21:36.051676+00:00,0.75
-4650,0.85,NVDA,alto,Resumen de call de earnings NVIDIA detalla desempeño excepcional y demanda sostenida de chips IA.,2026-08-27T00:21:36.051763+00:00,0.95
-4651,0.92,NVDA,alto,Ingresos casi $100B anualizados y declaración de 'era dorada' de CEO confirma ciclo de superciclo de IA para NVIDIA.,2026-08-27T00:21:36.051785+00:00,1.0
-4652,0.88,NVDA,alto,Ajuste de márgenes al alza en Q2 fiscal NVIDIA refleja poder de fijación de precios y eficiencia operacional excepcional.,2026-08-27T00:21:36.051819+00:00,0.95
-4653,-0.1,NVDA,bajo,Resultados favorables de NVIDIA opacados por contexto macroeconómico mixto y preocupaciones inflacionarias que limitan el optimismo del mercado.,2026-08-27T00:21:48.594365+00:00,0.5
-4654,0.8,NVDA,alto,Noticia altamente positiva destacando noticias favorables de Jensen Huang para accionistas de NVIDIA con impacto directo en valuación.,2026-08-27T00:21:48.594477+00:00,0.95
-4655,0.7,NVDA,alto,"Información estratégica sobre perspectivas a largo plazo de NVIDIA hasta 2028 revelada en llamada de ganancias, sugiriendo crecimiento sostenido.",2026-08-27T00:21:48.594509+00:00,0.9
-4656,0.3,AMD,medio,"Reset de precio objetivo por analista sugiere ajuste de expectativas para AMD en 2026, con impacto moderado en valuación.",2026-08-27T00:22:00.547060+00:00,0.7
-4657,0.65,AMD,medio,Predicción optimista sobre próximo movimiento de AMD sugiere potencial de ruptura alcista en competencia con Intel en CPUs.,2026-08-28T06:09:29.456974+00:00,0.75
-4658,0.6,"AMD,INTC",alto,"Comparativa estratégica de inversión en IA entre dos líderes del sector, destaca competencia en chip design y financiamiento.",2026-08-28T06:09:41.018528+00:00,0.95
-4659,0.8,AMD,alto,Upgrade de analyst con target de 30% upside indica confianza en posicionamiento de AMD en chips de IA.,2026-08-28T06:09:41.018719+00:00,0.9
-4660,0.4,"AMD,MRVL",medio,Análisis comparativo positivo para AMD versus Marvell en soluciones de chips para IA durante próximos 5 años.,2026-08-28T06:09:41.018827+00:00,0.8
-4661,-0.6,AMD,bajo,"Cathie Wood reduce posición en AMD, señal neutral-negativa que sugiere ajuste de portafolio de chips de IA.",2026-08-28T06:09:41.018967+00:00,0.4
-4662,0.35,AMD,bajo,Asociación de GIGABYTE con AMD en un bundle de juegos tiene impacto positivo modesto en la visibilidad de marca pero alcance limitado.,2026-08-28T06:09:54.427758+00:00,0.35
-4663,0.65,"AMD,INTC,MU",alto,"Noticia sobre dinero gubernamental beneficiando AMD, Intel y Micron impulsa las tres acciones al reflejar apoyo político clave para la industria semiconductor.",2026-08-28T06:09:54.428305+00:00,0.9
-4664,0.8,AMD,alto,Colaboración entre Kodiak AI y AMD en chips para conducción autónoma es desarrollo positivo para procesadores especializados.,2026-08-28T06:10:05.792786+00:00,0.9
-4665,-0.2,QCOM,medio,Análisis crítico de estructura de costos de Qualcomm versus crecimiento de reemplazo plantea dudas sobre rentabilidad sostenible.,2026-08-28T06:09:29.456894+00:00,0.65
-4666,0.55,QCOM,medio,Potencial de Qualcomm de capitalizar demanda de AI en edge computing con VENTUNO Q posiciona la empresa favorablemente en tendencia clave.,2026-08-28T06:09:54.428262+00:00,0.85
-4667,0.5,"NVDA,META",medio,Cobertura de múltiples activos incluyendo NVIDIA y Meta con énfasis disperso reduce impacto específico en semiconductores.,2026-08-27T00:21:48.595530+00:00,0.4
-4668,0.4,"INTC,GS",medio,Respaldo conjunto de Goldman y Intel a startup de video con IA valida tendencia pero Intel no es líder en sector.,2026-08-27T00:22:00.549121+00:00,0.5
-4669,-0.6,INTC,medio,Implicación de participación estatal en caída de Intel sugiere presiones regulatorias o perceptivas sobre su competitividad.,2026-08-27T00:22:00.549136+00:00,0.6
-4670,0.8,INTC,alto,"Intel invierte masivamente en capacidad de chips AI y avanza en roadmap crítico, señal muy positiva para fabricante de semiconductores.",2026-08-27T00:22:12.512501+00:00,0.95
-4671,0.7,INTC,medio,"Noticia positiva sobre crecimiento de flujo de caja en Intel, señal favorable para la salud financiera de la empresa.",2026-08-28T06:09:41.018148+00:00,0.8
-4672,0.65,"INTC,AVGO",alto,Un fondo de cobertura importante realizando apuestas masivas en Broadcom e Intel genera confianza institucional y puede catalizar movimientos alcistas en ambas acciones.,2026-08-28T06:09:54.425968+00:00,0.85
-4673,0.6,INTC,alto,Intel encontrando oportunidades en la carrera de chips de IA es noticia positiva central que muestra su relevancia renovada en el segmento de mayor crecimiento.,2026-08-28T06:09:54.428130+00:00,0.9
-4674,0.7,"NVDA,INTC",alto,Nvidia presentará resultados mientras Intel prueba resistencia; noticia central sobre líderes del sector.,2026-08-28T06:10:05.792706+00:00,0.95
-4675,0.7,NVDA,alto,Posicionamiento de Nvidia como entidad central en ecosistema de IA refleja dominio de mercado y perspectivas positivas.,2026-08-27T00:22:00.548351+00:00,0.95
-4676,0.6,NVDA,medio,NVIDIA monitoreada por inversores en contexto de apuestas en startups AI emergentes; mantiene relevancia de liderazgo en infraestructura.,2026-08-28T06:09:29.456902+00:00,0.7
-4677,0.0,INTC,bajo,"Análisis valuación neutral de Intel sin dirección clara, refleja incertidumbre sobre posición competitiva en transición tecnológica.",2026-08-27T00:21:48.594993+00:00,0.5
-4678,0.6,QCOM,medio,Caída de Qualcomm crea oportunidad según analistas; sentimiento mejorando sugiere posible recuperación.,2026-08-28T06:10:05.793205+00:00,0.8
-4679,0.0,MU,medio,Análisis de opciones sugiere volatilidad extrema en Micron; mercado refleja incertidumbre sobre perspectivas futuras.,2026-08-28T06:10:05.792856+00:00,0.7
-4680,-0.4,AVGO,medio,Análisis crítico señala riesgo de concentración en clientes de Broadcom; preocupación sobre diversificación.,2026-08-28T06:10:05.792975+00:00,0.7
-4681,-0.5,"NVDA,TSMC,ASML",medio,"Análisis advierte evitar ciertos semiconductores probablemente por valoraciones altas, generando sentimiento defensivo en sector.",2026-08-28T06:10:20.129794+00:00,0.65
 4682,-0.35,AMD,medio,Referencia al costo de inversión para unirse a la tendencia de AMD sugiere valuaciones altas y posible volatilidad.,2026-08-28T06:10:45.835150+00:00,0.65
 4683,-0.55,MU,medio,"Caída en precio de Micron refleja presión en sector de memoria DRAM, sugiriendo ciclo bajista en capacidad de memoria.",2026-08-28T06:10:45.835234+00:00,0.8
 4684,0.45,QCOM,medio,Cuestionamiento sobre subvaluación de QCOM con nuevo liderazgo en móvil e IA sugiere potencial alcista a mediano plazo.,2026-08-28T06:10:45.835284+00:00,0.75
-4685,0.5,"NVDA,AVGO",medio,Análisis comparativo de gigantes de chips AI destaca competencia y oportunidades en semiconductores de alto rendimiento.,2026-08-27T00:22:12.512689+00:00,0.85
-4686,0.75,AVGO,alto,Nuevo chip AI de OpenAI genera oportunidad positiva para Broadcom como proveedor de semiconductores de infraestructura.,2026-08-27T00:22:12.512810+00:00,0.88
-4687,0.75,AVGO,alto,El potencial de negocio de $100 mil millones en AI para Broadcom es noticia central muy positiva que refuerza su posición en el mercado semiconductor.,2026-08-28T06:09:54.427713+00:00,0.95
-4688,0.3,,bajo,Análisis técnico de patrón gráfico común en semiconductores ofrece perspectiva especulativa sin eventos fundamentales.,2026-08-28T06:10:05.793177+00:00,0.4
-4689,0.3,NVDA,bajo,Reporte de PCE es contexto macroeconómico; resultados de Nvidia post-cierre son el foco pero con incertidumbre sobre dirección.,2026-08-28T06:09:54.428286+00:00,0.65
-4690,0.8,MU,alto,Predicción alcista ambiciosa para Micron sugiere confianza en crecimiento de memoria y demanda de semiconductores.,2026-08-27T00:22:00.548581+00:00,0.8
-4691,0.85,MU,alto,Análisis bullish de experto sobre demanda de memoria AI impulsa perspectiva positiva para Micron como proveedor crítico de semiconductores.,2026-08-27T00:22:12.511096+00:00,0.9
-4692,0.3,MU,medio,Anuncio de reporte de resultados genera expectativa moderada pero sin información fundamental sobre desempeño de Micron.,2026-08-27T00:22:12.512677+00:00,0.7
-4693,0.6,MU,medio,Cambios en liderazgo de Micron enfocados en AI señalan compromiso estratégico con segmento de mayor crecimiento y margen.,2026-08-28T06:09:29.456792+00:00,0.75
-4694,0.7,MU,medio,Análisis histórico positivo de Micron mostrando resiliencia post-ban chino refuerza confianza en modelo de negocio y diversificación.,2026-08-28T06:09:29.456961+00:00,0.75
-4695,0.7,MU,alto,Noticias positivas sobre Micron Technology en el sector de memoria impulsan directamente el sentimiento alcista para una de las principales proveedoras del sector.,2026-08-28T06:09:54.427437+00:00,0.9
-4696,0.7,MU,medio,Anuncio de cambios en liderazgo de Micron para acelerar innovación es positivo para memoria y crecimiento futuro.,2026-08-28T06:10:05.793051+00:00,0.7
-4697,0.3,"NVDA,MU",medio,"Nvidia baja antes de earnings mientras Micron sube, reflejando volatilidad y flujos diferenciados en semiconductores.",2026-08-27T00:22:00.549106+00:00,0.6
-4698,-0.4,NVDA,medio,Aumento de precios en servidores AI de Nvidia genera presión negativa sobre márgenes en cadena de valor de semiconductores.,2026-08-27T00:22:12.512858+00:00,0.88
-4699,0.5,005930.KS,medio,Samsung Electronics potencialmente subvaluado sugiere oportunidad en fabricante de memoria semiconductor coreano.,2026-08-27T00:22:00.549174+00:00,0.75
-4700,0.6,005930.KS,medio,Samsung anuncia recompra masiva mejorando perspectiva accionaria del fabricante de semiconductores surcoreano.,2026-08-27T00:22:12.512710+00:00,0.8
 4701,-0.35,"005930.KS,000660.KS",bajo,Salida de ETFs apalancados sugiere cautela pero no necesariamente cambio en perspectivas fundamentales de Samsung y SK hynix.,2026-08-28T06:10:45.835510+00:00,0.5
-4702,-0.5,"005930.KS,000660.KS",alto,"SK hynix invierte masivamente en chips de memoria mientras su acción cae, señalando preocupaciones sobre rentabilidad futura.",2026-08-27T00:22:00.548915+00:00,0.85
-4703,0.2,,bajo,IonQ es empresa de computación cuántica sin tickers relacionados; pregunta especulativa sobre cambios en gobernanza sin impacto claro en semiconductores convencionales.,2026-08-28T06:09:29.456635+00:00,0.4
-4704,0.75,"TSM,2330.TW",alto,"TSMC y Sony invierten $4.7B conjuntamente en tecnología de sensores para AI, inversión estratégica en semiconductores.",2026-08-27T00:22:12.512835+00:00,0.95
-4705,0.7,"NVDA,TSM",alto,"TSMC demuestra fortaleza en producción elevada desafiando posición de Nvidia, dinámica clave en sector de semiconductores.",2026-08-27T00:22:12.512848+00:00,0.93
-4706,0.4,"TSM,2330.TW",bajo,"Historia humana sobre trabajador TSMC en Phoenix ilustra expansión geográfica y sostenibilidad de talento, pero impacto operacional limitado.",2026-08-28T06:10:20.129737+00:00,0.6
-4711,0.55,"NVDA,ASML",alto,ASML (líder en litografía) se vincula con ramp acelerado de NVIDIA evidenciando demanda de equipamiento crítico en cadena de valor semiconductor.,2026-08-28T06:09:29.456996+00:00,0.9
-4712,0.7,NVDA,medio,"Referencia a stock crítico para IA sin ser Nvidia, probablemente sobre ASML u otro proveedor esencial de chip supply chain.",2026-08-28T06:09:41.019067+00:00,0.7
-4713,0.65,NVDA,alto,Expectativa de reporte de Nvidia genera atención máxima del mercado como indicador de salud de IA y demanda de semiconductores avanzados.,2026-08-28T06:10:20.129343+00:00,0.95
-4714,0.3,"ASML,AAOI",bajo,"Análisis comparativo de stocks de equipos semiconductores, relevancia modesta sin noticias de eventos específicos.",2026-08-28T06:09:41.019046+00:00,0.6
-4715,0.25,NVDA,medio,Volatilidad en semiconductores previa a resultados de Nvidia refleja incertidumbre sobre demanda IA y múltiplos de valoración sector.,2026-08-28T06:10:20.129758+00:00,0.75
-4726,0.55,NVDA,medio,"Perspectiva optimista de Nvidia impulsa mercados asiáticos junto con alivio en precios de petróleo, favoreciendo demanda energética global.",2026-08-28T06:10:20.129424+00:00,0.7
-4727,-0.3,MSFT,bajo,Crecimiento de Microsoft sin flujo de caja correspondiente genera preocupación financiera con impacto mínimo en semiconductores.,2026-08-27T00:22:12.512866+00:00,0.25
-4728,0.3,MSFT,bajo,Noticia sobre compensación de ejecutivo refleja desempeño histórico de Microsoft pero tiene impacto limitado en operaciones de semiconductores.,2026-08-28T06:09:29.456743+00:00,0.3
-4729,0.5,"MSFT,GOOGL",bajo,Interés en modelos de IA chinos impacta demanda de semiconductores indirectamente pero refleja dinámicas geopolíticas de suministro.,2026-08-28T06:09:29.456883+00:00,0.4
-4730,0.85,NVDA,alto,Duplicación de ingresos y previsiones de gasto IA aún mayor solidifican dominio de NVIDIA y demanda de chips semiconductores.,2026-08-27T00:21:48.595183+00:00,1.0
-4731,0.2,NVDA,medio,Análisis que defiende modelo de financiamiento de Nvidia mitiga preocupaciones pero mantiene cierta incertidumbre.,2026-08-27T00:22:00.548596+00:00,0.6
-4732,0.5,GOOGL,medio,Asociación Google-Marvell en semiconductores sugiere consolidación de ecosistema de procesadores.,2026-08-28T06:10:32.257054+00:00,0.6
-4733,0.55,NVDA,alto,Perspectiva sobre resultados de Nvidia genera expectativa en el mercado; su desempeño es crítico como el líder actual en chips de IA.,2026-08-28T06:09:54.427736+00:00,0.95
-4734,-0.45,"GOOGL,META",medio,"Precedente de pago social de Meta podría presionar márgenes para plataformas tecnológicas, con implicaciones negativas indirectas para demanda de semiconductores.",2026-08-28T06:09:54.427792+00:00,0.4
-4735,0.8,NVDA,alto,Earnings impressionantes de Nvidia confirman momentum del boom de IA y solidez de posición de mercado.,2026-08-27T00:22:00.549087+00:00,0.95
-4736,-0.5,NVDA,medio,Crecimiento del mercado de IA podría reducir dominio de Nvidia; pregunta fundamental sobre liderazgo competitivo.,2026-08-28T06:10:05.793073+00:00,0.85
-4737,-0.3,NVDA,medio,Desacuerdo analítico con rating sell a pesar de earnings fuertes genera dudas sobre valuación actual de Nvidia.,2026-08-27T00:22:00.548823+00:00,0.7
-4738,-0.2,"NVDA,META",bajo,"Mercado cauto digiriendo fallos regulatorios mientras anticipa resultados de NVIDIA, con sesgo ligeramente negativo.",2026-08-27T00:21:48.595071+00:00,0.3
-4739,0.8,NVDA,alto,Resultados NVIDIA impulsan acciones al alza con cobertura mediática masiva confirmando expectativas excepcionales del mercado.,2026-08-27T00:21:36.051721+00:00,0.9
-4740,-0.1,NVDA,bajo,Contexto macroeconómico cauto con inflación pegajosa limita impulso positivo de resultados esperados de NVIDIA.,2026-08-27T00:21:48.594972+00:00,0.4
-4741,0.6,NVDA,alto,Perspectiva positiva de NVIDIA en futuro próximo impulsa mercado de IA y acciones de semiconductores correlacionadas.,2026-08-27T00:21:48.595150+00:00,0.8
-4742,0.35,NVDA,medio,"Mercado muestra debilidad por inflación antes de earnings NVIDIA, generando volatilidad previa a resultados positivos.",2026-08-27T00:21:36.051801+00:00,0.65
-4743,0.75,NVDA,alto,Expansión de asociación AWS-NVIDIA para infraestructura IA de siguiente generación refuerza demanda de semiconductores avanzados.,2026-08-27T00:21:48.595098+00:00,0.9
-4744,0.7,NVDA,alto,Expansión de alianza con Amazon refuerza posición de NVIDIA en infraestructura de IA y validaría demanda sostenida de chips.,2026-08-27T00:21:48.594946+00:00,0.85
-4745,0.6,NVDA,alto,"Nvidia ofrece 'balance sheet-as-a-service' por $200B, indicando demanda masiva de IA y poder de mercado.",2026-08-28T06:10:32.256825+00:00,0.85
-4746,0.6,NVDA,medio,"CEO de NVIDIA declara AGI alcanzado pero relativiza importancia, manteniendo narrativa de ciclo de crecimiento prolongado.",2026-08-27T00:21:36.051713+00:00,0.7
-4747,0.9,NVDA,alto,Demanda fuerte de chips IA impulsa resultados Q2 NVIDIA muy por encima de expectativas de Wall Street.,2026-08-27T00:21:36.051778+00:00,1.0
-4748,0.75,NVDA,medio,NVIDIA desarrolla HBM personalizado con 30% mayor ancho de banda confirmando ventaja tecnológica y diferenciación de producto.,2026-08-27T00:21:36.051812+00:00,0.8
-4749,0.8,NVDA,alto,NVIDIA supera expectativas consolidando posición como empresa más valiosa del mundo con fuerte impulso en segmento de IA.,2026-08-27T00:21:48.594920+00:00,0.95
-4750,0.85,NVDA,alto,Asociación AWS-NVIDIA para 2M GPUs adicionales valida escala de demanda de infraestructura IA y posición dominante NVIDIA.,2026-08-27T00:21:36.051695+00:00,0.95
-4751,0.5,AMD,medio,Confirmación de compatibilidad de procesadores Zen 6 con plataforma AM5 indica roadmap sólido de AMD en desktop.,2026-08-28T06:09:41.018892+00:00,0.85
 4752,0.1,AMD,bajo,Mención incidental de AMD entre movimientos bursátiles intradiarios sin contexto específico de la empresa.,2026-08-28T06:10:45.835397+00:00,0.4
 4753,0.6,AMD,alto,"Presentación de GPU MI400 en Hot Chips refuerza liderazgo de AMD en aceleradores de IA, con potencial de crecimiento significativo en mercado de centros de datos.",2026-08-28T06:10:59.246067+00:00,0.9
-4754,0.4,AMD,bajo,Promoción de combo gaming con Ryzen 9 9950X3D es noticia retail positiva pero con impacto limitado en decisiones de inversión de mercado.,2026-08-28T06:09:54.428364+00:00,0.25
-4755,0.7,AMD,alto,"AMD acelera plataforma de conducción autónoma con procesadores EPYC, demostrando liderazgo en IA y aplicaciones críticas.",2026-08-28T06:09:41.018990+00:00,0.95
-4756,0.5,AMD,medio,"AMD confirma nueva generación Zen 6 de procesadores, reforzando roadmap de producto y posición competitiva en mercados desktop y móvil.",2026-08-28T06:10:20.129149+00:00,0.75
-4757,0.3,AMD,medio,Valoración neutral-positiva de AMD reconociendo oportunidades de crecimiento pero con expectativas ajustadas por maduración del mercado.,2026-08-27T00:21:48.592841+00:00,0.7
 4758,-0.45,INTC,bajo,Noticia geopolítica sobre encuentro secreto CIA-Rusia tiene impacto indirecto y tangencial sobre Intel como fabricante semiconductores.,2026-08-28T06:10:45.835445+00:00,0.15
-4759,0.1,INTC,bajo,Anuncio de beta de videojuego es mención tangencial a Intel sin impacto directo en negocio de semiconductores.,2026-08-27T00:21:36.051687+00:00,0.2
-4760,-0.7,INTC,alto,"Cuota de mercado CPU de Intel cae a mínimo de 31 años en segmento 'más feo', reflejando erosión competitiva severa.",2026-08-28T06:10:32.257136+00:00,0.9
-4761,-0.2,,bajo,Noticia sobre prospectos de baloncesto que contiene solo mención accidental de 'Intel' sin relevancia al semiconductor.,2026-08-28T06:09:41.019085+00:00,0.0
-4762,-0.3,INTC,bajo,Intel desarrolla driver para silicon antiguo; indica desafíos con arquitectura legacy pero muestra adaptabilidad.,2026-08-28T06:10:05.792870+00:00,0.5
-4763,0.7,INTC,alto,"Intel presenta estrategia multi-pronóstico para AI agentico, posicionamiento ofensivo en sector semiconductor de chips.",2026-08-27T00:22:12.512827+00:00,0.9
-4764,-0.1,,bajo,Noticia sobre reclutamiento de baloncesto universitario que menciona 'Intel' solo como palabra genérica sin relación con la empresa de semiconductores.,2026-08-28T06:09:54.427487+00:00,0.05
 4765,0.6,QCOM,alto,Lanzamiento del nuevo CPU Oryon que alcanza 5GHz es hito técnico positivo para Qualcomm en computación móvil de alto rendimiento.,2026-08-28T06:10:45.835190+00:00,0.9
-4766,0.55,QCOM,medio,Análisis repetido de capacidad de Qualcomm en edge AI con VENTUNO Q refuerza narrativa positiva pero con relevancia de investigación.,2026-08-28T06:09:54.428345+00:00,0.8
 4767,0.65,QCOM,alto,Hito técnico oficial del primer CPU móvil en 5GHz confirma liderazgo de Qualcomm en arquitectura de procesadores avanzados.,2026-08-28T06:10:45.835479+00:00,0.9
-4768,0.5,QCOM,medio,Iniciativa de inversión en robótica de Qualcomm diversifica oportunidades de crecimiento en mercados emergentes con potencial moderado.,2026-08-27T00:21:48.594865+00:00,0.6
-4769,0.5,AVGO,medio,Broadcom muestra desempeño fuerte en múltiples frentes pero valuación es cuestionada; postura neutral-positiva.,2026-08-28T06:10:05.792994+00:00,0.8
-4770,-0.15,"AMD,AVGO",bajo,"Cathie Wood reposiciona portafolio vendiéndose AMD comprando Broadcom, señal mixta sobre competitividad relativa en semiconductores.",2026-08-27T00:21:36.051515+00:00,0.6
 4771,-0.7,AVGO,alto,Análisis negativo de BMO después de earnings de Broadcom sugiere deterioro en perspectivas y presión sobre el precio de la acción.,2026-08-28T06:10:45.835026+00:00,0.85
-4772,0.4,AVGO,medio,Confianza de Wall Street en Broadcom a pesar de competencia de Marvell refleja fortaleza en soluciones de infraestructura.,2026-08-27T00:21:48.595420+00:00,0.8
-4773,0.5,AVGO,medio,"Broadcom destaca capacidades en IA y seguridad de nube privada, posicionándose en mercados de alto crecimiento tecnológico.",2026-08-28T06:10:20.129451+00:00,0.65
-4774,0.7,AVGO,medio,"Broadcom respaldada por flujos de efectivo sólidos en infraestructura IA, impulsando confianza en su modelo de negocio.",2026-08-28T06:10:32.254826+00:00,0.75
-4776,0.4,TXN,bajo,"Institucionales incrementan posiciones en Texas Instruments reflejando confianza, aunque movimiento de precio refleja mercado ya precificado.",2026-08-28T06:10:20.129239+00:00,0.55
-4777,-0.35,ARM,bajo,Comentario sobre valuación cara de ARM comparado con SOXL refleja preocupación sobre múltiplos pero con fundamento especulativo limitado.,2026-08-28T06:09:54.428398+00:00,0.55
 4778,-0.65,ARM,medio,"Caída del 46% desde junio genera preocupación sobre valoración de ARM, pero también puede presentar oportunidad de compra para inversores contrarios.",2026-08-28T06:10:45.833695+00:00,0.75
-4781,0.6,"MU,META",medio,Ascensos ejecutivos en Micron y liquidación con Meta generan señales mixtas pero moderadamente positivas para semiconductor.,2026-08-27T00:22:12.512884+00:00,0.75
-4782,-0.3,MU,bajo,Disputa ambiental sobre reporte de Micron tiene bajo impacto en operaciones pero refleja riesgos regulatorios.,2026-08-28T06:10:05.793013+00:00,0.4
-4783,0.4,MU,medio,Anticipación de crecimiento de demanda de Micron desde sector educativo representa oportunidad de crecimiento en segmento selectivo.,2026-08-27T00:21:48.595448+00:00,0.6
-4784,0.4,MU,medio,Desarrollo regional vinculado a planta de Micron sugiere inversión en infraestructura y crecimiento económico local.,2026-08-27T00:22:00.548628+00:00,0.5
-4785,0.5,005930.KS,bajo,Presentación de SSDs Samsung con USB4 es innovación de producto pero impacto limitado en valoración general.,2026-08-28T06:10:32.256376+00:00,0.4
 4786,0.4,005930.KS,medio,"Encuentro potencial entre líder político y ejecutivos de Samsung sugiere apoyo gubernamental para proyectos de chips, con impacto positivo pero aún especulativo.",2026-08-28T06:10:59.246573+00:00,0.65
 4787,0.5,005930.KS,medio,Ganancia de gran orden de equipos por Samsung indica demanda sólida en sector de fabricación semiconductor.,2026-08-28T06:10:45.835537+00:00,0.75
-4788,0.3,005930.KS,medio,Programa de recompra de Samsung Electronics sugiere confianza en valuación y competitividad en semiconductores globales.,2026-08-27T00:21:48.595551+00:00,0.7
-4789,0.25,005930.KS,medio,Presión gubernamental sobre inversión en chips de Samsung refleja importancia estratégica pero incertidumbre sobre compromisos futuros.,2026-08-27T00:21:36.051530+00:00,0.55
-4790,0.35,"NVDA,005930.KS,000660.KS",medio,"Samsung y SK Hynix muestran volatilidad post-resultados NVIDIA, reflejando expectativas mixtas en la cadena de suministro de chips.",2026-08-27T00:21:36.050797+00:00,0.65
-4791,-0.5,"005930.KS,000660.KS",alto,"YMTC chino amenaza con alcanzar a Samsung/SK Hynix en memoria flash, intensificando competencia geopolítica.",2026-08-28T06:10:32.257040+00:00,0.9
-4792,0.2,"005930.KS,000660.KS",alto,"YMTC busca dominar mercado de NAND, generando presión competitiva sobre Samsung y SK Hynix en memoria.",2026-08-28T06:09:41.019105+00:00,0.9
-4793,0.7,000660.KS,alto,SK hynix con vistas alcistas por oferta ajustada de memoria y contratos a largo plazo posiciona favorablemente al productor coreano.,2026-08-28T06:09:29.456982+00:00,0.85
-4794,0.6,000660.KS,medio,"SK Hynix expande upside de Coherent en semiconductores, reflejando demanda de soluciones ópticas para IA.",2026-08-28T06:09:41.019024+00:00,0.8
 4795,-0.8,000660.KS,alto,El rechazo del acuerdo salarial de SK hynix genera incertidumbre operativa y riesgos de huelga en uno de los mayores productores mundiales de DRAM y NAND.,2026-08-28T06:10:59.245929+00:00,0.85
 4796,-0.4,000660.KS,bajo,Arbitraje de precios del 30% entre mercado local y ADR de SK hynix indica ineficiencia de mercado pero no cambio fundamental.,2026-08-28T06:10:45.835294+00:00,0.5
 4797,0.7,"NVDA,005930.KS,000660.KS",alto,Proyección de aumento de precios de HBM y demanda de NVIDIA para HBM es muy positiva para fabricantes de memoria coreanos.,2026-08-28T06:10:45.835545+00:00,0.95
-4798,0.8,000660.KS,alto,"SK hynix se beneficia de aceleración en expansión de memoria AI, sector crítico de semiconductores.",2026-08-27T00:22:12.512819+00:00,0.92
-4799,-0.5,MU,alto,Competencia creciente de YMTC chino en memoria DRAM presenta amenaza significativa para Micron con posibles implicaciones negativas en márgenes y participación de mercado.,2026-08-28T06:09:54.428419+00:00,0.85
-4800,0.75,"TSM,2330.TW",alto,Apple M6 en 2nm de TSMC con boost 30% GPU IA valida liderazgo en tecnología de punta y demanda de fabs avanzadas.,2026-08-28T06:10:32.257029+00:00,0.95
-4801,0.55,"NVDA,AMD,TSM,2330.TW",alto,Cambio de TSMC en packaging puede beneficiar AMD con mayor asignación CoWoS y reducir cuello de botella para competidores de Nvidia.,2026-08-28T06:10:20.129536+00:00,0.85
-4802,0.0,,bajo,Iniciativa de salud mental comunitaria sin conexión al sector de semiconductores ni cadena de valor de tecnología.,2026-08-27T00:22:12.512873+00:00,0.01
-4803,0.0,,bajo,Noticia sobre iglesia metodista sin conexión alguna con semiconductores ni mercados financieros.,2026-08-27T00:22:00.548537+00:00,0.0
-4804,-0.1,UMC,bajo,Noticia comunitaria sobre evento local que no tiene relación material con operaciones o resultados financieros de UMC.,2026-08-28T06:09:41.016701+00:00,0.1
-4805,0.0,,bajo,Noticia sobre clero metodista y política internacional sin relevancia para sector de semiconductores.,2026-08-27T00:22:00.548844+00:00,0.0
-4807,0.0,,bajo,"Noticia sobre serie de sermones de iglesia UMC, falsa coincidencia de ticker, completamente irrelevante.",2026-08-28T06:10:32.257047+00:00,0.0
-4808,0.4,UMC,medio,"UMC recauda $1.8B en bonos convertibles para financiamiento, indicando confianza pero también necesidad de capital.",2026-08-28T06:10:32.256643+00:00,0.65
-4809,0.6,ASML,alto,Recomendación de BofA posicionando ASML como líder en equipos semiconductores valida su rol crítico en cadena de suministro.,2026-08-27T00:22:00.548564+00:00,0.9
-4810,0.75,ASML,alto,"Bank of America respalda valuación de ASML pese a correcciones recientes, proyectando fuerte crecimiento en ingresos y ganancias para proveedor crítico de litografía.",2026-08-28T06:10:20.128891+00:00,0.9
-4815,0.55,6857.T,medio,"Advantest impulsa producción en volumen de fotónica de silicio, tecnología emergente crítica para comunicaciones e IA.",2026-08-28T06:10:20.129775+00:00,0.7
-4817,0.3,6857.T,bajo,Menciona Kioxia y Advantest como valores más negociados sin contexto negativo/positivo claro.,2026-08-28T06:10:32.256810+00:00,0.4
 4819,-0.7,"6857.T,6980.T",medio,Caída del Nikkei afecta negativamente a empresas de semiconductores japonesas como Advantest; contagio por debilidad de acciones tecnológicas estadounidenses.,2026-08-28T06:10:59.244745+00:00,0.7
-4820,0.65,IFX.DE,medio,"Infineon suministra semiconductores de potencia SiC para sistemas energéticos renovables, nicho importante del sector.",2026-08-27T00:22:12.512891+00:00,0.8
-4821,0.75,IFX.DE,alto,"Infineon adquiere C2i Semiconductors para expandir portafolio de gestión de potencia en data centers IA, fortaleciendo posición en mercado crítico.",2026-08-28T06:10:20.129693+00:00,0.85
-4822,0.6,IFX,medio,"Infineon adquiere C2i para fortalecer posición en semiconductores automotrices, movimiento estratégico positivo.",2026-08-28T06:10:05.792949+00:00,0.8
-4823,0.75,IFX.DE,alto,"Infineon adquiere C2i Semiconductors para fortalecer portafolio de potencia en centros de datos IA, acelerador clave de crecimiento futuro.",2026-08-28T06:10:20.129494+00:00,0.85
-4824,0.6,IFX.DE,medio,"Infineon asegura contrato estratégico en tecnología SiC para almacenamiento residencial, evidenciando demanda en energías renovables y electrificación.",2026-08-28T06:10:20.127620+00:00,0.65
-4826,-0.35,BHP,bajo,"Riesgos de aranceles amenazan rally de precios de cobre, impactando tangencialmente demanda de materias primas para semiconductores.",2026-08-28T06:10:20.129577+00:00,0.3
-4827,-0.2,,bajo,"Venta de acciones de ejecutivo en BHP (minería), irrelevante para sector de semiconductores.",2026-08-28T06:10:32.257228+00:00,0.05
-4828,0.0,,bajo,"BHP (minería) alcanza hito en energías renovables, irrelevante para semiconductores.",2026-08-28T06:10:32.256907+00:00,0.05
-4829,-0.2,,bajo,"Transacción de insider en BHP (minería), no relacionada con semiconductores.",2026-08-28T06:10:32.257146+00:00,0.05
-4830,0.2,,bajo,"Lanzamiento de vehículo eléctrico Suzuki tiene mínima relevancia para semiconductores, BHP es minería no relacionada.",2026-08-28T06:10:05.792687+00:00,0.1
 4831,0.15,BHP,bajo,"Iniciativa de energía renovable de BHP tiene bajo impacto directo en semiconductores, aunque ligeramente positivo para sostenibilidad operacional.",2026-08-28T06:10:45.835121+00:00,0.2
-4833,0.0,,bajo,"Freeport-McMoRan (cobre/minerales) no está relacionada con semiconductores, titular no relevante.",2026-08-28T06:10:32.256785+00:00,0.1
-4834,-0.2,FCX,bajo,Venta de ejecutivo en Freeport-McMoRan es señal neutral/negativa sin relación con sector de semiconductores.,2026-08-27T00:21:36.051728+00:00,0.1
-4835,-0.3,FCX,bajo,"Venta de acciones por ejecutivo de Freeport-McMoRan sugiere posibles dudas internas sobre valuación, impacto mínimo para semiconductores.",2026-08-27T00:21:48.595470+00:00,0.1
-4836,-0.3,FCX,bajo,Desinversión de ejecutivo de Freeport-McMoRan puede señalar precaución estratégica sin relevancia directa para cadena de semiconductores.,2026-08-27T00:21:48.595490+00:00,0.1
-4837,-0.15,FCX,bajo,"Venta de acciones de Freeport-McMoRan por gestor institucional, mínima relevancia para sector semiconductor.",2026-08-28T06:10:20.129718+00:00,0.2
-4838,0.5,FCX,bajo,Ajuste de price target de Freeport-McMoRan carece de conexión directa con semiconductores o cadena de suministro.,2026-08-28T06:09:41.019124+00:00,0.1
-4839,-0.2,FCX,bajo,"Reducción de posición institucional en Freeport-McMoRan sugiere cautela, pero impacto limitado al sector semiconductor dado su enfoque en cobre.",2026-08-28T06:10:20.129472+00:00,0.25
 4840,0.05,4063.T,bajo,Mención genérica de foro de discusión sobre Shin-Etsu tiene impacto mínimo como noticia de mercado.,2026-08-28T06:10:45.835372+00:00,0.3
-4842,-0.75,3436.T,alto,"SUMCO cae por revisión a la baja de ganancias, evidenciando presión en demanda de obleas de silicio.",2026-08-28T06:10:32.256802+00:00,0.8
-4843,-0.4,MSFT,medio,Revelación de salarios en Microsoft genera preocupaciones sobre costos operativos pero tiene impacto limitado en el sector de semiconductores.,2026-08-28T06:09:54.427684+00:00,0.3
-4844,0.4,"MSFT,GOOGL",medio,Conversaciones de Microsoft y Google con startup china sobre ingresos K3 sugiere oportunidades de negocio pero con geopolítica incierta.,2026-08-28T06:09:54.428103+00:00,0.5
-4845,0.0,MSFT,bajo,Accidente en construcción de data center Microsoft es noticia de seguridad sin impacto operacional o financiero relevante.,2026-08-27T00:21:36.051791+00:00,0.15
-4846,-0.4,MSFT,medio,"WSJ cuestiona transparencia de Microsoft sobre negocios IA, generando preocupación sobre retorno de inversiones masivas en semiconductores.",2026-08-28T06:10:20.129557+00:00,0.6
-4847,-0.4,MSFT,bajo,"Nota sobre paradoja de valuación de Microsoft, pero sin relación directa con cadena de suministro de semiconductores.",2026-08-28T06:09:41.018661+00:00,0.3
-4848,0.2,MSFT,bajo,Aniversario de Xbox a $899 es noticia de producto de consumidor con impacto marginal en semiconductor core.,2026-08-28T06:09:54.428326+00:00,0.15
-4849,-0.6,MSFT,medio,"Ciberataque contra Microsoft afecta seguridad pero es limitado a campañas de phishing, sin impacto directo en semiconductores.",2026-08-28T06:10:05.791773+00:00,0.3
-4850,-0.5,MSFT,bajo,Caso criminal sin relación con operaciones de Microsoft tiene impacto reputacional mínimo en semiconductores.,2026-08-27T00:22:12.512703+00:00,0.05
-4851,-0.4,MSFT,bajo,Noticia criminal sobre empleado de Microsoft sin relación directa con operaciones o perspectivas financieras de la empresa.,2026-08-27T00:22:00.548395+00:00,0.1
-4852,-0.5,MSFT,bajo,Condena criminal en caso sin relación operacional tiene impacto reputacional irrelevante para semiconductores.,2026-08-27T00:22:12.512879+00:00,0.05
-4853,0.2,MSFT,bajo,"Análisis sobre compensación en Microsoft tiene relevancia tangencial para sector, reflejando atracción de talento en era de IA.",2026-08-27T00:21:48.595510+00:00,0.2
-4854,-0.2,MSFT,bajo,Gasto interno en IA de empleados sugiere adopción de IA en Microsoft pero sin impacto material en negocio.,2026-08-27T00:22:00.548860+00:00,0.4
-4855,0.2,MSFT,bajo,Innovación en entretenimiento digital de Microsoft tiene relevancia tangencial para el sector de semiconductores.,2026-08-27T00:22:12.512451+00:00,0.1
-4856,0.3,MSFT,bajo,Artículo sobre seguridad de infraestructura de IA sin impacto directo en manufactura o diseño de semiconductores.,2026-08-28T06:09:41.018852+00:00,0.3
-4857,-0.5,GOOGL,medio,Bill Ackman vende Alphabet para comprar stocks de IA; señal de rotación de cartera pero sin evento fundamental.,2026-08-28T06:10:05.792793+00:00,0.4
-4858,0.5,GOOGL,medio,Análisis de Morgan Stanley sobre Alphabet tiene impacto moderado sin foco específico en negocios de semiconductores.,2026-08-27T00:22:12.512841+00:00,0.3
-4859,0.3,GOOGL,bajo,Mención de Alphabet en contexto de SpaceX y startups tecnológicas refleja interés en ecosistema IA pero sin impacto directo semiconductor.,2026-08-28T06:10:20.129595+00:00,0.35
-4860,-0.1,GOOGL,bajo,"Venta de posición en Alphabet relacionada con rally de Google Cloud, impacto limitado en operaciones de chips.",2026-08-28T06:10:05.792776+00:00,0.3
-4861,-0.5,GOOGL,bajo,Pregunta sobre caída de precio de Alphabet sin análisis fundamental profundo ni relación con semiconductores.,2026-08-28T06:09:41.019163+00:00,0.2
-4862,-0.35,GOOGL,bajo,Preocupación sobre gastos de IA versus crecimiento de cloud crea incertidumbre sobre rentabilidad de inversiones en semiconductores.,2026-08-28T06:09:29.456909+00:00,0.4
-4863,0.65,GOOGL,medio,Inversores destacados compran Alphabet basados en oportunidades AI/cloud; apoyo de mercado amplio pero no exclusivamente semiconductor.,2026-08-28T06:09:29.456843+00:00,0.5
-4864,-0.3,GOOGL,bajo,Crítica de Buffett sobre apuesta en Alphabet no relacionada directamente con sector de semiconductores.,2026-08-27T00:22:00.549158+00:00,0.1
-4865,0.6,GOOGL,medio,"Análisis de valuación de Alphabet con potencial de 22% upside, parcialmente impulsado por expansión de Gemini.",2026-08-28T06:09:41.018873+00:00,0.4
-4866,0.6,GOOGL,bajo,Alphabet cumple criterios de inversión de Lynch; análisis de valuación positivo pero tangencial al sector de semiconductores.,2026-08-28T06:10:05.793032+00:00,0.3
-4867,0.1,GOOGL,bajo,Token de acciones de Alphabet en Robinhood es noticia de producto financiero sin impacto en negocio de semiconductores.,2026-08-28T06:10:05.792767+00:00,0.2
-4868,-0.3,GOOGL,bajo,Venta de acciones por parte de un político tiene relevancia limitada en el análisis fundamental de Alphabet.,2026-08-28T06:09:41.018433+00:00,0.3
-4869,-0.55,META,medio,Acuerdo histórico de Meta con la Fiscalía General implica costos legales y regulatorios que afectan márgenes pero tienen relevancia limitada para semiconductores.,2026-08-28T06:09:54.428020+00:00,0.25
-4870,-0.3,META,bajo,Acuerdo de liquidación con Meta tiene impacto legal pero mínima relevancia directa en semiconductores o cadena de valor de chips.,2026-08-27T00:22:12.512347+00:00,0.2
-4871,0.8,"MU,TSM",alto,Innovación de d-Matrix con DRAM integrado en 4nm TSMC representa avance tecnológico importante para aceleradores IA.,2026-08-28T06:10:05.793152+00:00,0.9
-4872,0.6,,alto,Cambio global hacia chips de memoria con 70% de inversión en IA sugiere demanda sostenida para fabricantes de DRAM/NAND.,2026-08-28T06:10:32.256214+00:00,0.85
-4873,0.3,,medio,"Changsin Memory podría capturar 50% de demanda DRAM global, representando disrupción potencial en competencia de memoria.",2026-08-28T06:10:32.256818+00:00,0.7
-4874,0.8,"NVDA,005930.KS",alto,"Samsung producirá Grok 3 en línea de 4nm a capacidad máxima, validando demanda de chips avanzados y fortaleciendo posición de ambas empresas.",2026-08-28T06:10:32.256354+00:00,0.9
-4875,0.65,"NVDA,ASML,TSMC,AMD,QCOM,IFX.DE,TXN",alto,"BofA identifica oportunidades de compra en principales semiconductores, indicando potencial de recuperación y desprecios exagerados en sector.",2026-08-28T06:10:20.129514+00:00,0.8
-4876,0.7,,alto,Proyección de crecimiento acelerado del mercado de chips IA hacia 2035 es positiva para toda la industria semiconductora.,2026-08-28T06:10:05.793248+00:00,0.85
 4878,-0.7,"TER,8035.T,6857.T,IFX.DE",alto,"Corrección en Nasdaq por pánico en inversiones de IA afecta negativamente a todo el sector de semiconductores y proveedores de equipos, especialmente fabricantes de chips.",2026-08-28T06:11:07.084174+00:00,0.9
-4879,0.6,NVDA,medio,Inversiones billonarias de Nvidia en otras compañías demuestran confianza en ecosistema pero diluye foco en negocio core.,2026-08-28T06:07:21.134980+00:00,0.65
-4880,0.65,NVDA,medio,Nvidia y otras acciones en zonas de compra con Fed favorables sugiere momentum positivo pero noticia de mercado general.,2026-08-28T06:07:21.134999+00:00,0.6
-4881,0.7,INTC,medio,Subidas en acciones de proveedores de semiconductores y ensamble sugieren repunte en cadena de valor post-Intel.,2026-08-28T06:07:21.135069+00:00,0.75
-4882,0.75,NVDA,alto,Resultados positivos de Nvidia impulsan mercados asiáticos creando efecto momentum positivo en sector semiconductor global.,2026-08-28T06:07:21.135075+00:00,0.85
-4883,0.8,NVDA,alto,"Trump elogia resultados excepcionales de Nvidia y revela posiciones accionarias, señal fuerte de confianza política y desempeño corporativo.",2026-08-28T06:07:33.421678+00:00,0.95
-4884,0.55,NVDA,bajo,Comparación especulativa de Sandisk con Nvidia es análisis de valuación retrospectiva sin impacto fundamental en sector.,2026-08-28T06:07:21.135125+00:00,0.3
-4885,-0.6,AMD,medio,Cathie Wood vende AMD e indica falta de confianza en el competidor de Nvidia para procesadores de IA.,2026-08-28T06:07:45.601072+00:00,0.7
-4886,0.8,AMD,alto,"Raymond James identifica gran oportunidad de ingresos para AMD por $201B, señal positiva fuerte para el futuro de la empresa.",2026-08-28T06:08:14.097784+00:00,0.95
-4887,0.7,AVGO,alto,"Cathie Wood invierte $20M en Broadcom, mostrando confianza institucional en la empresa semiconductor.",2026-08-28T06:08:14.097848+00:00,0.9
-4888,0.4,"NVDA,AMD",medio,"Análisis comparativo entre NVIDIA y AMD con recomendación selectiva, genera incertidumbre en valuaciones relativas.",2026-08-28T06:08:14.098043+00:00,0.75
-4889,0.5,AMD,medio,"Comparativa entre Cerebras y AMD en boom de infraestructura AI, análisis competitivo con viabilidad especulativa.",2026-08-28T06:08:14.098117+00:00,0.65
-4890,-0.4,"AMD,NVDA",alto,Cambio de Anthropic de AMD a Nvidia indica preferencia de clientes premium por arquitectura Nvidia a pesar de compromisos con AMD.,2026-08-28T06:08:26.158363+00:00,0.9
-4891,-0.6,AMD,medio,"Insiders de AMD venden significativamente, señal de falta de confianza en perspectivas de corto plazo.",2026-08-28T06:08:26.158535+00:00,0.6
-4892,0.7,AMD,alto,"Alianzas cloud y IA agentica con Nutanix aceleran adopción de procesadores AMD, consolidando posición competitiva vs Nvidia.",2026-08-28T06:08:54.218540+00:00,0.9
-4893,0.8,"NVDA,AMD,INTC",alto,Forecast de crecimiento 70% en Nvidia con suba del 6% y recuperación de AMD e Intel demuestra demanda IA robusta que compensa alertas de márgenes.,2026-08-28T06:08:54.218567+00:00,1.0
-4894,0.8,"NVDA,AMD,INTC,AVGO",alto,"Reporte excepcional de Nvidia impulsa alzas en todo sector de semiconductores incluyendo AMD, Intel y Broadcom.",2026-08-28T06:09:05.173574+00:00,0.95
-4895,0.8,NVDA,alto,Nvidia sube con resultados excepcionales y guidance positiva; es la noticia más bullish para el líder en chips IA.,2026-08-28T06:07:45.601066+00:00,0.95
-4896,0.6,NVDA,alto,Nvidia sube 20% en un mes generando debate sobre realización de ganancias versus continuación del rally impulsado por demanda de IA.,2026-08-28T06:07:59.297953+00:00,0.85
-4897,0.6,"AVGO,NVDA,AMD",alto,"Broadcom capitaliza crecimiento de semiconductores AI compitiendo con NVIDIA y AMD, posicionamiento competitivo en mercado de alto crecimiento.",2026-08-28T06:08:14.098134+00:00,0.9
-4898,0.5,AMD,medio,"AMD impulsa estándares UCIe para interconexión de chips embebidos, iniciativa técnica que fortalece propuesta competitiva pero con adopción incierta.",2026-08-28T06:08:14.098140+00:00,0.7
-4899,0.6,MU,alto,"Contratos multiyear de Micron durante escasez aseguran ingresos futuros y margen en memoria DRAM/NAND, positivo para estabilidad financiera.",2026-08-28T06:08:54.217597+00:00,0.95
-4900,0.3,INTC,bajo,Compra de Nancy Pelosi en Intel genera interés pero tiene impacto limitado; refleja confianza institucional pero no es noticia operativa fundamental.,2026-08-28T06:07:45.599724+00:00,0.4
-4901,0.4,"INTC,NVDA",medio,Valoración favorable de Intel versus Nvidia en contexto de entrada de Nvidia en foundry service mejora perspectiva competitiva.,2026-08-28T06:08:26.158516+00:00,0.65
-4902,0.5,INTC,medio,Expansión de asociación Intel-Kasm para IA privada en procesadores Xeon 6 demuestra fortaleza en IA empresarial.,2026-08-28T06:09:05.173172+00:00,0.7
-4903,0.6,"NVDA,INTC,AMD,000660.KS,005930.KS",alto,"Fabricantes de chips superan a grandes tecnológicas en rally de IA, reflejando rotación de capital hacia semiconductores especializados.",2026-08-28T06:07:59.297920+00:00,0.95
-4904,-0.7,"NVDA,AMD,INTC,AVGO,QCOM",alto,"Aranceles a semiconductores estadounidenses debilitarían competitividad global de fabricantes y diseñadores US en IA, impactando directamente a empresas clave del sector.",2026-08-28T06:08:54.215867+00:00,0.9
-4905,0.5,,medio,Fondos especializados en semiconductores superen benchmark indica sector general alcista pero sin tickers específicos afectados.,2026-08-28T06:07:45.601078+00:00,0.5
-4906,0.7,"NVDA,INTC,AMD,QCOM,MRVL",alto,"Ganancias blowout de Nvidia desencadenan rally sectorial en semiconductores, confirmando demanda sostenida de IA y lifting de todo el sector.",2026-08-28T06:07:59.298009+00:00,0.95
-4907,0.6,AVGO,alto,"Broadcom justifica valuación premium mediante order book robusto en infraestructura AI/datos centers, validando modelo de negocio.",2026-08-28T06:08:54.218356+00:00,0.9
-4908,0.4,AVGO,bajo,BNP sugiere Broadcom podría beneficiarse de jalapeños (probable referencia a producto específico) pero titular es especulativo.,2026-08-28T06:07:45.601122+00:00,0.4
-4909,-0.4,"AVGO,GOOGL,MRVL",medio,"Google profundiza alianza con Marvell desplazando a Broadcom, amenaza competitiva negativa para AVGO en chips AI.",2026-08-28T06:08:14.097976+00:00,0.85
-4910,0.5,AVGO,medio,"Broadcom posiciona soluciones de ciberseguridad post-cuántica, estrategia de diversificación con potencial de mercado futuro.",2026-08-28T06:08:14.098035+00:00,0.65
-4911,0.45,"AVGO,NVDA",alto,"Broadcom participa en chip competidor de Nvidia para inferencia, validando su papel crítico en cadena de suministro de IA.",2026-08-28T06:08:26.158182+00:00,0.85
-4912,0.5,AVGO,medio,Análisis positivo previo a earnings de Broadcom destaca potencial de crecimiento en segmento IA.,2026-08-28T06:08:26.158424+00:00,0.7
-4913,0.6,AVGO,alto,Proyección de que IA represente 54% de ventas de Broadcom valida su exposición estratégica al boom de semiconductores IA.,2026-08-28T06:08:26.158461+00:00,0.8
-4914,-0.35,AVGO,medio,Preocupaciones sobre deuda relacionada a expansión IA sugieren que valoración de Broadcom podría ajustarse a la baja.,2026-08-28T06:08:26.158587+00:00,0.65
-4915,0.5,NVDA,bajo,Análisis macroeconómico amplio con Nvidia como componente; Jackson Hole y petróleo son factores contextuales más que impulsores de chips.,2026-08-28T06:07:59.298000+00:00,0.5
-4916,0.72,AVGO,medio,Subidas en Broadcom e Impinj reflejan fortaleza en infraestructura IoT y semiconductores de aplicaciones específicas.,2026-08-28T06:07:21.135119+00:00,0.7
-4917,0.6,TXN,medio,Texas Instruments supera al mercado indica fortaleza en demanda de semiconductores analógicos y procesamiento de señal.,2026-08-28T06:07:45.600934+00:00,0.7
-4918,0.4,TXN,medio,Expectativas de múltiplos premium reflejan confianza en flujo de caja y rentabilidad de Texas Instruments.,2026-08-28T06:08:37.524918+00:00,0.75
-4919,0.5,MU,medio,"Micron impulsa investigación en IA y reestructura liderazgo, posicionamiento ofensivo en mercado de semiconductores para IA.",2026-08-28T06:07:33.422125+00:00,0.8
-4920,0.5,"MU,NVDA",medio,Micron debería beneficiarse de alerta de precios de memoria de Nvidia pero mercado aún no reacciona; oportunidad contraria.,2026-08-28T06:07:45.601115+00:00,0.8
-4921,0.7,MU,alto,Micron duplica capex por escasez de memoria IA es bullish; posiciona a MU como ganador estructural en demanda.,2026-08-28T06:07:45.601128+00:00,0.9
-4922,0.4,"NVDA,MU",medio,Resumen de mercado que destaca Nvidia y Micron en contexto IA es positivo para chips de memoria y procesamiento.,2026-08-28T06:07:45.601140+00:00,0.6
-4923,0.7,MU,alto,"Trump elogia inversión de $10B de Micron en investigación estadounidense, generando respaldo político y reconocimiento de importancia estratégica.",2026-08-28T06:07:59.297866+00:00,0.9
-4924,-0.4,MU,medio,"Micron cae 5% a pesar de mención presidencial, sugiriendo tensión entre sentimiento político positivo y preocupaciones de mercado subyacentes.",2026-08-28T06:07:59.297927+00:00,0.65
-4925,-0.2,"NVDA,MU,000660.KS",medio,Escasez de memoria se disipa afectando a Nvidia y fabricantes de DRAM; presión sobre márgenes de precios en el sector.,2026-08-28T06:07:59.297984+00:00,0.8
-4926,-0.1,"MU,WDC,000660.KS,NVDA",medio,"NVIDIA compromiso de $279B en memoria favorece proveedores selectivos, SK Hynix se beneficia pero Micron rezagado.",2026-08-28T06:08:14.098099+00:00,0.8
-4927,0.6,MU,medio,"Análisis sugiere Micron está superando su ciclo histórico de boom-bust, percepción positiva para estabilidad empresarial.",2026-08-28T06:08:14.098105+00:00,0.75
-4928,0.7,"MU,NVDA",alto,Predicción posicionando Micron como stock AI más importante post-Nvidia reconoce criticidad escasez memoria en ciclo IA.,2026-08-28T06:08:54.218681+00:00,0.95
-4929,0.7,MU,alto,"Supply tight de Micron por aceleración demanda IA genera power pricing y margen expansión, fundamentando upside multiyear.",2026-08-28T06:08:54.218703+00:00,0.95
-4930,0.5,"MU,NVDA",medio,"Micron supera margen bruto de NVIDIA debido a limitaciones de memoria, análisis positivo para rentabilidad de fabricantes de DRAM/HBM.",2026-08-28T06:08:14.098122+00:00,0.8
-4931,0.6,"NVDA,MU",medio,Stock AI pequeño que supera Micron y Nvidia Year-to-Date sugiere oportunidades nicho pero impacto sectorial limitado vs líderes.,2026-08-28T06:08:54.218631+00:00,0.6
-4932,0.5,"005930.KS,NVDA",medio,Samsung se beneficia de poder de fijación de precios de Nvidia en memoria; dinámicas de cadena de suministro favorecen a proveedores de DRAM.,2026-08-28T06:07:59.297992+00:00,0.75
-4933,0.4,005930.KS,medio,"Lanzamiento de Galaxy S26 FE impulsa demanda de semiconductores y componentes Samsung, beneficiando su división de chips.",2026-08-28T06:08:54.217991+00:00,0.6
-4934,-0.2,005930.KS,medio,Oferta activista para comprar participación de Samsung con prima del 45% genera incertidumbre sobre gobernanza.,2026-08-28T06:09:15.721114+00:00,0.5
-4935,-0.3,005930.KS,medio,Flashlight Capital intenta adquirir participación del 20.6% de Samsung creando presión accionaria negativa.,2026-08-28T06:09:15.721135+00:00,0.5
-4936,0.7,NVDA,alto,Nvidia impulsa recuperación en operaciones de IA y chips de alto rendimiento con perspectivas alcistas.,2026-08-28T06:09:05.173401+00:00,0.9
-4937,0.7,"NVDA,MU,SNDK,SKHY",alto,Duplicación de compras de Nvidia impulsa fuerte alza en acciones de memoria DRAM y proveedores relacionados.,2026-08-28T06:09:15.720921+00:00,0.85
-4938,0.55,"TSM,NVDA",alto,"TSMC sube con noticias de runway extendido de Nvidia en foundry, confirmando demanda sostenida de capacidad avanzada.",2026-08-28T06:08:26.158522+00:00,0.9
-4939,0.6,"TSM,2330.TW",alto,"Fondo cubierto aumenta posición en TSMC abandonando SanDisk, señal positiva sobre liderazgo de TSMC en fabricación.",2026-08-28T06:09:05.173357+00:00,0.85
-4940,0.7,"TSM,2330.TW",alto,TSMC gana más trabajo en chips de IA de 3nm consolidando su liderazgo tecnológico crítico del sector.,2026-08-28T06:09:15.720523+00:00,0.95
-4941,0.9,NVDA,alto,"Extensión de ciclo de AI boom hasta 2028 valida demanda sostenida de GPUs Nvidia, noticia central del sector.",2026-08-28T06:08:37.524994+00:00,0.98
-4942,0.6,NVDA,medio,Anécdota positiva sobre CEO Jensen Huang refleja confianza inversor en Nvidia aunque es principalmente especulativa.,2026-08-28T06:09:15.720716+00:00,0.5
-4943,0.7,UMC,alto,UMC aumenta CapEx y expande capacidad de fabricación respondiendo a demanda de IA; muestra apuesta estratégica en tendencia tecnológica principal.,2026-08-28T06:10:59.247355+00:00,0.9
-4944,0.2,UMC,bajo,Comparación de valoración entre UMC y LSCC sugiere UMC podría estar subvaluada pero sin catalyst específico.,2026-08-28T06:10:45.835422+00:00,0.55
-4945,0.3,UMC,bajo,Reporte de ventas mensuales de UMC es disclosure periódica sin contexto analítico que permita evaluar tendencias significativas.,2026-08-28T06:10:59.247198+00:00,0.4
-4946,-0.25,ASML,medio,"Prima de valuación de ASML se cuestiona, sugiriendo fatiga de mercado sobre optimismo excesivo en herramientas de litografía IA.",2026-08-28T06:08:26.158529+00:00,0.75
-4947,0.6,"MU,000660.KS,KIOXIA",medio,"Noticia positiva sobre oportunidades de ganancia en semiconductores de memoria, aunque sin tickers específicos mencionados afecta a productores de chips de memoria.",2026-08-28T06:08:14.096887+00:00,0.7
-4948,0.6,MU,alto,Identificación de Micron como ganador clave en el boom de semiconductores de IA y memoria DRAM/NAND.,2026-08-28T06:09:05.172751+00:00,0.8
-4949,0.7,NVDA,alto,Resultados y guía positiva de Nvidia elevan toda la industria de chips de IA y semiconductores.,2026-08-28T06:09:05.173594+00:00,0.9
-4950,0.8,8035.T,alto,Subvaluación de Tokyo Electron en 10% junto con crecimiento de demanda de chips de IA representa oportunidad de revaluación significativa para este proveedor crítico.,2026-08-28T06:11:07.084360+00:00,0.88
-4951,0.75,"TER,8035.T",alto,Alianza estratégica entre Teradyne y Tokyo Electron en pruebas de IA representa innovación tecnológica clave que podría impulsar demanda y márgenes en equipos de semiconductores.,2026-08-28T06:11:07.083372+00:00,0.85
-4952,0.8,6857.T,alto,Upgrade a Strong Buy de Advantest indica confianza de analistas en perspectivas de crecimiento de esta empresa de equipos de prueba de semiconductores.,2026-08-28T06:10:59.247091+00:00,0.85
-4953,0.65,6857.T,medio,Expansión de capacidades de prueba de SiC de Advantest mejora su cartera de productos para semiconductores de potencia de alto crecimiento.,2026-08-28T06:11:07.084226+00:00,0.8
-4954,0.5,6857.T,medio,Outperformance relativo de Advantest frente a pares tecnológicos sugiere fortaleza operativa pero con impacto moderado en valuación absoluta.,2026-08-28T06:11:07.084239+00:00,0.7
-4955,-0.2,NVDA,medio,Resultados de Nvidia moderan mercados asiáticos; presión sobre acciones de semiconductores por volatilidad macro.,2026-08-28T06:09:05.173382+00:00,0.6
-4956,0.75,IFX.DE,alto,Record de ingresos de Infineon impulsado por IA en centros de datos demuestra fuerte demanda de chips semiconductores para aplicaciones críticas.,2026-08-28T06:10:59.247174+00:00,0.9
-4957,0.8,IFX.DE,alto,Infineon alcanza récord histórico de ingresos por crecimiento de IA; valida tendencia de demanda explosiva de semiconductores especializados.,2026-08-28T06:10:59.247293+00:00,0.9
-4958,0.0,BHP,bajo,Comparación de mineras de cobre; sin relevancia directa para el sector de semiconductores.,2026-08-28T06:09:05.173146+00:00,0.1
-4959,-0.3,,bajo,"Caída de producción de cobre de Southern Copper tiene impacto indirecto mínimo en semiconductores, siendo más relevante para minería y metales base.",2026-08-28T06:08:54.217423+00:00,0.1
-4960,0.65,4063.T,medio,Recompra y diversificación de tierras raras de Shin-Etsu mejoran solidez financiera y posición estratégica en cadena de suministro de semiconductores.,2026-08-28T06:11:07.084480+00:00,0.7
-4961,0.1,3436.T,medio,"Sumco enfrenta llamadas de analistas contradictorias en contexto de caída del sector tecnológico, generando incertidumbre en valuación de sus obleas de silicio.",2026-08-28T06:11:07.084394+00:00,0.75
-4962,0.55,3436.T,medio,Compras previas a ganancias de Sumco sugieren revaluación de demanda de obleas de silicio en medio de volatilidad del sector.,2026-08-28T06:11:07.084490+00:00,0.75
-4963,0.7,MSFT,alto,"Microsoft anuncia transición de IA experimental a producción escalada, incrementando demanda estructural de semiconductores y servicios de computación.",2026-08-28T06:07:59.297932+00:00,0.85
-4964,0.5,"MRVL,MSFT,GOOGL",medio,"Marvell apunta a crecimiento mediante asociaciones con hyperscalers en IA, señalizando demanda sostenida de semiconductores especializados.",2026-08-28T06:07:59.297838+00:00,0.75
-4965,0.8,NVDA,alto,"Nvidia experimenta segunda mayor ganancia accionaria en su historia, señalando confianza masiva del mercado en su dominio en IA.",2026-08-28T06:07:59.297857+00:00,0.95
-4966,-0.5,GOOGL,bajo,"Análisis crítico de acciones de Google sin conexión directa a semiconductores, cliente indirecto del sector.",2026-08-28T06:07:33.421872+00:00,0.2
-4967,0.6,NVDA,medio,Nasdaq sube con Nvidia liderando y nuevo producto en vista sugiere momentum alcista en chips IA.,2026-08-28T06:07:45.601182+00:00,0.7
-4968,0.2,META,bajo,Comparación de trayectorias de ingresos entre AppLovin y Meta; no es noticia de semiconductores aunque Meta sea consumidor de chips.,2026-08-28T06:07:59.297912+00:00,0.2
-4969,0.5,NVDA,medio,"Potencial implementación de dividendos en Nvidia sería catalizador de valoración similar a Apple, reflejando madurez y confianza en flujos futuros.",2026-08-28T06:08:54.217844+00:00,0.7
-4970,0.75,NVDA,alto,Demanda de IA en auge pero con riesgos residuales; resultados sólidos pero prevarecencia de incertidumbre estratégica.,2026-08-28T06:07:21.135012+00:00,0.9
-4971,-0.5,NVDA,medio,Nvidia pausa acuerdos de compartir ingresos con proveedores cloud es negativo para su ecosistema y futuro crecimiento.,2026-08-28T06:07:45.601021+00:00,0.8
-4972,-0.6,NVDA,medio,"Nvidia pausa acuerdos de sharing de ingresos con cloud companies, cambio de modelo de negocio potencialmente limitante.",2026-08-28T06:07:33.422108+00:00,0.85
-4973,-0.55,NVDA,medio,Pausa en acuerdos de revenue-sharing de Nvidia con partners cloud sugiere cambio estratégico y posible presión en márgenes.,2026-08-28T06:07:21.135048+00:00,0.75
-4974,0.8,NVDA,alto,Adquisición estratégica de Nvidia de Hugging Face por $12.9B refuerza posición en IA y software de semiconductores.,2026-08-28T06:09:15.719825+00:00,0.9
-4975,0.3,NVDA,bajo,Creación de oficina de cabildeo demuestra influencia política pero tiene impacto limitado en fundamentales operativos.,2026-08-28T06:08:37.524596+00:00,0.4
-4976,-0.4,NVDA,medio,"CEO de Nvidia reconoce necesidad de reajustar expectativas, señal de normalización después de crecimiento acelerado.",2026-08-28T06:07:33.422117+00:00,0.8
-4977,0.4,NVDA,bajo,Noticia sobre riqueza personal del CEO de Nvidia refleja éxito empresarial pero no contiene información operativa relevante.,2026-08-28T06:07:59.297846+00:00,0.3
-4978,0.65,NVDA,medio,Entrevista del CEO de NVIDIA con figura influyente de Wall Street genera expectativas positivas sobre el liderazgo y dirección estratégica de la compañía.,2026-08-28T06:09:29.456316+00:00,0.85
-4979,0.4,NVDA,medio,Leak de DLSS 5 subraya liderazgo tecnológico de Nvidia en software de renderizado y optimización gráfica.,2026-08-28T06:08:26.158582+00:00,0.7
-4980,0.5,NVDA,bajo,"Cobertura técnica sobre DLSS 5 en videojuegos, relevancia limitada para fundamentales empresariales de NVIDIA.",2026-08-28T06:08:14.097881+00:00,0.4
-4981,0.35,NVDA,medio,Descubrimiento de DLSS 5 demuestra ventaja tecnológica de Nvidia en software de optimización gráfica.,2026-08-28T06:08:26.158430+00:00,0.65
-4982,0.5,AMD,medio,Actualización mayor en software ROCm mejora ecosistema de computación heterogénea y competitividad en AI acelerada.,2026-08-28T06:08:37.524791+00:00,0.75
-4983,0.2,AMD,bajo,Lanzamiento de placa embebida con procesadores AMD Ryzen Embedded indica demanda en segmento industrial.,2026-08-28T06:08:37.524577+00:00,0.5
-4984,0.6,"AMD,AVGO",alto,AMD y Broadcom aseguran capacidad FOPLP de Powertech demostrando consolidación de cadena de suministro crítica.,2026-08-28T06:09:15.721098+00:00,0.85
-4985,0.55,AMD,bajo,Confirmación de compatibilidad del socket AM5 para próxima generación Zen 6 es noticia técnica positiva que mantiene ecosistema AMD competitivo.,2026-08-28T06:09:29.456626+00:00,0.7
-4986,-0.4,"AMD,INTC",medio,Reducción de precios en procesadores Intel presiona márgenes de AMD pero refleja competencia intensiva en CPUs.,2026-08-28T06:08:37.524483+00:00,0.85
-4987,-0.65,AMD,medio,Problemas de estabilidad en driver de GPU AMD afectan reputación y confiabilidad en segmento de gaming de alto rendimiento.,2026-08-28T06:07:21.134864+00:00,0.7
-4988,0.5,AMD,bajo,Bundle promocional AMD-Capcom para juegos mejora percepción de marca pero impacto financiero limitado.,2026-08-28T06:07:21.135036+00:00,0.4
 4989,0.75,AMD,alto,Upgrade a Strong Buy por analista de IBD es señal positiva clara sobre perspectivas de crecimiento de AMD.,2026-08-28T06:10:45.835301+00:00,0.85
-4990,-0.2,"AMD,INTC",bajo,"Descuentos en GPUs gaming tienen impacto limitado en semiconductores discretos, más relevante para distribución.",2026-08-28T06:08:37.524799+00:00,0.4
-4991,-0.3,INTC,bajo,Noticia geopolítica sobre dron ruso en aeropuerto alemán; mención tangencial de Intel sin relevancia operativa.,2026-08-28T06:09:05.173613+00:00,0.1
-4992,-0.3,INTC,bajo,Noticia geopolítica sobre inteligencia que afecta tangencialmente a Intel; impacto indirecto en relaciones comerciales tecnológicas.,2026-08-28T06:07:59.296742+00:00,0.15
-4993,-0.65,INTC,medio,Pérdida de contrato y despidos en partner de Intel reduce confianza en su ecosistema de manufactura y demanda.,2026-08-28T06:08:26.157027+00:00,0.6
-4994,-0.4,INTC,bajo,Driver de Linux de Intel descontinuado por limitaciones de exposición RF tiene impacto técnico menor en el negocio.,2026-08-28T06:07:45.601107+00:00,0.3
-4995,-0.1,INTC,bajo,Noticia sobre preparación deportiva de la Universidad de Texas; mención tangencial de Intel sin relevancia financiera.,2026-08-28T06:09:05.171384+00:00,0.05
-4996,-0.3,INTC,bajo,"Noticia sobre políticas agrícolas con mención tangencial a Intel, sin impacto directo en semiconductores.",2026-08-28T06:07:33.420318+00:00,0.2
-4997,0.65,"QCOM,005930.KS",medio,Vietnam busca atraer inversión de Qualcomm y Samsung en IA y chips diversificando producción fuera de China.,2026-08-28T06:07:21.135112+00:00,0.75
-4998,0.5,QCOM,medio,Confirmación de que Snapdragon alcanzará 5GHz es positiva para Qualcomm en competencia de procesadores móviles de alto rendimiento.,2026-08-28T06:09:54.427825+00:00,0.8
-4999,0.5,"QCOM,005930.KS,000660.KS,TSM,2330.TW",alto,"Alianza de Qualcomm, Samsung y SK Hynix en memoria HBC con TSMC en empaque refuerza cadena de IA.",2026-08-28T06:09:05.173443+00:00,0.9
-5000,0.5,QCOM,medio,Proyección de inflexión en data center para 2027 sugiere transición positiva más allá de presiones actuales en smartphones.,2026-08-28T06:08:37.524839+00:00,0.85
-5001,0.3,QCOM,bajo,Applied Materials agrega ejecutivo de Qualcomm al consejo es noticia corporativa neutra sin impacto operativo claro.,2026-08-28T06:07:45.601187+00:00,0.5
 5002,0.55,QCOM,medio,Pronóstico positivo de Motley Fool para QCOM en 2027 refleja confianza en ciclo de innovación a largo plazo.,2026-08-28T06:10:45.835453+00:00,0.7
-5003,0.4,QCOM,medio,Participación en desarrollo 6G posiciona a Qualcomm para oportunidades futuras en infraestructura de comunicaciones.,2026-08-28T06:08:37.524587+00:00,0.8
-5004,0.7,AVGO,medio,Alianza Broadcom-Kyndryl para servicios cloud IA-ready expande mercado infraestructura de semiconductores en segmento enterprise.,2026-08-28T06:07:21.135020+00:00,0.75
-5005,0.2,AVGO,medio,Análisis histórico sobre Broadcom sugiere potencial alcista después de fechas clave del mercado.,2026-08-28T06:09:05.172716+00:00,0.5
-5006,0.6,AVGO,medio,Expansión alianza Kyndryl-Broadcom en cloud seguro y IA valida demanda enterprise de soluciones infraestructura Broadcom.,2026-08-28T06:08:54.218651+00:00,0.8
-5007,0.3,TXN,medio,Alzas de target de analistas a pesar de caída accionaria sugieren valor relativo y recuperación potencial en TI analógica.,2026-08-28T06:08:37.524987+00:00,0.8
-5008,0.2,TXN,bajo,Análisis retrospectivo de retornos históricos de Texas Instruments tiene poco impacto en perspectiva actual.,2026-08-28T06:08:26.158545+00:00,0.4
-5009,0.1,TXN,medio,Texas Instruments recibe reconocimiento positivo pero oscurecido por tensiones comerciales del sector semiconductor.,2026-08-28T06:09:15.721084+00:00,0.6
-5010,0.5,ARM,medio,"Subida del 4.81% en ARM refleja momentum positivo en demanda de arquitectura ARM para IA y datos centers, fortaleciendo licencias.",2026-08-28T06:08:54.218328+00:00,0.8
-5011,0.7,ARM,medio,ARM lidera un rally de AI stocks reflejando demanda creciente de arquitectura de procesadores para inteligencia artificial.,2026-08-28T06:09:29.456412+00:00,0.8
-5012,-0.4,ARM,bajo,Venta de acciones programada por insider en 2026 genera incertidumbre sobre confianza ejecutiva pero no afecta operaciones fundamentales actuales.,2026-08-28T06:08:54.218022+00:00,0.5
-5013,0.3,ARM,medio,ARM Holdings trending después de horas sugiere volatilidad en empresa clave de arquitectura de semiconductores.,2026-08-28T06:09:15.721063+00:00,0.7
-5014,0.7,ARM,medio,"ARM sube en después de horas por alianza con IBM y backlog de chips AI, señal positiva para arquitectura ARM en IA.",2026-08-28T06:08:14.098077+00:00,0.8
-5015,0.55,ARM,medio,Aumento de precio objetivo por Raymond James basado en crecimiento de CPUs valida potencial de ARM en próximos ciclos.,2026-08-28T06:10:45.835485+00:00,0.8
-5016,0.6,ARM,bajo,Suba accionaria de ARM con métrica de valuación positiva refleja confianza inversionista en el posicionamiento competitivo de la compañía.,2026-08-28T06:09:29.456562+00:00,0.65
-5017,0.5,ARM,medio,Suba de precio de Arm Holdings refleja reconocimiento de demanda de diseños de semiconductores para IA y computación en la nube.,2026-08-28T06:10:59.246836+00:00,0.75
-5018,0.5,,alto,Demanda de CPUs con arquitectura ARM en IA impulsa valuación sin ticker específico pero afecta ecosistema de chips.,2026-08-28T06:08:37.524978+00:00,0.9
-5019,-0.7,MU,alto,"Micron reporta resultados fuertes pero por debajo de expectativas, caída del 8% refleja decepción de mercado en semiconductor clave.",2026-08-28T06:07:33.421838+00:00,0.95
-5020,0.8,MU,alto,Demanda superior a oferta de memoria DRAM/NAND por 50% indica escasez estructural muy positiva para márgenes de Micron.,2026-08-28T06:08:37.524782+00:00,0.95
-5021,0.1,"NVDA,MU,GOOGL",medio,Análisis de tendencias de ganancias para grandes jugadores de semiconductores con énfasis en rentabilidad futura.,2026-08-28T06:09:15.718298+00:00,0.6
-5022,0.65,"MU,NVDA",medio,Micron y proveedores de semiconductores se benefician del efecto positivo de las ganancias robustas de NVIDIA en el mercado AI.,2026-08-28T06:09:29.456465+00:00,0.75
-5023,0.7,MU,alto,"Trump y gobernador apoyan inversión de $10 mil millones de Micron en Boise, respaldo político para expansión semiconductor.",2026-08-28T06:07:33.422155+00:00,0.9
-5024,-0.7,MU,alto,Aranceles planeados sobre semiconductores generan presión negativa directa en fabricantes de memoria como Micron.,2026-08-28T06:08:37.524300+00:00,0.9
-5025,0.3,005930.KS,medio,Samsung presenta línea Odyssey para gaming en Gamescom 2026 estimulando demanda de semiconductores y displays.,2026-08-28T06:09:05.173694+00:00,0.6
-5026,0.2,005930.KS,bajo,Producto financiero de bajo riesgo vinculado a Samsung es noticia periférica sobre semiconductores surcoreanos.,2026-08-28T06:09:15.720645+00:00,0.4
 5027,-0.65,"005930.KS,000660.KS",alto,Peor desempeño de Samsung en tres semanas indica debilidad generalizada en memorias; arrastre negativo para todo el sector de semiconductores de memoria.,2026-08-28T06:10:59.246353+00:00,0.8
-5028,0.4,005930.KS,medio,Samsung lanza línea Galaxy S26 FE con nuevas características que impulsan demanda de semiconductores y pantallas.,2026-08-28T06:09:05.172837+00:00,0.6
-5029,0.5,005930.KS,bajo,Post en red social sobre Samsung con múltiples tickers tiene bajo peso informativo y relevancia limitada al sector.,2026-08-28T06:07:21.135131+00:00,0.2
-5030,0.7,000660.KS,alto,"SK Hynix confirma Indiana como base clave de producción HBM para 2030, expansión estratégica importante en EE.UU.",2026-08-28T06:08:14.098111+00:00,0.9
-5031,0.3,"000660.KS,KIOXIA",bajo,"SK Hynix evalúa alianza con Kioxia, noticia especulativa sobre posibles cambios estructurales en memoria NAND.",2026-08-28T06:08:14.098092+00:00,0.5
-5032,0.6,000660.KS,alto,Bienvenida oficial de SK hynix a Indiana refuerza compromiso de expansión y presencia en mercado norteamericano.,2026-08-28T06:07:59.297794+00:00,0.9
-5033,0.5,000660.KS,medio,SK Hynix expande manufactura en Estados Unidos es bullish para suministro de memoria y diversificación de cadena.,2026-08-28T06:07:45.601174+00:00,0.8
-5034,0.7,000660.KS,alto,SK Hynix abierta a inversión en EE.UU. y prevé escasez de memoria hasta 2030 sugiere demanda sostenida y expansión capex.,2026-08-28T06:07:21.134972+00:00,0.9
-5035,0.6,000660.KS,alto,"SK Hynix ceremonia inaugural de planta de $4 mil millones, confirmación de inversión estratégica en fabricación de chips.",2026-08-28T06:07:33.422139+00:00,0.95
-5036,0.6,000660.KS,alto,"SK Hynix invierte $4 mil millones en planta de semiconductores en EE.UU., expansión estratégica de capacidad productiva.",2026-08-28T06:07:33.421853+00:00,0.95
-5037,0.55,000660.KS,medio,SK Hynix explora alianzas con industria memoria japonesa para diversificar geografía y asegurar cadena de suministro.,2026-08-28T06:07:21.134892+00:00,0.75
-5038,0.8,000660.KS,alto,"SK Hynix comienza construcción de planta HBM de $4B en Indiana, inversión capital estratégica de alto impacto para cadena de suministro global.",2026-08-28T06:08:14.098128+00:00,0.95
-5039,0.6,000660.KS,alto,"SK Hynix rompe tierra en planta de $4 mil millones con Purdue, inversión mayor en manufactura semiconductor estadounidense.",2026-08-28T06:07:33.422081+00:00,0.95
-5040,0.5,000660.KS,medio,"SK Hynix explora alianzas con industria de memoria japonesa, potencial colaboración estratégica en tecnología.",2026-08-28T06:07:33.421867+00:00,0.8
-5041,0.4,000660.KS,bajo,"SK Hynix celebra ceremonia en Purdue, señal de expansión de I+D pero con impacto operativo limitado a corto plazo.",2026-08-28T06:08:14.098001+00:00,0.3
-5042,0.7,000660.KS,alto,"SK hynix inicia construcción de planta en Indiana, confirmando inversión estratégica en EEUU con beneficios económicos significativos.",2026-08-28T06:07:59.297775+00:00,0.95
-5043,0.6,"TSM,2330.TW",medio,TSMC Arizona con evento de reclutamiento en Phoenix demuestra inversión en capacidad EE.UU. para diversificación geográfica.,2026-08-28T06:07:21.135060+00:00,0.7
-5044,0.8,"TSM,2330.TW,005930.KS",alto,"TSMC amplía liderazgo en foundry de IA con 7% de mercado mientras Samsung rezaga, reafirmando hegemonía en chips avanzados.",2026-08-28T06:07:21.134993+00:00,0.95
-5045,0.6,"TSM,2330.TW",alto,"TSMC fortalece vínculos con Sajonia impulsando crecimiento semiconductor, expansión geográfica positiva para la empresa.",2026-08-28T06:07:33.421802+00:00,0.9
-5046,0.7,"TSM,2330.TW",alto,"TSMC lidera en rankings de foundry, consolidación de posición dominante en manufactura de semiconductores avanzados.",2026-08-28T06:07:33.421846+00:00,0.98
-5047,0.85,"TSM,2330.TW",alto,Mejora en perspectiva de crédito de TSMC por Moody's refuerza posición dominante del líder en fabricación de chips.,2026-08-28T06:07:21.134422+00:00,0.95
-5048,-0.3,UMC,bajo,Disputa de iglesia de Bedford County sin relevancia para United Microelectronics Corporation.,2026-08-28T06:07:45.601040+00:00,0.05
-5049,0.3,UMC,bajo,"UMC recibe reconocimientos académicos, noticia tangencial sin impacto directo en operaciones o resultados financieros.",2026-08-28T06:08:14.097966+00:00,0.2
 5050,0.0,UMC,bajo,Expansión de centro oncológico por UMC Medical Center es completamente desvinculada del negocio de semiconductores (confusión de ticker).,2026-08-28T06:10:45.835552+00:00,0.05
-5051,0.4,,bajo,El crecimiento del sector holandés de semiconductores en 6 años refleja fortaleza general pero sin actores específicos.,2026-08-28T06:09:15.720673+00:00,0.5
-5052,0.4,ASML,medio,Marco Pieters lidera siguiente capítulo de ASML fortaleciendo a principal proveedor de equipos litográficos del sector.,2026-08-28T06:09:15.720894+00:00,0.8
-5053,0.1,ASML,bajo,Artículo informativo sobre ASML sin noticias específicas; ASML es crítico para litografía semiconductora pero noticia es neutra.,2026-08-28T06:07:45.601060+00:00,0.3
-5054,0.7,"TSM,ASML",alto,TSMC y ASML como plays puros en boom de memoria IA sin ciclicalidad ofrecen exposición desapalancada al crecimiento AI infraestructura.,2026-08-28T06:08:54.218588+00:00,1.0
-5055,0.5,8035.T,medio,"Tokyo Electron capacita talento en herramientas de fabricación, iniciativa positiva para desarrollo de cadena de suministro.",2026-08-28T06:07:33.421830+00:00,0.75
-5056,0.75,"8035.T,NVDA",medio,Señales de compra en Kioxia y Tokyo Electron vinculadas a expansión de producción y ganancias fuertes de NVIDIA generan optimismo en el ecosistema semiconductor asiático.,2026-08-28T06:09:29.455394+00:00,0.7
-5057,0.3,8035.T,bajo,Presentación de resultados Q1 2027 de Tokyo Electron es información corporativa estándar sin indicadores claros de desempeño excepcional.,2026-08-28T06:10:59.246698+00:00,0.5
-5058,0.1,8035.T,bajo,Datos de empleo de Tokyo Electron son información corporativa estándar sin relevancia material para análisis de performance o perspectivas de mercado.,2026-08-28T06:10:59.247375+00:00,0.2
 5059,0.7,"8035.T,6857.T",alto,"Liderazgo de Advantest y Tokyo Electron en impulso del Nikkei hacia 70,000 puntos señala confianza institucional en recuperación de semiconductores.",2026-08-28T06:11:07.084436+00:00,0.85
-5060,0.1,8035.T,bajo,Perfil corporativo genérico de Tokyo Electron sin análisis fundamental o novedades de mercado significativas.,2026-08-28T06:10:59.246814+00:00,0.2
 5061,0.55,"8035.T,6857.T,IFX.DE",medio,Análisis consolidado de múltiples jugadores clave en semiconductores refleja enfoque en oportunidades de IA pero con tono mixto en perspectiva.,2026-08-28T06:11:07.084368+00:00,0.75
-5062,0.0,"NVDA,6857.T",medio,Análisis del futuro de Advantest como proveedor clave de Nvidia genera incertidumbre neutral en el mercado.,2026-08-28T06:09:15.720280+00:00,0.7
-5063,-0.5,6857.T,medio,Caída de Advantest (equipamiento semiconductor) debilita perspectiva cortoplazo en fabricación chips japoneses ante presión global.,2026-08-28T06:08:54.218610+00:00,0.7
-5064,-0.4,"NVDA,6857.T",medio,Caída de Advantest como proveedor de Nvidia afecta negativamente el ecosistema de semiconductores japonés.,2026-08-28T06:09:15.720145+00:00,0.7
-5065,-0.5,6857.T,medio,Caída de Advantest presiona negativamente el mercado de valores de Tokio afectando proveedores de semiconductores.,2026-08-28T06:09:15.720696+00:00,0.7
-5066,0.2,6857.T,bajo,"Mención de ETFs especializados en Advantest es contenido informativo sobre inversión pasiva, sin impacto operativo directo.",2026-08-28T06:10:59.246788+00:00,0.3
-5067,-0.4,"6857.T,8035.T",medio,Enfriamiento de chip stocks japoneses en Nikkei refleja preocupación ciclicalidad y competencia global vs fabricantes asiáticos emergentes.,2026-08-28T06:08:54.218860+00:00,0.8
-5068,0.65,,medio,Índice Nikkei sube liderado por semiconductores reflejando impulso asiático en sector pero sin tickers específicos identificados.,2026-08-28T06:07:21.135054+00:00,0.6
-5069,-0.3,6857.T,bajo,Venta neta de Advantest por firmas de valores sugiere cierta presión en la acción a corto plazo.,2026-08-28T06:10:32.256386+00:00,0.5
-5070,0.5,IFX.DE,medio,Infineon introduce innovación en eFuses automotrices expandiendo su presencia en chips semiconductores especializados.,2026-08-28T06:09:15.720311+00:00,0.6
-5071,0.5,IFX.DE,medio,Reiteración de recomendación de compra por analista confiable respalda perspectiva positiva en Infineon.,2026-08-28T06:08:37.524857+00:00,0.7
-5072,0.4,IFX.DE,medio,Infineon adquiere C2i Semiconductors de India expandiendo capacidades en telecomunicaciones y semiconductores.,2026-08-28T06:09:05.173529+00:00,0.7
-5073,0.0,BHP,bajo,Comparación de mineras de cobre; sin relevancia directa para el sector de semiconductores.,2026-08-28T06:09:05.173045+00:00,0.1
-5074,0.15,BHP,bajo,Recomendación de minería no tiene relación significativa con industria de semiconductores.,2026-08-28T06:08:26.158508+00:00,0.1
-5075,0.2,BHP,bajo,"BHP Group y cobre son minería, no directamente semiconductores aunque el cobre se usa en circuitos.",2026-08-28T06:07:45.601134+00:00,0.1
-5076,-0.1,,bajo,Fuga de scooter e-scooter sin relevancia para sector semiconductores; ticker BHP es minería no relacionada.,2026-08-28T06:07:21.135027+00:00,0.05
-5077,0.2,BHP,bajo,"BHP automatiza operaciones mineras, noticia tangencial a semiconductores aunque abastece materiales de producción.",2026-08-28T06:07:33.422148+00:00,0.15
-5078,0.1,FCX,bajo,Cotización de minería de cobre no relacionada directamente con sector de semiconductores.,2026-08-28T06:08:26.158394+00:00,0.1
-5079,-0.2,FCX,bajo,"Venta de acciones por director de Freeport-McMoRan es minería, no relacionado con semiconductores.",2026-08-28T06:07:45.601032+00:00,0.1
-5080,-0.1,FCX,bajo,"Cobertura iniciada en minería de cobre, no relacionada directamente con semiconductores aunque FCX provee materiales de base.",2026-08-28T06:08:37.523279+00:00,0.1
-5081,-0.15,FCX,bajo,"Freeport-McMoRan es minera de cobre, no fabricante de semiconductores; relación tangencial con cadena de suministro de materiales.",2026-08-28T06:09:29.456613+00:00,0.1
-5082,0.2,FCX,bajo,"Análisis histórico de retorno en Freeport-McMoRan es minería, no semiconductores.",2026-08-28T06:07:45.601047+00:00,0.1
-5083,0.5,FCX,medio,Freeport-McMoRan recibe calificación de compra pero no es semiconductor; relevancia limitada a cadena de suministro de materiales.,2026-08-28T06:07:59.297803+00:00,0.35
-5084,0.0,,bajo,Noticia sobre expansión de oportunidades educativas no está relacionada con sector de semiconductores.,2026-08-28T06:08:26.158572+00:00,0.0
-5085,0.0,FCX,bajo,Compra de participación en Freeport-McMoRan; sin relevancia para sector semiconductor.,2026-08-28T06:09:05.173552+00:00,0.05
-5086,0.3,FCX,bajo,Freeport-McMoRan alcanza máximo de 12 meses pero no está directamente relacionado con semiconductores.,2026-08-28T06:09:15.720005+00:00,0.1
-5087,0.2,4063.T,bajo,Análisis de estructura de ingresos de Shin-Etsu es contenido informativo sin indicadores de cambios estratégicos o operativos relevantes.,2026-08-28T06:10:59.247317+00:00,0.3
-5088,0.6,4063.T,medio,"Nueva refinería de tierras raras de Shin-Etsu asegura cadena de suministro crítica para semiconductores y tecnologías avanzadas, positivo a largo plazo.",2026-08-28T06:11:07.084401+00:00,0.65
-5089,0.2,3436.T,bajo,Presentación de resultados Q2 2026 de Sumco es información corporativa estándar de productor de obleas de silicio.,2026-08-28T06:10:59.247004+00:00,0.4
-5090,0.3,"MSFT,GOOGL",medio,Iniciativa conjunta sobre ciberseguridad es positiva pero no específica a semiconductores; impacto directo limitado.,2026-08-28T06:07:59.297939+00:00,0.4
-5091,-0.3,MSFT,bajo,"Control de gasto en herramientas IA de empleados sugiere preocupación por eficiencia, impacto limitado en semiconductores.",2026-08-28T06:08:26.158403+00:00,0.25
-5092,0.1,MSFT,bajo,Evento de juego simulado tiene relevancia mínima para semiconductores.,2026-08-28T06:08:37.524972+00:00,0.15
-5093,-0.8,MSFT,bajo,Noticia criminal ajena a operaciones comerciales con impacto reputacional mínimo en segmento semiconductor de Microsoft.,2026-08-28T06:09:29.456757+00:00,0.15
-5094,0.6,MSFT,medio,Liderazgo en IA y autosuficiencia computacional impulsan demanda de semiconductores avanzados para data centers.,2026-08-28T06:08:37.524964+00:00,0.7
-5095,0.3,MSFT,medio,Corrección de problemas en Windows 11 afecta positivamente a Microsoft al resolver problemas que impactaban usuarios.,2026-08-28T06:09:05.172603+00:00,0.4
-5096,0.2,MSFT,bajo,Actualización de software de Microsoft tiene impacto marginal directo en semiconductores.,2026-08-28T06:08:26.158349+00:00,0.3
-5097,0.25,MSFT,bajo,Análisis de fortaleza defensiva de Microsoft tiene impacto tangencial en semiconductores.,2026-08-28T06:08:26.158540+00:00,0.2
-5098,0.5,MSFT,bajo,"Predicción de precio de Microsoft que es más especulativa que fundamental, con bajo impacto en cadena de semiconductores.",2026-08-28T06:09:41.018576+00:00,0.4
-5099,0.5,MSFT,bajo,"Compra Microsoft por Ackman valida AI como narrativa pero Microsoft es stack software/cloud, impacto semiconductor limitado indirectamente.",2026-08-28T06:08:54.218907+00:00,0.3
-5100,0.1,MSFT,bajo,Contenido de juego de simulación tiene impacto negligible en demanda de semiconductores.,2026-08-28T06:08:37.524849+00:00,0.2
-5101,-0.5,GOOGL,bajo,Pérdida valor Alphabet por dudas IA afecta demanda datos centers pero impacto semiconductor es indirecto via proveedores infraestructura.,2026-08-28T06:08:54.218887+00:00,0.2
-5102,-0.5,GOOGL,medio,Alphabet paga £260M por demanda colectiva del Reino Unido; es golpe legal pero no afecta operaciones semiconductoras directamente.,2026-08-28T06:07:59.297946+00:00,0.35
-5103,0.6,GOOGL,medio,Análisis de venta de TPU de Alphabet como oportunidad de retorno de capital; destaca importancia de chips propios en IA.,2026-08-28T06:09:05.173671+00:00,0.7
-5104,0.3,GOOGL,bajo,Recomendación Alphabet 2027 es aspiracional pero impacto semiconductor indirecto; Alphabet es consumidor chips sin exposición diseño/fabricación.,2026-08-28T06:08:54.218722+00:00,0.3
-5105,-0.55,"GOOGL,META,NVDA",medio,"Huida de inversores desde Alphabet y Meta hacia Nvidia refleja rotación de capital en IA, favoreciendo semiconductores especializados.",2026-08-28T06:08:26.158067+00:00,0.75
-5106,-0.7,GOOGL,alto,Investigación de fraude en Alphabet es negativa pero principalmente para software; impacto indirecto en chip design.,2026-08-28T06:07:45.601053+00:00,0.3
-5107,0.3,"GOOGL,META",medio,Comparativa de gigantes tecnológicos en IA afecta demanda de semiconductores para data centers y edge computing.,2026-08-28T06:08:37.524457+00:00,0.6
-5108,-0.4,GOOGL,bajo,"Alerta de litigio para inversores de Alphabet, sin relación directa con negocios de semiconductores.",2026-08-28T06:07:33.422133+00:00,0.3
-5109,0.0,GOOGL,bajo,"Movimiento de acciones de CEO de Alphabet para impuestos, noticia administrativa sin implicaciones de negocio.",2026-08-28T06:07:33.421860+00:00,0.1
-5110,0.1,META,bajo,"Análisis de valoración de Meta sin relación directa con semiconductores, es un cliente del sector.",2026-08-28T06:07:33.421820+00:00,0.15
-5111,0.7,,alto,Pronóstico positivo de Gartner sobre crecimiento del mercado de semiconductores a $1.6T en 2026 beneficia al sector completo con validación de demanda futura.,2026-08-28T06:10:59.246605+00:00,0.95
-5112,0.6,000660.KS,alto,Expansión de capacidad de HBM en EE.UU. por SK Hynix fortalece su posición competitiva en chips de memoria avanzada.,2026-08-28T06:08:37.524474+00:00,0.95
-5113,0.6,005930.KS,medio,"Localización china de semiconductores favorece a Samsung Electronics, oportunidad de mercado en tecnología de memoria.",2026-08-28T06:07:33.421881+00:00,0.85
-5114,-0.6,"INTC,NVDA,AMD,QCOM",alto,Incertidumbre sobre exenciones de aranceles en chips amenaza con aumentar costos para fabricantes y consumidores de semiconductores.,2026-08-28T06:07:59.297830+00:00,0.85
-5115,0.6,,alto,Ingresos globales de semiconductores crecen por impacto de IA demostrando expansión sistémica del sector.,2026-08-28T06:09:15.720941+00:00,0.8
-5116,0.4,,bajo,Conferencia Hot Chips 2026 sobre arquitecturas para IA agentic es contextual pero sin acciones específicas impactadas.,2026-08-28T06:10:32.257152+00:00,0.5
-5117,-0.5,"TSM,2330.TW",alto,Cuestionamientos sobre sobrevaloración de TSMC por concentración de IA generan perspectiva bajista preocupante.,2026-08-28T06:09:15.721315+00:00,0.85
-5118,0.6,NVDA,alto,"NVIDIA lidera rally del sector con resultados sólidos, aunque aranceles potenciales de Trump generan incertidumbre regulatoria.",2026-08-28T06:08:14.098010+00:00,0.9
-5119,-0.3,,medio,Caída de 22% en stocks de semiconductores indica volatilidad sectorial; la selección de compra específica sugiere oportunidades pero refleja contexto bajista.,2026-08-28T06:10:59.247336+00:00,0.7
-5120,0.5,NVDA,alto,Ganancias sólidas de Nvidia elevan acciones de chips; preocupación mitigada por planes de aranceles Trump.,2026-08-28T06:09:05.173423+00:00,0.85
 5121,0.6,,alto,Recomendación de compra de stocks de semiconductores basada en $745B de inversión en CapEx de hiperscalers refuerza tendencia positiva de demanda de chips.,2026-08-28T06:10:59.246978+00:00,0.8
+5246,0.4,TXN,bajo,Profundización de relación de suministro con GE Appliances indica demanda estable pero con alcance limitado.,2026-08-29T23:38:27.104540+00:00,0.5
+5257,0.6,005930.KS,medio,Anuncio de mayor programa de retorno de capital en la historia de Samsung señala confianza en flujos futuros.,2026-08-29T23:38:27.104430+00:00,0.7
+5302,0.5,3436.T,medio,"Sumco mantiene dividendo pese a pérdidas reflejando confianza en recuperación, pero señales mixtas por caída de utilidades.",2026-08-29T23:38:27.104518+00:00,0.65
+5304,-0.55,3436.T,alto,Visión cautelosa de Sumco sobre mercado de obleas silicio más pesimista que clientes y competidores señala debilidad fundamental en demanda.,2026-08-29T23:38:32.586026+00:00,0.85
+5324,0.8,"005930.KS,000660.KS",alto,Perspectiva muy positiva para memoria AI con proyección de crecimiento explosivo del 280% en ventas de chips.,2026-08-29T23:38:27.104226+00:00,0.95
+5325,0.88,NVDA,alto,Nvidia posicionada como central bank de IA subraya su rol crítico en infraestructura de semiconductores globales.,2026-08-26T22:08:59.396474+00:00,0.95
+5326,0.85,NVDA,alto,"Nvidia lidera movimientos de ganancias con resultados positivos, consolidando su posición como motor del mercado de semiconductores de IA.",2026-08-26T22:08:59.396359+00:00,0.85
+5327,0.92,"NVDA,AMZN",alto,Contrato importante con Amazon y resultados beat-and-raise de Nvidia demuestran expansión masiva de infraestructura de IA.,2026-08-26T22:08:59.396412+00:00,0.95
+5328,0.9,NVDA,alto,Proyección de crecimiento de ingresos del 70% para 2028 confirma trayectoria de largo plazo de Nvidia en liderazgo de semiconductores.,2026-08-26T22:08:59.396429+00:00,0.95
+5329,0.93,NVDA,alto,"Nvidia reporta ingresos récord de $96.2 mil millones con surge en trading, validando demanda extraordinaria de GPUs de IA.",2026-08-26T22:08:59.396440+00:00,0.95
+5330,0.9,"NVDA,AMZN",alto,Expansión de asociación Nvidia-Amazon con 2 millones de GPUs subraya crecimiento exponencial de capacidad de IA en infraestructura.,2026-08-26T22:08:59.396444+00:00,0.95
+5331,0.92,NVDA,alto,Nvidia supera estimaciones de Q2 demostrando ejecución excepcional y demanda continua de semiconductores de IA.,2026-08-26T22:08:59.396467+00:00,0.95
+5332,0.8,NVDA,alto,"Análisis de ganancias Nvidia señala inflection point en ciclo de inversión de IA, fundamental para sector de semiconductores.",2026-08-26T22:08:59.396478+00:00,0.9
+5333,0.75,"NVDA,ON,POWW",medio,Análisis de demanda de energía en data centers de IA (38 GW) beneficia semiconductores y empresas de infraestructura de potencia.,2026-08-26T22:08:59.396488+00:00,0.7
+5334,0.93,NVDA,alto,"Nvidia supera pronósticos con $96.2 mil millones en ingresos, confirmando punto de inflexión tecnológico en IA.",2026-08-26T22:08:59.396491+00:00,0.95
+5335,0.55,AMD,medio,"Analista ajusta target de precio para AMD en 2026, reflejando competencia en mercado de semiconductores de alto rendimiento.",2026-08-26T22:08:59.396470+00:00,0.75
+5336,0.5,GOOGL,bajo,Marvell reporta resultados donde contrato Google sería visible; impacto indirecto en cadena de semiconductor.,2026-08-26T22:08:59.396460+00:00,0.4
+5337,0.5,AMD,medio,Predicción optimista sobre movimiento futuro de AMD refleja sentimiento positivo pero con especulación.,2026-08-26T22:09:38.425324+00:00,0.6
+5338,0.5,"AMD,INTC",alto,Comparación de estrategias AI entre AMD e Intel destaca competencia clave en semiconductores de IA de próxima generación.,2026-08-26T22:09:50.538510+00:00,0.95
+5339,0.8,AMD,alto,Upgrade de analista de Wall Street con 30% de alza proyectada es una señal muy positiva para AMD en mercado de chips AI.,2026-08-26T22:09:50.538551+00:00,0.9
+5340,0.6,"AMD,MRVL",medio,Comparación entre AMD y Marvell para chips AI de 5 años destaca competencia en segmento de alto crecimiento del sector semiconductor.,2026-08-26T22:09:50.538556+00:00,0.85
+5341,-0.5,AMD,medio,Venta de AMD por Cathie Wood e inversión en otro chip stock sugiere reposicionamiento en cartera de semiconductores AI.,2026-08-26T22:09:50.538573+00:00,0.6
+5342,0.4,AMD,bajo,Asociación AMD-GIGABYTE para bundle de juegos tiene impacto positivo mínimo en el negocio principal de semiconductores.,2026-08-26T22:10:03.472851+00:00,0.4
+5343,0.75,"AMD,INTC,MU",alto,Financiamiento gubernamental para semiconductores impulsa positivamente a fabricantes domésticos clave del sector.,2026-08-26T22:10:03.472896+00:00,0.95
+5344,0.5,AMD,medio,"Colaboración de AMD en soluciones de computación para conducción autónoma, expandiendo aplicaciones de la empresa.",2026-08-26T22:10:14.048506+00:00,0.7
+5345,-0.3,QCOM,medio,Preocupación sobre crecimiento de reemplazo de Qualcomm y control de costos genera incertidumbre.,2026-08-26T22:09:38.425310+00:00,0.9
+5346,0.65,QCOM,medio,"Qualcomm posicionándose en demanda emergente de edge AI con producto VENTUNO Q, oportunidad importante de crecimiento sectorial.",2026-08-26T22:10:03.472886+00:00,0.85
+5347,0.6,INTC,medio,"Respaldo de Goldman Sachs e Intel a startup de IA de video refuerza posicionamiento de Intel en ecosistema de IA, pero el impacto financiero directo es moderado.",2026-08-26T22:09:26.477212+00:00,0.65
+5348,-0.65,INTC,alto,Perspectiva negativa sobre participación estatal en Intel genera preocupación sobre gobernanza y autonomía de la compañía en decisiones estratégicas.,2026-08-26T22:09:26.477370+00:00,0.8
+5349,0.8,INTC,alto,Recaudación de $23B para expandir capacidad de chips IA y confirmación de roadmap 14A es noticia estratégica crucial para recuperación de Intel.,2026-08-26T22:09:26.477421+00:00,0.9
+5350,0.3,"NVDA,META",medio,Noticia mixta de mercado que incluye semiconductores líderes como Nvidia sin direccionamiento específico claro.,2026-08-26T22:09:38.425078+00:00,0.5
+5351,0.6,INTC,medio,Crecimiento de flujo de caja positivo para Intel sugiere fortaleza financiera para inversión en I+D y manufactura de semiconductores.,2026-08-26T22:09:50.538338+00:00,0.7
+5352,0.7,"INTC,AVGO",alto,Confianza de hedge funds líderes en Broadcom e Intel refleja perspectivas positivas para el sector de semiconductores en un contexto de recuperación esperada.,2026-08-26T22:10:03.472773+00:00,0.9
+5353,0.6,INTC,alto,Intel encontrando oportunidades en carrera de chips de IA es noticia muy positiva para el núcleo del sector de semiconductores.,2026-08-26T22:10:03.472868+00:00,0.95
+5354,0.5,"NVDA,INTC,SMCI",alto,"Cobertura de resultados de Nvidia e Intel, actores clave en semiconductores de alto rendimiento.",2026-08-26T22:10:14.048476+00:00,0.9
+5355,0.5,INTC,medio,"Lanzamiento de procesadores AI de última generación por Intel refuerza su posición competitiva en data center, sector clave.",2026-08-26T22:10:27.993997+00:00,0.8
+5356,0.7,QCOM,alto,Caída del 38% seguida de mejora en sentimiento analítico sugiere oportunidad de compra y recuperación potencial de Qualcomm.,2026-08-26T22:10:27.994022+00:00,0.75
+5357,0.0,MU,medio,Análisis técnico de opciones sugiere volatilidad extrema en Micron sin dirección clara del sentimiento.,2026-08-26T22:10:14.048519+00:00,0.6
+5358,-0.6,AVGO,alto,"Análisis crítico sobre riesgo de concentración de clientes en Broadcom, generando preocupación sobre vulnerabilidad.",2026-08-26T22:10:14.048530+00:00,0.8
+5359,-0.65,,medio,Artículo de análisis negativo sobre selección de acciones de semiconductores sin tickers específicos genera sentimiento bajista.,2026-08-26T22:10:40.244786+00:00,0.6
+5360,0.5,"NVDA,AVGO",medio,Comparativa entre NVIDIA y Broadcom en chips IA posiciona ambas acciones como opciones de inversión a largo plazo en portafolios de retiro.,2026-08-26T22:09:26.477429+00:00,0.75
+5361,0.65,AVGO,medio,Chip IA propietario de OpenAI posiciona favorablemente a Broadcom como proveedor de componentes clave en cadena de suministro de IA.,2026-08-26T22:09:26.477438+00:00,0.75
+5362,0.85,AVGO,alto,"Broadcom expandiendo hacia negocio masivo en chips de IA por $100 mil millones, es noticia central para el sector de semiconductores.",2026-08-26T22:10:03.472836+00:00,1.0
+5363,-0.2,,bajo,Análisis técnico genérico sin tickers específicos; relevancia limitada sin información concreta sobre compañías.,2026-08-26T22:10:27.993992+00:00,0.3
+5364,0.4,NVDA,medio,"Contexto macroeconomómico de PCE e información sobre resultados de Nvidia, con impacto moderado en expectativas del sector.",2026-08-26T22:10:03.472890+00:00,0.6
+5365,0.8,MU,alto,Predicción alcista para Micron sugiere confianza en crecimiento futuro y demanda sostenida de semiconductores de memoria.,2026-08-26T22:09:11.354272+00:00,0.85
+5366,0.75,MU,alto,"Jim Cramer respalda Micron destacando demanda de memoria impulsada por IA, validando la tesis de crecimiento de memoria DRAM/NAND.",2026-08-26T22:09:26.477407+00:00,0.85
+5367,0.2,MU,bajo,Anuncio de fecha de reporte de resultados es noticia administrativa rutinaria sin contenido sustantivo sobre desempeño de Micron.,2026-08-26T22:09:26.477425+00:00,0.3
+5368,0.5,MU,medio,Ascensos ejecutivos en Micron reflejan optimismo sobre su posición en mercado de memoria para IA.,2026-08-26T22:09:38.425293+00:00,0.8
+5369,0.6,MU,alto,El ban de China se convirtió en oportunidad positiva para Micron diversificando ingresos y reduciendo riesgo geopolítico.,2026-08-26T22:09:38.425317+00:00,0.9
+5370,0.8,MU,alto,"Noticia muy positiva sobre Micron Technology en memorias, sector crítico de semiconductores con demanda creciente en IA y centros de datos.",2026-08-26T22:10:03.472794+00:00,1.0
+5371,0.6,MU,medio,"Cambios de liderazgo en Micron señalan renovación estratégica y potencial aceleración en innovación de memoria, positivo para el sector.",2026-08-26T22:10:27.993835+00:00,0.65
+5372,0.3,"NVDA,MU",medio,Mercado mixto con Micron positivo pero NVIDIA débil pre-earnings refleja cautela sobre valuaciones.,2026-08-26T22:09:11.354517+00:00,0.7
+5373,-0.55,NVDA,medio,Aumento de precios de servidores AI de NVIDIA del 15%+ crea presiones de rentabilidad en clientes y potencial resistencia a demanda a corto plazo.,2026-08-26T22:09:26.477516+00:00,0.8
+5374,0.5,005930.KS,medio,"Análisis sugiere que acciones de Samsung están subvaluadas, atractivo para inversores aunque carece de catalizador inmediato específico.",2026-08-26T22:09:26.477402+00:00,0.7
+5375,0.7,005930.KS,medio,Rebote de Samsung tras anunciar recompra masiva de KRW110 billones refuerza valor accionarial e incentiva compra de acciones.,2026-08-26T22:09:26.477434+00:00,0.7
+5376,-0.5,"000660.KS,005930.KS",alto,"SK Hynix invierte masivamente en chips de memoria pero stock cae 21%, revelando preocupaciones sobre retorno de inversión.",2026-08-26T22:09:11.354491+00:00,0.85
+5377,0.2,IONQ,bajo,Cambios en junta directiva de IonQ podrían mejorar narrativa pero sin impacto operativo claro aún.,2026-08-26T22:09:38.425273+00:00,0.4
+5378,0.75,"TSM,2330.TW",alto,Inversión conjunta Sony-TSMC de $4.7B en sensores para IA confirma demanda estructural de chips especializados y posiciona a TSMC como líder.,2026-08-26T22:09:26.477460+00:00,0.9
+5379,0.7,"NVDA,TSM,2330.TW",alto,Aceleración de producción TSMC en julio establece nuevo estándar de rendimiento que presiona expectativas de fundry de NVIDIA y valida demanda.,2026-08-26T22:09:26.477468+00:00,0.85
+5380,0.25,TSM,bajo,Historia de expansión de TSMC en Phoenix muestra compromiso de capacidad pero tono principalmente narrativo.,2026-08-26T22:10:40.244746+00:00,0.35
+5381,0.4,"NVDA,ASML",medio,ASML bajo presión pero Nvidia con fuerte rampa de ventas consolida demanda de equipamiento de semiconductores.,2026-08-26T22:09:38.425331+00:00,0.8
+5382,0.7,NVDA,alto,Artículo destacando stock semiconductor crítico para IA (posiblemente Nvidia) refuerza importancia de proveedores esenciales del sector.,2026-08-26T22:09:50.538591+00:00,0.9
+5383,0.6,NVDA,alto,Expectativa de resultados de Nvidia genera máxima relevancia en el sector; reportes de esta empresa mueven mercados de semiconductores.,2026-08-26T22:10:27.994060+00:00,0.9
+5384,0.4,"ASML,AAOI",bajo,Comparación de ASML y Applied Optoelectronics tiene relevancia para equipos de manufactura semiconductor y óptica de datos.,2026-08-26T22:09:50.538587+00:00,0.65
+5385,0.0,NVDA,alto,"Anticipación mixta previo a resultados de Nvidia, el líder en chips de IA, con alta volatilidad esperada.",2026-08-26T22:10:40.244756+00:00,0.9
+5386,0.5,NVDA,medio,Perspectiva positiva de Nvidia combinada con alivio en precios de petróleo beneficia mercados asiáticos de semiconductores.,2026-08-26T22:10:27.994063+00:00,0.7
+5387,-0.4,MSFT,medio,"Preocupación sobre el crecimiento de ventas de Microsoft no acompañado por flujo de caja, afectando perspectivas de gastos en semiconductores.",2026-08-26T22:09:38.425235+00:00,0.6
+5388,0.5,MSFT,medio,Aumento de compensación del CEO refleja desempeño fuerte de Microsoft y su posición estratégica en semiconductores/IA.,2026-08-26T22:09:38.425279+00:00,0.5
+5389,0.7,MSFT,medio,Predicción de precio para Microsoft es especulativa y tiene relación tangencial con semiconductores como consumidor de chips.,2026-08-26T22:09:50.538516+00:00,0.3
+5390,0.3,"MSFT,GOOGL",medio,Competencia por modelos IA chinos entre gigantes tech sugiere carrera que podría beneficiar demanda de semiconductores.,2026-08-26T22:09:38.425306+00:00,0.6
+5391,-0.3,NVDA,medio,Crítica sobre financiamiento circular de NVIDIA genera dudas sobre sostenibilidad del modelo de negocio.,2026-08-26T22:09:11.354425+00:00,0.7
+5392,0.6,"GOOGL,MRVL",alto,Partnership entre Google y Marvell en semiconductores especializados es significativo para procesamiento de datos y AI.,2026-08-26T22:10:53.819760+00:00,0.85
+5393,0.5,NVDA,alto,"Expectativa de resultados de Nvidia, el jugador más crítico en semicondutores de IA, con potencial para movimientos significativos de mercado.",2026-08-26T22:10:03.472841+00:00,1.0
+5394,-0.4,"GOOGL,META",medio,"Acuerdo de Meta con implicaciones negativas potenciales para Google y Meta, pero principalmente de negocios digitales sin impacto directo en chips.",2026-08-26T22:10:03.472856+00:00,0.3
+5395,0.75,NVDA,alto,Resultados Q2 impresionantes de NVIDIA confirman robustez del ciclo de demanda de IA y semiconductores.,2026-08-26T22:09:11.354510+00:00,0.9
+5396,-0.4,NVDA,alto,Cuestionamiento sobre la dominancia de Nvidia en IA podría erosionar su posición de mercado mientras emergen competidores en aceleradores.,2026-08-26T22:10:27.993964+00:00,0.85
+5397,-0.4,NVDA,medio,Rating de venta de analista pese a resultados sólidos genera escepticismo sobre valuación y crecimiento futuro.,2026-08-26T22:09:11.354440+00:00,0.75
+5398,0.6,NVDA,alto,Reporte de ganancias de Nvidia Q2 es fundamental para el sector de semiconductores y demanda de IA.,2026-08-26T22:09:38.425260+00:00,1.0
+5399,0.92,NVDA,alto,"CFO de Nvidia proyecta crecimiento de ingresos del 70% en 2028, reforzando confianza en trayectoria de crecimiento sostenido.",2026-08-26T22:08:59.396495+00:00,0.95
+5400,0.8,NVDA,alto,Anuncio de 2 millones de GPUs adicionales demuestra demanda acelerada y consolidación del liderazgo de NVIDIA en IA.,2026-08-26T22:09:11.354420+00:00,0.95
+5401,0.85,NVDA,alto,Duplicación de ingresos a $96B y aceleración de demanda refuerzan narrativa de liderazgo de NVIDIA en boom de IA.,2026-08-26T22:09:11.354514+00:00,0.95
+5402,0.7,NVDA,alto,Expansión de asociación estratégica AWS-NVIDIA para infraestructura de IA refuerza posición de NVIDIA en mercado de aceleradores.,2026-08-26T22:09:11.354410+00:00,0.9
+5403,0.7,NVDA,alto,Anuncio de resultados financieros de NVIDIA es noticia central del sector; resultados sólidos en Q2 FY2027 impulsan perspectivas de demanda de chips.,2026-08-26T22:09:26.477355+00:00,0.95
+5404,0.95,NVDA,alto,"Nvidia reporta resultados excepcionales y proyecta crecimiento de ingresos del 70% en 2028, reflejando dominio en IA y demanda sostenida de semiconductores.",2026-08-26T22:08:59.396198+00:00,0.95
+5405,0.3,NVDA,medio,Análisis de volatilidad esperada en earnings de Nvidia muestra interés del mercado pero sentimiento neutral.,2026-08-26T22:09:38.425289+00:00,0.8
+5406,0.65,NVDA,medio,Análisis de Bernstein sobre oportunidad de NVIDIA en clientes no-hiperscalers amplía mercado addressable y reduce dependencia de hyperscalers.,2026-08-26T22:09:26.477415+00:00,0.8
+5407,0.2,NVDA,bajo,Caída moderada de precio post-earnings a pesar de superar expectativas sugiere toma de ganancias.,2026-08-26T22:09:11.354478+00:00,0.7
+5408,-0.6,NVDA,medio,"Analista advierte fin del hipercrecimiento de NVIDIA, cuestionando sostenibilidad de múltiplos actuales.",2026-08-26T22:09:11.354485+00:00,0.8
+5409,0.3,NVDA,medio,Duplicación de ingresos con respuesta moderada del mercado sugiere expectativas muy elevadas ya descontadas en precio.,2026-08-26T22:09:11.354443+00:00,0.8
+5410,0.8,NVDA,alto,Predicción de NVIDIA de demanda acelerada hasta 2028 refuerza confianza en ciclo de IA de largo plazo.,2026-08-26T22:09:11.354521+00:00,0.95
+5411,-0.5,NVDA,alto,"Amenaza a márgenes de Nvidia por surgimiento de chips de silicio personalizado de OpenAI, indicando presión competitiva.",2026-08-26T22:10:14.048486+00:00,0.9
+5412,0.55,NVDA,alto,"Expectativas de earnings call de Nvidia son críticas para el sector de semiconductores, donde compañía domina segmento de IA.",2026-08-26T22:10:03.472924+00:00,1.0
+5413,0.4,AMD,bajo,Compatibilidad de socket AM5 con Zen 6 es noticia técnica positiva para AMD en estrategia de plataforma de consumo.,2026-08-26T22:09:50.538569+00:00,0.75
+5414,0.3,AMD,bajo,"Promoción de combo de gaming con Ryzen tiene impacto positivo menor en segmento consumer, no en semiconductores especializados.",2026-08-26T22:10:03.472917+00:00,0.2
+5415,0.5,AMD,medio,Confirmación de roadmap Zen 6 con nuevas familias de CPUs mantiene impulso competitivo de AMD en mercados clave.,2026-08-26T22:10:27.994045+00:00,0.75
+5416,0.3,AMD,bajo,Introducción de nuevo objetivo GPU en compilador LLVM es avance técnico menor sin impacto comercial inmediato.,2026-08-26T22:10:27.994078+00:00,0.5
+5417,0.7,AMD,alto,Nuevo acelerador AI de AMD con 432GB memoria es avance significativo que refuerza posición competitiva en mercado de IA.,2026-08-26T22:10:53.819720+00:00,0.95
+5418,-0.7,AMD,medio,Problemas críticos de estabilidad en drivers AMD para GPU RDNA afecta reputación y adopción en gaming y data centers.,2026-08-26T22:10:40.244729+00:00,0.85
+5419,0.6,AMD,medio,Aceleración de plataforma de conducción autónoma de Kodiak con procesadores EPYC demuestra tracción de AMD en aplicaciones AI críticas.,2026-08-26T22:09:50.538583+00:00,0.8
+5420,0.4,AMD,medio,Adopción de AMD en soluciones lakehouse indica demanda positiva en infraestructura de datos.,2026-08-26T22:09:38.425284+00:00,0.7
+5421,0.2,INTC,bajo,Mención tangencial de Intel en contexto de videojuego sin impacto directo en negocio de semiconductores.,2026-08-26T22:09:38.425321+00:00,0.3
+5422,-0.2,INTC,bajo,"Noticia sobre driver Linux para gestionar problemas en silicio legacy de Intel, indicando problemas técnicos.",2026-08-26T22:10:14.048523+00:00,0.6
+5423,0.1,INTC,bajo,Noticia sobre beta abierta de Modern Warfare 4 para Xbox es entretenimiento sin relevancia para negocio de semiconductores de Intel.,2026-08-26T22:09:26.477442+00:00,0.1
+5424,0.6,INTC,alto,"Avance positivo en tecnología Intel 18A con mejoras de desempeño, demostrando progreso técnico de la compañía.",2026-08-26T22:10:14.048497+00:00,0.9
+5425,-0.4,INTC,medio,Retrasos continuos en fab de Intel en EE.UU. cuestionan capacidad de recuperación competitiva ante TSMC.,2026-08-26T22:10:40.244774+00:00,0.75
+5426,0.65,QCOM,medio,Posicionamiento de Qualcomm en edge AI con VENTUNO Q representa oportunidad estratégica en segmento de crecimiento del sector.,2026-08-26T22:10:03.472913+00:00,0.85
+5427,0.5,QCOM,medio,Qualcomm expandiendo ecosistema de robótica en Japón muestra diversificación positiva en mercados estratégicos emergentes.,2026-08-26T22:10:03.472921+00:00,0.7
+5428,0.7,QCOM,medio,"Lanzamiento del IMSDK 2.0 de Qualcomm para IA y multimedia es positivo, demostrando innovación tecnológica en un mercado emergente de importancia.",2026-08-26T22:10:03.472809+00:00,0.8
+5429,0.4,"AMD,AVGO",medio,"Comparativa de potencial de upside entre AMD y Broadcom como plays de IA, generando análisis comparativo positivo.",2026-08-26T22:10:14.048561+00:00,0.8
+5430,0.5,AVGO,alto,"Análisis positivo sobre el desempeño operacional de Broadcom, aunque cuestionando si la valoración está justificada.",2026-08-26T22:10:14.048533+00:00,0.8
+5431,0.4,AVGO,medio,Soluciones de Broadcom en seguridad de IA e infraestructura privada abordan demanda creciente en data center.,2026-08-26T22:10:27.994066+00:00,0.65
+5432,0.5,AVGO,alto,Broadcom respaldado por flujo de caja fuerte como proveedor clave de infraestructura de IA en semiconductores.,2026-08-26T22:10:40.244797+00:00,0.85
+5433,0.3,TXN,bajo,"Estabilidad de precio y aumento de participación institucional indica confianza moderada pero noticia es descriptiva, no generadora de catalistas.",2026-08-26T22:10:27.994055+00:00,0.5
+5434,-0.6,ARM,medio,"Crítica sobre la valoración de ARM comparada con fondos del sector, sugiriendo que el premium no está justificado.",2026-08-26T22:10:14.048319+00:00,0.7
+5435,0.4,"MU,META",medio,Promociones ejecutivas en Micron y resolución de controversia Meta positiva para proveedores de memoria.,2026-08-26T22:09:38.425265+00:00,0.8
+5436,-0.3,MU,medio,"Disputa legal sobre reporte ambiental de Micron, generando incertidumbre regulatoria.",2026-08-26T22:10:14.048556+00:00,0.5
+5437,0.6,MU,medio,"Micron anticipa crecimiento en el sector educativo, indicando demanda para semiconductores de memoria en aplicaciones emergentes.",2026-08-26T22:08:59.396388+00:00,0.7
+5438,0.5,MU,medio,Desarrollo de infraestructura vinculado a planta de Micron sugiere expansión regional positiva pero impacto limitado.,2026-08-26T22:09:11.354437+00:00,0.6
+5439,0.4,MU,bajo,Cambios ejecutivos en Micron son relevantes para gobernanza pero sin impacto claro en operaciones o perspectivas de corto plazo.,2026-08-26T22:09:26.477446+00:00,0.4
+5440,0.35,005930.KS,bajo,Lanzamiento de SSDs Samsung con USB4 muestra innovación en periféricos pero impacto limitado en chips core.,2026-08-26T22:10:40.244809+00:00,0.5
+5441,0.45,005930.KS,medio,"Samsung considera valuación atractiva con programa de recompra, relevante para fabricante de semiconductores coreano.",2026-08-26T22:08:59.396456+00:00,0.65
+5442,-0.55,005930.KS,bajo,"Samsung condenado a pagar $11.6 millones por copia de apps en smartwatch, riesgo legal menor para fabricante de semiconductores.",2026-08-26T22:08:59.396464+00:00,0.3
+5443,0.6,"005930.KS,000660.KS",alto,YMTC desafía a Samsung y SK Hynix en flash memory; competencia intensa en China incrementa presión sobre líderes globales.,2026-08-26T22:10:53.819752+00:00,0.9
+5444,0.1,000660.KS,bajo,Actividad de opciones de SK Hynix refleja interés especulativo pero sin señal clara de dirección del mercado.,2026-08-26T22:09:11.354474+00:00,0.4
+5445,0.7,000660.KS,alto,SK hynix recibe perspectivas alcistas por escasez de memoria y contratos a largo plazo asegurando demanda.,2026-08-26T22:09:38.425327+00:00,0.9
+5446,0.5,000660.KS,medio,Expansión de SK Hynix con Coherent en soluciones AI fortalece su posición en memoria para infraestructura de IA.,2026-08-26T22:09:50.538579+00:00,0.8
+5447,-0.4,"005930.KS,000660.KS",alto,Amenaza de YMTC a Samsung y SK Hynix en NAND es negativa para fabricantes coreanos dominantes en memoria semiconductor.,2026-08-26T22:09:50.538606+00:00,0.9
+5448,-0.7,"MU,000660.KS",alto,Advertencia de amenaza competitiva desde YMTC chino que podría impactar negativamente a fabricantes de memoria como Micron e SK Hynix.,2026-08-26T22:10:14.048442+00:00,0.9
+5449,0.7,"NVDA,TSM,2330.TW",alto,Repercusión de aceleración de TSMC en julio refuerza narrativa de tight supply y subraya capacidad de fabricación como cuello de botella crítico.,2026-08-26T22:09:26.477471+00:00,0.85
+5450,0.8,"TSM,2330.TW",alto,TSMC logra producir chip 2nm para Apple M6 con mejoras AI del 30%; hito clave en tecnología de procesos de vanguardia.,2026-08-26T22:10:53.819747+00:00,0.95
+5451,0.4,"NVDA,AMD,TSM,2330.TW",alto,"Cambio en empaquetamiento TSMC favorecer a AMD y reduce asignación a Nvidia, impacto significativo en cadena de valor de semiconductores.",2026-08-26T22:10:27.994097+00:00,0.85
+5452,0.0,,bajo,Noticia sobre iniciativa de salud mental sin relación directa con semiconductores; UMC es entidad religiosa no semiconductor.,2026-08-26T22:09:38.425247+00:00,0.1
+5453,0.0,,bajo,Noticia religiosa sobre iglesia sin relación con semiconductor UMC; entrada no relevante para análisis de sector.,2026-08-26T22:08:59.396481+00:00,0.05
+5454,0.0,,bajo,Evento comunitario de iglesia sin relación con sector semiconductor; confusión con ticker UMC.,2026-08-26T22:09:38.425334+00:00,0.1
+5455,-0.1,,bajo,Noticia política sobre UMC (iglesia metodista unida) no afecta sector semiconductores; ticker irrelevante.,2026-08-26T22:09:11.354469+00:00,0.05
+5456,0.0,,bajo,"Noticia sobre serie de sermones religiosos en iglesia; completamente irrelevante para semiconductores, ticker UMC es falsa coincidencia.",2026-08-26T22:10:53.819757+00:00,0.05
+5457,0.4,UMC,medio,UMC accede a capital para expandir capacidad de producción de semiconductores ante demanda global creciente.,2026-08-26T22:10:40.244818+00:00,0.7
+5458,0.7,ASML,alto,ASML seleccionada como favorita de BofA en equipos semiconductores refleja confianza en proveedor crítico del sector.,2026-08-26T22:09:11.354433+00:00,0.9
+5459,0.7,ASML,alto,BofA valida perspectiva de ASML con calificación de compra y expectativas de crecimiento fuerte; empresa crítica para la industria.,2026-08-26T22:10:27.994041+00:00,0.85
+5460,0.55,6857.T,medio,"Advantest expande soporte para fotónica de silicio, tecnología clave para próxima generación de semiconductores.",2026-08-26T22:10:40.244761+00:00,0.8
+5461,0.4,6857.T,medio,Advantest entre las acciones más negociadas en el Nikkei; volumen alto de transacciones sugiere interés pero sin dirección clara de sentimiento.,2026-08-26T22:10:53.819539+00:00,0.6
+5462,-0.4,6857.T,medio,Advantest cae por tercera sesión consecutiva a pesar de expectativas positivas; presión vendedora domina en mercado.,2026-08-26T22:10:53.819774+00:00,0.7
+5463,0.5,IFX.DE,medio,Contrato de suministro de semiconductores SiC de Infineon para soluciones energéticas demuestra demanda positiva.,2026-08-26T22:09:38.425269+00:00,0.9
+5464,0.65,"IFX.DE,NVDA",alto,Adquisición estratégica de Infineon para reforzar portafolio de semiconductores de poder en centros de datos con IA.,2026-08-26T22:10:40.244718+00:00,0.95
+5465,0.6,IFX.DE,medio,"Adquisición de C2i por Infineon refuerza soluciones de potencia para data center, segmento de alto crecimiento en IA.",2026-08-26T22:10:27.994088+00:00,0.7
+5466,0.4,IFX.DE,medio,Infineon realiza adquisición estratégica de C2i para fortalecer cartera de semiconductores especializados.,2026-08-26T22:10:14.048527+00:00,0.7
+5467,0.4,IFX.DE,medio,"Suministro de tecnología SiC a Fox ESS demuestra demanda en almacenamiento energético, nicho de crecimiento para Infineon.",2026-08-26T22:10:27.994031+00:00,0.6
+5468,-0.15,BHP,bajo,Venta interna de acciones por ejecutivo financiero; evento corporativo menor sin relevancia al sector semiconductores.,2026-08-26T22:10:53.819778+00:00,0.1
+5469,-0.45,BHP,bajo,Riesgos de precios de cobre por aranceles tienen impacto indirecto menor en cadena de suministro de semiconductores.,2026-08-26T22:10:40.244680+00:00,0.15
+5470,0.3,BHP,bajo,"Milestone en energía renovable de BHP es positivo pero tangencial al negocio de semiconductores, no es core business.",2026-08-26T22:10:53.819694+00:00,0.2
+5471,-0.2,BHP,bajo,Venta de acciones por ejecutivo es actividad corporativa rutinaria sin implicaciones para semiconductores.,2026-08-26T22:10:53.819768+00:00,0.1
+5472,0.2,,bajo,"Noticia sobre automóvil eléctrico de Suzuki, sin relación directa con el sector de semiconductores.",2026-08-26T22:10:14.048470+00:00,0.1
+5473,0.45,FCX,bajo,Rally en acciones de minería de cobre tiene relevancia mínima para cadena de valor de semiconductores.,2026-08-26T22:10:40.244821+00:00,0.1
+5474,-0.25,FCX,bajo,Venta de acciones de minería de cobre tiene impacto mínimo en sector semiconductores.,2026-08-26T22:10:40.244723+00:00,0.1
+5475,0.3,FCX,bajo,"Ajuste de precio objetivo de Freeport-McMoRan es irrelevante al sector semiconductor, enfocado en minería de cobre.",2026-08-26T22:09:50.538615+00:00,0.1
+5476,-0.35,FCX,bajo,"Venta de acciones por ejecutivo de Freeport-McMoRan es señal débilmente negativa, pero empresa no es semiconductor.",2026-08-26T22:08:59.396433+00:00,0.15
+5477,-0.2,FCX,bajo,Movimiento de posiciones institucionales en Freeport-McMoRan es tangencial al sector de semiconductores.,2026-08-26T22:10:27.994082+00:00,0.2
+5478,-0.1,FCX,bajo,Venta de acciones de FCX por gestor es evento normal sin relevancia para semiconductores.,2026-08-26T22:10:27.994085+00:00,0.2
+5479,-0.65,3436.T,medio,Caída de SUMCO por revisión negativa de ganancias refleja contracción en demanda de obleas para chips semiconductores.,2026-08-26T22:10:40.244825+00:00,0.8
+5480,-0.5,MSFT,bajo,Noticia sensacionalista sobre salarios de Microsoft con bajo impacto directo en negocio de semiconductores y servicios en nube.,2026-08-26T22:10:03.472823+00:00,0.2
+5481,0.3,MSFT,bajo,"Noticia sobre compensación de empleados de Microsoft tiene impacto marginal en semiconductores, aunque MSFT es cliente importante de chips.",2026-08-26T22:08:59.396437+00:00,0.25
+5482,-0.7,MSFT,bajo,Crimen en Florida de empleado de Microsoft es evento de reputación corporativa sin impacto al sector semiconductor.,2026-08-26T22:09:50.538611+00:00,0.1
+5483,0.3,"MSFT,GOOGL",bajo,"Negociaciones de empresa china con tech giants sobre ingresos, con relevancia tangencial al sector de semiconductores.",2026-08-26T22:10:03.472864+00:00,0.3
+5484,0.45,"MSFT,GOOGL,AMZN",medio,Negociaciones de modelos IA abren demanda potencial de chips especializados para los principales proveedores cloud.,2026-08-26T22:10:40.244740+00:00,0.55
+5485,0.3,"MSFT,GOOGL",bajo,"Startup de IA busca acuerdos con gigantes tech, con impacto indirecto en el sector de semiconductores.",2026-08-26T22:10:14.048546+00:00,0.4
+5486,-0.1,MSFT,bajo,Accidente en sitio de construcción de data center es noticia de seguridad local sin impacto material en operaciones o semiconductores de Microsoft.,2026-08-26T22:09:26.477476+00:00,0.15
+5487,-0.55,"MSFT,NVDA",medio,Falta de transparencia en negocios de IA de Microsoft afecta confianza de inversores y cuestiona demanda de chips semiconductores para IA.,2026-08-26T22:10:40.244552+00:00,0.75
+5488,-0.2,MSFT,bajo,Paradoja de ganancias vs. valuación afecta a Microsoft como cliente de semiconductores más que al sector mismo.,2026-08-26T22:09:50.538521+00:00,0.25
+5489,0.2,MSFT,bajo,Anuncio de precio de Xbox tiene relevancia mínima para negocio de semiconductores de Microsoft.,2026-08-26T22:10:03.472909+00:00,0.1
+5490,-0.4,MSFT,medio,"Noticia sobre vulnerabilidad de seguridad en Microsoft 365, con impacto limitado en el sector de semiconductores.",2026-08-26T22:10:14.048459+00:00,0.3
+5491,-0.3,MSFT,bajo,Gasto interno en IA de Microsoft indica presión de costos pero relevancia tangencial para semiconductores.,2026-08-26T22:09:11.354481+00:00,0.5
+5492,0.3,MSFT,bajo,Prueba de derechos digitales para discos Xbox es noticia de producto tangencial sin impacto directo en semiconductor o infraestructura de IA.,2026-08-26T22:09:26.477411+00:00,0.2
+5493,0.5,MSFT,bajo,Contenido sobre seguridad de infraestructura AI tiene relevancia tangencial al sector semiconductor como aplicación.,2026-08-26T22:09:50.538562+00:00,0.2
+5494,0.3,GOOGL,bajo,"Actividad de inversión de Bill Ackman, con relevancia moderada para Alphabet en contexto de IA.",2026-08-26T22:10:14.048515+00:00,0.5
+5495,0.5,GOOGL,medio,Morgan Stanley predice cambio para Alphabet que podría afectar demanda de chips por reorientación estratégica en IA e infraestructura.,2026-08-26T22:09:26.477464+00:00,0.5
+5496,0.35,"GOOGL,AMZN,TSLA",bajo,Mención de múltiples empresas tecnológicas sin análisis específico de semiconductores; relevancia tangencial.,2026-08-26T22:10:40.244711+00:00,0.3
+5497,-0.3,GOOGL,bajo,"Movimiento especulativo en acciones relacionadas con Alphabet, con impacto limitado en el sector de semiconductores.",2026-08-26T22:10:14.048502+00:00,0.4
+5498,-0.6,GOOGL,medio,"Caída de acciones de Alphabet, probablemente relacionada con factores macroeconomómicos o de negocio general, con impacto indirecto en su división de semiconductores y chips personalizados.",2026-08-26T22:10:03.472616+00:00,0.3
+5499,-0.2,GOOGL,medio,Inquietud sobre gastos de IA de Alphabet versus crecimiento de cloud afecta demanda esperada de semiconductores.,2026-08-26T22:09:38.425314+00:00,0.7
+5500,0.5,GOOGL,medio,Expansión de Gemini Enterprise es relevante para Alphabet como consumidor de semiconductores más que para el sector mismo.,2026-08-26T22:09:50.538594+00:00,0.3
+5501,0.6,GOOGL,medio,Valuación infravalorada de Alphabet es tangencialmente relevante como consumidor de semiconductores y chips de IA.,2026-08-26T22:09:50.538566+00:00,0.4
+5502,0.5,GOOGL,bajo,"Validación de Alphabet como inversión con crecimiento a precio razonable, con impacto limitado en semiconductores.",2026-08-26T22:10:14.048574+00:00,0.4
+5503,-0.3,GOOGL,bajo,Venta de acciones por parte de un congresista tiene poco impacto directo en Alphabet y es tangencial al sector semiconductor.,2026-08-26T22:09:50.538491+00:00,0.2
+5504,-0.5,META,medio,"Liquidación regulatoria de Meta con demanda potencial, afecta flujo de caja pero impacto indirecto en demanda de semiconductores.",2026-08-26T22:10:03.472860+00:00,0.2
+5505,0.5,META,bajo,Movimiento de precio de Meta tiene baja relevancia directa al sector semiconductor como consumidor.,2026-08-26T22:09:50.538601+00:00,0.25
+5506,0.5,"MU,TSM,2330.TW",alto,Innovación en memoria HBM y soluciones de empaquetamiento avanzado beneficia proveedores de memoria y foundries de tecnología de punta.,2026-08-26T22:10:27.993980+00:00,0.9
+5507,0.6,"NVDA,SK,KIOXIA",alto,Cambio significativo de inversión global hacia chips de memoria amplía demanda de semiconductores de almacenamiento.,2026-08-26T22:10:40.244802+00:00,0.95
+5508,0.5,,medio,CXMT sin ticker listado pero potencial agresivo en DRAM afecta indirectamente a Samsung y SK Hynix por competencia regional.,2026-08-26T22:10:53.819677+00:00,0.8
+5509,0.75,"NVDA,005930.KS",alto,"Samsung Foundry produce Grok 3 de Nvidia en nodo 4nm, confirmando demanda masiva de chips avanzados para IA.",2026-08-26T22:10:40.244806+00:00,0.95
+5510,0.7,005930.KS,alto,Samsung presenta Processing DRAM como alternativa HBM; innovación tecnológica disruptiva en memoria de alto ancho de banda.,2026-08-26T22:10:53.819764+00:00,0.9
+5511,0.6,,medio,Recomendación de BofA sobre oportunidades de compra en grandes productores de chips es positiva pero sin tickers específicos.,2026-08-26T22:10:27.994091+00:00,0.65
+5512,0.5,,medio,Proyección de crecimiento del mercado de semiconductores de IA al 2035 es positiva pero genérica sin tickers específicos.,2026-08-26T22:10:27.994027+00:00,0.6
+5513,-0.65,NVDA,medio,Crítica de Michael Burry sobre esquema de financiamiento de Nvidia sugiere preocupaciones sobre sostenibilidad de modelo de negocios y estructura de transacciones.,2026-08-27T22:12:18.553305+00:00,0.75
+5514,0.7,NVDA,alto,Salto significativo de Nvidia en futuro del Dow Jones indica fortaleza del sector semiconductor en contexto de recuperación macroeconómica.,2026-08-27T22:12:18.553323+00:00,0.85
+5515,0.85,NVDA,alto,Resultados excepcionales y guidance sorpresivamente optimista de Nvidia son catalizadores muy positivos para líder indiscutible en semiconductores de IA.,2026-08-27T22:12:18.553389+00:00,0.95
+5516,0.7,NVDA,alto,Estrategia de Nvidia de financiar startups refuerza su posición ecosistémica y genera demanda futura de chips para clientes innovadores.,2026-08-27T22:12:18.553397+00:00,0.85
+5517,0.65,,medio,Análisis de fondos de semiconductores con mejor desempeño que SMH refleja fortaleza global del sector pero sin tickers específicos.,2026-08-27T22:12:18.553400+00:00,0.6
+5518,0.8,NVDA,alto,Proyecto innovador de Elon Musk usando chips Nvidia en infraestructura de órbita valida demanda de soluciones de Nvidia en mercados emergentes.,2026-08-27T22:12:18.553377+00:00,0.9
+5519,0.7,AVGO,alto,La inversión significativa de Cathie Wood en Broadcom señala confianza institucional en su posicionamiento en infraestructura de IA.,2026-08-27T22:12:45.235917+00:00,0.85
+5520,-0.6,AMD,medio,Venta de posición AMD por Cathie Wood sugiere preocupaciones sobre competitividad o valoración relativa de AMD frente a alternativas.,2026-08-27T22:12:18.553394+00:00,0.75
+5521,0.6,"NVDA,AMD",medio,"El análisis comparativo favorece el liderazgo de Nvidia en IA pero reconoce competencia de AMD, reflejando dinámicas de mercado.",2026-08-27T22:12:45.235960+00:00,0.7
+5522,0.3,AMD,bajo,La comparación genérica entre acciones en boom de IA tiene limitado análisis específico sin conclusiones claras.,2026-08-27T22:12:45.235989+00:00,0.5
+5523,-0.55,"AMD,NVDA",alto,"Anthropic revierte decisión sobre AMD y elige masivamente soluciones Nvidia, señalando que AMD pierde tracción en cargas de trabajo AI críticas.",2026-08-27T22:12:58.067730+00:00,0.9
+5524,-0.65,AMD,medio,"Insiders de AMD venden $40M en acciones, señal bajista sobre confianza interna en perspectivas de la compañía.",2026-08-27T22:12:58.067795+00:00,0.6
+5525,0.75,AMD,alto,Asociaciones exitosas de AMD en cloud y IA generativo posicionan a la compañía como competidor viable en procesadores especializados.,2026-08-27T22:13:21.166867+00:00,0.85
+5526,0.7,"NVDA,AMD,INTC",alto,Forecast de crecimiento de Nvidia y movimientos correlacionados en AMD e Intel reflejan fortaleza generalizada en semiconductores de IA.,2026-08-27T22:13:21.166872+00:00,0.95
+5527,0.8,"NVDA,AMD,INTC,AVGO",alto,Desempeño excepcional de Nvidia genera efecto catalizador positivo masivo en todo el sector de semiconductores.,2026-08-27T22:13:46.326229+00:00,0.95
+5528,0.65,NVDA,medio,Rally de 20% en Nvidia abre debate sobre toma de ganancias versus continuidad del crecimiento impulsado por IA.,2026-08-27T22:12:32.134707+00:00,0.7
+5529,0.7,"AVGO,NVDA,AMD",alto,El posicionamiento de Broadcom en crecimiento de semiconductores de IA la sitúa como competidor clave frente a Nvidia y AMD en infraestructura.,2026-08-27T22:12:45.235999+00:00,0.9
+5530,0.75,AMD,medio,"AMD presenta tecnología UCIe competitiva que fortalece su posición en chiplets y sistemas embebidos, mejorando perspectivas de crecimiento.",2026-08-27T22:12:58.067557+00:00,0.8
+5531,0.6,MU,medio,Contratos a largo plazo de Micron generan visibilidad de ingresos y estabilizan posición en mercado de memorias.,2026-08-27T22:13:21.166833+00:00,0.75
+5532,0.7,AVGO,alto,Cartera de órdenes de Broadcom justifica valuaciones premium considerando demanda sostenida de infraestructura semiconductor.,2026-08-27T22:13:21.166864+00:00,0.85
+5533,0.65,"INTC,NVDA",medio,"Intel valuation se fortalece comparativamente mientras Nvidia sigue siendo atractiva, mejorando sentimiento sobre el sector de chips.",2026-08-27T22:12:58.067784+00:00,0.7
+5534,0.6,INTC,medio,Expansión de partnership de Intel con Kasm para IA privada en Xeon 6 fortalece posición de Intel en mercado empresarial de IA.,2026-08-27T22:13:34.872551+00:00,0.8
+5535,0.8,"NVDA,AMD,INTC,MRVL,MU",alto,Semiconductores superando a Big Tech en rally de IA destaca la centralidad de chipmakers en la revolución tecnológica actual.,2026-08-27T22:12:32.134668+00:00,0.95
+5536,-0.6,"NVDA,INTC,TSM,AVGO,MU",alto,Aranceles potenciales en semiconductores generan incertidumbre regulatoria que podría afectar toda la cadena de suministro estadounidense.,2026-08-27T22:13:21.166816+00:00,0.9
+5537,0.85,"NVDA,AMD,QCOM,AVGO",alto,"Las ganancias excepcionales de Nvidia generan optimismo sistémico en todo el sector de semiconductores, elevando perspectivas de crecimiento para competidores y proveedores.",2026-08-27T22:12:45.235749+00:00,0.95
+5538,0.65,"NVDA,TSM,AVGO,INTC,ARM",medio,Rally simultáneo de software y chips refleja sentimiento positivo generalizado en sector semiconductores.,2026-08-27T22:13:21.166851+00:00,0.7
+5539,0.5,"AMD,INTC,NVDA",alto,Predicción de que AMD e Intel liderarán mercado de semiconductores de IA en 2026 refleja dinámicas competitivas críticas del sector.,2026-08-27T22:13:34.872527+00:00,0.95
+5540,0.6,"NVDA,INTC",medio,Cartera de inversiones de Nvidia genera $7.8B en ganancias; demuestra éxito financiero pero menor relevancia operativa.,2026-08-27T22:13:58.046291+00:00,0.6
+5541,-0.5,"AVGO,MRVL,GOOGL",medio,El profundo partnership de Google con Marvell erosiona la posición competitiva de Broadcom en chips personalizados para IA.,2026-08-27T22:12:45.235927+00:00,0.8
+5542,0.4,AVGO,bajo,La propuesta de seguridad post-cuántica de Broadcom muestra innovación pero con impacto comercial incierto a corto plazo.,2026-08-27T22:12:45.235941+00:00,0.5
+5543,0.65,"AVGO,NVDA",alto,"OpenAI desarrolla chip competidor pero Broadcom se beneficia como proveedor crítico, validando su rol estratégico en infraestructura AI.",2026-08-27T22:12:58.067725+00:00,0.9
+5544,0.6,AVGO,medio,"Broadcom con perspectivas positivas previas a resultados, beneficiándose del potencial de IA llegando al 54% de ventas.",2026-08-27T22:12:58.067767+00:00,0.75
+5545,0.7,AVGO,medio,"Broadcom sube con perspectivas de IA alcanzando 54% de ingresos, validando su posición estratégica en infraestructura de inteligencia artificial.",2026-08-27T22:12:58.067774+00:00,0.8
+5546,-0.5,AVGO,medio,"Preocupación sobre deuda relacionada a IA afecta negativamente la valoración de Broadcom, fabricante clave de semiconductores.",2026-08-27T22:13:09.472183+00:00,0.8
+5547,0.2,"AVGO,GOOGL",medio,Análisis de dinámicas competitivas en chips especializados entre Broadcom y Marvell para productos de Google con impacto moderado.,2026-08-27T22:13:34.872492+00:00,0.7
+5548,0.3,AVGO,bajo,Análisis histórico técnico sobre movimiento de Broadcom post-evento con relevancia limitada a fundamentales del negocio de semiconductores.,2026-08-27T22:13:34.872545+00:00,0.6
+5549,0.7,NVDA,alto,Repunte de Nvidia en contexto macroeconómico favorable (Jackson Hole) refuerza narrativa de crecimiento sostenido en semiconductores IA.,2026-08-27T22:12:32.134726+00:00,0.85
+5550,0.65,TXN,medio,Desempeño superior de Texas Instruments respecto al mercado sugiere demanda robusta en analógicos y procesamiento de señales.,2026-08-27T22:12:18.553327+00:00,0.7
+5551,0.3,TXN,bajo,Análisis de valoración de Texas Instruments es positivo pero especulativo sobre múltiplos futuros.,2026-08-27T22:13:09.472271+00:00,0.6
+5552,0.75,MU,alto,"Duplicación de capex de Micron responde a escasez de memoria AI, posicionando la empresa para capturar demanda estructural a largo plazo.",2026-08-27T22:12:18.553408+00:00,0.9
+5553,0.75,MU,alto,Reconocimiento presidencial de inversión de Micron en labs de investigación impulsa confianza en estrategia de localización de manufactura.,2026-08-27T22:12:32.134657+00:00,0.85
+5554,-0.4,MU,medio,"A pesar del respaldo presidencial, caída de 5% en Micron sugiere volatilidad de mercado y preocupaciones de valuación.",2026-08-27T22:12:32.134685+00:00,0.6
+5555,0.35,"NVDA,MU",medio,Escasez de memoria convertida en poder de precios beneficia a Nvidia y Micron pero muestra desbalances en cadena de valor.,2026-08-27T22:12:32.134715+00:00,0.8
+5556,0.7,"NVDA,MU",alto,Cobertura de múltiples acciones semiconductor incluyendo Nvidia y Micron refleja volatilidad y relevancia de estos actores clave en mercado.,2026-08-27T22:12:18.553415+00:00,0.85
+5557,0.4,"MU,NVDA,000660.KS,WDC",medio,"El compromiso de memoria de Nvidia favorece a productores de DRAM pero Micron queda rezagado, mostrando presión de márgenes diferenciada.",2026-08-27T22:12:45.235975+00:00,0.8
+5558,0.5,"MU,NVDA",medio,"Advertencia de precios de memoria por Nvidia debería beneficiar a Micron pero su acción se rezaga, sugiriendo escepticismo del mercado.",2026-08-27T22:12:18.553404+00:00,0.8
+5559,0.5,MU,medio,El reconocimiento de estabilidad en Micron más allá de ciclos de auge-caída mejora la perspectiva de inversión a largo plazo.,2026-08-27T22:12:45.235982+00:00,0.7
+5560,0.6,"MU,NVDA",alto,"Predicción bullish sobre Micron como stock clave en boom de IA, destacando importancia crítica de memoria para aplicaciones de inteligencia artificial.",2026-08-27T22:13:34.872433+00:00,0.95
+5561,0.5,MU,alto,Escasez de oferta de Micron impulsada por demanda acelerada de IA es factor fundamental positivo para márgenes y rentabilidad.,2026-08-27T22:13:34.872445+00:00,0.9
+5562,0.65,"MU,NVDA",alto,El desempeño superior de margen de Micron respecto a Nvidia subraya el cuello de botella de memoria y ventaja competitiva de DRAM.,2026-08-27T22:12:45.235994+00:00,0.85
+5563,0.6,"NVDA,MU",medio,Stock de IA pequeño supera Micron y Nvidia sugiriendo nichos especializados en semiconductores con mayor potencial.,2026-08-27T22:13:21.166883+00:00,0.5
+5564,0.7,NVDA,alto,"Nvidia reaviva tendencias alcistas en semiconductores, sugiriendo catalistas significativos para la industria de chips.",2026-08-27T22:13:46.326115+00:00,0.85
+5565,0.55,"NVDA,005930.KS",medio,Samsung aprovecha escasez de memoria impulsada por Nvidia ganando en precios pero refleja concentración de poder en Nvidia.,2026-08-27T22:12:32.134721+00:00,0.75
+5566,0.3,005930.KS,bajo,Anuncio de smartphone de Samsung tiene impacto limitado en división de semiconductores especializados.,2026-08-27T22:13:21.166847+00:00,0.4
+5567,-0.3,005930.KS,bajo,Oferta de activista por participación de Samsung en S-1 a prima; especulación de M&A sin certidumbre cierta.,2026-08-27T22:13:58.046265+00:00,0.4
+5568,-0.25,005930.KS,bajo,Intento de activista de compra de participación accionaria en Samsung; especulación sin desenlace confirmado.,2026-08-27T22:13:58.046273+00:00,0.3
+5569,0.7,NVDA,alto,Duplicación de compras de Nvidia impulsa fuerte demanda en fabricantes de memoria; efecto positivo en cadena de suministro.,2026-08-27T22:13:58.046220+00:00,0.85
+5570,0.7,"TSM,NVDA",alto,"TSMC se beneficia de la extendida demanda de Nvidia para chips AI, consolidando su rol como foundry crítica del ecosistema.",2026-08-27T22:12:58.067788+00:00,0.85
+5571,0.7,"TSM,2330.TW",alto,Hedge fund reposiciona cartera favoring TSM sobre Sandisk reflejando confianza en liderazgo de TSMC en fabricación avanzada para IA.,2026-08-27T22:13:34.872555+00:00,0.95
+5572,0.6,"TSM,2330.TW",alto,"TSMC gana participación en producción de chips 3nm para IA, segmento crítico de máxima demanda y márgenes.",2026-08-27T22:13:58.046182+00:00,0.95
+5573,0.85,NVDA,alto,"Nvidia confirma boom de IA extendido hasta 2028, validando crecimiento sostenido de demanda de GPUs y semiconductores especializados.",2026-08-27T22:13:21.166786+00:00,1.0
+5574,0.5,NVDA,bajo,Anécdota sobre influencia del CEO; es sentimiento positivo pero escaso valor informativo fundamental sobre negocios.,2026-08-27T22:13:58.046209+00:00,0.2
+5575,-0.35,ASML,medio,ASML invierte con prima de valuación muy elevada que revela preocupación sobre el optimismo AI y potencial corrección.,2026-08-27T22:12:58.067791+00:00,0.8
+5576,0.6,"MU,000660.KS,KIOXIA",medio,Las carencias de chips de memoria benefician directamente a productores como Micron y SK Hynix con mejores márgenes y demanda sostenida.,2026-08-27T22:12:45.235906+00:00,0.75
+5577,0.7,MU,alto,"Análisis destacando potencial de Micron como ganador principal en boom de memoria para IA, posicionándola por encima de competidores directos.",2026-08-27T22:13:34.872482+00:00,0.95
+5578,0.75,NVDA,alto,Resultados e indicaciones de Nvidia impulsan fuertemente el sector semiconductora a nivel industria.,2026-08-27T22:13:46.326259+00:00,0.9
+5579,-0.3,NVDA,medio,Los resultados de Nvidia son positivos pero los precios del petróleo y debilidad asiática generan presiones mixtas en el mercado de semiconductores.,2026-08-27T22:13:46.325978+00:00,0.6
+5580,0.0,,bajo,Comparativa de empresas mineras de cobre sin conexión al sector de semiconductores.,2026-08-27T22:13:34.872523+00:00,0.05
+5581,-0.3,,bajo,Caída de producción de cobre tiene escasa relevancia directa para semiconductores.,2026-08-27T22:13:21.166829+00:00,0.1
+5582,0.7,"MSFT,NVDA,AMD",alto,Transición de IA experimental a producción escalable en Microsoft aumenta demanda crítica de semiconductores de alto rendimiento.,2026-08-27T22:12:32.134694+00:00,0.9
+5583,0.7,"MRVL,MSFT,GOOGL",alto,"Marvell posicionándose como proveedor clave de Microsoft, AWS y Google en IA impulsará demanda y crecimiento significativo.",2026-08-27T22:12:32.134640+00:00,0.9
+5584,0.85,NVDA,alto,Ganancia de $442 mil millones en capitalización refleja el dominio de Nvidia en IA y demanda explosiva de chips para data centers.,2026-08-27T22:12:32.134649+00:00,0.95
+5585,0.75,NVDA,alto,Contrato de $12.9 mil millones valida la demanda masiva de GPUs y consolida posición de Nvidia en ecosistema de IA.,2026-08-27T22:12:32.134711+00:00,0.9
+5586,0.8,"NVDA,AMD,QCOM,AVGO",alto,El cierre fuerte del ciclo de reportes del Mag 7 valida la demanda de semiconductores de IA y sostiene confianza sectorial.,2026-08-27T22:12:45.235935+00:00,0.9
+5587,0.75,NVDA,alto,Rally del Nasdaq con Nvidia liderando y teasing nuevo producto refuerza posición dominante y generador de impulso positivo del mercado semiconductor.,2026-08-27T22:12:18.553418+00:00,0.9
+5588,0.15,META,bajo,Comparación de trayectorias de AppLovin y Meta es análisis de compañías de medios digitales sin relevancia directa para semiconductores.,2026-08-27T22:12:32.134664+00:00,0.3
+5589,0.8,NVDA,alto,Rally del Nasdaq y pronóstico bullish para Nvidia refleja sentimiento positivo del mercado hacia líder en chips de IA.,2026-08-27T22:12:18.553317+00:00,0.9
+5590,-0.55,NVDA,medio,Pausa en acuerdos de compartir ingresos con proveedores de nube AI reduce flexibilidad comercial y genera incertidumbre en estructura de negociaciones.,2026-08-27T22:12:18.553331+00:00,0.8
+5591,0.2,NVDA,bajo,NVIDIA establece oficina de cabildeo político es estratégica pero tiene impacto operativo limitado.,2026-08-27T22:13:09.472237+00:00,0.4
+5592,0.15,NVDA,bajo,PAC político de Nvidia refleja maduración corporativa pero impacto mínimo en operaciones y valuación de semiconductores.,2026-08-27T22:12:58.067800+00:00,0.25
+5593,0.2,NVDA,bajo,La creación de un PAC político por Nvidia es una acción periférica sin impacto directo en operaciones o valuación.,2026-08-27T22:12:45.235931+00:00,0.25
+5594,0.65,NVDA,alto,Nvidia adquiere Hugging Face por $12.9B; expansión estratégica en software de IA de alto valor agregado.,2026-08-27T22:13:58.046285+00:00,0.8
+5595,0.75,NVDA,alto,Adquisición de Hugging Face por Nvidia consolida su dominio en IA y semiconductores especializados.,2026-08-27T22:13:46.326295+00:00,0.85
+5596,0.75,NVDA,alto,"Adquisición potencial de Hugging Face por Nvidia fortalecería su posición en IA y software, muy relevante para el sector de semiconductores.",2026-08-27T22:14:12.045063+00:00,0.85
+5597,-0.25,NVDA,bajo,Comentario despreocupado de Huang sobre competencia potencial de OpenAI; impacto limitado dado que el proyecto aún está en fase inicial.,2026-08-27T22:13:58.046013+00:00,0.4
+5598,0.5,NVDA,medio,CEO de Nvidia prediciendo impacto positivo de IA en empleo mitiga preocupaciones regulatorias pero genera debate sobre disruption.,2026-08-27T22:12:32.134690+00:00,0.65
+5599,0.6,NVDA,medio,Riqueza personal del CEO refleja confianza del mercado en Nvidia pero es más noticia de prensa que fundamentales operacionales.,2026-08-27T22:12:32.134645+00:00,0.4
+5600,0.6,NVDA,medio,Avances en DLSS 5 demuestran innovación continua de Nvidia en software-hardware de semiconductores.,2026-08-27T22:13:46.326283+00:00,0.7
+5601,0.3,NVDA,bajo,Fuga de información sobre DLSS 5 es positiva para NVIDIA pero no constituye un evento corporativo significativo.,2026-08-27T22:13:09.472144+00:00,0.6
+5602,0.4,AMD,medio,Salto a ROCm 10.0 fortalece ecosistema IA de AMD mejorando competitividad contra NVIDIA CUDA.,2026-08-27T22:13:09.472249+00:00,0.8
+5603,0.55,AMD,alto,"Confirmación de compatibilidad AM5 para Zen 6 es muy positiva, permite a usuarios actualizar sin placa nueva aumentando mercado potencial de AMD.",2026-08-27T22:14:12.045301+00:00,0.95
+5604,0.55,AMD,alto,Documento que confirma ruta de upgrade AM5 para próximas generaciones AMD Zen 6 es positivo para la base de usuarios y percepción de valor.,2026-08-27T22:14:12.045305+00:00,0.95
+5605,0.5,"AMD,AVGO",alto,AMD y Broadcom aseguran capacidad de empaque avanzado crítica para 2027; estrategia ofensiva en packaging.,2026-08-27T22:13:58.046250+00:00,0.8
+5606,0.2,"AMD,INTC",bajo,Presión de precios en procesadores Intel beneficia levemente a AMD pero refleja competencia intensa.,2026-08-27T22:13:09.472228+00:00,0.5
+5607,-0.2,"AMD,INTC",bajo,Promociones de precios en computadoras gaming presionan márgenes pero típico de ciclo de inventario.,2026-08-27T22:13:09.472257+00:00,0.4
+5608,0.5,AMD,medio,AMD asegura contrato importante en computación autónoma representa diversificación exitosa más allá de gaming.,2026-08-27T22:13:09.472231+00:00,0.7
+5609,-0.3,INTC,bajo,Tensiones geopolíticas entre EE.UU. y Rusia pueden afectar cadenas de suministro globales pero tiene impacto indirecto en semiconductores.,2026-08-27T22:12:32.134588+00:00,0.2
+5610,-0.6,INTC,bajo,Incidente de drones en Alemania tiene asociación geopolítica débil e indirecta con operaciones de semiconductores.,2026-08-27T22:13:46.326271+00:00,0.15
+5611,0.0,,bajo,Noticia sobre práctica de fútbol americano sin relación con operaciones o estrategia de semiconductores de Intel.,2026-08-27T22:13:34.872472+00:00,0.05
+5612,-0.15,INTC,bajo,Noticia sobre aranceles agrícolas es tangencial para Intel; no hay relación directa con negocios de semiconductores.,2026-08-27T22:12:32.134627+00:00,0.1
+5613,-0.7,INTC,medio,Pérdida de contrato y despidos de 74 empleados en Hillsboro indican debilitamiento de la cadena de suministro y manufactura de Intel.,2026-08-27T22:12:58.067720+00:00,0.65
+5614,-0.15,INTC,bajo,"Descuento en laptops Intel de generación anterior sugiere exceso de inventario, con impacto menor en el valor del chip.",2026-08-27T22:12:58.067691+00:00,0.3
+5615,-0.7,INTC,alto,La reducción significativa de ejecutivos bajo nueva administración indica reestructuración profunda y debilidad competitiva de Intel.,2026-08-27T22:12:45.235963+00:00,0.85
+5616,0.5,QCOM,medio,Nuevo chip Snapdragon flagship de Qualcomm en pruebas confirma roadmap de innovación en procesadores móviles.,2026-08-27T22:14:12.045311+00:00,0.8
+5617,0.5,"QCOM,NVDA",medio,"El enfoque modular de Qualcomm desafía el monopolio de Nvidia en IA aceleradores, abriendo opciones competitivas.",2026-08-27T22:12:45.235979+00:00,0.8
+5618,0.5,"QCOM,005930.KS,000660.KS,TSM,2330.TW",alto,Alianzas estratégicas en memoria HBC entre fabricantes clave redefinen dinámicas competitivas del núcleo de la industria semiconductora.,2026-08-27T22:13:46.326192+00:00,0.95
+5619,0.65,"QCOM,AMAT",medio,Nombramiento de ejecutivo de Qualcomm en junta de Applied Materials fortalece la colaboración estratégica en el ecosistema de semiconductores.,2026-08-27T22:12:32.134423+00:00,0.6
+5620,-0.35,"AMD,AVGO",medio,La venta de AMD por ARK sugiere presión en la acción mientras que la compra de Broadcom puede indicar mayor confianza en ese nombre.,2026-08-27T22:14:12.045234+00:00,0.7
+5621,0.75,"AVGO,PI",alto,El repunte accionario de Broadcom e Impinj refleja optimismo sobre soluciones RFID y conectividad de baja potencia en IoT.,2026-08-27T22:12:45.235972+00:00,0.8
+5622,0.7,AVGO,alto,"Expansión de alianza estratégica entre Broadcom y Kyndryl para soluciones cloud seguras en era de IA, fortaleciendo posición de Broadcom en semiconductores empresariales.",2026-08-27T22:13:34.872415+00:00,0.9
+5623,0.65,AVGO,alto,Expansión de asociación Broadcom-Kyndryl para infraestructura cloud AI refuerza posición de Broadcom en semiconductores de redes.,2026-08-27T22:13:21.166811+00:00,0.85
+5624,0.55,TXN,medio,"A pesar de caída de precio, analistas elevan objetivos para Texas Instruments anticipando recuperación en demanda semiconductor.",2026-08-27T22:13:21.166778+00:00,0.8
+5625,0.2,TXN,bajo,Reconocimiento a Texas Instruments mitigado por tensiones comerciales; impacto sentimiento mixto y moderado.,2026-08-27T22:13:58.046240+00:00,0.5
+5626,0.3,ARM,medio,Movimiento bursátil después de horas sugiere interés inversor positivo en diseñador de arquitectura de chips.,2026-08-27T22:13:58.046235+00:00,0.7
+5627,0.65,ARM,alto,ARM liderando un rally de IA es extremadamente positivo para su negocio de licencias de arquitectura de procesadores.,2026-08-27T22:14:12.045245+00:00,0.9
+5628,-0.4,ARM,medio,Venta de acciones insiders de ARM genera preocupación sobre confianza interna pese a perspectivas positivas de demanda.,2026-08-27T22:13:21.166855+00:00,0.6
+5629,0.6,ARM,medio,Precio de ARM en alza con scoring positivo confirma momentum técnico y fundamental en la empresa.,2026-08-27T22:14:12.045278+00:00,0.75
+5630,0.75,ARM,alto,Aumento en demanda de CPUs AI genera perspectivas positivas para ARM como proveedor de arquitectura de procesadores.,2026-08-27T22:13:21.166751+00:00,0.9
+5631,0.75,MU,alto,Inversión masiva de $10B de Micron en infraestructura de fabricación amplía capacidad y apoya crecimiento en semiconductores de memoria críticos para IA.,2026-08-27T22:12:18.553151+00:00,0.85
+5632,0.6,MU,alto,Demanda de clientes 50% superior a capacidad de Micron es muy positivo para precios de memoria y márgenes.,2026-08-27T22:13:09.472245+00:00,0.95
+5633,0.5,"NVDA,MU,GOOGL",medio,"Perspectivas de ganancias de actores clave Nvidia, Micron y Alphabet son indicadores mixtos del ciclo semiconductor.",2026-08-27T22:13:46.326289+00:00,0.75
+5634,-0.6,MU,alto,"Aranceles semiconductores planificados por administración Trump presionan fuerte a Micron, fabricante de memoria crítico.",2026-08-27T22:13:09.472215+00:00,0.9
+5635,0.5,005930.KS,medio,Nuevas líneas gaming de Samsung reflejan demanda de semiconductores de alto rendimiento en consumidor.,2026-08-27T22:13:46.326279+00:00,0.4
+5636,0.2,005930.KS,bajo,Emisión de bonos vinculados a Samsung Electronics de bajo riesgo; impacto financiero positivo pero limitado alcance.,2026-08-27T22:13:58.046193+00:00,0.3
+5637,0.4,005930.KS,bajo,Lanzamiento de nuevo modelo Samsung con énfasis en precio accesible impulsa demanda de semiconductores pero noticia principalmente de marketing de consumidor.,2026-08-27T22:13:34.872497+00:00,0.5
+5638,0.3,005930.KS,bajo,"Lanzamiento Galaxy S26 FE es positivo para Samsung pero la noticia es sobre producto de consumo, no semiconductores.",2026-08-27T22:13:09.472253+00:00,0.3
+5639,0.4,005930.KS,bajo,Review favorable del Galaxy S26 FE por precio competitivo beneficia a Samsung como productor de chips pero es cobertura de producto de consumidor.,2026-08-27T22:13:34.872501+00:00,0.5
+5640,-0.3,005930.KS,bajo,Disputa de marca comercial de Samsung con Swatch es legal pero de impacto menor para su negocio semiconductores.,2026-08-27T22:13:09.472242+00:00,0.2
+5641,-0.5,"005930.KS,000660.KS",alto,"Competidor chino YMTC amenaza liderazgo de Samsung y SK Hynix en NAND, presionando márgenes de proveedores de memoria establecidos.",2026-08-27T22:12:58.067803+00:00,0.85
+5642,0.6,000660.KS,medio,La expansión de producción de memoria en EE.UU. por SK Hynix fortalece cadena de suministro y presencia geopolítica.,2026-08-27T22:12:45.235985+00:00,0.75
+5643,0.6,000660.KS,alto,Inversión de $4 mil millones en hub de memoria en Indiana posiciona a SK Hynix estratégicamente en EE.UU.,2026-08-27T22:13:09.472268+00:00,0.95
+5644,0.5,000660.KS,medio,"SK Hynix planea producción de chips AI en Indiana desde 2029 y proyecta escasez de memoria hasta 2030, favoreciendo proveedores de memoria.",2026-08-27T22:12:58.067755+00:00,0.75
+5645,0.3,"000660.KS,KIOXIA",medio,La evaluación de SK Hynix sobre alianzas estratégicas muestra exploraciones pero sin decisiones confirmadas de impacto inmediato.,2026-08-27T22:12:45.235968+00:00,0.6
+5646,0.8,"NVDA,TSM,2330.TW",alto,Comparativa de escala de Nvidia versus TSMC subraya posición dominante en semiconductores de IA y subutilización de valuaciones.,2026-08-27T22:13:21.166805+00:00,1.0
+5647,-0.3,UMC,bajo,Disputa legal sobre propiedad eclesiástica es irrelevante para el sector semiconductor y no afecta operaciones de United Microelectronics.,2026-08-27T22:12:18.553362+00:00,0.1
+5648,0.3,UMC,bajo,La iniciativa académica de UMC tiene impacto limitado y periférico en el desempeño financiero inmediato del sector.,2026-08-27T22:12:45.235922+00:00,0.3
+5649,0.3,ASML,medio,Liderazgo ejecutivo en ASML refuerza confianza en innovación de tecnología de litografía crítica para la industria.,2026-08-27T22:13:58.046212+00:00,0.7
+5650,0.8,"TSM,2330.TW,ASML",alto,TSMC y ASML identificadas como juegos puros en boom de memoria AI con menor riesgo cíclico que competidores directos.,2026-08-27T22:13:21.166876+00:00,0.95
+5651,0.65,"NVDA,8035.T",alto,Fortaleza de Nvidia genera señales de compra en proveedores japoneses como Tokyo Electron; momentum positivo en cadena.,2026-08-27T22:13:58.046315+00:00,0.85
+5652,0.4,"6857.T,NVDA",medio,Análisis positivo sobre Advantest como proveedor clave de Nvidia en cadena de suministro de semiconductores.,2026-08-27T22:13:58.046175+00:00,0.7
+5653,-0.4,"NVDA,6857.T",medio,Caída de Advantest por debilidad de demanda de equipos de prueba contrarresta ganancias positivas de Nvidia en la cadena.,2026-08-27T22:13:46.326301+00:00,0.65
+5654,-0.5,6857.T,medio,Caída de acciones de Advantest genera dudas sobre demanda de equipos de prueba para semiconductores.,2026-08-27T22:13:21.166879+00:00,0.7
+5655,-0.65,6857.T,medio,Caída de acciones de Advantest afecta índice Nikkei; indica presión negativa en proveedor crítico de equipos de semiconductores.,2026-08-27T22:13:58.046204+00:00,0.65
+5656,-0.6,6857.T,medio,Debilidad sostenida de Advantest arrastra índices japoneses; señal negativa sobre demanda de equipos de manufactura.,2026-08-27T22:13:58.046216+00:00,0.65
+5657,0.2,"NVDA,6857.T",medio,Ganancias de Nvidia benefician a algunos proveedores pero causan volatilidad mixta en fabricantes de equipos de prueba como Advantest.,2026-08-27T22:13:46.326267+00:00,0.7
+5658,0.3,IFX.DE,medio,Innovación en semiconductores automotrices refuerza posición de Infineon en segmento de automoción en crecimiento.,2026-08-27T22:13:58.046158+00:00,0.6
+5659,0.6,IFX.DE,medio,Adquisición de Infineon en India amplía capacidad semiconductora en mercado emergente con potencial estratégico.,2026-08-27T22:13:46.326205+00:00,0.8
+5660,0.2,BHP,bajo,BHP Group es minería de materiales básicos sin relación directa con semiconductores.,2026-08-27T22:12:58.067780+00:00,0.05
+5661,0.0,,bajo,Análisis comparativo de minería de cobre sin conexión directa al sector de semiconductores.,2026-08-27T22:13:34.872515+00:00,0.05
+5662,0.55,BHP,bajo,"Análisis sobre cobre y BHP es tangencialmente relacionado con semiconductores a través de minerales, pero no es núcleo del sector.",2026-08-27T22:12:18.553411+00:00,0.3
+5663,0.5,BHP,medio,Resultados récord de BHP en cobre tienen relevancia indirecta para semiconductores como insumo de cobre en componentes electrónicos.,2026-08-27T22:13:46.326126+00:00,0.3
+5664,-0.4,FCX,bajo,Venta de acciones por director de Freeport-McMoRan es señal neutra/ligeramente negativa pero no directamente relacionada con semiconductores.,2026-08-27T22:12:18.553357+00:00,0.25
+5665,0.4,FCX,medio,"Iniciación de cobertura alcista pero FCX es minería, no relevante directamente para semiconductores.",2026-08-27T22:13:09.472210+00:00,0.1
+5666,0.5,FCX,bajo,Análisis histórico de rentabilidad de Freeport-McMoRan es positivo pero no relacionado directamente con demanda de semiconductores.,2026-08-27T22:12:18.553366+00:00,0.2
+5667,0.0,,bajo,Noticia sobre expansión educativa en Arizona sin relación con el sector de semiconductores.,2026-08-27T22:13:09.472007+00:00,0.0
+5668,0.4,FCX,medio,"Calificación de compra de Erste Group sobre Freeport-McMoRan es positiva pero FCX es minería de cobre, no semiconductores.",2026-08-27T22:13:09.472160+00:00,0.2
+5669,0.3,FCX,bajo,Movimiento de cartera en Freeport-McMoRan tiene mínima relación directa con el sector de semiconductores.,2026-08-27T22:13:46.326212+00:00,0.1
+5670,0.4,FCX,bajo,Máximo de 12 meses de Freeport-McMoRan es independiente de dinámicas del sector semiconductora.,2026-08-27T22:13:46.326298+00:00,0.1
+5671,0.5,MSFT,medio,Compra de acciones de Microsoft por inversor destacado refleja confianza en posición de IA pero relevancia indirecta a fabricantes de semiconductores.,2026-08-27T22:13:34.872462+00:00,0.4
+5672,-0.4,MSFT,bajo,Control de costos en uso de IA sugiere disciplina presupuestaria pero impacto limitado en demanda de chips semiconductores.,2026-08-27T22:12:58.067764+00:00,0.2
+5673,0.4,"MSFT,GOOGL,INTC,NVDA",medio,Llamada por ciberseguridad mejora impulsa inversiones en infraestructura de semiconductores pero es regulatoria indirecta.,2026-08-27T22:12:32.134699+00:00,0.5
+5674,-0.4,MSFT,bajo,Noticia criminal sin relación directa con operaciones o desempeño financiero de Microsoft o semiconductores.,2026-08-27T22:14:12.045267+00:00,0.1
+5675,-0.4,MSFT,bajo,Noticia judicial sin conexión a operaciones comerciales o desempeño de Microsoft.,2026-08-27T22:14:12.045289+00:00,0.1
+5676,-0.35,MSFT,bajo,Noticia de crimen sin impacto material en operaciones o estrategia comercial de Microsoft.,2026-08-27T22:14:12.045282+00:00,0.1
+5677,0.2,MSFT,bajo,Anuncio sobre juego de simulación tiene impacto tangencial en el sector de semiconductores.,2026-08-27T22:13:21.166740+00:00,0.15
+5678,0.7,"MSFT,NVDA,TSM",alto,"Microsoft avanza hacia autosuficiencia en IA, aumentando demanda de semiconductores de alto rendimiento y procesadores especializados.",2026-08-27T22:13:21.166608+00:00,0.85
+5679,0.6,MSFT,medio,Actualización de Microsoft 365 con capacidades de IA aumenta demanda de procesamiento y semiconductores pero noticia enfocada en software.,2026-08-27T22:13:34.872519+00:00,0.4
+5680,0.0,,bajo,Contenido cosmético de Flight Simulator 2024 no tiene impacto relevante para fabricantes de semiconductores.,2026-08-27T22:13:09.472260+00:00,0.1
+5681,-0.8,GOOGL,alto,Pérdida masiva de capitalización de mercado por dudas en IA afecta negativamente a Alphabet como cliente estratégico de semiconductores.,2026-08-27T22:13:34.872454+00:00,0.5
+5682,-0.8,GOOGL,alto,Pérdida similar de valor de mercado ($700B) refleja preocupaciones sobre competencia en IA que impacta demanda de chips de alto rendimiento.,2026-08-27T22:13:34.872458+00:00,0.5
+5683,0.7,GOOGL,medio,Potencial de ventas de TPU de Alphabet destaca su posición como demandante y proveedor de semiconductores especializados.,2026-08-27T22:13:46.326275+00:00,0.5
+5684,0.4,GOOGL,bajo,Decisión de dividendos y emisión de Alphabet es operativa financiera con bajo impacto sectorial directo.,2026-08-27T22:13:46.326286+00:00,0.2
+5685,-0.35,GOOGL,bajo,Acuerdo de privacidad en UK es asunto corporativo no operacional para negocios de semiconductores de Alphabet.,2026-08-27T22:12:32.134703+00:00,0.2
+5686,0.6,"NVDA,GOOGL,META",alto,"Nvidia captura flujo de inversión en IA mientras inversores abandonan Alphabet y Meta, reflejando rotación sectorial hacia líderes de chips AI.",2026-08-27T22:12:58.067708+00:00,0.85
+5687,0.6,GOOGL,medio,Recomendación bullish de analista sobre Alphabet pero con relevancia tangencial al sector de semiconductores como usuario final de chips.,2026-08-27T22:13:34.872450+00:00,0.3
+5688,0.3,GOOGL,bajo,"Análisis técnico positivo sobre Alphabet pero con relevancia indirecta al sector de semiconductores, enfocado en movimiento de precios de acciones.",2026-08-27T22:13:34.872276+00:00,0.4
+5689,0.0,"GOOGL,META",bajo,Análisis comparativo de gigantes tecnológicos sin enfoque directo en semiconductores.,2026-08-27T22:13:09.472219+00:00,0.3
+5690,-0.75,GOOGL,alto,Investigación de fraude de valores contra Alphabet afecta principalmente a Alphabet pero tiene implicaciones indirectas para fabricantes de chips especializados.,2026-08-27T22:12:18.553384+00:00,0.35
+5691,0.6,GOOGL,medio,Potencial subestimado de Alphabet es relevante para semiconductores por su rol como cliente clave y demandante de chips.,2026-08-27T22:13:46.326177+00:00,0.4
+5692,0.0,,bajo,La noticia sobre una librería comunitaria no tiene relación material con el negocio de semiconductores de Alphabet.,2026-08-27T22:12:45.235955+00:00,0.05
+5693,0.5,000660.KS,alto,SK Hynix expande capacidad de HBM en EE.UU. es positivo para su posición de liderazgo en memoria avanzada.,2026-08-27T22:13:09.472223+00:00,0.9
+5694,-0.55,"NVDA,INTC,AMD,QCOM",alto,Posible eliminación de exenciones arancelarias en chips afecta directamente a productores y fabricantes de semiconductores.,2026-08-27T22:12:32.134634+00:00,0.85
+5695,0.6,,alto,Crecimiento global de ingresos en semiconductores impulsado por IA; macrotendencia positiva para todo el sector.,2026-08-27T22:13:58.046224+00:00,0.9
+5696,0.3,,bajo,Conferencia técnica sobre arquitecturas de computación agéntica es relevante para tendencias sectoriales pero genérica sin tickers específicos.,2026-08-27T22:14:12.045317+00:00,0.6
+5697,-0.5,"TSM,2330.TW",medio,Preocupación sobre sobrevaloración de TSMC por concentración en IA; señala riesgo de corrección de múltiplos.,2026-08-27T22:13:58.046270+00:00,0.75
+5698,0.6,NVDA,alto,"Ganancias de Nvidia impulsan acciones de chips, pero aranceles de Trump generan incertidumbre significativa en cadena de suministro.",2026-08-27T22:13:46.326187+00:00,0.9
+5699,0.55,"INTC,AMKR,FORM,VSH,ALLEGRO",medio,"Múltiples acciones de semiconductores suben significativamente, indicando movimiento sectorial positivo en toda la cadena de manufactura.",2026-08-27T22:12:58.067771+00:00,0.7
+5700,0.85,NVDA,alto,"Nvidia supera temores clave de Wall Street sobre IA, generando confianza institucional muy positiva para el líder del mercado de semiconductores.",2026-08-28T22:15:55.058550+00:00,0.95
+5701,-0.6,,bajo,Noticia sobre minería de oro sin relación directa con el sector semiconductores.,2026-08-28T22:15:55.058760+00:00,0.05
+5702,0.3,"MRVL,NVDA",medio,Resumen de múltiples movimientos diarios incluyendo caída de Marvell pero con contexto neutral sobre Nvidia.,2026-08-28T22:15:55.058866+00:00,0.7
+5703,0.75,NVDA,medio,"Fondo AI supera QQQ con Nvidia como menor posición, mostrando amplitud del ecosistema AI semiconductor más allá de un jugador.",2026-08-28T22:15:55.058871+00:00,0.8
+5704,0.9,NVDA,alto,Predicción de negocio data center Nvidia alcanzando $100B/trimestre confirma dominancia en semiconductores para IA.,2026-08-28T22:15:55.058879+00:00,0.96
+5705,0.7,NVDA,medio,"Mercado receptivo a ganancias Nvidia y cambios de política económica, señalizando ciclo constructivo para semiconductores.",2026-08-28T22:15:55.058898+00:00,0.8
+5706,0.65,MU,medio,Predicción bullish sobre Micron hacia 2030 sugiere potencial crecimiento a largo plazo en memoria DRAM.,2026-08-28T22:15:55.058800+00:00,0.85
+5707,0.55,,bajo,"Especulación sobre CoreWeave como beneficiario de demanda GPU, pero empresa sin ticker verificado en contexto principal.",2026-08-28T22:15:55.058875+00:00,0.6
+5708,-0.65,,bajo,SSR Mining cae sin relación con semiconductores.,2026-08-28T22:15:55.058887+00:00,0.05
+5709,0.0,"AMD,AVGO",medio,"Comparativa de posiciones de riesgo-recompensa entre dos líderes de chips IA, genera análisis competitivo del mercado.",2026-08-28T22:16:07.147680+00:00,0.8
+5710,-0.4,AMD,medio,Caída de acciones de AMD refleja presiones de mercado y competencia en sector de procesadores de alto rendimiento.,2026-08-28T22:16:31.057568+00:00,0.6
+5711,-0.3,AMD,bajo,Cathie Wood vende acciones de AMD reflejando dudas de inversionistas influyentes sobre perspectivas a corto plazo.,2026-08-28T22:16:57.729099+00:00,0.5
+5712,0.6,NVDA,alto,"Análisis destaca ventaja de NVIDIA en software y plataforma financiera más allá de hardware, fortaleza competitiva estructural.",2026-08-28T22:16:07.147735+00:00,0.9
+5713,0.4,"NVDA,AMD",medio,"Análisis técnico favorece a NVIDIA sobre AMD en chips IA, refuerza narrativa de liderazgo de NVIDIA en mercado.",2026-08-28T22:16:07.147763+00:00,0.7
+5714,0.6,"MCHP,AMD",medio,Expansión de portafolio de Microchip es positiva para el sector; comparación con competidores AMD y LSCC en semiconductores.,2026-08-28T22:16:44.129391+00:00,0.75
+5715,0.6,NVDA,medio,"Nvidia ha eliminado un riesgo importante, probablemente relacionado con concentración de demanda o cadena de suministro.",2026-08-28T22:16:57.729087+00:00,0.7
+5716,-0.4,INTC,medio,Intel invierte en su propio comeback pero la titularidad reflexiva sugiere dependencia de capital propio sin apoyo externo claro.,2026-08-28T22:16:44.129403+00:00,0.8
+5717,-0.2,"MRVL,INTC,NVDA",bajo,Caída de Marvell por retraso en payoff de IA de Google hasta 2029 muestra volatilidad en expectativas de demanda de chips especializados.,2026-08-28T22:16:57.729030+00:00,0.6
+5718,-0.75,INTC,alto,"Intel cae más que el mercado amplio, indicando presiones específicas en el fabricante de procesadores estadounidense.",2026-08-28T22:15:55.058816+00:00,0.92
+5719,0.5,INTC,medio,"Intel anuncia nueva estrategia enfocada en IA empresarial con gobernanza local, posicionamiento positivo en mercado competitivo.",2026-08-28T22:16:07.147660+00:00,0.8
+5720,0.5,INTC,medio,"CEO de Intel compra acciones con apuesta de $10M; señal alcista aunque precio ha bajado, indica confianza en turnaround.",2026-08-28T22:16:44.129452+00:00,0.75
+5721,0.5,INTC,medio,"Reporte de mercado de infraestructura 5G Edge identifica Intel como jugador clave en crecimiento proyectado de $12.9B, indicando demanda futura.",2026-08-28T22:17:11.995153+00:00,0.65
+5722,0.2,INTC,bajo,Compra de Intel por figura política genera ruido mediático pero con limitado impacto fundamental en negocio de semiconductores.,2026-08-28T22:17:24.837218+00:00,0.3
+5723,0.6,NVDA,medio,"NVIDIA se diferencia positivamente del resto del sector con correlación baja, sugiriendo desempeño independiente y fortaleza.",2026-08-28T22:16:18.986877+00:00,0.8
+5724,0.7,NVDA,medio,"Nvidia ha invertido miles de millones en empresas complementarias, demostrando estrategia de integración vertical en ecosistema de IA y semiconductores.",2026-08-28T22:17:11.995185+00:00,0.7
+5725,0.7,NVDA,alto,Nvidia invierte $21B con Elon Musk; refleja confianza en demanda de semiconductores de IA y poder de mercado de Nvidia.,2026-08-28T22:16:44.129444+00:00,0.9
+5726,0.6,QCOM,medio,Valorización positiva de Qualcomm post-earnings refleja confianza en demanda de semiconductores móviles y conectividad.,2026-08-28T22:16:31.057601+00:00,0.7
+5727,0.6,QCOM,medio,"Qualcomm diversifica más allá de smartphones hacia nuevos mercados, abriendo oportunidades de crecimiento en semiconductores especializados.",2026-08-28T22:16:18.987017+00:00,0.7
+5728,-0.3,AVGO,medio,"Broadcom enfrenta presión competitiva en trimestre de IA comparado con Marvell, sugiriendo desafíos en temporización y demanda.",2026-08-28T22:16:18.986900+00:00,0.75
+5729,-0.4,"AVGO,NVDA",medio,"Broadcom se enfrenta a estándares de desempeño imposibles fijados por NVIDIA, indicando presión competitiva en IA chips.",2026-08-28T22:16:18.986916+00:00,0.8
+5730,0.6,AVGO,alto,Financiamiento de $70B para Broadcom facilita expansión de capacidad y adquisiciones en tecnología de semiconductores crítica.,2026-08-28T22:16:18.986953+00:00,0.8
+5731,0.7,AVGO,alto,Recomendación alcista de Mizuho para Broadcom antes de earnings; señal positiva de 30 trimestres de desempeño consistente.,2026-08-28T22:16:44.129398+00:00,0.85
+5732,-0.1,"NVDA,AVGO",medio,Análisis comparativo de vulnerabilidades entre Nvidia y Broadcom; cuestiona fortaleza relativa en competencia del sector.,2026-08-28T22:16:44.129487+00:00,0.75
+5733,0.7,AVGO,medio,"Broadcom construye productos casi perfectos según inversionista, indicando fortaleza competitiva en infraestructura semiconductora.",2026-08-28T22:16:57.729147+00:00,0.8
+5734,-0.1,AVGO,bajo,Análisis de desempeño relativo de Broadcom respecto al sector tecnológico muestra volatilidad sin conclusiones claras.,2026-08-28T22:16:57.729151+00:00,0.6
+5735,0.75,AVGO,alto,"Broadcom expande su presencia estratégica en soluciones de IA con infraestructura en nube privada, posicionándose favorablemente en el mercado de semiconductores de próxima generación.",2026-08-28T22:17:11.994881+00:00,0.85
+5736,-0.8,"MRVL,GOOGL",alto,"Marvell cae 10% por guía débil fiscal 2028 y retrasos en chips personalizados para Google, afectando toda la cadena AI.",2026-08-28T22:15:55.058834+00:00,0.88
+5737,0.3,,bajo,Recomendación genérica de 3 stocks semiconductores sin tickers específicos tiene valor informativo limitado.,2026-08-28T22:16:57.729154+00:00,0.5
+5738,0.8,MU,alto,Inversión de $10B de Micron en IA demuestra compromiso estratégico en memoria de alta capacidad para mercado de IA.,2026-08-28T22:16:18.986924+00:00,0.9
+5739,0.8,MU,alto,Proyección alcista repetida para Micron refuerza confianza de inversores en crecimiento de memoria DRAM/NAND para IA.,2026-08-28T22:16:18.987048+00:00,0.85
+5740,0.5,MU,alto,"CEO de Micron destaca cómo IA disrupcioniza ciclos tradicionales de memoria, posicionando demanda creciente para fabricante.",2026-08-28T22:16:31.057549+00:00,0.95
+5741,-0.2,MU,medio,Micron no se beneficia del optimismo de SK Hynix en memoria; sugiere competencia y presiones de precios en DRAM/NAND.,2026-08-28T22:16:44.129430+00:00,0.7
+5742,0.6,"NVDA,MU",alto,Trump avala a Micron como 'hottest company' tras compromisos de Nvidia; respalda demanda de semiconductores y geopolítica favorable.,2026-08-28T22:16:44.129455+00:00,0.85
+5743,0.6,MU,alto,Micron y SanDisk presentadas como oportunidad de compra única; subraya potencial alcista en memoria tras caída de precios.,2026-08-28T22:16:44.129475+00:00,0.8
+5744,0.7,TSM,alto,TSMC avanza en roadmap A14 para transformación de IA; crítico como foundry líder para procesadores de próxima generación.,2026-08-28T22:16:44.129467+00:00,0.95
+5745,-0.5,"MU,005930.KS",medio,"Caída de Micron atribuida a recompra de acciones de Samsung genera presión competitiva en sector de memoria, impactando valuaciones.",2026-08-28T22:17:11.995121+00:00,0.6
+5746,0.7,TSM,alto,"Compra de billonario en TSMC señala confianza en el fabricante líder de semiconductores, reflejando demanda sostenida de chips.",2026-08-28T22:16:31.057542+00:00,0.9
+5747,0.6,ASML,alto,"ASML consolida su posición monopolista en litografía de memoria de alto ancho de banda, crítico para la industria de semiconductores.",2026-08-28T22:16:31.057507+00:00,1.0
+5748,0.8,ASML,alto,ASML destacada como mejor posicionada en cohort AI; crítica para cadena de suministro de chips por equipos litográficos.,2026-08-28T22:16:44.129435+00:00,0.95
+5749,0.3,BHP,bajo,"Noticia sobre financiamiento en sector de energía con mención tangencial a empresas de semiconductores, impacto limitado en el sector.",2026-08-28T22:16:07.147483+00:00,0.3
+5750,-0.7,,bajo,Caída de Freeport-McMoRan (minería) sin conexión al sector de semiconductores.,2026-08-28T22:15:55.058825+00:00,0.05
+5751,0.2,,bajo,"Análisis de minería de cobre sin conexión directa con semiconductores, sector completamente distinto.",2026-08-28T22:16:07.147725+00:00,0.0
+5752,-0.3,,bajo,"Noticia sobre minería de cobre sin relación directa con semiconductores, solo menciona valoración de FCX.",2026-08-28T22:16:44.129175+00:00,0.1
+5753,0.45,MSFT,bajo,"Microsoft y mega-cap enmascararan debilidad del mercado amplio, conexión indirecta a semiconductores como cliente AI.",2026-08-28T22:15:55.058902+00:00,0.5
+5754,0.3,MSFT,bajo,"Análisis de decisión de inversión en Microsoft sin noticias operativas específicas, impacto general en portafolio tecnológico.",2026-08-28T22:16:07.147676+00:00,0.2
+5755,0.6,MSFT,medio,Inversión de Microsoft en ciberseguridad con fondos asignados fortalece su ecosistema de demanda de chips especializados.,2026-08-28T22:16:18.986891+00:00,0.5
+5756,0.4,,bajo,"Empresa privada de data center asegura financiamiento para compra de chips, relevancia indirecta para proveedores de semiconductores.",2026-08-28T22:16:07.147642+00:00,0.2
+5757,0.2,NVDA,medio,"Amazon amplía acuerdo de chips mientras NVIDIA cae, sugiere competencia creciente y diversificación de proveedores de IA.",2026-08-28T22:16:07.147744+00:00,0.6
+5758,-0.5,NVDA,medio,Advertencia de Steve Eisman sobre concentración de riesgo en NVIDIA genera preocupación sobre valuación y vulnerabilidad.,2026-08-28T22:16:18.986908+00:00,0.7
+5759,-0.6,META,medio,Potencial pérdida astronómica en California afecta a Meta como cliente de semiconductores y su capacidad de inversión en chips.,2026-08-28T22:16:18.986944+00:00,0.4
+5760,0.5,META,bajo,Competencia de Alibaba en IA abierto reduce diferencial de Meta pero tiene impacto indirecto en demanda de semiconductores.,2026-08-28T22:16:18.986949+00:00,0.3
+5761,0.4,"GOOGL,META",medio,Análisis de inversión en IA por grandes tecnológicas implica demanda creciente de semiconductores de próxima generación.,2026-08-28T22:16:31.057594+00:00,0.6
+5762,0.5,META,bajo,Desempeño positivo de Meta post-earnings tiene impacto indirecto limitado en decisiones de inversión en semiconductores.,2026-08-28T22:16:31.057605+00:00,0.2
+5763,0.7,NVDA,medio,"DLSS 5 refuerza el liderazgo tecnológico de Nvidia en IA y efectos gráficos, expandiendo su ecosistema de adopción.",2026-08-28T22:16:31.057467+00:00,0.8
+5764,-0.4,NVDA,bajo,"Fuga de información sobre DLSS 5 revela problemas técnicos en renderizado de IA, impacta percepción de calidad de soluciones.",2026-08-28T22:16:07.147668+00:00,0.5
+5765,-0.3,NVDA,bajo,"Tecnología IA de NVIDIA genera controversia sobre calidad artística en remasterizaciones, preocupaciones sobre adopción de productos.",2026-08-28T22:16:07.147664+00:00,0.5
+5766,0.5,NVDA,alto,"Adquisición de Hugging Face por Nvidia refuerza su posición en ecosistema de AI y modelos, consolidando ventaja competitiva.",2026-08-28T22:17:24.837233+00:00,0.8
+5767,0.7,NVDA,medio,"Análisis sugiere que Nvidia está infravalorada respecto a su potencial de crecimiento en IA, similar a situación histórica de Apple.",2026-08-28T22:16:57.729068+00:00,0.7
+5768,0.7,NVDA,alto,"Pronóstico Nvidia tan elevado que especula relación con SpaceX, demostrando escala sin precedentes del fabricante semiconductor.",2026-08-28T22:15:55.058883+00:00,0.9
+5769,0.8,NVDA,alto,"Experto valida Nvidia como barata en métricas tradicionales, bullish fundamental para el semiconductor de AI líder.",2026-08-28T22:15:55.058894+00:00,0.92
+5770,0.7,NVDA,alto,Financiamiento de $2.4B para compra de chips NVIDIA demuestra demanda fuerte y confianza del mercado en productos de la empresa.,2026-08-28T22:16:18.986904+00:00,0.9
+5771,-0.4,NVDA,medio,Pausa de acuerdos de revenue-sharing de Nvidia con nubes de IA reduce ingresos potenciales y presiona expectativas de crecimiento.,2026-08-28T22:17:24.837214+00:00,0.7
+5772,-0.3,NVDA,medio,Nvidia niega pausar compromisos de nube de IA pero enfrentar restricciones en distribución de GPUs podría afectar su modelo de negocio de asociaciones.,2026-08-28T22:16:57.728845+00:00,0.7
+5773,0.3,NVDA,bajo,Declaraciones neutrales del CEO de Nvidia sobre política tributaria sin impacto directo en operaciones o resultados de la compañía.,2026-08-28T22:17:11.995058+00:00,0.5
+5774,0.85,NVDA,alto,"Nvidia continúa dominando la cadena de valor de IA con beneficios distribuidos a través del ecosistema de semiconductores, reflejando su liderazgo de mercado.",2026-08-28T22:17:11.995113+00:00,0.95
+5775,0.5,AMD,medio,"Lanzamiento de GPU Radeon RX 9070 XT demuestra competencia en mercado de gráficos de alto rendimiento, posicionando AMD en segmento gaming.",2026-08-28T22:17:11.995149+00:00,0.6
+5776,0.4,AMD,bajo,Lanzamiento de laptop con procesador AMD Ryzen AI representa exposición positiva pero tangencial en review de producto de consumidor.,2026-08-28T22:17:11.995127+00:00,0.4
+5777,0.2,AMD,bajo,Promoción de marketing con bundle de juegos para productos AMD que genera visibilidad pero sin impacto material en financieros.,2026-08-28T22:17:24.837122+00:00,0.3
+5778,0.3,AMD,bajo,"AMD añade estándar UCIe a SoCs Versal RF, mejorando interoperabilidad en soluciones adaptativas.",2026-08-28T22:16:57.729129+00:00,0.6
+5779,0.5,AMD,medio,"AMD presenta GPUs competitivas para IA y presiona a socios para acelerar adopción, mejorando su posicionamiento en mercado.",2026-08-28T22:16:31.057523+00:00,0.7
+5780,0.8,AMD,alto,"ROCm 10 de AMD mejora significativamente rendimiento en IA, reforzando competitividad frente a Nvidia en mercado de aceleradores.",2026-08-28T22:16:31.057613+00:00,0.95
+5781,0.0,"AMD,AVGO",medio,"Análisis similar de Broadcom vs AMD en mercado de chips IA, refuerza debate sobre competitividad en sector.",2026-08-28T22:16:07.147708+00:00,0.8
+5782,0.0,,bajo,Noticia sobre aprobación FDA de fármaco oftalmológico sin relación directa con el negocio de semiconductores de AMD.,2026-08-28T22:17:24.837156+00:00,0.1
+5783,0.8,INTC,alto,"Intel reporta mejoras significativas en densidad de defectos superiores a lo esperado, indicando avances tecnológicos críticos en su proceso de fabricación.",2026-08-28T22:17:11.995040+00:00,0.9
+5784,0.0,,bajo,Noticia sobre atletismo universitario sin relación alguna con semiconductores o Intel.,2026-08-28T22:16:31.057609+00:00,0.0
+5785,-0.3,INTC,bajo,Conflicto de intereses de funcionario público respecto a proyecto Intel genera preocupación regulatoria pero impacto limitado en operaciones.,2026-08-28T22:17:11.995164+00:00,0.4
+5786,-0.3,INTC,bajo,Retraso de Intel en Ohio afecta planes de inversión regional; impacto negativo en perspectivas de expansión de capacidad.,2026-08-28T22:16:44.129464+00:00,0.5
+5787,0.4,"QCOM,005930.KS",medio,"Vietnam incentiva inversión en semiconductores y AI de Qualcomm y Samsung, fortaleciendo su posicionamiento en mercados emergentes.",2026-08-28T22:17:24.837170+00:00,0.6
+5788,0.1,"NVDA,QCOM",bajo,Resumen de dividendos corporativos con menciones de Nvidia y Qualcomm tiene relevancia operativa limitada para análisis de sector.,2026-08-28T22:16:57.729135+00:00,0.4
+5789,0.3,QCOM,medio,"Qualcomm busca posicionarse en 6G incluyendo mercado chino, abriendo oportunidades de crecimiento a largo plazo.",2026-08-28T22:17:24.837251+00:00,0.6
+5790,-0.2,005930.KS,bajo,Samsung omite codec Bluetooth en Galaxy; decisión técnica menor sin impacto significativo en negocio de semiconductores.,2026-08-28T22:16:44.129460+00:00,0.4
+5791,0.6,"QCOM,META",medio,Qualcomm potencialmente infravalorada en 17% por expansión de IA en edge computing y CPUs de Meta.,2026-08-28T22:16:57.729165+00:00,0.7
+5792,0.5,AVGO,medio,Anticipación de reportes de Broadcom y Dell genera expectativa sobre demanda de chips semiconductores especializados.,2026-08-28T22:15:55.058811+00:00,0.75
+5793,0.8,AVGO,alto,"BakerAvenue destaca Broadcom como principal beneficiario en chips personalizados AI, validando posición en semiconductores especializados.",2026-08-28T22:15:55.058921+00:00,0.9
+5794,-0.2,AVGO,medio,"Reportaje sobre resultados de Broadcom con incertidumbre sobre desempeño de mercado de valores, genera volatilidad en acciones del sector.",2026-08-28T22:16:07.147654+00:00,0.7
+5795,0.3,AVGO,bajo,Análisis especulativo sobre potencial beneficio de Broadcom sin información fundamentada en eventos corporativos concretos.,2026-08-28T22:17:24.837229+00:00,0.3
+5796,0.1,AVGO,bajo,Anuncio de reportes de resultados de Broadcom que genera expectativa pero sin contenido sustantivo sobre desempeño.,2026-08-28T22:17:24.837202+00:00,0.5
+5797,-0.8,TXN,alto,"Rebaja de rating y debilidad sectorial impactan negativamente a Texas Instruments, fabricante clave de chips analógicos.",2026-08-28T22:16:31.057529+00:00,0.9
+5801,0.5,MU,bajo,Desarrollo inmobiliario cercano a Micron es positivo para expansión futura pero tiene impacto limitado en operaciones actuales.,2026-08-28T22:16:18.986864+00:00,0.3
+5802,0.5,MU,alto,"Rival chino de Micron reporta ventas en auge en su debut público, intensificando competencia en mercado de chips de memoria.",2026-08-28T22:16:57.729024+00:00,0.9
+5803,0.8,MU,alto,Proyección alcista de duplicación del precio de Micron refleja optimismo en demanda de memoria para IA y data centers.,2026-08-28T22:16:18.986896+00:00,0.85
+5804,-0.6,"MU,005930.KS,000660.KS",medio,Huelga potencial en Micron por esquemas de bonificación genera presión de costos laborales mientras competidores surcoreanos ofrecen mejores paquetes.,2026-08-28T22:16:57.729005+00:00,0.8
+5805,-0.6,MU,alto,"Advertencia de CEO sobre fin del superciclo de memoria genera riesgo significativo para Micron, proyectando normalización de demanda futuro.",2026-08-28T22:17:11.995169+00:00,0.8
+5806,0.3,005930.KS,bajo,"Anuncio de monitores gaming de Samsung es mención tangencial en división de electrónica de consumo, no central a semiconductores.",2026-08-28T22:17:11.995142+00:00,0.3
+5807,0.4,005930.KS,medio,"Samsung establece objetivos ambiciosos para memoria HBM especializada y expansión fabril, mejora posición en mercado crítico.",2026-08-28T22:16:07.147717+00:00,0.8
+5808,-0.3,005930.KS,bajo,"Samsung gana disputa de patentes 5G contra ZTE en Reino Unido, favorable pero impacto limitado en chips semiconductores.",2026-08-28T22:16:07.147741+00:00,0.4
+5809,0.6,"MU,SKHY",medio,"Recomendación de compra para SK Hynix destaca atractivo relativo en memorias, comparándolo favorablemente con Micron.",2026-08-28T22:16:31.057590+00:00,0.8
+5810,0.4,"MU,005930.KS,000660.KS",alto,"Ganancia de CXMT china en guerra de chips de memoria amenaza cuota de mercado de Micron, Samsung y SK Hynix.",2026-08-28T22:16:57.729043+00:00,0.9
+5811,0.3,000660.KS,medio,Exploración de alianza entre SK Hynix y Kioxia en NAND que podría fortalecer posición competitiva pero aún en etapa preliminar.,2026-08-28T22:17:24.837194+00:00,0.6
+5812,0.6,000660.KS,alto,"SK Hynix inicia producción de HBM en Indiana, inversión crítica para cadena de suministro de semiconductores de alto rendimiento.",2026-08-28T22:17:24.837190+00:00,0.9
+5813,0.6,000660.KS,alto,"SK hynix invierte $4 mil millones en planta HBM en Indiana, expansión estratégica en memoria especializada crítica para IA.",2026-08-28T22:16:07.147672+00:00,0.9
+5814,-0.6,"TSM,2330.TW",alto,Incendio en fab de 8 pulgadas vinculada a TSMC agrava crisis de capacidad global de semiconductores con impacto de suministro crítico.,2026-08-28T22:17:24.837206+00:00,0.9
+5815,0.4,"TSM,2330.TW",medio,Validación de proceso 2nm de TSMC por lanzamiento de M6 de Apple refuerza liderazgo tecnológico del fabricante taiwanés.,2026-08-28T22:16:57.729158+00:00,0.8
+5816,0.5,"TSM,2330.TW",medio,Expansión de TSMC en Arizona con iniciativas de reclutamiento que fortalecen su presencia en EE.UU. y capacidad de producción.,2026-08-28T22:17:24.837147+00:00,0.7
+5817,0.8,"TSM,2330.TW",alto,Mejora de perspectiva de Moody's para TSMC por liderazgo en IA valida su posición como fabricante crítico de chips de próxima generación.,2026-08-28T22:16:57.729082+00:00,0.9
+5818,0.7,TSM,alto,TSMC avanza A14 para transformación de IA; duplica mensaje de relevancia crítica en cadena de suministro de semiconductores.,2026-08-28T22:16:44.129481+00:00,0.95
+5819,0.0,,bajo,"Noticia sobre reparación de iglesia tras inundación, completamente ajena al sector de semiconductores.",2026-08-28T22:16:07.147721+00:00,0.0
+5820,0.0,,bajo,"Noticia sobre resolución de cisma religioso en iglesia metodista, sin relación alguna con semiconductores.",2026-08-28T22:16:07.147759+00:00,0.0
+5821,0.7,UMC,medio,"UMC sube 3.8% con GF Score alto, indicando fortaleza fundamental en fabricante de semiconductores taiwanés.",2026-08-28T22:15:55.058746+00:00,0.8
+5822,0.0,,bajo,Noticia sobre iglesia metodista unida sin relación con sector semiconductores.,2026-08-28T22:15:55.058916+00:00,0.01
+5823,0.7,ASML,alto,ASML aumenta expectativas con aceleración de ventas en equipos de litografía esenciales para fabricación de chips.,2026-08-28T22:16:07.147729+00:00,0.95
+5824,-0.65,ASML,alto,"ASML cae más que el mercado, afectando proveedor crítico de equipamiento litográfico para toda la industria.",2026-08-28T22:15:55.058829+00:00,0.93
+5825,0.55,ASML,medio,"ASML expande operaciones de ingeniería en Corea, señalando crecimiento operacional en región crítica para abastecimiento de equipos de litografía.",2026-08-28T22:17:11.995138+00:00,0.65
+5826,0.3,ASML,medio,"ASML valuación es razonable en ganancias pero estirada en métricas más amplias, lo que sugiere precaución en inversión.",2026-08-28T22:16:18.987052+00:00,0.7
+5827,0.4,8035.T,bajo,"Tokyo Electron invierte en talento de ingeniería, reflejo de expansión operacional pero con impacto indirecto en negocio de semiconductores.",2026-08-28T22:17:11.995146+00:00,0.45
+5828,0.2,8035.T,bajo,Programa de capacitación de Tokyo Electron para desarrollar talento en manufactura de semiconductores con impacto a mediano plazo.,2026-08-28T22:17:24.837198+00:00,0.4
+5830,0.7,IFX.DE,medio,"Infineon demuestra tecnología SiC de alto rendimiento para sistemas de almacenamiento, ampliando su posición en mercados de energía renovable y eficiencia.",2026-08-28T22:17:11.995087+00:00,0.75
+5832,0.2,BHP,bajo,Fijación de dividendo de BHP es noticia financiera corporativa con relevancia tangencial al sector de semiconductores.,2026-08-28T22:16:57.729048+00:00,0.2
+5833,0.0,BHP,bajo,Anuncio administrativo de dividendos en BHP sin relación directa con semiconductores o cadena de valor del sector.,2026-08-28T22:17:11.995176+00:00,0.1
+5834,0.4,BHP,bajo,BHP como minería tiene exposición tangencial al sector semiconductores a través de materiales pero impacto directo limitado.,2026-08-28T22:16:18.987056+00:00,0.3
+5835,0.2,BHP,bajo,"Historia corporativa de proveedor de materias primas para minería tiene conexión remota con semiconductores, mención tangencial.",2026-08-28T22:17:11.995181+00:00,0.15
+5836,0.0,,bajo,Lanzamiento de vehículo Range Rover no tiene relación directa con industria de semiconductores.,2026-08-28T22:16:57.729161+00:00,0.1
+5839,0.3,3436.T,bajo,Reclasificación corporativa de Sumco Formosa con impacto organizacional positivo pero limitado en la operación de negocios de semiconductores.,2026-08-28T22:17:24.836795+00:00,0.4
+5840,0.6,MSFT,medio,"Microsoft reafirma su posición como ganador en IA, impulsando demanda de infraestructura y chips semiconductores.",2026-08-28T22:16:31.057538+00:00,0.5
+5841,0.4,MSFT,bajo,Actualización de software Windows es mantenimiento rutinario con impacto mínimo en demanda de semiconductores.,2026-08-28T22:16:18.986920+00:00,0.2
+5842,0.1,MSFT,bajo,"Microsoft gestiona comunicaciones sobre centros de datos, con impacto limitado en perspectiva de inversores sobre semiconductores.",2026-08-28T22:16:31.057586+00:00,0.3
+5843,-0.4,MSFT,bajo,"Vulnerabilidad de seguridad en Microsoft Teams afecta percepción de plataforma, impacto reputacional limitado en negocio de semiconductores.",2026-08-28T22:16:07.147713+00:00,0.2
+5844,0.2,"MSFT,GOOGL",bajo,"Carta sobre demanda de energía para IA es tangencial a fabricantes de semiconductores, afectando principalmente a usuarios finales de chips.",2026-08-28T22:17:11.995131+00:00,0.3
+5845,-0.1,,bajo,Noticia sobre estructura salarial de Microsoft; impacto operacional tangencial sin relación con semiconductores.,2026-08-28T22:16:44.129448+00:00,0.15
+5846,-0.5,,bajo,Noticia criminal no relacionada con operaciones de Microsoft; impacto reputacional mínimo en el negocio de semiconductores.,2026-08-28T22:16:44.129416+00:00,0.05
+5847,0.4,"GOOGL,MSFT",medio,Competencia en AI pricing entre Google y Microsoft con repercusiones indirectas en demanda de semiconductores de alto rendimiento.,2026-08-28T22:17:24.837247+00:00,0.5
+5848,0.6,GOOGL,bajo,"Inversión histórica de Alphabet en SpaceX es tangencial al sector semiconductores, sin impacto operacional directo.",2026-08-28T22:16:18.986912+00:00,0.2
+5849,-0.3,GOOGL,medio,"Dudas de Wall Street sobre Google sin relación específica con su cadena de semiconductores, impacto indirecto.",2026-08-28T22:17:24.837211+00:00,0.3
+5850,0.5,GOOGL,bajo,Alphabet aumenta CapEx para AGI; impacto indirecto en demanda de semiconductores pero no específico del sector.,2026-08-28T22:16:44.129472+00:00,0.3
+5851,0.0,"NVDA,GOOGL",bajo,Comparación de rentabilidad entre dos gigantes tecnológicos sin implicaciones directas sobre operaciones de semiconductores.,2026-08-28T22:16:31.057303+00:00,0.3
+5852,0.7,GOOGL,medio,IA fortalece el negocio de búsqueda de Alphabet aumentando su demanda de chips de procesamiento de datos avanzados.,2026-08-28T22:16:18.987042+00:00,0.6
+5853,0.7,GOOGL,medio,Reconocimiento de fortaleza de Alphabet en IA refuerza su posición como cliente demandante de semiconductores de alto rendimiento.,2026-08-28T22:16:18.986688+00:00,0.6
+5854,0.5,"GOOGL,MSFT",medio,Fortaleza en cloud de Alphabet frente a competidores impulsará demanda de infraestructura semiconductora.,2026-08-28T22:16:31.057598+00:00,0.5
+5855,0.4,GOOGL,bajo,"Alphabet presentado como oportunidad de crecimiento asequible, relevancia tangencial al sector de semiconductores como consumidor de chips.",2026-08-28T22:16:57.729143+00:00,0.4
+5857,-0.2,META,bajo,Litigio legal sobre responsabilidad civil sin relación directa con operaciones de semiconductores.,2026-08-28T22:16:31.057534+00:00,0.1
+5858,0.5,,medio,Análisis de transformación de IA y 5G en industria semiconductora sin tickers específicos pero relevancia estratégica alta.,2026-08-28T22:16:57.729139+00:00,0.8
+5859,0.0,,bajo,Artículo educativo sobre ETFs de semiconductores sin noticias específicas que afecten acciones individuales.,2026-08-28T22:16:31.057582+00:00,0.2
+5860,0.2,,bajo,Comparación entre minería de oro y semiconductores; indica menor rendimiento relativo del sector de chips recientemente.,2026-08-28T22:16:44.129378+00:00,0.15
+5861,0.65,"XSD,SOXX",medio,"ETF de semiconductores supera índices amplios, reflejando fortaleza del sector impulsado por demanda de IA y tecnologías avanzadas.",2026-08-28T22:17:11.995101+00:00,0.7
