@@ -86,8 +86,8 @@ COMANDOS_PROHIBIDOS = [
     (r"\bgit\s+push\b",
      "Claude no pushea. Nicolas pushea a mano al cierre de cada sesion, "
      "despues de revisar el diff. Esa cadencia se acordo a raiz de la perdida "
-     "del SSD, que se llevo 4 commits nunca pusheados. En el PC la rama es "
-     "migracion-wsl, jamas main."),
+     "del SSD, que se llevo 4 commits nunca pusheados. La rama de trabajo es "
+     "main."),
 
     (r"\bgit\s+pull\b",
      "git pull altera el arbol de trabajo, que es el codigo que los timers "
