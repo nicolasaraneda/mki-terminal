@@ -146,3 +146,70 @@ acá solo el rastro de qué se hizo y cuándo.
   idéntico entre escala vieja/nueva/cruzada — ninguna conclusión cambia**,
   igual que ya se había confirmado para los 12 del WS5. Despachado
   `escriba-decisiones` para la errata en DECISIONES.md.
+- 18:00 UTC — Segundo dictamen de `guardian-constitucion`: **OBSERVADO**,
+  un solo señalamiento — el acta §42 decía "Commit hecho" cuando
+  `scripts/restaurar_backup.py`/`tests/test_restaurar_backup.py` todavía
+  eran `??` en git. El resto (R0,R1,R3,R6,R8,R9, las tres correcciones
+  bloqueantes de la ronda anterior, portabilidad bash-3.2) verificado en
+  verde de forma independiente por el propio guardián, no de segunda mano.
+- 18:05 UTC — Commiteado el Frente 5 (`0dce853`: `scripts/restaurar_backup.py`,
+  `tests/test_restaurar_backup.py`, `docs/RESTAURAR.md`), con lo cual la
+  frase del acta §42 pasó a ser cierta. Commiteado el resto de la corrida
+  (`d1d0092`: `GEMELO/MICRO/`, `GEMELO/RELEVO.md`, `docs/REPLICA.md`,
+  `GEMELO/resultados/{bitacora,dos_ventanas,expedientes}.md`, `micro/` con
+  `micro/bin/` en `.gitignore`, y las actas §39-43 + la corrección de §38
+  en `DECISIONES.md`). Ambos commits corrieron la suite completa vía el
+  hook de pre-commit (316 passed las dos veces). **No se pusheó nada** —
+  el push queda para Nicolás, ver el cierre más abajo.
+- 18:15 UTC — `ESTADO.md` regenerado (skill `cierre-sesion`): último sello
+  2026-08-28/253 verificaciones, los dos pre-registros nuevos de GEMELO
+  6.0.0, el hallazgo de la concentración en 15-23-jul, §34.9 resuelto, y
+  la lista de decisiones que esperan a Nicolás actualizada con los cinco
+  frentes de esta noche. 50 líneas exactas.
+
+## Cierre — handoff para Nicolás
+
+**Hecho y commiteado (2 commits, sin pushear):** el importador de CSV
+(Frente 5, único frente que se ejecutaba de verdad) con 17 tests y su
+runbook; el pre-registro de microtrading/latencia con arnés en C medido de
+verdad (WSL2 tiene un piso de ~75µs, la lectura de captura en vivo muere
+por la red, la lectura de pipeline RTL académico sobrevive); el protocolo
+de relevo de MODELO_VERSION (revisado y corregido tras un RECHAZO
+adversario); el diseño de réplica permanente; el análisis de potencia de
+la ventana sellada (con el hallazgo no pedido de que toda la ventaja vive
+en 6 fechas de julio); los expedientes 6B/6C; y la corrección ejecutada
+del §34.9 en los 12 pares de WS2b/WS3. Dos tandas de `guardian-constitucion`
+(RECHAZADO → corregido → OBSERVADO → corregido), dos de
+`estadistico-adversario` (RECHAZADO cada vez en su primera versión,
+corregidas ambas). Todo verificado en modo lectura contra `senales.db`
+donde hizo falta; ninguna base real se escribió.
+
+**A medias, y por qué:** el protocolo de relevo y el análisis de potencia
+llevan solo UNA corrección adversaria aplicada, no una segunda ronda de
+verificación completa — presupuesto de la corrida, no negligencia; ambos
+quedan sólidos pero sin el segundo par de ojos que sí tuvo el importador.
+El expediente del "efecto estampida" de `Persistent=true` (6B) se abrió de
+cero: no hay ninguna discusión previa en el proyecto, así que es una
+pregunta nueva, no una respuesta.
+
+**Espera decisión de Nicolás, en el orden que más importa primero:** (1)
+qué hacer con el hallazgo de que la ventaja sellada vive en 6 fechas de
+julio — cambia cómo leer el track record hoy mismo; (2) el segundo
+movimiento del switch (`MKI_MODO=sombra` sigue puesto, ya sabido de antes,
+no de esta noche); (3) los umbrales propuestos de `RELEVO.md`; (4) placa
+FPGA y alcance de `MICRO/`, si sigue esa pista; (5) si se activa una
+réplica permanente y con qué máquina; (6) los expedientes 6B/6C (campo de
+visibilidad, auditoría de idempotencia de los timers, alcance del pin de
+pandas) — todos de bajo riesgo para investigar, ninguno urgente.
+
+**Comandos que le tocan a Nicolás**, en orden:
+
+```
+git log --oneline -5              # revisar los dos commits de esta noche
+git diff e815249..HEAD --stat     # el diff completo de la corrida
+git push origin main              # SOLO si el diff se ve bien
+```
+
+No se pusheó nada. No se tocó `motor.py`, `senales.py`, `snapshot.py`,
+`universo.py`, `.env`, ningún timer, ni `MKI_MODO`. `.env` sigue en 644
+(el harness no me dejó cambiarlo) — `chmod 600 .env` a mano cuando puedas.
