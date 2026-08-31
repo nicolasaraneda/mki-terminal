@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Edit(**/motor.py)",
+      "Edit(**/*.db)",
+      "Edit(/data/backups/**)",
+      "Edit(/data/snapshots/**)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/hooks/**)",
+      "Edit(**/.env)",
+      "Read(**/.env)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git filter-branch *)"
+    ],
+    "ask": [
+      "Edit(/systemd/**)",
+      "Edit(/launchd/**)",
+      "Bash(systemctl *)",
+      "Bash(launchctl *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guardia-reglas.py\"",
+            "timeout": 10,
+            "statusMessage": "guardia de reglas MKI"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/contexto-mki.sh\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

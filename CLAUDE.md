@@ -106,3 +106,16 @@ python -m backtest.motorbt --desde 2026-06-01 --hasta 2026-07-18
 ### Design system
 
 Neon fintech (see Etapa 4.5 sections of DECISIONES.md): bg `#0B0D12`, surface `#141826`, border `#232A3D`; CYAN/MAGENTA/VIOLETA are data colors, green/red semantics untouchable; Space Grotesk + Inter, tabular numerals; every chart through `template_grafico()` (never bare `st.plotly_chart`); `badge()`, `sparkline_svg()`, `_tarjeta()` (glow max 2/view), `tarjeta_senal()`; monochrome cyan heatmaps for correlations, divergent red/green only for direction. Density (4.6): card padding 16-18px, `.mini-label` block headers on Hoy, long captions → tooltips (`title=`/`help=`).
+
+## Agentes, skills y reglas del proyecto
+
+Al abrir sesión o retomar: agente `orientador`.
+Antes de abrir un frente nuevo o elegir entre dos cosas: `director-programa`.
+Antes de cerrar cualquier tanda: `guardian-constitucion`.
+Antes de aceptar una feature o una cifra: `auditor-lookahead` y `estadistico-adversario`.
+Ninguna cifra se cita de memoria: skill `cifras-canonicas`, fuente de verdad el README.
+Toda estadística de evaluación pasa por `estadistica-evaluacion`.
+El segundo movimiento del switch es de Nicolás: skill `switch-titular`.
+Las reglas por área viven en `.claude/rules/` y se cargan por ruta.
+Las reglas duras están aplicadas por hook en `.claude/settings.json`.
+El estado vivo está en `ESTADO.md`, se regenera al cierre.

@@ -31,4 +31,5 @@ GEMELO/cache/
 
 # --- Sistema y herramientas ---
 .DS_Store
-.claude/
+.claude/settings.local.json
+.claude.respaldo-*
