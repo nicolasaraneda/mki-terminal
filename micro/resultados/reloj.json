@@ -1,0 +1,16 @@
+{
+  "benchmark": "reloj",
+  "unidad": "ns",
+  "resolucion_nominal_ns": 1,
+  "warmup_descartado_config": 2000,
+  "costo_lectura_n_total": 202000,
+  "costo_lectura_n_descartado": 2000,
+  "costo_lectura_n_efectivo": 200000,
+  "costo_lectura_min": 19,
+  "costo_lectura_p50": 20,
+  "costo_lectura_p99": 30,
+  "costo_lectura_p999": 30,
+  "costo_lectura_max": 20340,
+  "costo_lectura_media": 20.75,
+  "notas": "costo_lectura mide el delta entre dos llamadas consecutivas a clock_gettime(CLOCK_MONOTONIC_RAW); es el piso de medición de todo el resto del arnés, no una latencia de aplicación"
+}

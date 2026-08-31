@@ -1,0 +1,16 @@
+{
+  "benchmark": "syscall",
+  "unidad": "ns",
+  "syscall_usada": "SYS_getpid",
+  "warmup_descartado_config": 5000,
+  "overhead_n_total": 505000,
+  "overhead_n_descartado": 5000,
+  "overhead_n_efectivo": 500000,
+  "overhead_min": 270,
+  "overhead_p50": 290,
+  "overhead_p99": 300,
+  "overhead_p999": 430,
+  "overhead_max": 57459,
+  "overhead_media": 293.54,
+  "notas": "incluye el costo de leer el reloj dos veces (ver reloj.json, costo_lectura_p50); no se resta porque restar percentiles no es matematicamente valido, se reporta el crudo y se compara a ojo con el piso del reloj"
+}

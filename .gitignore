@@ -29,6 +29,13 @@ dist/
 # --- Caché de investigación de GEMELO (megas de CSV, regenerable) ---
 GEMELO/cache/
 
+# --- Binarios compilados del arnés de latencia (micro/) — nunca al repo,
+# se reconstruyen con `make`; un binario en git es irreversible en la
+# historia. Los JSON de micro/resultados/ SÍ se versionan a propósito (son
+# la evidencia medida, chicos, texto plano — mismo criterio que
+# backtest/resultados/). ---
+micro/bin/
+
 # --- Sistema y herramientas ---
 .DS_Store
 .claude/settings.local.json

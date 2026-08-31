@@ -1,0 +1,22 @@
+{
+  "benchmark": "mensaje",
+  "unidad_latencia": "ns_por_mensaje_promedio_de_lote",
+  "n_mensajes": 1000000,
+  "bytes_por_mensaje": 28,
+  "tam_lote": 200,
+  "pasada_completa_ns": 2047268,
+  "pasada_completa_msgs_por_seg": 488455835,
+  "pasada_completa_mb_por_seg": 13676.8,
+  "parseo_n_total": 5000,
+  "parseo_n_descartado": 50,
+  "parseo_n_efectivo": 4950,
+  "parseo_min": 1,
+  "parseo_p50": 1,
+  "parseo_p99": 3,
+  "parseo_p999": 3,
+  "parseo_max": 270,
+  "parseo_media": 1.19,
+  "checksum_pasada_completa": 5001976178,
+  "checksum_lotes": 500349,
+  "notas": "formato inventado, no FIX/ITCH real; el parseo es campo a campo con memcpy, nunca casteo de puntero a struct, para no incurrir en acceso desalineado indefinido sobre un buffer empaquetado"
+}

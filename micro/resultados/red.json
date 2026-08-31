@@ -1,0 +1,19 @@
+{
+  "benchmark": "red",
+  "unidad": "ns",
+  "endpoint": "1.1.1.1:443 (Cloudflare, IP literal, sin DNS)",
+  "intentos": 50,
+  "exitos": 50,
+  "fallos": 0,
+  "sin_salida_de_red": false,
+  "connect_n_total": 50,
+  "connect_n_descartado": 0,
+  "connect_n_efectivo": 50,
+  "connect_min": 6869456,
+  "connect_p50": 8785205,
+  "connect_p99": 36763100,
+  "connect_p999": 36763100,
+  "connect_max": 40282086,
+  "connect_media": 12337344.82,
+  "notas": "mide WAN + pila TCP del kernel, no el mercado; sirve de piso de referencia frente a la latencia local medida en los demas benchmarks"
+}

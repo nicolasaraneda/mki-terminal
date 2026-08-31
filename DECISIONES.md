@@ -3630,3 +3630,323 @@ segundo movimiento, y es de Nicolás.
 No se tocó `motor.py`, `senales.py` ni `snapshot.py`. **No se cambió
 `PLATAFORMA_VERSION`**: 5.0.3 quedó congelada al sellarla la primera fila
 el 26-ago (§12). No se fusionó a `main`. No se pusheó.
+
+---
+
+## 38. ERRATA — el IC del ΔMAE del WS2b y del WS3 también estaba en otra escala, y tampoco cambia ninguna decisión
+
+**Fecha:** 31-ago-2026. Esta entrada ejecuta la pregunta abierta que el
+§34.9 dejó pendiente y que el §34.12 (punto 1) volvió a listar sin decidir:
+¿se corrigen los IC del ΔMAE de los reportes del WS2b y del WS3? El §34.9 ya
+había encontrado y corregido el mismo defecto para el WS5 (`cl.comparar`
+acompaña un `delta_mae` en pp con un intervalo salido de
+`inf.bootstrap_bloques`, que es el IC del **Sharpe**, no el de la media) y
+dejó escrito, explícitamente, que los reportes del WS2b y del WS3 no se
+tocaban por ser criterio humano. Esta noche se ejecutó ese criterio.
+
+### 38.1 Qué se corrió
+
+Se recomputaron los 12 pares originales del hallazgo: los 6 del WS2b vía
+`GEMELO/experimento.py` y los 6 del WS3 vía `GEMELO/ventana_larga.py`, ambos
+con `usar_cache=True` y sin tocar ninguna base de datos. Se reemplazó
+`inf.bootstrap_bloques` por `inf.bootstrap_media` (la función que el §34.9
+ya construyó para el WS5, que comparte semilla y bloques con la anterior) y,
+como control cruzado con una implementación independiente, se corrió además
+`evaluacion.block_bootstrap` —bootstrap de bloques no circular, código
+separado— sobre el mismo arreglo de diferencias de MAE. Las tres corridas
+usaron la misma semilla (`cl.SEMILLA_BOOTSTRAP`), el mismo bloque
+(`cl.BLOQUE_BOOTSTRAP`) y el mismo alpha (`cl.ALPHA_BOOTSTRAP`) de la
+maquinaria del proyecto.
+
+**El n no reproduce el de los reportes del 26-ago, y es lo esperado, no un
+error — pero la razón no es solo "pasó tiempo".** El n bajo `excluir_cero`
+pasó de 223 a 248 filas entre el 26-ago y hoy, y esa diferencia NO es
+enteramente crecimiento orgánico: la §36.7 ya registró que la composición
+canónica del modo sombra, por sí sola, movió el n vivo de 240 a 248 al
+sustituir la región `>= 26-ago` por la serie del PC. Los `delta_mae` de esta
+recomputación difieren de los publicados en `control_lineal.json`/
+`ventana_larga.json` por una mezcla de crecimiento real y de esa
+composición, no por el cambio de método. Para aislar el efecto del método
+—que es lo único que importa acá— la comparación correcta, y la que se
+hizo, es escala vieja (Sharpe) vs. escala nueva (`bootstrap_media`) vs.
+control cruzado (`evaluacion.py`), **las tres sobre el mismo arreglo de
+esta corrida de hoy**, nunca contra los números viejos directamente — así
+que ninguna de las dos fuentes de diferencia en `n` contamina el hallazgo
+de esta entrada.
+
+### 38.2 Resultado: WS2b (`GEMELO/experimento.py`, n_sellado=248, n_panel=15.019)
+
+| Par | n | delta_mae | IC viejo (Sharpe) | IC nuevo (bootstrap_media) | IC cruzado (evaluacion.py) | excluye 0 (viejo/nuevo/cruzado) |
+|---|---|---|---|---|---|---|
+| C2 vs C1 | 240 | 0.1418 | [-0.0228, 0.4095] | [-0.0131, 0.3116] | [-0.0161, 0.3252] | NO/NO/NO |
+| C3 vs C1 | 240 | 0.2446 | [0.0721, 0.4373] | [0.0579, 0.4306] | [0.0525, 0.4447] | SÍ/SÍ/SÍ |
+| C3 vs C2 | 240 | 0.1028 | [0.0486, 0.2854] | [0.0257, 0.1794] | [0.024, 0.1753] | SÍ/SÍ/SÍ |
+| C1 vs CAMPEÓN | 240 | -0.1257 | [-0.3454, 0.0129] | [-0.2715, 0.0094] | [-0.2653, 0.0256] | NO/NO/NO |
+| C2 vs CAMPEÓN | 240 | 0.0161 | [-0.2086, 0.2306] | [-0.2149, 0.2822] | [-0.2069, 0.2877] | NO/NO/NO |
+| C3 vs CAMPEÓN | 240 | 0.1188 | [-0.1104, 0.3032] | [-0.0952, 0.358] | [-0.0934, 0.3664] | NO/NO/NO |
+
+### 38.3 Resultado: WS3 (`GEMELO/ventana_larga.py`)
+
+| Par | n | delta_mae | IC viejo (Sharpe) | IC nuevo (bootstrap_media) | IC cruzado (evaluacion.py) | excluye 0 (viejo/nuevo/cruzado) |
+|---|---|---|---|---|---|---|
+| C2 vs C1 | 12.622 | 0.0243 | [0.0298, 0.094] | [0.0119, 0.0384] | [0.0113, 0.0382] | SÍ/SÍ/SÍ |
+| C3 vs C1 | 10.873 | 0.0713 | [0.1139, 0.1595] | [0.0586, 0.0854] | [0.0577, 0.0848] | SÍ/SÍ/SÍ |
+| C3 vs C2 | 10.873 | 0.0393 | [0.0811, 0.1156] | [0.0321, 0.0465] | [0.032, 0.0469] | SÍ/SÍ/SÍ |
+| C1 vs CAMPEÓN | 14.697 | -0.008 | [-0.0449, 0.014] | [-0.0233, 0.0082] | [-0.0246, 0.0091] | NO/NO/NO |
+| C2 vs CAMPEÓN | 12.622 | 0.0152 | [-0.0098, 0.0534] | [-0.006, 0.0352] | [-0.0041, 0.0357] | NO/NO/NO |
+| C3 vs CAMPEÓN | 10.873 | 0.0596 | [0.0684, 0.1277] | [0.0389, 0.0813] | [0.0393, 0.0816] | SÍ/SÍ/SÍ |
+
+### 38.4 El hallazgo: la escala no movió ninguna decisión, otra vez
+
+**En los 12 pares, sin excepción, la decisión binaria `ic_excluye_cero` es
+idéntica entre la escala vieja (Sharpe), la escala corregida
+(`bootstrap_media`) y el control cruzado independiente (`evaluacion.py`).**
+Ninguna conclusión del WS2b ni del WS3 cambia: sigue habiendo estructura por
+ticker (C3 gana a C1 y a C2 en ambos worksheets) y las 14 features extra no
+muestran mejora detectable frente al control de información (C2 vs C1 no
+excluye cero en ninguna escala, en ninguno de los dos worksheets).
+
+Esto es exactamente lo que el razonamiento del §34.9 predecía y que ahora
+queda medido en estos 12 pares en vez de solo argumentado: como el signo de
+cada réplica del bootstrap no depende de si se divide por la desviación
+(Sharpe) o no (media), el evento «el cuantil α/2 cruza cero» depende solo de
+la proporción de réplicas sobre cero, y esa proporción es la misma en las
+tres escalas. Lo que estaba mal era el número impreso al lado del
+`delta_mae`, no el veredicto que ese número sostenía.
+
+### 38.5 Qué NO se hizo
+
+Los reportes publicados `GEMELO/resultados/control_lineal.md`/`.json` y
+`GEMELO/resultados/ventana_larga.md`/`.json` **no se corrigieron ni se
+sobrescribieron** — siguen mostrando el IC en escala Sharpe, exactamente
+como el §34.9 ya decidió para su propio caso. Cambiarlos ahora, con datos
+del 31-ago sobre un experimento fechado el 26-ago, sería mezclar dos
+correcciones distintas (la de escala y la de n) en un solo número sin
+procedencia. El detalle completo de esta recomputación —código, semillas,
+los 12 pares con sus tres intervalos— vive en
+`GEMELO/resultados/expedientes.md` (frente 6A).
+
+**Qué queda abierto.** Si algún día se decide corregir los JSON/MD
+publicados, corresponde hacerlo con el n del propio informe (26-ago), no con
+el de hoy, para no introducir el mismo defecto que el §34.10 ya documentó
+—contrastar una cifra fechada contra un denominador que se movió— por la
+puerta de al lado.
+
+**Cómo se revierte.** No aplica: no se modificó ningún archivo de resultados
+ni ninguna base de datos. Esta entrada es un registro de una medición, no un
+cambio de estado.
+
+---
+
+## 39. Pre-registro de la pista de microtrading/latencia (`GEMELO/MICRO/`)
+
+**Fecha:** 31-ago-2026. Corrida nocturna autónoma, Frente 1. Cuatro
+documentos nuevos, ninguno toca código de producción: `GEMELO/MICRO/DISEÑO.md`
+(pre-registro, formato de `GEMELO/DISEÑO.md`: 9 secciones, hipótesis
+falsable, V1-V5/R1-R4 congelados antes de medir nada del retador), `GEMELO/MICRO/WSL2.md`
+(evidencia medida de la limitación de la plataforma), `GEMELO/MICRO/piso_de_latencia.md`
+(el veredicto) y `GEMELO/MICRO/fpga.md` (qué cabe en cada placa).
+
+**Por qué existe:** el proyecto final de Arquitectura de Computadores de
+Nicolás (pipeline de decisión de trading intradía en RTL, validado por
+backtest, Nandland Go Board iCE40HX1K evaluando upgrade a Arty A7-100T)
+comparte pregunta con una extensión natural del hallazgo central de GEMELO
+—el efecto se disipa con la distancia temporal (+19.1pp Tokio a 1.75h,
++2.5pp Fráncfort a 8.75h)— hacia la escala de minutos/segundos. Se decidió
+escribir el pre-registro ANTES de cualquier línea de RTL, mismo principio
+que `GEMELO/DISEÑO.md`.
+
+**El arnés de medición (`micro/`), en C puro (`-O2 -Wall -Wextra -Werror`,
+sin dependencias fuera de libc y POSIX):** 6 binarios (`bench_reloj`,
+`bench_syscall`, `bench_jitter`, `bench_memoria`, `bench_mensaje`,
+`bench_red`), percentiles p50/p99/p99.9/máximo siempre, nunca medias.
+`bench_red.c` abre una conexión TCP a `1.1.1.1:443` (Cloudflare, IP literal
+sin DNS) — **es una salida de red nueva, distinta de
+`alertas.enviar_mensaje()`** (la única que `CLAUDE.md` documenta para el
+resto del sistema). Se declara acá explícitamente: es un benchmark de
+referencia de red (round trip de handshake TCP), no toca ninguna ruta de
+producción, no está enganchado a ningún timer, y se degrada con gracia
+(`sin_salida_de_red: true` en el JSON) si no hay red disponible. Los
+binarios compilados (`micro/bin/`) se agregaron a `.gitignore` — nunca
+entran al repo, se reconstruyen con `make`. Los JSON de `micro/resultados/`
+SÍ se versionan a propósito: son la evidencia medida, texto plano, mismo
+criterio que `backtest/resultados/`.
+
+**El hallazgo de 1C, medido:** el exceso de `nanosleep()` sobre lo pedido es
+un piso prácticamente constante de ~72-85 µs, indiferente a si se pide
+dormir 10µs o 10.000µs — reproducido en 5 corridas independientes con
+desviación menor a 1µs. Es la firma de una granularidad de
+planificador/temporizador de la capa de virtualización (WSL2), no ruido de
+aplicación.
+
+**El veredicto de 1D:** la lectura "captura en vivo de una ventaja de
+microtrading" muere por 3-4 órdenes de magnitud en la capa de red —
+`bench_red` midió un round trip de `connect()` a un endpoint público de
+p50=8.79ms/p99=36.76ms, frente a los cientos de nanosegundos que exige
+competir en HFT colocado. Es un negativo publicado con la misma firmeza que
+un positivo. La lectura "pipeline RTL de arquitectura de computadores,
+validado por backtest, sin pretensión de ventaja económica capturable"
+sobrevive intacta y no depende de este piso.
+
+**Lo que 1E deja explícitamente para Nicolás:** qué placa comprar (Go Board
+vs. Arty A7-100T) y cuánto pipeline construir sobre el hardware actual antes
+de justificar el gasto — `fpga.md` da la evidencia (iCE40HX1K ~1.280 LUTs
+sin multiplicador dedicado; Artix-7 ~63.400 LUTs + 240 DSP48E1) sin elegir.
+
+No se tocó `motor.py`, `senales.py`, `snapshot.py`, `universo.py`, ni ningún
+código de producción. No se compró ni se asumió hardware. No se escribió
+RTL.
+
+---
+
+## 40. Protocolo de relevo de `MODELO_VERSION` (`GEMELO/RELEVO.md`)
+
+**Fecha:** 31-ago-2026. Corrida nocturna, Frente 2. Documento nuevo,
+congelado ANTES de evaluar ningún resultado de relevo real (no hay ningún
+retador corriendo hoy). Terreno sin precedente: ningún documento anterior
+especificaba qué pasa si un retador le gana al campeón 4.6.0 — lo más
+cercano era `GEMELO/DISEÑO.md` §6.3, que cubre solo el caso negativo.
+
+**Qué fija:** un margen de victoria (REL-V1 a REL-V5) más estricto que la
+vara que el propio campeón no salta hoy (+6.5pp, McNemar p=0.1849, no
+significativo); un n mínimo doble (150 filas Y 60 días de emisión
+distintos, por el clustering intra-fecha medido: DEFF 2.5-3.6, el signo del
+campeón es unánime dentro de una fecha 34/34 veces); herencia explícita de
+`N_intentos` del DSR (25 al escribir esto, leído del código, nunca
+congelado en el documento); un criterio nuevo REL-V5 que hereda R2 (recorte
+de sub-período: sin el bloque 15-23-jul, el propio campeón cae a -1.0pp,
+p=0.92); y la declaración explícita de que ninguna fila 4.6.0 se toca — las
+dos series conviven sin mezclarse, mismo patrón que `senales.py` ya aplica.
+
+**Revisión adversaria (`estadistico-adversario`, misma noche):** primera
+versión RECHAZADA por dos afirmaciones falsas sobre aislamiento estructural
+(GEMELO SÍ tiene un camino de lectura hacia las filas selladas vía
+`backtest.linea_base`, exigido por sus propios tests — el aislamiento real
+es de dirección de escritura, no de inaccesibilidad de lectura), un
+`N_intentos` citado obsoleto (13 en vez de 25, sesgando el DSR hacia
+arriba), y un par de criterios (REL-V1/REL-V4) no conjuntamente alcanzables
+sin intervalo. Las doce correcciones se aplicaron todas, en el propio
+documento, antes de cerrar esta tanda — no se re-despachó una segunda
+revisión adversaria completa por presupuesto de la corrida; el detalle de
+cada corrección queda en `GEMELO/resultados/bitacora_nocturna.md`.
+
+No se tocó `motor.py`, `senales.py`, `version.py`.
+
+---
+
+## 41. Réplica de verdad, documento de diseño (`docs/REPLICA.md`)
+
+**Fecha:** 31-ago-2026. Corrida nocturna, Frente 4. Documento de diseño
+puro — nada implementado. Responde qué significa que dos máquinas sellen la
+misma fecha y difieran, si el modo sombra se convirtiera en mecanismo
+permanente en vez de instrumento de transición con fecha de corte.
+
+**Propuesta central (marcada como propuesta, no decisión):** designar
+siempre una titular de sellado (hoy, este PC); la réplica nunca emite su
+fila como oficial pase lo que pase en la comparación; toda discrepancia se
+registra en una tabla nueva propuesta (`divergencias_replica`) como dato de
+auditoría, nunca para decidir retroactivamente cuál fila "era correcta".
+
+**Qué de `comparar_sombra.py` se hereda tal cual:** los tres niveles de
+tolerancia, los cuatro veredictos, el acceso de solo lectura (`git fetch` +
+`git show`, nunca `git pull`; `senales.db` en `mode=ro`), la defensa
+estructural contra comparar una base consigo misma. **Qué cambiaría:**
+`FECHA_CORTE` como constante fija deja de tener sentido (existía para UNA
+transición puntual); el overlap de fechas pasa de ser una anomalía a
+resolver una vez a ser el estado normal de todos los días.
+
+**Corrección tras revisión de `guardian-constitucion`:** una versión previa
+de este documento afirmaba que "el push de la titular ya es automático, vía
+los timers systemd" — es falso (`mki_backup.py` línea 10: "Jamás push"; los
+6 timers tampoco pushean) y se corrigió antes de cerrar esta tanda. El push
+sigue siendo manual, cadencia acordada tras la pérdida del SSD; el párrafo
+sobre `PENDIENTE_PUBLICACION` se reescribió para no asumir un automatismo
+que no existe.
+
+Todo lo que requiere firma de Nicolás queda marcado explícitamente en la
+§5 del documento (si se activa una réplica en absoluto, con qué máquina,
+la regla de "quién gana", el retiro de `FECHA_CORTE`, la política de
+retención). No se tocó `modo.py`, ningún timer, ni `.env`.
+
+---
+
+## 42. El importador de CSV — el camino de vuelta (`scripts/restaurar_backup.py`)
+
+**Fecha:** 31-ago-2026. Corrida nocturna, Frente 5. **Este es el único
+frente de la noche que se ejecutó, no solo se diseñó.** `data/backups/*.csv`
+se commitea desde julio y hasta ahora nunca había existido un importador
+que lo usara — con una sola máquina sellando, era un respaldo no probado
+sosteniendo todo.
+
+**Decisiones de diseño tomadas, declaradas acá porque no tienen acta
+propia en otro lado:**
+
+- **El esquema de las 8 tablas está DUPLICADO a propósito en
+  `restaurar_backup.py`, no importado desde `senales.py`/`noticias.py`.**
+  Razón: `senales.py.get_connection()` usa un `DB_PATH` de módulo
+  hardcodeado a la base real — importarlo abriría una conexión de
+  escritura a `senales.db`/`noticias.db` real, exactamente lo que la regla
+  "nunca se escribe en las bases reales" prohíbe. Un importador de
+  emergencia tampoco debería depender de que el resto del proyecto importe
+  limpio (`.env`, clientes de Anthropic, etc.) para poder restaurar.
+- **`TEXTO_DEFECTO_VACIO`** (`titulares.tickers`, `divergencias.explicacion`,
+  `analisis.tickers_afectados` — las tres `TEXT NOT NULL DEFAULT ''`): un
+  campo vacío del CSV ahí es la cadena vacía real, nunca `NULL`. Encontrado
+  como bug real en la primera corrida (`IntegrityError: NOT NULL constraint
+  failed: titulares.tickers`), no como diseño anticipado.
+- **Comparación por hash de CONTENIDO** (`hash_tabla()`: ordena por clave
+  primaria, serializa cada fila, sha256), no hash del archivo `.db` — el
+  formato de página de SQLite no es determinístico entre bases construidas
+  de formas distintas (freelist, orden físico de inserción), así que
+  hashear el archivo compararía la implementación de SQLite, no los datos.
+
+**El hallazgo del round trip, más valioso que el importador mismo:**
+comparando el backup del 30-ago contra la base viva de hoy (`--verificar`,
+solo lectura), `snapshots` y `verificacion_apertura` mostraron filas
+presentes en uno y ausentes en el otro que en un primer momento parecían
+señal de pérdida de datos sellados. **Investigado por `guardian-constitucion`
+al cerrar esta tanda: NO es una violación de la Constitución 5.0** — la
+fila `fecha=2026-08-29` es la fila espuria de sábado que la §36.1 ya
+descarta, y las 7 filas del 27-ago las reemplazó la composición canónica
+del modo sombra (§36.7, región `>=26-ago` = PC). El importador reproduce
+fielmente lo que el CSV tenía al momento del backup; la base viva cambió
+después por una cirugía de datos ya documentada. Cerrado en
+`docs/RESTAURAR.md`, que además documenta el artefacto conocido de pandas
+(entero con NULL exportado como float, ej. "120.0") y la ambigüedad
+NULL/cadena-vacía como límites de fidelidad del CSV, no del importador.
+
+**Regla dura verificada:** el importador abre exactamente dos conexiones de
+escritura, ambas a bases NUEVAS (`senales_restaurado.db`/
+`noticias_restaurado.db`) bajo un directorio destino que no puede
+preexistir (`FileExistsError` si ya hay una restauración ahí); las tres
+lecturas contra bases reales son siempre `mode=ro`. `tests/test_restaurar_backup.py`
+(17 tests) en la suite normal. Commit hecho.
+
+---
+
+## 43. Frente 6: recompute del §34.9/38 (ver §38), y expedientes 6B/6C
+
+**Fecha:** 31-ago-2026. Los expedientes de las preguntas que llevan meses
+abiertas —abstención de sellos tardíos, `ts_emision` y el campo de
+visibilidad que no existe, el efecto estampida de `Persistent=true` en los
+6 timers systemd, y el alcance del pin de pandas ahora que el Mac quedó
+fuera— se escribieron en `GEMELO/resultados/expedientes.md`, en formato de
+expediente (pregunta, opciones reales, evidencia medida, qué se rompe con
+cada opción, recomendación marcada como tal). Ninguna decisión se tomó en
+esos expedientes; cada uno cierra donde empieza la firma de Nicolás.
+
+**Hallazgo nuevo, no buscado:** el efecto estampida de `Persistent=true` NO
+tiene ninguna discusión previa en el proyecto — se buscó en `DECISIONES.md`
+y en los 6 `systemd/*.timer` y no hay nada. El expediente lo abre de cero,
+sin fingir un antecedente que no existe, y recomienda una auditoría de
+solo lectura de idempotencia de los 6 jobs antes de proponer cualquier
+cambio a los timers.
+
+**Evidencia nueva sobre el pin de pandas:** corriendo la suite completa
+esta noche con pandas 3.0.3 (la versión pineada, no una hipotética 4),
+`pytest` emite `Pandas4Warning` en los 3 archivos exactos de la deuda
+declarada (`motor.py:215`, `api/main.py:666-668`, `backtest/baselines.py:141`)
+— confirma en vivo que la deuda es real y ya advertida por la propia
+librería, no una preocupación sobre una versión futura no probada.
+
+No se tocó `motor.py`, `senales.py`, `snapshot.py`, ni ningún timer.
