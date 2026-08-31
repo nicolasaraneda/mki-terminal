@@ -382,3 +382,60 @@ buscando que diga algo, eso se anota acá como la trampa que es.
     tabla de ocho celdas. Es convergencia, no deriva. Aun así **paro acá**:
     lo que queda no es un defecto que se pueda corregir sin tomar una
     decisión que no me corresponde.
+- 23:40 UTC — **Dictamen del `guardian-constitucion`: OBSERVADO, ningún
+  rechazo.** Verificó en verde lo que importa: los once módulos de la ruta
+  de sellado **idénticos a HEAD** uno por uno, el anti-look-ahead del motor
+  corrido a mano, cero escrituras a filas selladas, `DECISIONES.md` como
+  **append puro** (623 inserciones, 0 borrados), todas las lecturas en
+  `mode=ro`, ningún push, los cinco frentes con acta, README y `.claude/`
+  intactos, y **0,70 MB de 143 MB** entrando al repo desde `micro/rtl/`.
+  Confirmó por su cuenta el hallazgo del McNemar (0,1847) y lo llamó "R9
+  bien ejecutado" por NO haberlo aplicado.
+  - Tres observaciones, las tres atendidas: (1) había visto **dos fallos
+    intermitentes** en `test_backtest` y `test_api` — corrí la suite
+    completa **tres veces seguidas en verde** y los dos tests señalados
+    **5/5**, con el sello de las 18:15 ya terminado y ningún job vivo: la
+    correlación era con la concurrencia del job, no contaminación entre
+    tests; (2) faltaba **declarar la asimetría del toolchain FPGA** —
+    escrita en el acta §48, con la decisión de NO igualarla y su condición
+    de retiro; (3) los **8 CSV de `data/backups/`** son del job de las
+    18:15 y no de la tanda — quedaron fuera del commit por pathspec
+    explícito, que es su carril.
+  - Lo que NO se toca: `.env` está en **644** y la regla pide 600. Es
+    operación de Nicolás y va por su carril; queda en `ESTADO.md`.
+- 23:50 UTC — **Commit `09054cb`**, 45 archivos, con el hook corriendo la
+  suite (369 en verde). **Nada pusheado**: `git push origin main` es de
+  Nicolás. `ESTADO.md` regenerado.
+
+---
+
+## Handoff
+
+**Qué quedó hecho.** Cinco frentes cerrados con expediente: el diseño
+secuencial (terminado en su aritmética, tres rechazos adversarios
+corregidos), la síntesis RTL real —que mató la hipótesis de que el campeón
+entra en la Go Board—, el expediente point-in-time con recomendación de
+cero dólares, el ensayo general de la réplica con cero hallazgos, y el
+parche de honestidad preparado. Actas §47-§51, `cola_decisiones.md`
+reordenada, commit `09054cb` sin pushear.
+
+**Qué quedó a medias, y a propósito.** El pre-registro secuencial **no se
+congeló**. No es una tarea pendiente: es que lo que falta ya no es un
+defecto corregible sin tomar una decisión que no me corresponde. El plan
+promete α=0.05 y entrega entre 0.046 y 0.079 según una autocorrelación que
+34 fechas no alcanzan a acotar; la salida limpia es declarar α=0.10 y
+mover la primera mirada a ~100 fechas, y eso cambia el estándar con el que
+el proyecto va a juzgar su propio modelo.
+
+**El siguiente paso concreto.** Nicolás revisa el diff y pushea. Después,
+en este orden por costo de postergar: firmar la activación de la réplica
+(§1 de la cola, la única cuyo costo de espera ya se materializó una vez), y
+decidir α y MDE del secuencial (§2) **antes del 2026-11-19** — llegado ese
+día, o el documento está congelado y la mirada vale, o no lo está y
+cualquier cifra que se mire es una mirada más sin declarar.
+
+**Lo que la corrida enseñó, y excede a este proyecto:** una verificación
+que usa el mismo mecanismo que produjo la cifra no es una verificación.
+Los tres rechazos del secuencial son la misma lección en tres capas —el
+Monte Carlo validándose contra sí mismo, el estimador ciego al eje que no
+remuestrea, y la tabla que citaba su mejor caso como si fuera el promedio.
