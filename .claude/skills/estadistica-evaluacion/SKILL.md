@@ -71,7 +71,7 @@ print(comparar_pareado(acierto_modelo, acierto_base))
 ## Cifras de referencia
 
 **No las cites de memoria.** Están en la skill `cifras-canonicas`, y la fuente
-de verdad es el `README.md` del repo. Al 31-ago-2026 la ventana sellada
+de verdad es el `README.md` del repo. Al 30-ago-2026 la ventana sellada
 canónica (`excluir_cero`) va n=248, modelo 66.1% [60.0, 71.7], base 59.7%
 [53.5, 65.6], ventaja +6.5 pp con McNemar p = 0.1849, MAE 2.98 contra 3.33,
 cobertura 90.3% con ratio 1.84×.

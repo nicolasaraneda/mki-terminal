@@ -27,7 +27,7 @@ se apaga. Con n = 4 bolsas no se ajusta una curva: es un escalón.
 
 ## La ventana sellada, convención canónica `excluir_cero`
 
-Vigente al 31-ago-2026:
+Vigente al 30-ago-2026:
 
 | | n | Modelo | Base | Ventaja | McNemar p |
 |---|---|---|---|---|---|

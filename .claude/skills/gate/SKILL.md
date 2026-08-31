@@ -14,16 +14,25 @@ reporta. Si no se corrió, no está aprobado.
 ```bash
 cd ~/dev/mki-terminal
 source venv/bin/activate
-python -m pytest tests/ -q          # 299 al 31-ago; la cifra vigente esta
+python -m pytest tests/ -q          # 299 al 30-ago; la cifra vigente esta
                                     # en la badge del README. Lo que importa
                                     # es que no baje.
 python tests/test_motor.py          # anti-look-ahead, en las tres fechas
 ```
 
-Reporta la salida tal cual, incluidos los warnings. `Pandas4Warning` en
-`motor.py:215` y en `api/main.py:666-668` es **deuda declarada y esperada**:
-está contenida por el pin `pandas==3.0.3` en las dos máquinas. No la arregles.
-Es bloqueador explícito de cualquier upgrade de pandas, no un pendiente de hoy.
+Reporta la salida tal cual, incluidos los warnings. El `Pandas4Warning` es
+**deuda declarada y esperada** en **cinco líneas de tres archivos**:
+
+- `motor.py:215` — la regresión de betas
+- `api/main.py:666`, `:667`, `:668`
+- `backtest/baselines.py:141` — el harness de las líneas base del backtest
+
+Está contenida por el pin `pandas==3.0.3` en las dos máquinas. **No la
+arregles.** Es bloqueador explícito de cualquier upgrade de pandas, no un
+pendiente de hoy. El acta es `DECISIONES.md` §3 y su ampliación del
+30-ago-2026; esa lista manda, y si aparece un `Pandas4Warning` en una línea
+que no está aquí, **eso sí es hallazgo nuevo**: se ficha en §3, no se
+silencia.
 
 ## Gate de entorno
 

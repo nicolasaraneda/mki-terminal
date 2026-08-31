@@ -1349,6 +1349,163 @@ Queda registrado como deuda y como **bloqueador explícito de cualquier
 upgrade de pandas**: subir pandas sin esa demostración previa es una
 operación prohibida.
 
+### Ampliación 30-ago-2026 — el conteo de "dos lugares" quedó incompleto
+
+`python -m pytest tests/ -q` corrido en el PC este día: **299 passed, 20
+warnings en 43.39 s**. Contando los `Pandas4Warning` uno por uno, no son
+dos lugares sino **cinco líneas en tres archivos**:
+
+- `motor.py:215` — la regresión de betas (12 warnings, vía
+  `tests/test_api.py`). Ya declarado.
+- `api/main.py:666`, `api/main.py:667`, `api/main.py:668` — ya declarados
+  como el bloque "666-668".
+- `backtest/baselines.py:141` — `self.z_divergencia = {t:
+  pd.concat(series, axis=1).mean(axis=1) for t, series in
+  self.z_divergencia.items()}`, vía
+  `tests/test_backtest.py::test_la_corrida_sella_semilla_y_alpha_del_bootstrap`.
+  **No estaba declarado.**
+
+El texto del warning es idéntico en las cinco líneas:
+
+> *Sorting by default when concatenating all DatetimeIndex is deprecated.
+> In the future, pandas will respect the default of `sort=False`. Specify
+> `sort=True` or `sort=False` to silence this message. […]*
+
+Esto no reescribe lo ya dicho: lo de arriba sobre `motor.py:215` y
+`api/main.py:666-668` sigue siendo cierto tal como se escribió. Lo que
+cambia es que la lista era incompleta, y esta es la corrección, fechada
+como corresponde.
+
+**Por qué `backtest/baselines.py:141` no es un cuarto lugar más de la
+misma lista.** Los otros tres viven en la plataforma que ya sella y ya se
+audita a diario. Este vive en el **harness que calcula las líneas base
+B0→B5** del backtest del GEMELO — exactamente los números contra los que
+se juzgan los criterios de victoria V1–V7 y las barras de rechazo R1–R3
+del retador (`GEMELO/DISEÑO.md`). La línea 141 construye `z_divergencia`,
+que alimenta las **features de B3, B4 y B5** (`backtest/baselines.py:369`,
+`:375` y `:387`, las tres líneas `columnas = (...)` que la incluyen,
+directo en B3 y por herencia en B4 y B5) — no las de B0, B1 ni B2
+(`backtest/baselines.py:253`, `:360` y `:266`, las tres definiciones de
+clase: `B0Nulo` y `B2Produccion` no heredan de `_BaselineAjustada` y no
+tienen `columnas` propio, así que la cita consistente para ese trío es la
+clase, no el atributo). Un upgrade de pandas movería una señal que solo
+tres de las seis baselines consumen, y en silencio: el anti-look-ahead
+prueba no-contaminación temporal, no estabilidad numérica entre versiones
+de librería, igual que en el caso de las β.
+
+`GEMELO/ventana_larga.py:45` importa `backtest.baselines` como `bl`, y
+`:108-109` construye el mismo `ContextoRun` y corre `B2Produccion`: la
+corrida de ventana larga del WS3 también ejecuta la línea 141, no solo el
+harness de B3/B4/B5. Sus números no se mueven con un upgrade de pandas
+porque `B2Produccion` no consume `z_divergencia` — se deja escrito porque
+esta ampliación describe un mapa de consecuencias y este consumidor
+faltaba en él.
+
+**La consecuencia real es otra, y es la que queda.** Un cambio de default
+en `concat` movería B3, B4 y B5, y con ellas los **veredictos escalonados
+capa-contra-capa** que sí son la vara del backtest: B3 vs B2, B4 vs B3, B5
+vs B4, diseño congelado en `backtest/DISEÑO.md:163-165` ("cada bloque se
+compara contra el anterior — B1 vs B0, B2 vs B1, B3 vs B2, B4 vs B3, B5 vs
+B4"). Esos sí se moverían en silencio, por la misma razón que las β: el
+anti-look-ahead prueba no-contaminación temporal, no estabilidad numérica
+entre versiones de librería.
+
+**Lo que esta línea NO toca: el DSR de WS2b, y conviene decirlo porque es
+el error de lectura natural.** Un cambio en `z_divergencia` no cambia
+ningún Sharpe ya deflactado y publicado como cifra:
+
+- `GEMELO/control_lineal.py:363-390` (`inferencia_sharpe`) estima
+  `V_intentos` con la varianza de los Sharpe de **la corrida que recibe**
+  — y `GEMELO/experimento.py:97-134` la llama solo con C1, C2, C3 y el
+  campeón de esa misma corrida. Los Sharpe de B0→B5 no entran a ese
+  cálculo.
+- `GEMELO/experimento.py:306-310` lo dice explícito en el propio reporte
+  de WS2b: los Sharpe de las seis baselines "vienen de una corrida legacy
+  con bootstrap no circular y sin embargo (DECISIONES.md §28.5), así que
+  no se mezclan".
+- `DECISIONES.md` §30.5 (líneas 2610-2628) repite lo mismo, y además PSR y
+  DSR de WS2b se reportaron **NO INTERPRETABLE**, no como número, por la
+  regla de `MINIMO_DIAS_SHARPE`.
+
+Lo único que B0→B5 aportan al DSR de WS2b es el **conteo**: las seis
+baselines cuentan como seis de los nueve intentos declarados (§30: *"N = 9
+(3 configuraciones + las 6 baselines B0→B5 ya evaluadas sobre los mismos
+folds), según el §4.2 bis"*; en WS3 el conteo crece a N=13 sin cambiar el
+principio — `GEMELO/DISEÑO.md` §4.2 bis). Un conteo es invariante a
+cualquier cambio numérico de `concat`.
+
+**Lo que sí queda dicho de este archivo, sin legislar sobre él.**
+`motor.py` es intocable por la Constitución 5.0. `backtest/baselines.py`
+no está protegido por esa cláusula — no es señal de producción — pero es
+la capa de medición del retador. Cómo y cuándo se corrige es una decisión
+que no toma esta ampliación (ver más abajo).
+
+Queda ampliado el bloqueador: subir pandas sin demostración previa sigue
+prohibido, y ahora esa demostración tiene que cubrir **motor.py, api/main.py
+y las líneas base del backtest**, no solo las dos primeras.
+
+**El mecanismo del warning, medido.** Medido en esta sesión con el
+`pandas 3.0.3` del venv, sobre `pd.concat(..., axis=1)` de series con
+`DatetimeIndex`:
+
+| caso | resultado |
+|---|---|
+| índices idénticos | sin warning |
+| b subconjunto prefijo de a | sin warning |
+| solape contiguo (a = días 1-5, b = días 3-7) | sin warning |
+| días alternos intercalados (a = pares, b = impares) | `Pandas4Warning` |
+| disjuntos consecutivos (a = días 1-5, b = días 6-10) | sin warning |
+| b entero anterior a a (a = días 6-10, b = días 1-3) | `Pandas4Warning` |
+
+Dos de los seis casos tienen índices monótonos y ya ordenados y disparan
+igual: "monótono y ordenado" no basta para predecir el silencio. El
+mecanismo es el **reordenamiento de la unión**: el warning sale cuando la
+unión de los índices requiere reordenarse, es decir, cuando el orden en
+que llegan los bloques no coincide con el orden final de la unión.
+
+El grep completo (`grep -rn "pd\.concat" --include=*.py .`, fuera de
+`venv`) da **18 sitios en total**. De ellos, cinco ya están declarados
+como deuda (`motor.py:215`, `api/main.py:666-668`,
+`backtest/baselines.py:141`). De los trece restantes:
+
+- **No emiten hoy** (verificado): `backtest/baselines.py:106` y `:152`,
+  `backtest/metricas.py:158`, `backtest/datos.py:153`, `motor.py:185`,
+  `motor.py:298` y `api/main.py:648`. Los tres últimos importan: la lista
+  original de deuda citaba un solo `pd.concat` en `motor.py` y uno en
+  `api/main.py` como si fueran los únicos de cada archivo, y no lo son —
+  `motor.py:185` está tan previamente-no-listado como `motor.py:298`.
+- **Estructuralmente inmunes, no "silenciosos hoy"**:
+  `GEMELO/datos.py:303` y `GEMELO/relevo_asiatico.py:282` son
+  `pd.concat(..., ignore_index=True)` sobre filas, no sobre
+  `DatetimeIndex` — no son candidatos a este warning bajo ningún dato.
+- **No medidos**: los cuatro `pd.concat` de `app.py` (líneas 1198, 1199,
+  1259 y 1371). Ningún test ejecuta `app.py` — `grep -rln "import app"
+  tests/` solo encuentra `tests/test_api.py:18`, que es `from api.main
+  import app` (el objeto FastAPI del contrato, no el módulo `app.py`).
+  Decir que callan hoy sería deducirlo del mecanismo, no observarlo. Y el
+  patrón de `app.py:1198` (`pd.concat([serie_a, serie_b],
+  axis=1).dropna()`) es el mismo de `motor.py:215`, que sí emite.
+
+Para los siete "no emiten hoy": es una **observación sobre los datos que
+reciben en esta corrida, no una garantía estructural** — no está probado
+que se mantengan callados con otro rango de fechas o con datos faltantes
+distintos. No se declaran como deuda porque hoy no hay evidencia de que la
+tengan; si algún día **cualquier línea de `pd.concat` fuera de las cinco
+ya listadas como deuda** — no solo estas siete — empieza a emitir, se
+ficha aparte con su propia línea, no se asume que ya estaba cubierta por
+esta acta.
+
+**Qué NO decide esta ampliación.** La ampliación registra deuda, no crea
+reglas: no fija cuándo ni cómo corregir `backtest/baselines.py:141`. Dos
+hechos quedan dichos porque importan para cualquier regla futura sobre
+este archivo: la única corrida sellada de B0→B5
+(`backtest/resultados/20260726-032635-humo-legacy/resumen.md`) es
+NO-CONCLUYENTE por diseño y ya carga su propia errata de bootstrap no
+comparable, y WS2b no consume `backtest/baselines.py`
+(`GEMELO/experimento.py:13,64` importa `backtest.linea_base`, no
+`backtest.baselines`). Si una regla para este archivo merece existir,
+queda pendiente como decisión de Nicolás en su propia acta.
+
 ## 4. Ramificar por `uname`, no reemplazar
 
 Tres archivos eran `#!/bin/zsh`: `mki`, `scripts/pre-commit` y
