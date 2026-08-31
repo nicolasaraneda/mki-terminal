@@ -236,16 +236,28 @@ def _hallazgo(nivel, ambito, clave, campo, val_titular, val_sombra, delta=None):
 
 
 def comparar_fecha(fecha: str, snaps_titular: pd.DataFrame,
-                   tickers_titular: pd.DataFrame) -> dict:
+                   tickers_titular: pd.DataFrame,
+                   fecha_corte: date | None = FECHA_CORTE) -> dict:
     """Compara UN día. Devuelve el dicho completo: veredicto, motivo,
-    hallazgos (niveles 1 y 2) y diferencias esperadas (nivel 3)."""
+    hallazgos (niveles 1 y 2) y diferencias esperadas (nivel 3).
+
+    `fecha_corte` es aditivo (docs/REPLICA.md §4): por defecto es
+    `FECHA_CORTE`, así que ningún llamador existente (el CLI de este
+    archivo, ni ningún test) cambia de comportamiento. Un llamador nuevo
+    puede pasar `fecha_corte=None` para apoyarse ÚNICAMENTE en la defensa
+    estructural (huella de base copiada, más abajo) — pensado para un uso
+    de réplica permanente donde una constante de fecha fija ya no tiene
+    sentido (no hay "un" corte, hay overlap todos los días). Retirar
+    `FECHA_CORTE` como comportamiento POR DEFECTO del comparador sigue sin
+    implementarse a propósito: docs/REPLICA.md §5 lo marca explícitamente
+    como decisión de Nicolás, no de este cambio."""
     res = {"fecha": fecha, "hallazgos": [], "esperadas": [], "notas": []}
 
-    # --- B.1: la fecha de corte manda sobre todo lo demás ---
-    if date.fromisoformat(fecha) <= FECHA_CORTE:
+    # --- B.1: la fecha de corte manda sobre todo lo demás (si se pide) ---
+    if fecha_corte is not None and date.fromisoformat(fecha) <= fecha_corte:
         res["veredicto"] = VEREDICTO_NO_COMPUTABLE
         res["motivo"] = (
-            f"fecha <= FECHA_CORTE ({FECHA_CORTE.isoformat()}): las bases del PC "
+            f"fecha <= FECHA_CORTE ({fecha_corte.isoformat()}): las bases del PC "
             "son copia de las del Mac hasta ese día inclusive, así que ambas "
             "máquinas tienen el MISMO archivo. La paridad sería trivial y no "
             "constituye evidencia. Comparación rechazada a propósito.")
