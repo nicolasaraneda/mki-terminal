@@ -553,3 +553,100 @@ dos lecturas:
     levantar el rechazo del 31-ago. **El 8,96 de hoy no es el de mañana**,
     y el pre-registro lo cita como parámetro. Va a la cola.
 
+---
+
+# SEGUNDA TANDA — 1-sep-2026, desde las 09:00
+
+## Las firmas que llegaron, y una regla nueva
+
+**Deduplicación: FIRMADA, y la firma es mejor que cualquiera de las tres
+ramas que yo había computado.** Nicolás separa los dos grupos porque
+tienen orígenes distintos, que es exactamente lo que el forense encontró:
+
+- **Grupo del defecto de `snapshot.py` (10 pares, 31-jul y 5-ago):** la
+  fila válida es **la que tiene la sesión objetivo correcta según
+  `available_at`**, no la más reciente. **El criterio es la corrección de
+  la sesión, nunca la frescura.**
+- **Grupo de feriados reales (5 pares, 12-ago y 18-ago):** las dos
+  emisiones están igualmente a tiempo, así que **no es un problema de
+  deduplicación**. Que una predicción apunte a una sesión con la bolsa
+  cerrada es una pregunta de **calendario y de universo**, y va a la cola
+  como ítem propio.
+- **QUEDA PROHIBIDO `keep="last"`** o cualquier regla equivalente por
+  frescura: el forense demostró que **retira selectivamente errores del
+  modelo**, y ésa es la explicación mecánica de por qué esa rama daba
+  p = 0,032.
+- **Decisión tomada conociendo ambos desenlaces**, con p = 0,1847 y
+  p = 0,032 a la vista. Va así en el acta.
+
+**Gatillo de la 5.1: NO se releva.** Se espera al **25-oct-2026**, que es
+la condición (b) y se cumple sola. Su razón, que vale registrar: *relevar
+la (a) después de haber visto que N se cumple y el régimen no sería mover
+un criterio congelado habiendo mirado.* **El holdout sigue intacto.**
+
+## La cuarta regla de la casa, ganada anoche
+
+> **UN NÚMERO RETIRADO QUE SIGUE OFRECIDO EN EL CÓDIGO VUELVE A
+> CIRCULAR.** Toda cifra retractada se retira también de los valores por
+> defecto, las constantes y las firmas de función.
+
+Se ganó con `mirada.py`, que ofrecía `poner 0.07` cuando el 7 pp estaba
+retirado hacía horas, y con el `8.96` cableado en `bifurcaciones.py`
+—sexto artefacto con el mismo patrón—. Las tres anteriores siguen
+vigentes.
+
+## Hitos
+
+- **09:02** — Arranque de la segunda tanda. `HEAD=a49ad76`, árbol limpio,
+  14 commits sin pushear. **Fuera de la ventana de sellado**, así que el
+  cómputo pesado (C2 sobre 14.618 observaciones, re-corrida de la matriz,
+  backtest) entra ahora.
+- **09:03** — **El encargo llega cortado**: se interrumpe en el título del
+  Frente E, "EL CONTEO DE INTENTOS", sin cuerpo. Por contexto el alcance
+  es inequívoco —el código dice `N_INTENTOS_WS5 = 25` con un test que lo
+  fija, la prosa declara ≥43 y el Frente C1 de anoche declaró 82— así que
+  lo trabajo con ese alcance y **lo marco como inferido, no como
+  encargado**. Si Nicolás quería otra cosa ahí, esto se corrige barato.
+- **09:05** — **Frente C despachado a `ingeniero-plataforma`**: preparar
+  el parche de `snapshot.py:140` **sin aplicarlo**. Con las tres piezas
+  que lo hacen accionable en un minuto —el diff exacto, el test que fija
+  el comportamiento correcto y **el test-contraprueba que falla hoy**— y
+  con lo que más importa: **la declaración del corte de método escrita
+  ANTES de aplicarlo**, porque corregir cómo se calcula `sesion_objetivo`
+  cambia el significado de las filas futuras respecto de las selladas, y
+  las selladas no se reescriben nunca.
+- **09:07** — **Frente B despachado**: las dos fugas que quedaron sin
+  arreglar y que bloquean el veredicto del 25-oct. La **B-1** (el corte
+  del sentimiento por publicación en vez de `analizado_en`) con el encargo
+  explícito de **cuantificar cuántas observaciones sobreviven al corte
+  honesto** — si casi ninguna, la consecuencia es que B4 y B5 **no son
+  evaluables** sobre la ventana larga y hay que decirlo. La **B-2** (la
+  guarda tautológica) con la exigencia de una **contraprueba que inyecte
+  una fuga conocida**: una guarda sin contraprueba no es una guarda, es la
+  regla 1 en otro traje.
+- **09:10** — **Frente D despachado**: C2, la condicional sobre la ventana
+  larga, con dos condiciones innegociables. **(a) Toda inferencia respeta
+  el clúster de día** — después de anoche, un análisis de la ventana larga
+  que asuma filas independientes no se acepta. **(b)** Si alguna condición
+  candidata usa sentimiento, **hereda la fuga B-1**: o espera el arreglo,
+  o corta por `analizado_en`, o la declara NO EVALUABLE. Las tres son
+  aceptables; publicarla sin decirlo, no.
+- **09:12** — **Frente E despachado al adversario estadístico.** Es el
+  caso más puro de la cuarta regla: **un número mal que un test
+  protegía** — el test hacía al 25 inmune a la corrección en vez de
+  protegerlo de la corrupción. Con el criterio de Nicolás como norma: *la
+  retractación de la segunda corrida fue sobre su conclusión, no sobre que
+  los análisis se corrieron; por la regla del DSR cuentan igual.*
+- **09:14** — **Frente F despachado**: el silencio de 8 ciclos como
+  requisito escrito, con el test que lo fija **y que falle por la razón
+  correcta** (sellos corridos, no un timeout), más la lección epistémica.
+  Con una advertencia explícita: si no encuentra una forma de detectarla
+  que no grite por todo, **que lo diga y proponga otra** — anoche hubo que
+  reescribir cuatro tests tautológicos por eso.
+- **09:16** — Cinco frentes en paralelo más el orientador. Falta despachar
+  el **A** (aplicar la deduplicación firmada), que espera la respuesta del
+  orientador sobre **dónde vive la capa de medición** y **si `available_at`
+  alcanza** para recomputar cuál sesión objetivo era la correcta. Si no
+  alcanzara, cambiaría cómo se implementa la firma, así que no lo lanzo a
+  ciegas.
+
