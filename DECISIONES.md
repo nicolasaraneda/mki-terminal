@@ -5343,6 +5343,17 @@ adopta; si `demo_top` es la arquitectura de la demo del ramo; y la cuenta AMD
 para Vivado, sin la cual sigue sin haber Fmax en Artix-7, ni temporización, ni
 bitstream.
 
+**`ESTADO.md` no se regeneró en este frente, y es una decisión, no un
+olvido.** Dos frentes escribían el mismo árbol al mismo tiempo, y regenerar un
+resumen curado en esa situación arriesga borrarle al otro lo que acaba de
+escribir — que es exactamente la falta que documenta el acta 57. La
+constitución no exige regenerarlo por frente: exige que **nada viva sólo ahí**,
+y esta acta es autosuficiente. Lo regenera quien cierre la tanda, con todos los
+frentes ya en disco. Se escribe porque **igualar por omisión también es una
+decisión**, y porque el hallazgo central de este mismo frente es que una idea
+sin dueño ni fecha de revisión se convierte en una decisión tomada en
+silencio.
+
 ## 59. La Etapa 5.1 se ejecutó y NO produjo veredicto: R3 disparó
 
 **Fecha:** 1-sep-2026, 01:42 → 02:35 hora de Chile. **Tipo:** decisión de

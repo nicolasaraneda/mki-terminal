@@ -319,4 +319,24 @@ dos lecturas:
     pp que el guardián marcó (§12 de la cola), y **no regeneró `ESTADO.md`
     a propósito**, citando el acta §57 — que es exactamente la falta que
     cometí yo en la corrida anterior. El agente aprendió del acta.
+- **02:52** — Un `guardian-constitucion` que el propio Frente E había
+  pedido devolvió **OBSERVADO** con un solo punto abierto, y lo levanté:
+  el acta §58 ahora **declara por escrito** que no regeneró `ESTADO.md` a
+  propósito, con su razón. El argumento del guardián es el hallazgo del
+  propio frente aplicado a sí mismo: *"igualar por omisión también se
+  escribe"*, y un `ESTADO.md` no regenerado sin dueño ni fecha es un
+  paréntesis sin dueño.
+  - Señaló además que `evaluacion.py` —la **skill compartida** que
+    gobierna toda la estadística del proyecto— estaba modificado **sin
+    declarar por ningún frente**. Verifiqué: **sí está declarado**, en el
+    acta §59 del Frente C1, que es su dueño. El guardián no había leído
+    tan lejos. Lo dejo anotado porque la observación era correcta como
+    procedimiento aunque el hecho no se sostuviera: un archivo de skill
+    compartida modificado en un árbol con dos frentes es exactamente lo
+    que hay que mirar dos veces.
+  - Su verificación independiente encontró **un cuarto conteo distinto de
+    la suite** (403, 408, 409, 411): la inestabilidad por dos frentes
+    escribiendo el mismo árbol no es una excusa, es un hecho reproducido.
+    El único fallo sigue siendo `GEMELO/bifurcaciones.py` abriendo
+    `sqlite3` directo.
 

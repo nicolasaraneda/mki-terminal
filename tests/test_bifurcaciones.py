@@ -83,6 +83,12 @@ def test_dedup_elige_la_fila_correcta_del_par():
 
     assert len(ninguna) == 5
     assert len(primero) == len(ultimo) == 4
+    # El par del sintético apunta al 31-jul, que ES una de las sesiones
+    # del defecto de reloj: `solo_reloj` lo colapsa a la fila FRESCA,
+    # igual que `last`.
+    sr = bf.aplicar(df, _celda(dedup="solo_reloj"))
+    assert len(sr) == 4
+    assert sr[sr["ticker"] == "AAA"]["fecha"].item() == "2026-07-30"
     par_p = primero[primero["ticker"] == "AAA"]
     par_u = ultimo[ultimo["ticker"] == "AAA"]
     assert par_p["fecha"].item() == "2026-07-29"
@@ -332,7 +338,7 @@ def test_la_semilla_del_bootstrap_es_fija_y_declarada():
 # ------------------------------------------------------------
 def test_la_matriz_cubre_el_producto_cartesiano_completo():
     esperadas = int(np.prod([len(v) for v in bf.EJES.values()]))
-    assert esperadas == 576
+    assert esperadas == 768
     # sin tocar la base: se cuenta el producto, no se computa
     combos = 1
     for niveles in bf.EJES.values():
@@ -365,7 +371,7 @@ def test_sin_la_ventana_r2_la_ventaja_se_da_vuelta():
 @solo_con_base
 def test_la_matriz_se_construye_y_ninguna_celda_queda_sin_p():
     mat, ctx = bf.construir_matriz(n_boot=200)
-    assert len(mat) == 576
+    assert len(mat) == 768
     # el contexto del corte `vivo` se sella, porque se mueve con el reloj
     assert ctx["filas_publicado"] == 253
     assert ctx["filas_vivo"] >= ctx["filas_publicado"]
@@ -402,3 +408,22 @@ def test_el_icc_de_anova_reproduce_casos_conocidos():
     todo_dentro = [np.full(8, float(j)) for j in range(30)]
     assert bf.icc_y_deff(todo_dentro)["icc"] > 0.95
     assert bf.icc_y_deff(todo_dentro)["deff"] > 6      # tam_medio 8 → ~8
+
+
+@solo_con_base
+def test_solo_reloj_separa_el_defecto_del_feriado():
+    """El forense del Frente A: 10 pares son un defecto de reloj del
+    sellado y 5 son feriados de mercado reales. `solo_reloj` colapsa los
+    primeros y deja los segundos, así que tiene que quedar ESTRICTAMENTE
+    entre `ninguna` (248) y `last` (233)."""
+    d = bf.cargar_filas(bf.CORTE_PUBLICADO)
+    n = {lv: len(bf.aplicar(d, {**bf.CELDA_ANCLA, "dedup": lv}))
+         for lv in bf.EJES["dedup"]}
+    assert n["last"] < n["solo_reloj"] < n["ninguna"]
+    # colapsa exactamente 10 pares (10 filas menos que sin deduplicar)
+    assert n["ninguna"] - n["solo_reloj"] == 10
+    # y los 5 pares de feriado siguen enteros
+    sr = bf.aplicar(d, {**bf.CELDA_ANCLA, "dedup": "solo_reloj"})
+    quedan = sr[sr.duplicated(["ticker", "sesion_objetivo"], keep=False)]
+    assert set(quedan["sesion_objetivo"]) == {"2026-08-12", "2026-08-18"}
+    assert len(quedan) == 10        # 5 pares intactos
