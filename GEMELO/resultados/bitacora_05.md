@@ -991,4 +991,87 @@ vigentes.
     ya se sabe cuál es: **que los tests llamen a las funciones que generan
     informes** — `construir_matriz` sí, `componer_informe` no, y por ese
     hueco pasó el error.
+- **10:40** — **Frente G cerrado. `espera_firma.md`, quince ítems, y los
+  tres primeros suman 45 minutos.**
+  - **El nombre de la edición de Vivado se movió dos veces y las dos veces
+    nuestros documentos quedaron atrás.** Hasta **2025.2** es *Vivado ML
+    Standard Edition*, gratis y **sin archivo de licencia**; desde
+    **2026.1** son cinco tiers y **BASIC** cubre la serie 7, también
+    gratis. Y **la descarga pesa 230-350 MB, no 95 GB** — los 95,69 GB son
+    sólo el instalador offline con todos los dispositivos.
+  - **Dos hallazgos nuevos, y uno afecta al ramo:** desde 2026.1 Vivado
+    **no arranca sin archivo de licencia ni en BASIC**, y **BASIC excluye
+    los reportes de cierre de temporización**, que es uno de los hitos.
+  - **Y una disputa que NO resolvió, y eso es lo correcto:** hay cobertura
+    de que BASIC quedaría restringido a Windows, empujando Linux a un tier
+    pago, contra otra fuente que dice lo contrario. **La página de
+    licenciamiento de AMD dio timeout en todos los intentos**, así que lo
+    dejó **declarado como contestado en vez de elegir una lectura.**
+  - **Por eso su recomendación es doblemente robusta:** bajar **2025.2 del
+    archivo** (sin licencia, sin tiers, Linux sin discusión) e instalar
+    **del lado Windows**. Las dos se sostienen bajo **cualquiera** de las
+    dos lecturas, y el lado Windows ya tenía dos razones previas
+    independientes.
+  - **Riesgo de calendario nuevo:** si el país dispara la revisión de
+    control de exportación son **1 a 3 días hábiles**. El trámite deja de
+    ser "de hoy".
+  - **Dos cosas verificadas contra el repo, no contra los documentos:**
+    `parametros.vh` congela `N_CASOS 181` y los `.hex` tienen 181 líneas
+    mientras `senales.db` ya da **189** — **la trampa de `referencia.py`
+    está confirmada de primera mano**. Y **el 25 del README no está
+    dormido: la corrida condicional de esta mañana publicó "N acumulado 25
+    → 33" partiendo de la cifra de la portada.** Es la cuarta regla de la
+    casa observada **en vivo, hoy**.
+
+---
+
+## Handoff
+
+**Qué quedó hecho.** Los seis frentes cerrados y commiteados, más el
+cierre. **R3 quedó limpio**: las dos fugas del arnés corregidas, con
+contraprueba que dispara 10/10, y el veredicto del 25-oct desbloqueado.
+La regla de deduplicación firmada **está en el ejecutable**, preservando
+las anclas históricas (21/21 y 7/7). El conteo de intentos pasó de un
+entero mágico a un **registro de 20 tramos con procedencia (N=86)**, y de
+paso se cerró **un vector vivo que daba vuelta V5**. El parche de
+`snapshot.py` está listo con test, contraprueba y **la declaración del
+corte de método escrita antes de aplicarse**. La suite epistémica va en
+**19 tests**.
+
+**Los tres resultados que cambian lo que el proyecto puede afirmar.**
+Primero: **la ventana sellada no alcanza para juzgar nada** — n efectivo
+**67**, y toda su información discriminante es **un 10-6 en 17 días**.
+Segundo: **cruzar α no es tener evidencia** — la regla firmada da
+p=0,0451 pero su IC95 de clúster es **[−7,2, +26,5]**. Tercero, y da
+vuelta tres corridas de sospecha: **la ventaja no está concentrada, está
+más dispersa que el azar**, y **julio no es de otra especie** (157 bloques
+históricos iguales o mejores). Lo que sí queda firme: **el gap existe (69%
+direccional) y no es capturable**.
+
+**Qué quedó a medias, y por qué.** Las **15 filas sin pareja** que la
+firma no previó —nadie sabía que existían— quedan con su cifra computada
+y **sin decidir**: la regla arbitra entre dos filas que compiten y éstas
+están solas. **B4 y B5 no son evaluables** sobre la ventana larga (sólo
+6,94% sobrevive al corte honesto), y eso se lee como "la capa de precios
+con columnas constantes", **jamás** como "las noticias no aportan". Y
+`ventana_larga.{md,json}` quedan **stale** publicando el 91,4% ya
+refutado: el ejecutable está corregido, los artefactos no.
+
+**Dos errores míos, registrados.** Commiteé con `git add` masivo en un
+árbol con seis agentes: barrí trabajo en curso de dos frentes, **uno en
+versión buggeada**. Y commiteé un `NameError` al arreglar el `8.96`
+cableado, usando un ancla inexistente y sin verificar. Cambié a staging
+explícito por archivo.
+
+**Qué espera decisión, en orden.** Todo está en
+`GEMELO/resultados/espera_firma.md`, resoluble en una sentada. Los tres
+primeros suman 45 minutos: **el parche de `snapshot.py`** (5 min, el único
+que sigue haciendo daño hoy), **la cuenta AMD** (20 min, desbloquea todos
+los hitos en silicio) y **las 15 filas + publicar el README** (20 min,
+acoplados: publicar +9,7 pp con una rama declarada de +14,3 pp sin
+resolver es peor que no publicar ninguna).
+
+**Comandos exactos.** El de publicación (`git push origin main`) lo corrés vos,
+como siempre. Para ver lo de hoy: `python -m GEMELO.bifurcaciones`,
+`python -m GEMELO.CONDICIONAL.condicional`, `python -m pytest tests/ -q`.
 
