@@ -18,6 +18,13 @@ que un documento de treinta páginas que no bloquea nada.
 | **Resolvió** | La **regla de deduplicación** (§2a): firmada, aplicada en el ejecutable, ninguna cifra publicada movida. **Su desenlace fue un tercero: p = 0,0451, que cruza α.** |
 | **Abrió** | **Las 15 filas sin pareja** cuya sesión objetivo tampoco calza (§2a-ter). La firma no las previó porque nadie sabía que existían. |
 | **Abrió** | **Los 5 pares de feriado real** como ítem de calendario y universo (§2a-quater), que es donde Nicolás pidió que fueran. |
+| **Resolvió** | **R3 quedó LIMPIO**: las dos fugas del arnés de backtest, corregidas y con contraprueba que dispara 10/10. Es lo que desbloquea el veredicto del 25-oct. |
+| **Resolvió** | El **conteo de intentos**: de un entero mágico protegido por un test a un **registro de 20 tramos con procedencia**. N = 86. |
+| **Cerró** | Un **vector vivo que daba vuelta V5** (§14): `control_lineal.py` reintroducía el default de N que `backtest/inferencia.py` había quitado con acta. |
+| **Cerró** | El **gatillo de la 5.1**: NO se releva, se espera al 25-oct. Holdout intacto. |
+| **Dio vuelta** | La sospecha de tres corridas: **la ventaja NO está concentrada, está más dispersa que el azar** — y julio no es de otra especie (157 bloques históricos iguales o mejores). |
+| **Abrió** | **B4 y B5 no son evaluables** sobre la ventana larga: sólo el 6,94% de las filas sobrevive al corte honesto de sentimiento (§15). |
+| **Abrió** | Tres artefactos que quedaron **stale o trampa**: `ventana_larga.{md,json}` publicando el 91,4% ya refutado, y `referencia.py` con 189 casos contra 181 congelados (§16). |
 
 ## Qué movió la cuarta corrida (31-ago/1-sep)
 
@@ -760,6 +767,80 @@ próxima tanda: todo script de resultados que lea `senales.db` debe anclar
 la lectura con `hasta_sello` — `mde_desde_v6.py` escribió su propio SQL
 sin ancla temporal y el documento dejó de reproducir el día que se
 firmaba. Es un test AST de una tarde.
+
+---
+
+## 14. El registro de intentos merece módulo propio — CERRADO a medias
+
+**Qué se hizo:** el conteo dejó de ser un entero mágico. `N_INTENTOS_ACUMULADO`
+se **calcula** como suma de `REGISTRO_INTENTOS`, 20 tramos con procedencia
+línea a línea. **N = 86.** El test viejo **no protegía al 25 de corromperse:
+lo protegía de corregirse** — es la cuarta regla de la casa en su forma más
+limpia. El test nuevo fija la propiedad y trae tres contrapruebas.
+
+**Y se cerró de paso un vector vivo que sí podía voltear un veredicto:**
+`GEMELO/control_lineal.py` tenía `n_intentos` con default **9**, y
+`experimento.py` lo llamaba sin pasar N — mientras `backtest/inferencia.py`
+había quitado ese mismo default **a propósito, con acta (§26.1) y con test**.
+`SR0(9) = 0,9986` contra `SR0(86) = 1,6266`: **regalaba 0,63 de umbral**, y a
+Sharpe anualizado de 1,2-1,5 **V5 se daba vuelta de PASA a NO PASA**.
+Corregido, con test que fija que la firma no pueda volver a tener default.
+
+**Qué decidir, y es lo que queda:** si el registro se mueve a
+`GEMELO/registro_intentos.py` para que `relevo_asiatico`, `control_lineal`,
+`ventana_larga` y `veredicto_51` importen del mismo sitio. **Costo ~40 min y
+un import nuevo en cuatro archivos.** Hay evidencia a favor: al pasar el N
+explícito apareció un **import circular** que hubo que resolver con import
+diferido — ese ciclo **es** el síntoma de que el registro no tiene casa.
+
+**Y una cifra publicada que no se movió:** `README.md`:253 dice **"Va en
+25"** en la portada. El registro verificado da 86 y la corrida del backtest
+declaró 92. **Regla de los doce bloques: lleva firma.**
+
+---
+
+## 15. B4 y B5 no son evaluables sobre la ventana larga
+
+**Qué pasó:** al corregir la fuga B-1 —el sentimiento se cortaba por fecha de
+publicación y nunca miraba `analizado_en`— **sobreviven 288 de 4.152 filas, el
+6,94%**. El 93,1% de las filas de B4/B5 se emite con las tres features de
+noticias en la constante 0,0.
+
+**La distinción que hay que preservar al citarlo, y no es sutil:** sus cifras
+se leen como **"la capa de precios con columnas constantes"**, jamás como
+**"las noticias no aportan"**. Son afirmaciones distintas y el dato sólo
+sostiene la primera.
+
+**Y el alcance real:** B0, B1, B2 y B3 no tocan sentimiento y **siguen
+evaluables** sobre la ventana completa. Son **dos baselines de seis**, no el
+backtest.
+
+**Qué decidir:** si se acepta evaluar el retador con cuatro baselines sobre la
+ventana larga y las seis sólo sobre el tramo con juicios reales, o si se
+espera a tener sentimiento reconstruido de verdad. **No urge hasta el 25-oct.**
+
+---
+
+## 16. Tres artefactos que quedaron stale o son trampa
+
+Los tres son de la misma familia —una cifra que sobrevive a su propia
+refutación— y ninguno se resolvió porque los tres tocan territorio de otro.
+
+1. **`GEMELO/resultados/ventana_larga.{md,json}` publican el 91,4%** de
+   coincidencia que **ya está refutado**: con la clave correcta
+   (`sesion_objetivo`, no `["fecha","ticker"]`) da **100% sobre 214 filas, 0
+   diferencias**. El **ejecutable ya está corregido con errata**; los
+   artefactos quedan stale hasta que alguien re-corra el módulo. **Costo: una
+   corrida.** Ojo con la lectura correcta, que el frente dejó escrita: esto no
+   prueba que Yahoo no revise la historia, **sólo que no la revisó en el tramo
+   auditable de 2026**.
+2. **`micro/rtl/referencia.py` construye 189 casos** contra los **181
+   congelados** en `vectores/parametros.vh`, porque la base siguió sellando.
+   **Cualquier cosa que lo toque regenera los vectores con 189 y mueve en
+   silencio todas las cifras publicadas como "181 filas".** Merece un guardia
+   propio o un pin explícito del N. **Nadie lo tocó.**
+3. **`CLAUDE.md` sigue afirmando que el Mac es titular** (§11 de esta lista).
+   Sin cambios: su edición es de Nicolás.
 
 ---
 
