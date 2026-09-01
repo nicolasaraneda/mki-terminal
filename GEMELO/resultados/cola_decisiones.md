@@ -9,7 +9,15 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 1-sep-2026, cierre de la cuarta corrida.
+**Actualizada:** 1-sep-2026, segunda tanda de la quinta corrida.
+
+## Qué movió la quinta corrida, segunda tanda (1-sep)
+
+| | |
+|---|---|
+| **Resolvió** | La **regla de deduplicación** (§2a): firmada, aplicada en el ejecutable, ninguna cifra publicada movida. **Su desenlace fue un tercero: p = 0,0451, que cruza α.** |
+| **Abrió** | **Las 15 filas sin pareja** cuya sesión objetivo tampoco calza (§2a-ter). La firma no las previó porque nadie sabía que existían. |
+| **Abrió** | **Los 5 pares de feriado real** como ítem de calendario y universo (§2a-quater), que es donde Nicolás pidió que fueran. |
 
 ## Qué movió la cuarta corrida (31-ago/1-sep)
 
@@ -19,7 +27,7 @@ que un documento de treinta páginas que no bloquea nada.
 | **Resolvió** | **Placa: Arty A7-100T**, y la arquitectura de dos modelos (general en la A7, HFT más adelante en una KR260). Firmado. |
 | **Cerró** | Las **dos afirmaciones refutadas de `RTL.md`**: errata fechada en su sitio (era el viejo §6). |
 | **Cerró** | El **McNemar 0.1849 vs 0.1847**: ninguno está mal, son dos tests. Pero abre otra cosa (§3-bis). |
-| **Abrió** | **La regla de deduplicación** — la más urgente de todas, y la que bloquea el pre-registro (§2a). |
+| **Abrió** | **La regla de deduplicación** — la más urgente de todas, y la que bloquea el pre-registro (§2a). **Firmada y aplicada el 1-sep**; abrió §2a-ter y §2a-quater. |
 | **Abrió** | **La cuenta AMD** para instalar Vivado: bloquea todos los hitos del ramo (§4). |
 | **Sigue** | El **MDE**: propuesto 7 pp y **retirado** por derivarse en la escala equivocada (§2b). |
 
@@ -168,6 +176,145 @@ de convención y hay que declararla como tal.
 provocó los sellos tardíos, la exactitud del calendario de
 `exchange_calendars` contra una fuente externa, y el dropout parcial de
 tickers del 17-ago. Los logs de esas fechas **ya rotaron y no existen**.
+
+### 2a — ESTADO al 1-sep, tarde: FIRMADA, aplicada, y abrió DOS preguntas
+
+**Nicolás firmó**, y su texto es el criterio: *«Los dos grupos se tratan
+por separado… Grupo del defecto de `snapshot.py`: la fila válida es la que
+tiene la sesión objetivo correcta según `available_at`, no la más
+reciente. **El criterio es la corrección de la sesión, nunca la
+frescura.** Grupo de feriados reales: las dos emisiones están igualmente a
+tiempo, así que no es un problema de deduplicación… QUEDA PROHIBIDO
+`keep="last"`.»*
+
+**Aplicada en el ejecutable** (`backtest/linea_base.py`:
+`deduplicar_por_sesion`, activa por defecto en `cargar()`), sin ninguna
+lista de fechas: el criterio se implementa solo y separa los dos grupos
+por construcción. `dedup` **dejó de ser un eje** de
+`GEMELO/bifurcaciones.py` (768 → 192 celdas; **el veredicto de 0 celdas
+con p < 0,05 por clúster NO cambió**).
+
+**El desenlace fue un TERCERO, y hay que saberlo:**
+
+| rama | n | ventaja | b/c | p exacta |
+|---|---|---|---|---|
+| sin deduplicar (publicado) | 248 | +6,5 pp | 72/56 | 0,1847 |
+| **REGLA FIRMADA** | **238** | **+9,7 pp** | **72/49** | **0,0451** |
+| `keep="last"` (prohibida) | 233 | +10,3 pp | 70/46 | 0,0323 |
+
+La firma se tomó **conociendo 0,1847 y 0,0323**. Produjo **0,0451**, que
+**cruza α = 0,05** y no era ninguno de los dos. El criterio sigue siendo
+el correcto; el desenlace se declara. Mecanismo: `b` no se mueve (72), `c`
+baja de 56 a 49 — de las 10 filas retiradas, **7 eran discordantes y las 7
+favorecían a la baseline; ninguna al modelo**. Misma asimetría que motivó
+prohibir `keep="last"`; justificación distinta (no-correspondencia
+demostrable, no frescura). **Las dos cosas van juntas o no van.**
+
+**Ninguna cifra publicada se movió.** El parche está escrito y no
+aplicado: `GEMELO/resultados/parche_dedup.md`, trece bloques con
+archivo:línea.
+
+### 2a-ter. Las 15 filas SIN pareja que tampoco calzan — NUEVA, abierta
+
+**Qué decidir, en una frase:** si además de deduplicar se retiran las
+**15 filas sin pareja** cuya `sesion_objetivo` tampoco corresponde a su
+`available_at`.
+
+**Por qué es una pregunta y no un corolario.** La regla firmada **arbitra
+entre dos filas que compiten** y siempre deja una. Estas 15 están **solas
+y mal**: no hay hermana correcta que conservar, así que retirarlas es
+**descartar sin reemplazo**, una operación distinta de la que se firmó.
+La firma no las previó porque nadie sabía que existían — el forense de
+anoche las buscó con `GROUP BY … HAVING COUNT>1` y por definición no
+podía verlas.
+
+**La evidencia** (recomputando `proxima_sesion_despues_de(exchange,
+available_at)` sobre TODAS las filas, no sólo las duplicadas): **25 filas
+no calzan**, 10 son el lado viejo de los pares ya cubiertos, y 15 no
+tienen pareja:
+
+| filas | fecha de emisión | apuntan a | debían apuntar a | por qué no hay pareja |
+|---|---|---|---|---|
+| 7 | 2026-08-05 | 08-07 | **08-06** | el snapshot del 08-06 tuvo caída total de datos |
+| 8 | 2026-07-05 | 07-06 | **07-03** | sello manual con casi 3 días de atraso |
+
+**El detalle que muestra el sistema funcionando:** en el caso del 5-jul la
+sesión correcta (07-03) **ya había cerrado** al sellar, así que con el
+ancla temporal buena esas 8 filas pasarían a `no_verificable_timing` en
+vez de `verificada`. **No las descartaría un criterio nuevo: las
+descartaría la regla maestra que el proyecto tiene desde la Etapa 4.6.**
+
+**Las dos cifras, para decidir con las dos a la vista** (corte publicado,
+`excluir_cero`):
+
+| | n | ventaja | b/c | p exacta |
+|---|---|---|---|---|
+| regla firmada (aplicada) | 238 | +9,7 pp | 72/49 | 0,0451 |
+| **+ coherencia (no aplicada)** | **223** | **+14,3 pp** | **69/37** | **0,0024** |
+
+Otra vez el retiro es asimétrico: `c` baja de 49 a 37 y `b` sólo de 72 a
+69. Con eso a la vista, y no sin eso.
+
+**Cabo suelto anotado y no investigado:** el snapshot del **2026-08-06
+perdió el 100% de sus predicciones**. Es una anomalía aparte.
+
+**Expediente:** `GEMELO/resultados/parche_snapshot140.md` (Frente C),
+`GEMELO/resultados/parche_dedup.md` §3, y
+`backtest/linea_base.py:filtrar_sesion_coherente`, que computa la rama y
+**no la aplica en ningún camino por defecto**.
+
+**Costo de postergarla un mes:** bajo mientras el parche del README no se
+aplique. Si se aplicara antes de decidir esto, el README publicaría +9,7
+pp sabiendo que hay una rama declarada de +14,3 pp sin resolver — y eso
+es peor que no publicar ninguna de las dos.
+
+### 2a-quater. Los 5 pares de feriado real — ítem de CALENDARIO Y UNIVERSO
+
+**Qué decidir, en una frase:** qué hace el sistema cuando emite una
+predicción cuya sesión objetivo natural cae en un día con **la bolsa
+cerrada**, y por lo tanto dos emisiones consecutivas apuntan legítimamente
+a la misma sesión.
+
+**Por qué NO es un problema de deduplicación, con la firma delante.**
+Nicolás lo escribió: *«las dos emisiones están igualmente a tiempo, así
+que no es un problema de deduplicación. Va a la cola como ítem de
+calendario y universo, y no se resuelve acá.»* La regla firmada lo
+confirma **por construcción y sin saber nada de feriados**: en estos 5
+pares **las dos filas calzan** con
+`proxima_sesion_despues_de(exchange, available_at)`, así que la regla se
+abstiene sola y las deja enteras. Eso es evidencia de que el criterio
+distingue bien, no una laguna.
+
+**La evidencia, los 5 pares:**
+
+| sesión objetivo | pares | tickers | emitidas | causa |
+|---|---|---|---|---|
+| 2026-08-12 | 4 | 3436.T, 4063.T, 6857.T, 8035.T | 10-ago y 11-ago | **XTKS cerrado el 11-ago** |
+| 2026-08-18 | 1 | 005930.KS | 14-ago y 17-ago | **XKRX cerrado el 17-ago** |
+
+Las dos filas de cada par comparten `gap_pct` idéntico —es el mismo
+desenlace de mercado— y **discrepan en `acierto_gap` en los 5 pares, sin
+excepción**: el modelo corrió con datos de días distintos y llegó a signos
+opuestos sobre el mismo evento, las cinco veces. O sea que contarlas dos veces mete el
+mismo desenlace dos veces en el denominador, con dos veredictos
+contrarios que se cancelan.
+
+**Las tres formas de tratarlo, sin recomendación** (es una decisión de
+diseño del sistema, no de medición):
+
+1. **Dejarlas las dos**, como hoy. Es honesto —las dos predicciones
+   existieron— pero pesa un desenlace de mercado el doble que los demás.
+2. **No emitir** cuando la sesión objetivo ya tiene una predicción viva
+   para ese ticker. Toca la ruta de sellado (`snapshot.py`), o sea que es
+   una decisión con corte de método y fecha.
+3. **Promediar o marcar** el par en la capa de medición, sin tocar el
+   sellado. Barato y reversible, pero inventa una fila que nadie emitió.
+
+**Qué se bloquea:** nada operativo. Pero cada feriado de XTKS o XKRX que
+caiga en día hábil vuelve a producir un par, así que el conteo crece
+solo — es el mismo tipo de goteo que §1-bis.
+
+**Cuánto pesa hoy:** 10 filas de 253 (4,0%).
 
 ### 2a-bis. El α declarado — RESUELTO el 31-ago
 

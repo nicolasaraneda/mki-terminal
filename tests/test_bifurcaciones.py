@@ -34,7 +34,7 @@ solo_con_base = pytest.mark.skipif(
 RUTA_MODULO = os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "GEMELO", "bifurcaciones.py")
 
-CELDA_NEUTRA = {"dedup": "ninguna", "empate": "estricta",
+CELDA_NEUTRA = {"empate": "estricta",
                 "ventana_r2": "dentro", "filas_29jul": "dentro",
                 "emision_parcial": "dentro", "corte": "publicado",
                 "objetivo": "gap", "zona_muerta": 0.00}
@@ -73,28 +73,19 @@ def _sintetico() -> pd.DataFrame:
 # ------------------------------------------------------------
 # 1. Mecánica de los ejes
 # ------------------------------------------------------------
-def test_dedup_elige_la_fila_correcta_del_par():
-    """`first` se queda con la que falla, `last` con la que acierta. Es
-    literalmente el defecto que tumbó el pre-registro secuencial."""
-    df = _sintetico()
-    primero = bf.aplicar(df, _celda(dedup="first"))
-    ultimo = bf.aplicar(df, _celda(dedup="last"))
-    ninguna = bf.aplicar(df, _celda(dedup="ninguna"))
-
-    assert len(ninguna) == 5
-    assert len(primero) == len(ultimo) == 4
-    # El par del sintético apunta al 31-jul, que ES una de las sesiones
-    # del defecto de reloj: `solo_reloj` lo colapsa a la fila FRESCA,
-    # igual que `last`.
-    sr = bf.aplicar(df, _celda(dedup="solo_reloj"))
-    assert len(sr) == 4
-    assert sr[sr["ticker"] == "AAA"]["fecha"].item() == "2026-07-30"
-    par_p = primero[primero["ticker"] == "AAA"]
-    par_u = ultimo[ultimo["ticker"] == "AAA"]
-    assert par_p["fecha"].item() == "2026-07-29"
-    assert par_p["acierto"].item() == 0
-    assert par_u["fecha"].item() == "2026-07-30"
-    assert par_u["acierto"].item() == 1
+def test_la_deduplicacion_ya_no_es_un_eje_de_la_matriz():
+    """Se firmó el 1-sep-2026 y dejó de ser una elección viva. `aplicar`
+    ya no la conoce: la regla entra por la carga. Si alguien la
+    reintrodujera como eje, estaría volviendo a ofrecer desde el código
+    las tres ramas que la firma retiró — incluida `keep="last"`, que está
+    prohibida."""
+    assert "dedup" not in bf.EJES
+    fuente = open(RUTA_MODULO, encoding="utf-8").read()
+    assert "drop_duplicates" not in fuente, (
+        "la matriz volvió a deduplicar por su cuenta; la regla firmada "
+        "vive en backtest.linea_base.deduplicar_por_sesion")
+    # y el sintético pasa entero: `aplicar` no colapsa el par
+    assert len(bf.aplicar(_sintetico(), CELDA_NEUTRA)) == 5
 
 
 def test_las_tres_convenciones_de_empate_difieren_solo_en_la_fila_cero():
@@ -129,14 +120,18 @@ def test_filtros_de_fecha_y_zona_muerta_quitan_exactamente_lo_suyo():
     assert len(zm) == 4 and "DDD" not in set(zm["ticker"])
 
 
-def test_quitar_el_29jul_hace_que_first_y_last_coincidan():
-    """El enredo entre ejes es real y el orden declarado lo produce: si el
-    29-jul sale, el par se queda con una sola fila."""
+def test_la_regla_firmada_no_depende_de_que_otras_filas_sigan_dentro():
+    """La propiedad que hace legítimo aplicarla en la carga y no como paso
+    4: la fila que se conserva depende sólo de su propio `available_at`,
+    no de qué otras filas sobrevivan a los filtros. Con `first`/`last`
+    esto NO valía —si el 29-jul salía, el par se resolvía solo y las dos
+    ramas coincidían—, y ese enredo había que mostrarlo. Ahora no existe."""
     df = _sintetico()
-    a = bf.aplicar(df, _celda(filas_29jul="fuera", dedup="first"))
-    b = bf.aplicar(df, _celda(filas_29jul="fuera", dedup="last"))
-    assert len(a) == len(b) == 4
-    assert (a["acierto"].to_numpy() == b["acierto"].to_numpy()).all()
+    completo = bf.aplicar(df, CELDA_NEUTRA)
+    sin29 = bf.aplicar(df, _celda(filas_29jul="fuera"))
+    assert len(completo) == 5 and len(sin29) == 4
+    quedan = set(zip(sin29["fecha"], sin29["ticker"]))
+    assert quedan <= set(zip(completo["fecha"], completo["ticker"]))
 
 
 def test_el_objetivo_cambia_las_columnas_puntuadas():
@@ -269,7 +264,9 @@ def test_el_ancla_reproduce_la_ventana_sellada_del_readme():
     publicado · gap · 0.00` ES la cifra publicada. El corte va pinchado en
     `CORTE_PUBLICADO`, así que esto NO depende del reloj: si falla, o
     cambió la base o cambió el código."""
-    bases = {"publicado": bf.cargar_filas(bf.CORTE_PUBLICADO)}
+    bases = {"publicado": bf.cargar_filas(bf.CORTE_PUBLICADO),
+             "publicado_sin_dedup": bf.cargar_filas(bf.CORTE_PUBLICADO,
+                                                    dedup=False)}
     fallos = bf._verificar_ancla(bases)
     assert not fallos, "el ancla dejó de reproducir:\n  " + "\n  ".join(fallos)
 
@@ -278,8 +275,8 @@ def test_el_ancla_reproduce_la_ventana_sellada_del_readme():
 def test_el_corte_publicado_no_se_mueve_con_el_track_record():
     """Lo que hace confiable al ancla: `publicado` está pinchado y `vivo`
     crece. Si algún día son iguales, el eje `corte` dejó de medir algo."""
-    pub = bf.cargar_filas(bf.CORTE_PUBLICADO)
-    vivo = bf.cargar_filas(None)
+    pub = bf.cargar_filas(bf.CORTE_PUBLICADO, dedup=False)
+    vivo = bf.cargar_filas(None, dedup=False)
     assert len(pub) == 253, f"la ventana publicada cambió de tamaño: {len(pub)}"
     assert len(vivo) >= len(pub)
 
@@ -288,10 +285,17 @@ def test_el_corte_publicado_no_se_mueve_con_el_track_record():
 def test_las_filas_duplicadas_siguen_ahi_y_son_las_documentadas():
     """§A3.1.a: quince pares que apuntan a la misma sesión objetivo. Si
     esto cambia, el eje 1 hay que volver a documentarlo."""
-    df = bf.cargar_filas(bf.CORTE_PUBLICADO)
+    df = bf.cargar_filas(bf.CORTE_PUBLICADO, dedup=False)
     dup = df[df.duplicated(["ticker", "sesion_objetivo"], keep=False)]
     assert len(dup) == 30
     assert dup.groupby(["ticker", "sesion_objetivo"]).ngroups == 15
+    # y tras la regla firmada quedan los 5 pares de feriado real, que NO
+    # son un problema de deduplicación
+    reglado = bf.cargar_filas(bf.CORTE_PUBLICADO)
+    quedan = reglado[reglado.duplicated(["ticker", "sesion_objetivo"],
+                                        keep=False)]
+    assert len(quedan) == 10
+    assert set(quedan["sesion_objetivo"]) == {"2026-08-12", "2026-08-18"}
 
 
 # ------------------------------------------------------------
@@ -337,8 +341,11 @@ def test_la_semilla_del_bootstrap_es_fija_y_declarada():
 # 5. La matriz, entera
 # ------------------------------------------------------------
 def test_la_matriz_cubre_el_producto_cartesiano_completo():
+    """192 y no 768: al firmarse la regla de deduplicación, `dedup` dejó
+    de ser un eje de cuatro niveles. La caída del eje es la razón, y se
+    fija acá para que el número no cambie en silencio."""
     esperadas = int(np.prod([len(v) for v in bf.EJES.values()]))
-    assert esperadas == 768
+    assert esperadas == 192
     # sin tocar la base: se cuenta el producto, no se computa
     combos = 1
     for niveles in bf.EJES.values():
@@ -371,9 +378,10 @@ def test_sin_la_ventana_r2_la_ventaja_se_da_vuelta():
 @solo_con_base
 def test_la_matriz_se_construye_y_ninguna_celda_queda_sin_p():
     mat, ctx = bf.construir_matriz(n_boot=200)
-    assert len(mat) == 768
+    assert len(mat) == 192
     # el contexto del corte `vivo` se sella, porque se mueve con el reloj
-    assert ctx["filas_publicado"] == 253
+    # 243 y no 253: la regla firmada retira 10 filas en la carga
+    assert ctx["filas_publicado"] == 243
     assert ctx["filas_vivo"] >= ctx["filas_publicado"]
     assert ctx["ultima_fecha_vivo"]
     assert mat["n"].min() >= 2, "hay celdas con n < 2 entrando al conteo"
@@ -428,22 +436,48 @@ def test_el_icc_ajusta_el_tamano_con_clusteres_desiguales():
 
 
 @solo_con_base
-def test_solo_reloj_separa_el_defecto_del_feriado():
-    """El forense del Frente A: 10 pares son un defecto de reloj del
-    sellado y 5 son feriados de mercado reales. `solo_reloj` colapsa los
-    primeros y deja los segundos, así que tiene que quedar ESTRICTAMENTE
-    entre `ninguna` (248) y `last` (233)."""
-    d = bf.cargar_filas(bf.CORTE_PUBLICADO)
-    n = {lv: len(bf.aplicar(d, {**bf.CELDA_ANCLA, "dedup": lv}))
-         for lv in bf.EJES["dedup"]}
-    assert n["last"] < n["solo_reloj"] < n["ninguna"]
-    # colapsa exactamente 10 pares (10 filas menos que sin deduplicar)
-    assert n["ninguna"] - n["solo_reloj"] == 10
-    # y los 5 pares de feriado siguen enteros
-    sr = bf.aplicar(d, {**bf.CELDA_ANCLA, "dedup": "solo_reloj"})
-    quedan = sr[sr.duplicated(["ticker", "sesion_objetivo"], keep=False)]
+def test_la_regla_firmada_separa_el_defecto_del_feriado():
+    """El forense del Frente A: 10 pares nacen de un defecto de reloj del
+    sellado y 5 son feriados de mercado reales. La regla firmada —conservar
+    la fila cuya sesión objetivo calza con su `available_at`— los separa
+    SOLA, sin ninguna lista de fechas: retira 10 filas y deja los 5 pares
+    de feriado enteros."""
+    crudo = bf.cargar_filas(bf.CORTE_PUBLICADO, dedup=False)
+    reglado = bf.cargar_filas(bf.CORTE_PUBLICADO)
+    assert len(crudo) - len(reglado) == 10
+    quedan = reglado[reglado.duplicated(["ticker", "sesion_objetivo"],
+                                        keep=False)]
     assert set(quedan["sesion_objetivo"]) == {"2026-08-12", "2026-08-18"}
     assert len(quedan) == 10        # 5 pares intactos
+
+
+@solo_con_base
+def test_las_dos_anclas_reproducen_y_la_firma_mueve_el_veredicto():
+    """EL HALLAZGO del frente, fijado. La firma se tomó conociendo dos
+    desenlaces (0.1847 sin deduplicar, 0.0323 con la rama prohibida) y
+    produjo un TERCERO: 0.0451, que cruza α. Las dos anclas tienen que
+    reproducir; la distancia entre ellas ES el efecto de la regla."""
+    bases = {"publicado": bf.cargar_filas(bf.CORTE_PUBLICADO),
+             "publicado_sin_dedup": bf.cargar_filas(bf.CORTE_PUBLICADO,
+                                                    dedup=False)}
+    assert not bf._verificar_ancla(bases)
+    assert bf.ANCLA["p_exacto"] > bf.ALFA
+    assert bf.ANCLA_REGLA["p_exacto"] < bf.ALFA
+    # el mecanismo: b no se mueve, c baja
+    assert bf.ANCLA_REGLA["b"] == bf.ANCLA["b"]
+    assert bf.ANCLA_REGLA["c"] < bf.ANCLA["c"]
+
+
+@solo_con_base
+def test_la_ruta_independiente_tambien_reproduce_la_regla():
+    """§52: el ancla de la regla necesita su propia vara. La ruta
+    independiente reimplementa la deduplicación con su SQL, su bucle y su
+    aritmética, sin `deduplicar_por_sesion` ni `drop_duplicates`."""
+    r = bf.ancla_por_ruta_independiente()["ancla_regla"]
+    for campo in ("n", "b", "c"):
+        assert r[campo] == bf.ANCLA_REGLA[campo], campo
+    for campo in ("modelo_pct", "base_pct", "ventaja_pp"):
+        assert abs(r[campo] - bf.ANCLA_REGLA[campo]) <= 0.05, campo
 
 
 def test_el_ic_del_mde_remuestrea_dias_y_declara_las_degeneradas():

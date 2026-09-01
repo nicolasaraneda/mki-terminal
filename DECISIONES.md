@@ -5473,3 +5473,170 @@ regla de la casa —*una verificación que usa el mismo mecanismo que produjo
 la cifra no es una verificación*— se estaba aplicando a las cifras y no al
 arnés que las produce. Desde ahora, toda guarda nueva se acompaña de la
 contraprueba que la hace fallar.
+
+---
+
+## 60. La regla de deduplicación firmada por Nicolás, y el tercer desenlace que produjo
+
+**Fecha:** 1-sep-2026. Fuente: instrucción directa de Nicolás (texto citado
+íntegro más abajo), implementada en `backtest/linea_base.py` y
+`GEMELO/bifurcaciones.py`, con hallazgos derivados en
+`GEMELO/resultados/cola_decisiones.md` §2a-ter y
+`GEMELO/resultados/parche_dedup.md`. Tests en
+`tests/test_linea_base.py` y `tests/test_bifurcaciones.py`. Suite completa:
+**468 passed, 2 xfailed.**
+
+**Qué se decidió.** Nicolás firmó, textual:
+
+> Los dos grupos se tratan por separado, porque tienen orígenes distintos y
+> una sola regla sería arbitraria por construcción.
+> **Grupo del defecto de `snapshot.py`** (10 pares, sesiones objetivo 31-jul
+> y 5-ago): la fila válida es **la que tiene la sesión objetivo correcta
+> según `available_at`**, no la más reciente. **El criterio es la
+> corrección de la sesión, nunca la frescura.**
+> **Grupo de feriados reales** (5 pares, 12-ago y 18-ago): las dos
+> emisiones están igualmente a tiempo, así que **no es un problema de
+> deduplicación**. Va a la cola como ítem de calendario y universo, y no se
+> resuelve acá.
+> **QUEDA PROHIBIDO `keep="last"`** o cualquier regla equivalente por
+> frescura: el forense demostró que retira selectivamente errores del
+> modelo.
+
+**Por qué.** La firma se dio conociendo **ambos desenlaces a la vista**,
+con las dos ramas ya computadas: **p = 0,1847 sin deduplicar** y
+**p = 0,0323 con `keep="last"`**. Eso es lo que vuelve la firma una decisión
+informada y no una elección a ciegas, y por eso queda escrito así, textual.
+
+**Y el desenlace real de la regla firmada resultó ser un tercero:
+p = 0,0451.** No era ninguno de los dos números que estaban a la vista al
+momento de firmar. **Cruza α = 0,05.** Esto no invalida la firma, el
+criterio (corrección de la sesión contra `available_at`, nunca frescura)
+sigue siendo el correcto, pero una decisión informada por dos números que
+al aplicarse produce un tercero necesita esta nota: dentro de un año, sin
+ella, parece que el resultado se conocía de antemano.
+
+| rama | n | ventaja | b/c | p (χ²cc) | p (exacta) |
+|---|---|---|---|---|---|
+| sin deduplicar (lo publicado) | 248 | +6,45 pp | 72/56 | 0,1849 | 0,1847 |
+| **REGLA FIRMADA** | **238** | **+9,66 pp** | **72/49** | **0,0455** | **0,0451** |
+| `keep="last"` (PROHIBIDA) | 233 | +10,30 pp | 70/46 | 0,0327 | 0,0323 |
+| `keep="first"` | 233 | +6,87 pp | 72/56 | 0,1849 | 0,1847 |
+
+Corte publicado `verificado_en <= 2026-08-28`, convención `excluir_cero`
+(§25.8/§2.8) sin cambio.
+
+**El mecanismo, con la misma claridad que el número.** `b` queda en **72,
+sin cambio**; `c` baja de **56 a 49**. Las 10 filas retiradas contenían
+**7 pares discordantes y los 7 favorecían a la baseline: cero favorecían al
+modelo.** Es la misma asimetría que motivó prohibir `keep="last"`. La
+diferencia sustantiva es que acá el retiro **no es por frescura** sino por
+**no-correspondencia demostrable**: esas 10 filas tienen una
+`sesion_objetivo` que no corresponde a su `available_at`, así que se
+puntúan contra una sesión que su insumo no podía predecir (el cierre del
+SOX que las alimenta está una sesión entera más atrás). Es una
+justificación real y distinta de la de `keep="last"`, pero el lector tiene
+que poder ver las dos cosas juntas y juzgar: la misma asimetría en el
+resultado, con dos causas distintas detrás.
+
+**Qué se descartó y por qué.** Lo más completo habría sido **re-verificar**
+esas 10 filas contra su sesión objetivo correcta en vez de descartarlas,
+pero eso exige recomputar valores sellados, y las filas selladas **no se
+reescriben nunca** (Constitución 5.0, punto 3). Descartarlas se eligió por
+**restricción**, no por preferencia.
+
+**Cómo se implementó.** `backtest/linea_base.py` gana `sesion_correcta()`,
+`marcar_sesion()`, `deduplicar_por_sesion()`, `auditar_dedup()` y
+`filtrar_sesion_coherente()`, con la constante `DEDUP_OFICIAL = True`, en la
+misma capa de MEDICIÓN y por la misma razón que `excluir_cero`:
+`senales.py` no se toca y ninguna fila sellada se reescribe. `cargar()`
+suma `sesion_objetivo` y `available_at` al SELECT y un parámetro `dedup`
+que va en **True por defecto**, porque un número retirado que sigue
+ofrecido en el código vuelve a circular. `dedup=False` queda como rama
+histórica, y sólo se justifica para reproducir afirmaciones congeladas
+**anteriores** a la firma. La regla se implementa **sin ninguna lista de
+fechas cableada**: el criterio es
+`sesion_objetivo == calendarios.proxima_sesion_despues_de(exchange,
+available_at)`, aplicado sólo dentro de grupos `(ticker, sesion_objetivo)`
+con más de una fila. Los dos grupos que Nicolás separó en la firma se
+separan por construcción: en los 10 pares del defecto sólo una fila calza
+con el criterio, en los 5 de feriado calzan las dos y la regla se abstiene
+sola. `available_at` está poblado en las 253 filas, sin nulos, y no es el
+reloj de pared: es el cierre UTC real del SOX (`snapshot.py:133`),
+calculado independientemente de la línea defectuosa (`snapshot.py:140`).
+Por eso sirve de árbitro: no comparte mecanismo con la cifra que juzga
+(regla §52).
+
+**`GEMELO/bifurcaciones.py`: `dedup` dejó de ser un eje y pasó a ser una
+regla.** La matriz de sensibilidad pasó de **768 a 192 celdas**, recomputada
+en vez de supuesta. El veredicto no cambió: **0 de 192 celdas con
+p < 0,05 por clúster de día** (contra 0 de 768 antes). Por McNemar exacto
+son 59 de 192 (30,7 %) contra 201 de 768 (26,2 %). La ventaja se mueve en
+el rango [−1,1, +15,4] pp, mediana +7,9 pp; `dmae_hi < 0` en 0 celdas. Hay
+ahora dos anclas, y las dos abortan el informe si fallan: la publicada
+(n=248, +6,5 pp, p=0,1849, sin dedup) y la de la regla (n=238, +9,7 pp,
+p=0,0451). La ruta independiente (SQL propio, bucle propio, aritmética
+propia) reproduce ambas.
+
+**Consecuencia declarada, no un hallazgo: cuatro módulos heredan la regla
+sin haber sido tocados.** `GEMELO/SECUENCIAL/mde_vs_observado.py:75`,
+`GEMELO/SECUENCIAL/mirada.py:168` (inerte, tiene el candado
+`MDE_FIRMADO = None`), `GEMELO/experimento.py:65` y
+`GEMELO/ventana_larga.py:220` llaman a `linea_base.cargar()`. Si alguno se
+re-corre, sus cifras se moverán, correctamente, pero se moverán. Se declara
+acá para que no sorprenda.
+
+**Qué queda abierto — hallazgo A: el alcance de la firma tiene un hueco que
+nadie previó.** Recomputando `proxima_sesion_despues_de(exchange,
+available_at)` sobre **todas** las filas, no sólo las duplicadas, hay
+**25 filas que no calzan, no 10**. Diez son el lado viejo de los pares ya
+cubiertos por la firma; **15 no tienen pareja** y son invisibles al
+`GROUP BY ... HAVING COUNT>1` con que se hizo el forense original: 7 del
+2026-08-05 (apuntan a 08-07, debían apuntar a 08-06; sin pareja porque el
+snapshot del 08-06 tuvo caída total de datos) y 8 del 2026-07-05 (apuntan a
+07-06, debían apuntar a 07-03; sello manual con casi 3 días de atraso). La
+firma está escrita para arbitrar entre dos filas que compiten; estas 15
+están solas, y descartarlas sería una operación distinta, sin reemplazo.
+**No se aplicó**: quedan dentro, y la pregunta está abierta en
+`GEMELO/resultados/cola_decisiones.md` §2a-ter. Su cifra está computada y
+declarada igual: n=223, +14,3 pp, b/c 69/37, p exacta 0,0024, otra vez el
+retiro asimétrico a favor del modelo. `filtrar_sesion_coherente()` la
+computa y no se aplica en ningún camino por defecto. Detalle que muestra el
+sistema funcionando y conviene citar: en las 8 filas del 5-jul la sesión
+correcta (07-03) **ya había cerrado** cuando se selló, así que con el
+ancla temporal buena esas filas caerían en `no_verificable_timing`. No las
+descartaría un criterio nuevo: las descartaría la regla maestra que el
+proyecto ya tiene desde la Etapa 4.6.
+
+**Hallazgo B: `GEMELO/bifurcaciones.py` se commiteó roto.** El commit
+`a49ad76` ("Frentes B y D") dejó el módulo usando el nombre
+`MDE_RELEVANCIA_PUBLICADO` en dos f-strings sin definirlo nunca, así que
+`python -m GEMELO.bifurcaciones` reventaba con `NameError` antes de escribir
+el informe. El `bifurcaciones.md` versionado es anterior a esa línea. Se
+corrigió definiendo la constante con su cita (8,96 pp, de
+`cola_decisiones.md` §2b y `GEMELO/SECUENCIAL/mde_desde_v6.py`), con nota de
+errata en el código, en vez de borrar el párrafo. Vale como hallazgo de
+proceso: un módulo con tests en verde puede estar roto en su ruta de
+ejecución si ningún test la recorre entera. Los tests de `bifurcaciones`
+llamaban a `construir_matriz` pero nunca a `componer_informe`.
+
+**Qué NO se hizo, a propósito.** No se movió ninguna cifra publicada: ni
+README, ni skills (`cifras-canonicas`, `estadistica-evaluacion`), ni el
+agente `estadistico-adversario`, ni los pre-registros. El parche está
+escrito y no aplicado en `GEMELO/resultados/parche_dedup.md`, con trece
+bloques archivo:línea. Mover una cifra publicada lleva la firma de
+Nicolás, y él firmó la regla, no el parche. `GEMELO/DISEÑO.md` §2.8
+(n=223, +4,0 pp, p=0,4633) no se mueve: su instante es anterior a la firma
+y el harness lo contrasta contra `hasta_sello=CORTE_SECCION_2` **y**
+`dedup=False`. La línea base bajo la regla sería n=213, +7,5 pp, p=0,1564,
+y no se publica en ningún lado. No se tocó `motor.py`, `senales.py`,
+`snapshot.py`, `universo.py`, `calendarios.py`, `.env`, los timers ni
+`CLAUDE.md`; `senales.db` sólo en `mode=ro`; no se commiteó ni se pusheó.
+
+**Cómo se revierte.** `DEDUP_OFICIAL = True` en `backtest/linea_base.py` es
+el único interruptor. Pasar `dedup=False` a `cargar()` reproduce la rama
+histórica, previa a la firma, con la que siguen reproduciendo 21/21 (§25) y
+7/7 (§2.8, n=223, +4,0 pp, p=0,4633). Los tests
+`test_la_regla_firmada_cruza_alfa_y_eso_queda_fijado` y
+`test_las_diez_filas_retiradas_favorecian_todas_a_la_baseline` fijan el
+hallazgo, no la implementación: si la regla se revierte, esos tests deben
+fallar, y ese fallo es la señal de que la reversión ocurrió.

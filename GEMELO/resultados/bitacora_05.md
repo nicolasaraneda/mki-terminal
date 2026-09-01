@@ -855,4 +855,60 @@ vigentes.
     duplicados, que **no es fuga temporal** y por eso R3 no lo juzga, pero
     bloquea igual), S-1, S-3, **no existe holdout material** (la cuarentena
     de V7 es procedimental) y la fuente **no es point-in-time**.
+- **10:00** — **Frente A cerrado: la regla firmada está en el ejecutable, y
+  el veredicto de la matriz NO cambia.**
+  - **Implementada sin lista de fechas**, como corresponde: el criterio es
+    `sesion_objetivo == proxima_sesion_despues_de(exchange, available_at)`
+    aplicado **sólo dentro de pares**. Los dos grupos se separan por
+    construcción — 10 pares donde una fila calza, 5 donde calzan las dos y
+    **la regla se abstiene sola**.
+  - **Y preservó las anclas históricas**, que es lo que yo no había
+    pedido y hacía falta: `dedup=False` reproduce las afirmaciones
+    congeladas anteriores a la firma (§2 n=228 y §2.8 n=223, **21/21 y
+    7/7**). Una regla nueva que rompiera la reproducción de un
+    pre-registro habría sido un problema peor que el que resuelve.
+  - **Las cifras:** `excluir_cero` n=238, +9,7 pp, p=0,0451. MAE mejora a
+    **2,52 vs 2,98 (−15,3%)**. **Y la cobertura EMPEORA**: 92,9% con ratio
+    2,19× contra 90,3% y 1,84×. Es el único indicador que la regla mueve
+    en contra, **y el frente lo reporta igual**.
+  - **La matriz: 0 de 192 celdas** con p < 0,05 por clúster (antes 0 de
+    768; el eje cayó y la matriz se redujo). **El veredicto no cambia.**
+  - **Su lectura sobre la defensibilidad es la que hay que citar**, y la
+    adopto entera: la regla es defendible **por una razón que no es el
+    p** —hay un desajuste demostrable entre insumo y objetivo—, pero se
+    cita **siempre con tres advertencias pegadas**. La segunda es la que
+    importa: **cruzar α no es tener evidencia.** Con el estimador que
+    respeta el clúster de día la ventana queda en **+9,7 pp con IC95
+    [−7,2, +26,5]**, n efectivo **67 y no 238**, y **0 de 192** celdas
+    significativas. Todo el peso discriminante es un **10-6 en 17 días**
+    (binomial p = 0,45). **McNemar cruza porque supone una independencia
+    que los datos no tienen.**
+- **10:05** — **Dos correcciones del Frente A hacia mí, las dos justas.**
+  - **Mi encuadre de "desenlaces mal etiquetados" era impreciso y lo
+    corrijo.** El `gap_pct` de esas 10 filas **es el gap correcto de la
+    sesión que declararon**. Lo que está mal es el **pareo
+    insumo↔objetivo**: la predicción es β·SOX(t) puntuada contra el gap de
+    t+2. Sigue siendo razón real para descartar, pero es más precisa, y la
+    precisión importa cuando el descarte mueve un p.
+  - **Y un error mío que rompió código commiteado.** Al arreglar el `8.96`
+    cableado en `bifurcaciones.py` usé un ancla —`def _bloque_potencia(`—
+    **que no existe en ese archivo**, con un `if` que hizo que la
+    inserción de la constante **no ocurriera en silencio**, mientras los
+    dos reemplazos que la usan **sí se aplicaron**. Commiteé un
+    `NameError` en `a49ad76`: `python -m GEMELO.bifurcaciones` reventaba
+    antes de escribir nada. **No lo verifiqué.**
+    - Es exactamente la clase de defecto que esta corrida viene cazando en
+      código ajeno, cometido por mí en el acto de arreglar otro: **una
+      guarda que protege de un duplicado y a cambio produce un archivo
+      roto.**
+    - Y el frente encontró **por qué la suite no lo atajó**: los tests
+      llamaban a `construir_matriz` pero **nunca a `componer_informe`**.
+      Un generador de informes que lanza `NameError` pasaba en verde.
+  - **También corrigió mi conteo:** no son 10 las filas que no calzan sino
+    **25**, coincidiendo con el Frente C por vía independiente. Las 15
+    singletons **no las toca la regla**, porque deduplica y no filtra por
+    coherencia — y quedan en la cola con su cifra (**n=223, +14,3 pp,
+    69/37, p=0,0024**), sin decidir.
+  - **Cuatro módulos heredan la regla sin haber sido tocados** y sus
+    cifras se moverán si se re-corren. Declarado en el acta §60.
 

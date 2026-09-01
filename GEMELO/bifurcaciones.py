@@ -104,6 +104,20 @@ ANCLA = {"n": 248, "modelo_pct": 66.1, "base_pct": 59.7,
          "ventaja_pp": 6.5, "b": 72, "c": 56, "p_chi2": 0.1849,
          "p_exacto": 0.1847}   # DECISIONES.md §55: las dos son correctas
 
+# EL SEGUNDO ANCLA — la misma ventana BAJO LA REGLA FIRMADA (1-sep-2026).
+# Hacen falta las dos: la de arriba prueba que el código sigue
+# reproduciendo lo PUBLICADO (una afirmación anterior a la firma, y que
+# nadie movió todavía); ésta es la celda ancla de la matriz de hoy. Si
+# alguna de las dos deja de reproducir, el informe no se escribe.
+#
+# Y la diferencia entre ambas ES el hallazgo de este frente: la regla
+# firmada mueve p de 0.1847 a 0.0451 — un desenlace que no estaba a la
+# vista cuando se firmó, porque los dos que sí lo estaban eran 0.1847 y
+# el 0.0323 de la rama prohibida.
+ANCLA_REGLA = {"n": 238, "modelo_pct": 67.6, "base_pct": 58.0,
+               "ventaja_pp": 9.7, "b": 72, "c": 49, "p_chi2": 0.0455,
+               "p_exacto": 0.0451}
+
 # ------------------------------------------------------------
 # LOS EJES
 # ------------------------------------------------------------
@@ -115,38 +129,23 @@ ANCLA = {"n": 248, "modelo_pct": 66.1, "base_pct": 59.7,
 # describen.
 
 EJES = {
-    # ---- 1. Regla de deduplicación -------------------------------
-    # 30 filas (11.9% de las 253 de la ventana publicada; el documento
-    # original dijo "30 de 256", con la n de su propio día) son
-    # predicciones distintas que apuntan a la MISMA sesión objetivo: dos fechas de emisión consecutivas cuyo
-    # objetivo coincide porque la sesión intermedia no existió. Comparten
-    # `gap_pct` idéntico y entre ellas están los movimientos más grandes
-    # de la ventana. La elección de cuál conservar «vale la diferencia
-    # entre un veredicto y el contrario»:
-    #   keep="first" → +6.64 pp, b=72, c=56, p = 0.1847
-    #   keep="last"  → +9.96 pp, b=70, c=46, p = 0.0323
-    # CITA: DECISIONES.md §56 (líneas 5074-5085) y GEMELO/SECUENCIAL/
-    # DISEÑO.md §A3.1.a + defecto nº1 del cuarto dictamen. SIN CONGELAR:
-    # es una de las cuatro condiciones para levantar el rechazo del
-    # pre-registro secuencial.
+    # ---- 1. (RETIRADO) Regla de deduplicación --------------------
+    # ESTE EJE YA NO EXISTE: la deduplicación dejó de ser una elección
+    # abierta el 1-sep-2026, cuando Nicolás FIRMÓ la regla —«la fila
+    # válida es la que tiene la sesión objetivo correcta según
+    # `available_at`; el criterio es la corrección de la sesión, nunca la
+    # frescura», con `keep="last"` explícitamente PROHIBIDA—. Un eje mide
+    # una elección viva; una regla firmada no es una elección viva, y
+    # dejarla como eje seguiría ofreciendo desde el código las tres ramas
+    # que la firma retiró.
     #
-    # CUARTO NIVEL, `solo_reloj`. El forense del Frente A cerró que los 15
-    # pares son DOS fenómenos y no uno:
-    #   · 10 pares (objetivos 31-jul y 5-ago) son un DEFECTO de la ruta de
-    #     sellado — `snapshot.py` calcula `sesion_objetivo` con el reloj de
-    #     pared y no con `available_at`, así que un sello que cruza la
-    #     medianoche UTC salta a la sesión siguiente. La fila vieja quedó
-    #     estructuralmente fuera de especificación.
-    #   · 5 pares (12-ago y 18-ago) son FERIADOS DE MERCADO REALES (XTKS
-    #     cerrado el 11-ago, XKRX el 17-ago). Las dos emisiones están
-    #     igualmente a tiempo respecto de su propio `available_at` y
-    #     NINGUNA fila es más legítima.
-    # Aplicar una sola regla a los dos grupos mezcla un defecto con un
-    # hecho de calendario. `solo_reloj` deduplica (quedándose con la
-    # fresca) SÓLO los 10 pares del defecto y deja intactos los 5 de
-    # feriado. CITA: GEMELO/resultados/dedup_opciones.md, tabla de
-    # mecanismos y su conclusión de origen.
-    "dedup": ("first", "last", "ninguna", "solo_reloj"),
+    # La regla vive en `backtest.linea_base.deduplicar_por_sesion` y
+    # `cargar()` la aplica por defecto, así que entra a esta matriz por la
+    # carga y no por una celda. Consecuencia declarada: **la matriz pasa
+    # de 768 celdas a 192**, y el veredicto del frente se recomputa sobre
+    # las 192 en vez de suponerse.
+    # CITA: la firma, DECISIONES.md (acta de la regla de deduplicación);
+    # el forense en GEMELO/resultados/dedup_opciones.md.
 
     # ---- 2. Convención de empate ---------------------------------
     # El verificador puntúa al campeón con `>=` (senales.py): un gap de
@@ -190,7 +189,8 @@ EJES = {
     # 3-ago (4/8), 12-ago (5/8), 17-ago (4/8). La composición de tickers
     # de esos días no es aleatoria: es la que el proveedor entregó. Tres
     # de las cinco son además fechas de pares duplicados, así que este eje
-    # y `dedup` están enredados — a propósito y a la vista.
+    # y la regla de deduplicación se tocan sobre las mismas fechas — a
+    # propósito y a la vista.
     # CITA: la errata de descarga del 8-24 jul (DECISIONES.md líneas
     # 664-686 y 1113-1119) enumera el mismo fenómeno y afirma que «el
     # costo fue de COBERTURA, no de veracidad»; esa afirmación es
@@ -233,10 +233,6 @@ EJES = {
     "zona_muerta": (0.00, 0.25),
 }
 
-# Las sesiones objetivo cuyos pares nacen del defecto de reloj del sellado
-# (no de un feriado real). GEMELO/resultados/dedup_opciones.md.
-SESIONES_RELOJ = ("2026-07-31", "2026-08-05")
-
 VENTANA_R2 = ("2026-07-15", "2026-07-23")
 FECHA_29JUL = "2026-07-29"
 FECHAS_PARCIALES = ("2026-07-13", "2026-07-21", "2026-08-03",
@@ -253,6 +249,17 @@ COLUMNAS_OBJETIVO = {
 # CANDIDATOS QUE NO SON EJES — y por qué, medido
 # ------------------------------------------------------------
 NO_EJES = (
+    ("regla de deduplicación",
+     "La firma de Nicolás del 1-sep-2026 (acta en DECISIONES.md); el "
+     "forense en GEMELO/resultados/dedup_opciones.md; la implementación "
+     "en backtest/linea_base.py:deduplicar_por_sesion",
+     "**YA NO ES UN EJE: es una regla FIRMADA.** «La fila válida es la "
+     "que tiene la sesión objetivo correcta según `available_at`, no la "
+     "más reciente; el criterio es la corrección de la sesión, nunca la "
+     "frescura», con `keep=\"last\"` PROHIBIDA. Se aplica en la carga, "
+     "así que la matriz pasó de 768 celdas a 192. Lo que la regla NO "
+     "cubre —15 filas sin pareja que tampoco calzan— queda dentro y "
+     "abierto en `cola_decisiones.md`."),
     ("residualización sí/no",
      "CLAUDE.md y motor.py: `divergencias_al` residualiza contra índice "
      "local + FX por defecto, «simple spread kept for comparison»; "
@@ -323,7 +330,7 @@ NO_EJES = (
      "DECISIONES.md, Etapa 5.0.2 §4 (líneas 1225-1247): 29-jul 7 · "
      "03-ago 3 · 05-ago 7, «4/17 (23.5%)» contra «15/15» de las frescas",
      "PARCIALMENTE COMPUTADO. Las 15 filas rancias que TIENEN pareja "
-     "fresca son exactamente las que quita `dedup=last`, así que ese eje "
+     "fresca son exactamente las que retira la regla firmada, así que "
      "ya las cubre. Las de 05-ago no tienen pareja («no hubo, hueco del "
      "06») y no se pueden identificar desde columnas selladas. Se intentó "
      "reconstruirlas comparando `sesion_objetivo` contra "
@@ -336,19 +343,19 @@ NO_EJES = (
 # ------------------------------------------------------------
 # Carga
 # ------------------------------------------------------------
-def cargar_filas(corte: str | None) -> pd.DataFrame:
+def cargar_filas(corte: str | None, dedup: bool = True) -> pd.DataFrame:
     """`backtest.linea_base.cargar` (mode=ro, legacy=0, sólo 4.6.0, sólo
-    con gap) más `sesion_objetivo` —que la matriz necesita para
-    deduplicar— y las columnas del segundo objetivo, que `cargar` no
-    trae."""
-    df = cargar(hasta_sello=corte)
+    con gap) más las columnas del segundo objetivo, que `cargar` no trae.
+
+    `dedup=True` es el default y **aplica la regla firmada** — por eso la
+    deduplicación ya no es un eje de esta matriz. `dedup=False` existe
+    para UNA cosa: verificar que la ventana publicada del README sigue
+    reproduciendo, que es una afirmación anterior a la firma."""
+    df = cargar(hasta_sello=corte, dedup=dedup)
     if df.empty:
         return df
     conn = _conexion_ro(RUTA_SENALES)
     try:
-        st = pd.read_sql_query(
-            "SELECT fecha, ticker, sesion_objetivo FROM senales_ticker"
-            " WHERE modelo_version = ?", conn, params=(MODELO_VERSION,))
         ve = pd.read_sql_query(
             "SELECT fecha_senal AS fecha, ticker, acierto_direccion, error_pp"
             " FROM verificacion_apertura"
@@ -356,8 +363,7 @@ def cargar_filas(corte: str | None) -> pd.DataFrame:
             conn, params=(MODELO_VERSION,))
     finally:
         conn.close()
-    out = df.merge(st, on=["fecha", "ticker"], how="left") \
-            .merge(ve, on=["fecha", "ticker"], how="left")
+    out = df.merge(ve, on=["fecha", "ticker"], how="left")
     if len(out) != len(df):
         raise RuntimeError("el join auxiliar duplicó filas")
     faltan = ["sesion_objetivo", "acierto_direccion", "error_pp"]
@@ -368,15 +374,19 @@ def cargar_filas(corte: str | None) -> pd.DataFrame:
 
 # ------------------------------------------------------------
 # Los ejes, aplicados. EL ORDEN IMPORTA Y SE DECLARA:
-#   1) corte (ya aplicado en la carga)
+#   1) corte Y regla de deduplicación (ya aplicados en la carga)
 #   2) objetivo: elige el par (acierto, real, error) sellado que se puntúa
 #   3) filtros de filas: ventana_r2, 29-jul, emisión parcial, zona muerta
-#   4) deduplicación sobre lo que quedó
-#   5) convención de empate (puntaje, y descarte si `excluir_cero`)
-# Deduplicar DESPUÉS de filtrar es deliberado: si el 29-jul sale, la
-# sesión del 31-jul se queda con la fila del 30-jul y `first` y `last`
-# coinciden. Ese enredo entre ejes es REAL; la matriz debe mostrarlo, no
-# esconderlo invirtiendo el orden.
+#   4) convención de empate (puntaje, y descarte si `excluir_cero`)
+# La deduplicación se movió al PASO 1 con la firma del 1-sep: antes era el
+# paso 4 y su enredo con `filas_29jul` era un hallazgo que había que
+# mostrar (si el 29-jul salía, el par se resolvía solo y `first` y `last`
+# coincidían). Con la regla firmada ese enredo desaparece por
+# construcción: la fila que se conserva no depende de qué otras filas
+# sigan en el conjunto, sólo de su propio `available_at`. Eso es una
+# propiedad de la regla, no una comodidad — y es la razón por la que
+# aplicarla en la carga es legítimo y aplicar `first`/`last` allí no lo
+# habría sido.
 # ------------------------------------------------------------
 def aplicar(df: pd.DataFrame, celda: dict) -> pd.DataFrame:
     col_ac, col_real, col_err = COLUMNAS_OBJETIVO[celda["objetivo"]]
@@ -390,23 +400,6 @@ def aplicar(df: pd.DataFrame, celda: dict) -> pd.DataFrame:
         out = out[~out["fecha"].isin(FECHAS_PARCIALES)]
     if celda["zona_muerta"] > 0:
         out = out[out["apertura_estimada_pct"].abs() >= celda["zona_muerta"]]
-
-    if celda["dedup"] == "solo_reloj":
-        # Sólo los pares del defecto de reloj se colapsan, y a la fila
-        # fresca; los de feriado real quedan los dos, porque ninguno de
-        # los dos está fuera de especificación.
-        afectadas = out["sesion_objetivo"].isin(SESIONES_RELOJ)
-        colapsadas = (out[afectadas]
-                      .sort_values(["ticker", "sesion_objetivo", "fecha"])
-                      .drop_duplicates(["ticker", "sesion_objetivo"],
-                                       keep="last"))
-        out = (pd.concat([out[~afectadas], colapsadas])
-                 .sort_values(["fecha", "ticker"]))
-    elif celda["dedup"] != "ninguna":
-        out = (out.sort_values(["ticker", "sesion_objetivo", "fecha"])
-                  .drop_duplicates(["ticker", "sesion_objetivo"],
-                                   keep=celda["dedup"])
-                  .sort_values(["fecha", "ticker"]))
 
     out = out.copy()
     out["real"] = out[col_real].astype(float)
@@ -445,6 +438,19 @@ N_PERM = 4000
 # usan EXACTAMENTE los mismos, para que el intervalo sea coherente con su
 # propio centro: computar el punto con más precisión que las réplicas
 # dejaría un centro que no pertenece a la distribución que lo rodea.
+# El MDE que el pre-registro secuencial derivó, citado como REFERENCIA
+# EXTERNA y no recomputado aquí (su propio intervalo está en disputa, ver
+# `GEMELO/resultados/mde_vs_observado.md`). CITA: cola_decisiones.md §2b y
+# GEMELO/SECUENCIAL/mde_desde_v6.py — 8.96 pp en la escala del endpoint
+# congelado `acierto_gap`.
+#
+# ERRATA, 1-sep-2026: el módulo se commiteó (`a49ad76`) USANDO este nombre
+# sin definirlo nunca, así que `python -m GEMELO.bifurcaciones` reventaba
+# con NameError antes de escribir el informe. El `bifurcaciones.md`
+# versionado es anterior a esa línea. Se define aquí con su cita en vez de
+# borrar el párrafo, que es lo que la referencia quiso decir.
+MDE_RELEVANCIA_PUBLICADO = 8.96
+
 BOOT_MDE50 = {"n_boot": 200}
 BOOT_MDE80 = {"n_boot": 120, "n_sim": 250, "n_perm": 1000}
 
@@ -639,7 +645,7 @@ def mde_permutacion_dia(grupos: list, n_perm: int = N_PERM,
     """El EFECTO MÍNIMO DETECTABLE del test de permutación por día, en pp.
 
     Un test que no puede rechazar nada tampoco es una medición: si el
-    «0 de 576» viniera de un test sin potencia, no diría nada del modelo.
+    «0 de N» viniera de un test sin potencia, no diría nada del modelo.
     Así que se mide con qué ventaja constante SÍ rechazaría, sobre esta
     misma estructura de días y tamaños.
 
@@ -804,7 +810,7 @@ def metricas(df: pd.DataFrame, n_boot: int = N_BOOT,
 # ------------------------------------------------------------
 # El ancla — verificar una cifra publicada ANTES de escribir nada
 # ------------------------------------------------------------
-CELDA_ANCLA = {"dedup": "ninguna", "empate": "excluir_cero",
+CELDA_ANCLA = {"empate": "excluir_cero",
                "ventana_r2": "dentro", "filas_29jul": "dentro",
                "emision_parcial": "dentro", "corte": "publicado",
                "objetivo": "gap", "zona_muerta": 0.00}
@@ -828,10 +834,14 @@ def ancla_por_ruta_independiente() -> dict:
     conn = _conexion_ro(RUTA_SENALES)
     try:
         d = pd.read_sql_query(
-            "SELECT fecha_senal f, gap_pct g, acierto_gap a"
-            " FROM verificacion_apertura"
-            " WHERE legacy = 0 AND modelo_version = ? AND gap_pct IS NOT NULL"
-            "   AND substr(verificado_en, 1, 10) <= ?",
+            "SELECT v.fecha_senal f, v.ticker t, v.gap_pct g, v.acierto_gap a,"
+            "       s.exchange x, s.sesion_objetivo so, s.available_at av"
+            " FROM verificacion_apertura v"
+            " LEFT JOIN senales_ticker s"
+            "        ON s.fecha = v.fecha_senal AND s.ticker = v.ticker"
+            " WHERE v.legacy = 0 AND v.modelo_version = ?"
+            "   AND v.gap_pct IS NOT NULL"
+            "   AND substr(v.verificado_en, 1, 10) <= ?",
             conn, params=(MODELO_VERSION, CORTE_PUBLICADO))
     finally:
         conn.close()
@@ -850,30 +860,76 @@ def ancla_por_ruta_independiente() -> dict:
                 "b": b, "c": c, "p_exacto": round(p, 4)}
 
     d = d[d["g"] != 0]                                   # excluir_cero
+
+    # La REGLA FIRMADA, reimplementada aquí a mano: bucle explícito sobre
+    # los grupos duplicados, sin `deduplicar_por_sesion` y sin ninguna
+    # ayuda de pandas para colapsar. Lo único compartido con la matriz es
+    # `calendarios.proxima_sesion_despues_de`, que ES el criterio y no el
+    # mecanismo — igual que `_conexion_ro` abre el archivo sin ser parte
+    # de la aritmética.
+    import calendarios
+    from datetime import datetime, timezone
+
+    def sesion(x, av):
+        t = datetime.fromisoformat(str(av))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        return str(calendarios.proxima_sesion_despues_de(x, t)[0])
+
+    cuenta = d.groupby(["t", "so"])["f"].transform("size")
+    filas = []
+    for _, fila in d.iterrows():
+        if cuenta[fila.name] == 1:
+            filas.append(fila)
+            continue
+        hermanas = d[(d["t"] == fila["t"]) & (d["so"] == fila["so"])]
+        calzan = [sesion(h["x"], h["av"]) == h["so"]
+                  for _, h in hermanas.iterrows()]
+        if sum(calzan) == 1 and sesion(fila["x"], fila["av"]) != fila["so"]:
+            continue                       # la retira la regla
+        filas.append(fila)
+    reglada = pd.DataFrame(filas)
+
     fuera = d[(d["f"] < VENTANA_R2[0]) | (d["f"] > VENTANA_R2[1])]
-    return {"ancla": duelo(d), "sin_ventana_r2": duelo(fuera)}
+    return {"ancla": duelo(d), "ancla_regla": duelo(reglada),
+            "sin_ventana_r2": duelo(fuera)}
 
 
-def _verificar_ancla(bases: dict) -> list:
-    """La celda `CELDA_ANCLA` ES la ventana sellada canónica del README.
-    Se comprueba contra las cifras publicadas. Si no reproduce, la matriz
-    no tiene ancla y el informe no se escribe."""
-    m = metricas(aplicar(bases["publicado"], CELDA_ANCLA), n_boot=200)
+def _contrastar_ancla(m: dict, esperado: dict, etiqueta: str) -> list:
     fallos = []
     for k, tol in (("n", 0), ("modelo_pct", 0.05), ("base_pct", 0.05),
                    ("ventaja_pp", 0.05)):
-        if abs(float(m[k]) - float(ANCLA[k])) > tol:
-            fallos.append(f"{k}: publicado {ANCLA[k]} · matriz {m[k]}")
+        if abs(float(m[k]) - float(esperado[k])) > tol:
+            fallos.append(f"[{etiqueta}] {k}: {esperado[k]} · matriz {m[k]}")
     for k in ("b", "c"):
-        if m[k] != ANCLA[k]:
-            fallos.append(f"McNemar {k}: publicado {ANCLA[k]} · matriz {m[k]}")
-    if abs(m["p_chi2"] - ANCLA["p_chi2"]) > 0.0005:
-        fallos.append(f"p (ruta chi2): publicado {ANCLA['p_chi2']} · "
-                      f"matriz {round(m['p_chi2'], 4)}")
-    # También la ruta árbitro: DECISIONES.md §55 la fija en 0.1847.
-    if abs(m["p_exacto"] - ANCLA["p_exacto"]) > 0.0005:
-        fallos.append(f"p (ruta exacta): §55 dice {ANCLA['p_exacto']} · "
-                      f"matriz {round(m['p_exacto'], 4)}")
+        if m[k] != esperado[k]:
+            fallos.append(f"[{etiqueta}] McNemar {k}: {esperado[k]} · "
+                          f"matriz {m[k]}")
+    for k, ruta in (("p_chi2", "chi2"), ("p_exacto", "exacta")):
+        if abs(m[k] - esperado[k]) > 0.0005:
+            fallos.append(f"[{etiqueta}] p (ruta {ruta}): {esperado[k]} · "
+                          f"matriz {round(m[k], 4)}")
+    return fallos
+
+
+def _verificar_ancla(bases: dict) -> list:
+    """DOS anclas, y las dos tienen que reproducir o el informe no se
+    escribe:
+
+      · `publicada` — la ventana sellada canónica del README, medida SIN
+        la regla de deduplicación porque es una afirmación anterior a la
+        firma. Comprueba que el código sigue reproduciendo lo publicado.
+      · `regla` — la misma celda BAJO la regla firmada. Es la referencia
+        de la matriz de hoy.
+
+    La distancia entre las dos no es ruido: es el efecto de la firma, y
+    está declarada arriba en `ANCLA` / `ANCLA_REGLA`."""
+    fallos = _contrastar_ancla(
+        metricas(aplicar(bases["publicado_sin_dedup"], CELDA_ANCLA),
+                 n_boot=200), ANCLA, "publicada")
+    fallos += _contrastar_ancla(
+        metricas(aplicar(bases["publicado"], CELDA_ANCLA), n_boot=200),
+        ANCLA_REGLA, "regla firmada")
     return fallos
 
 
@@ -882,7 +938,9 @@ def _verificar_ancla(bases: dict) -> list:
 # ------------------------------------------------------------
 def construir_matriz(n_boot: int = N_BOOT) -> tuple:
     bases = {"publicado": cargar_filas(CORTE_PUBLICADO),
-             "vivo": cargar_filas(None)}
+             "vivo": cargar_filas(None),
+             "publicado_sin_dedup": cargar_filas(CORTE_PUBLICADO,
+                                                 dedup=False)}
     fallos = _verificar_ancla(bases)
     if fallos:
         raise RuntimeError(
@@ -1085,9 +1143,14 @@ def resumen_parciales() -> pd.DataFrame:
     return g[g["emitidas"] < EMISION_COMPLETA].reset_index(drop=True)
 
 
-def resumen_duplicados(corte: str | None = CORTE_PUBLICADO) -> pd.DataFrame:
-    """La evidencia del eje 1, computada y no afirmada."""
-    df = cargar_filas(corte)
+def resumen_duplicados(corte: str | None = CORTE_PUBLICADO,
+                       dedup: bool = False) -> pd.DataFrame:
+    """La evidencia del eje retirado, computada y no afirmada.
+
+    `dedup=False` a propósito: la evidencia son los 15 pares TAL COMO
+    ESTÁN en la base. Leerla sobre las filas que la regla ya dejó
+    mostraría sólo su resultado y escondería sobre qué actuó."""
+    df = cargar_filas(corte, dedup=dedup)
     dup = df[df.duplicated(["ticker", "sesion_objetivo"], keep=False)]
     return (dup.groupby("sesion_objetivo")
                .agg(pares=("ticker", "nunique"),
@@ -1147,6 +1210,8 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
     mde, mde80 = ic50["punto"], ic80["punto"]
     pot_pub = potencia_permutacion_dia(_gd, ANCLA["ventaja_pp"] / 100,
                                        400, 1500)
+    pot_regla = potencia_permutacion_dia(_gd, ANCLA_REGLA["ventaja_pp"] / 100,
+                                         400, 1500)
     estr = estructura_disidencia(_anc)
     r2ic = caida_r2_con_ic(_anc, min(n_boot, 4000))
     n_caminos = int(np.prod([len(x) for x in EJES.values()]))
@@ -1177,12 +1242,15 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         f"{estr['p_dias']:.2f}**. Eso se entiende sin estadística, y todo "
         "lo que sigue es la ruta formal hacia el mismo hecho.",
         "> ",
-        f"> **2.** La cifra publicada es {ANCLA['ventaja_pp']:+} pp; su "
+        f"> **2.** Bajo la **regla de deduplicación firmada** la ventaja de "
+        f"la ventana es {ANCLA_REGLA['ventaja_pp']:+} pp (la publicada, "
+        f"anterior a la firma, es {ANCLA['ventaja_pp']:+} pp); su "
         f"intervalo honesto —clúster de día, que es la unidad real— es "
         f"**[{fila_ancla['ventaja_lo']:+.1f}, "
         f"{fila_ancla['ventaja_hi']:+.1f}] pp**. No es que el modelo "
-        f"falle: **el diseño no tiene potencia**. Frente al efecto "
-        f"publicado la potencia es **{100*pot_pub:.0f}%**, y detectarlo al "
+        f"falle: **el diseño no tiene potencia**. Frente al efecto de la "
+        f"regla la potencia es **{100*pot_regla:.0f}%** (frente al "
+        f"publicado, {100*pot_pub:.0f}%), y detectarlo al "
         f"80% exigiría **{mde80:.0f} pp, IC95 [{ic80['lo']:.0f}, "
         f"{ic80['hi']:.0f}]**.",
         "> ",
@@ -1201,12 +1269,25 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "- Reproducible con un comando: `python -m GEMELO.bifurcaciones` "
         f"(bootstrap de clústeres de día, semilla {SEMILLA}, {n_boot} "
         f"réplicas; permutación de signo por día, {N_PERM} permutaciones)",
-        f"- **Ancla verificada:** la celda `ninguna · excluir_cero · dentro · "
-        f"dentro · dentro · publicado · gap · 0.00` reproduce la ventana "
-        f"sellada del README (n={ANCLA['n']}, {ANCLA['modelo_pct']}% contra "
+        f"- **Dos anclas verificadas, y las dos abortan el informe si "
+        f"fallan.** (1) *Publicada*: sin la regla de deduplicación, la "
+        f"celda `excluir_cero · dentro · dentro · dentro · publicado · gap "
+        f"· 0.00` reproduce la ventana sellada del README "
+        f"(n={ANCLA['n']}, {ANCLA['modelo_pct']}% contra "
         f"{ANCLA['base_pct']}%, {ANCLA['ventaja_pp']:+} pp, b={ANCLA['b']}, "
-        f"c={ANCLA['c']}, p = {ANCLA['p_chi2']}). Si no reprodujera, este "
-        "informe no existiría: el código aborta antes de escribir.",
+        f"c={ANCLA['c']}, p = {ANCLA['p_chi2']}). (2) *Regla firmada*: la "
+        f"MISMA celda con la regla aplicada da n={ANCLA_REGLA['n']}, "
+        f"{ANCLA_REGLA['ventaja_pp']:+} pp, b={ANCLA_REGLA['b']}, "
+        f"c={ANCLA_REGLA['c']}, **p = {ANCLA_REGLA['p_exacto']}** "
+        f"(exacta; {ANCLA_REGLA['p_chi2']} por chi2). Esa es la celda "
+        "ancla de esta matriz.",
+        "- **La firma produjo un TERCER desenlace.** Nicolás firmó "
+        "conociendo dos: p = 0.1847 sin deduplicar y p = 0.0323 con "
+        "`keep=\"last\"`, que quedó prohibida. Su regla da **0.0451** — "
+        "cruza α = 0.05, y no estaba a la vista al firmar. El criterio "
+        "sigue siendo el correcto; el desenlace se declara porque una "
+        "decisión informada por dos números que produce un tercero "
+        "necesita esa nota.",
         f"- **Los dos cortes, sellados:** `publicado` = "
         f"{ctx['filas_publicado']} filas (hasta `verificado_en` "
         f"{CORTE_PUBLICADO}, pinchado y estable); `vivo` = "
@@ -1222,13 +1303,15 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "",
         "## EL VEREDICTO",
         "",
-        f"**La cifra publicada, con su intervalo honesto: "
-        f"{ANCLA['ventaja_pp']:+} pp, IC95 de clúster de día "
+        f"**La cifra de la ventana bajo la regla firmada, con su intervalo "
+        f"honesto: {ANCLA_REGLA['ventaja_pp']:+} pp, IC95 de clúster de día "
         f"[{fila_ancla['ventaja_lo']:+.1f}, "
         f"{fila_ancla['ventaja_hi']:+.1f}] pp.** Ése es el número que "
         "faltaba, y explica todo lo que sigue: con un intervalo de "
         f"{fila_ancla['ventaja_hi'] - fila_ancla['ventaja_lo']:.0f} pp de "
-        "ancho, esta ventana no separa al campeón de una constante.",
+        "ancho, esta ventana no separa al campeón de una constante — **y "
+        "eso vale aunque McNemar cruce α**, que es exactamente la brecha "
+        "que este informe existe para medir.",
         "",
         f"**{sig_d} de {n_tot} celdas dan p < 0.05.** Ése es el cociente "
         "que se pidió medir. Pero el cociente no es un veredicto sobre el "
@@ -1258,8 +1341,10 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         f"| Binomial exacta sobre los días con saldo | "
         f"**p = {estr['p_dias']:.2f}** |",
         "",
-        f"Es decir: los **b = {ANCLA['b']}** y **c = {ANCLA['c']}** que "
-        "sostienen el p publicado no son 128 observaciones independientes. "
+        f"Es decir: los **b = {ANCLA_REGLA['b']}** y **c = "
+        f"{ANCLA_REGLA['c']}** que sostienen el p de la regla no son "
+        f"{ANCLA_REGLA['b'] + ANCLA_REGLA['c']} observaciones "
+        "independientes. "
         f"Son {estr['dias_gana']} días ganados contra "
         f"{estr['dias_pierde']} perdidos. **Un {estr['dias_gana']}-"
         f"{estr['dias_pierde']} no distingue nada**, y para verlo no hace "
@@ -1301,17 +1386,17 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         f"[{v['ventaja_pp'].min():+.1f}, {v['ventaja_pp'].max():+.1f}] pp a "
         f"lo largo de la matriz, con mediana "
         f"{v['ventaja_pp'].median():+.1f} pp.** La misma ventana sellada, "
-        f"medida con ocho decisiones que el proyecto ya tomó o dejó "
+        f"medida con siete decisiones que el proyecto ya tomó o dejó "
         f"abiertas, admite un rango de "
         f"{v['ventaja_pp'].max() - v['ventaja_pp'].min():.1f} puntos "
         f"porcentuales — "
-        f"{abs(v['ventaja_pp'].max() - v['ventaja_pp'].min()) / abs(ANCLA['ventaja_pp']):.1f}× "
-        f"la cifra publicada ({ANCLA['ventaja_pp']:+} pp). En "
+        f"{abs(v['ventaja_pp'].max() - v['ventaja_pp'].min()) / abs(ANCLA_REGLA['ventaja_pp']):.1f}× "
+        f"la cifra de la regla ({ANCLA_REGLA['ventaja_pp']:+} pp). En "
         f"{100*float((v['ventaja_pp'] > 0).mean()):.1f}% de las celdas es "
         f"positiva; en el resto, no.",
         "",
         f"**El eje que más mueve la cifra es `{top['eje']}`.** Fijando los "
-        f"otros siete, recorrer sólo sus niveles mueve la ventaja una "
+        f"otros seis, recorrer sólo sus niveles mueve la ventaja una "
         f"media de {top['rango_ventaja_pp']:.1f} pp (máximo "
         f"{top['rango_ventaja_max_pp']:.1f} pp) y el p una media de "
         f"{top['rango_p']:.2f}; por la ruta publicada es además el único "
@@ -1430,7 +1515,7 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
     ]
 
     # R2 dispara por EFECTO o por POTENCIA? Se mide pareando cada camino
-    # consigo mismo con los otros siete ejes fijos. Si la ventaja cae
+    # consigo mismo con los otros seis ejes fijos. Si la ventaja cae
     # mucho perdiendo pocas filas, es efecto.
     otros = [e for e in EJES if e != "ventana_r2"]
     pares = (v.pivot_table(index=otros, columns="ventana_r2",
@@ -1443,7 +1528,7 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         L += [
             f"**Sacar la ventana R2 cuesta caro en el punto estimado, y "
             f"barato en filas.** Pareando cada camino consigo mismo con "
-            f"los otros siete ejes fijos, la ventaja cae una mediana de "
+            f"los otros seis ejes fijos, la ventaja cae una mediana de "
             f"{delta.median():.2f} pp "
             f"(dispersión ENTRE CAMINOS "
             f"[{delta.min():.2f}, {delta.max():.2f}] — eso es variación de "
@@ -1553,7 +1638,8 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "",
         f"La matriz tiene {n_caminos} caminos y {n_tot} son computables. "
         "**Los ejes no son ortogonales y no se pretende que lo sean** — "
-        "`dedup` y `filas_29jul` se solapan sobre los mismos pares, "
+        "la regla de deduplicación y `filas_29jul` se tocan sobre las "
+        "mismas fechas, "
         "`emision_parcial` toca tres de las cinco fechas de pares. Un "
         "producto cartesiano leído como si fueran caminos independientes "
         "sobrestimaría el tamaño del jardín; por eso el resultado se "
@@ -1615,45 +1701,65 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "Un eje entra si cambia el CONJUNTO DE FILAS o el PUNTAJE, y sólo "
         "si es una elección documentada entre alternativas.",
         "",
+        "### 1. `dedup` — RETIRADO: dejó de ser un eje y pasó a ser una regla",
+        "",
+        "El 1-sep-2026 Nicolás **firmó** la regla de deduplicación: *«la "
+        "fila válida es la que tiene la sesión objetivo correcta según "
+        "`available_at`, no la más reciente. El criterio es la corrección "
+        "de la sesión, nunca la frescura»*, con `keep=\"last\"` "
+        "explícitamente **prohibida** porque el forense demostró que "
+        "retira selectivamente errores del modelo. Un eje mide una "
+        "elección viva; una regla firmada no lo es. La regla vive en "
+        "`backtest.linea_base.deduplicar_por_sesion` y entra a esta matriz "
+        "por la carga.",
+        "",
+        f"**Consecuencia declarada: la matriz pasó de 768 celdas a "
+        f"{n_caminos}.** El veredicto se recomputó sobre las nuevas en vez "
+        "de suponerse que no cambiaba.",
+        "",
+        "La regla se implementa sola y **no lleva ninguna lista de fechas "
+        "cableada** —una lista sería la regla escondiendo su propio "
+        "criterio—: conservar la fila cuya `sesion_objetivo` coincide con "
+        "`calendarios.proxima_sesion_despues_de(exchange, available_at)` "
+        "separa por construcción los dos grupos del forense. En los 10 "
+        "pares del defecto de reloj (31-jul, 5-ago) sólo una fila calza y "
+        "la otra se retira; en los 5 de feriado real (12-ago, 18-ago) "
+        "calzan las dos y no se descarta nada.",
+        "",
+        "**La diferencia sustantiva con `keep=\"last\"`, y hay que poder "
+        "ver las dos cosas juntas.** El retiro NO es por frescura sino por "
+        "no-correspondencia demostrable: esas 10 filas usan el cierre del "
+        "SOX de `available_at` para puntuarse contra una sesión que está "
+        "una sesión más allá, así que su `gap_pct` no es el gap que su "
+        "insumo podía predecir. Es una justificación real y distinta. "
+        "**Pero el efecto sobre el conteo tiene el mismo signo:** b queda "
+        f"en {ANCLA_REGLA['b']} sin cambio y c baja de {ANCLA['c']} a "
+        f"{ANCLA_REGLA['c']} — de las 10 filas retiradas, 7 eran "
+        "discordantes y **las 7 favorecían a la baseline; ninguna al "
+        "modelo**. Es la misma asimetría que motivó prohibir la otra rama, "
+        "y el lector tiene que poder juzgar las dos cosas a la vez.",
+        "",
+        "**La opción que NO se puede tomar, y por qué.** Lo más completo "
+        "sería **re-verificar** esas 10 filas contra su sesión objetivo "
+        "correcta en vez de descartarlas. Eso exige recomputar valores "
+        "sellados, y las filas selladas no se reescriben nunca "
+        "(Constitución 5.0, punto 3). **Descartarlas se eligió por "
+        "restricción, no por preferencia**, y conviene decirlo así.",
+        "",
+        "**Lo que la regla NO cubre, y es una pregunta abierta.** Es una "
+        "regla de DEDUPLICACIÓN: sólo arbitra entre filas que compiten. "
+        "Recomputando la sesión sobre TODAS las filas —no sólo las "
+        "duplicadas— hay **25 que no calzan**, y **15 de ellas no tienen "
+        "pareja** (7 del 5-ago que apuntan a 08-07 debiendo apuntar a "
+        "08-06; 8 del 5-jul que apuntan a 07-06 debiendo apuntar a "
+        "07-03). La firma no las previó porque nadie sabía que existían, y "
+        "descartarlas sin reemplazo es una operación distinta de la que se "
+        "firmó. Quedan **dentro**, y la pregunta está abierta en "
+        "`GEMELO/resultados/cola_decisiones.md`.",
+        "",
     ]
 
     ejes_doc = (
-        ("1. `dedup` — regla de deduplicación",
-         "`first` · `last` · `ninguna` · `solo_reloj`",
-         "DECISIONES.md §56 (líneas 5074-5085); GEMELO/SECUENCIAL/DISEÑO.md "
-         "§A3.1.a y defecto nº1 del cuarto dictamen",
-         "30 filas —11.9% de las 253 de la ventana publicada; el documento "
-         "original dijo «30 de 256», con la n de su propio día— son "
-         "predicciones distintas que apuntan a la misma `sesion_objetivo`, con `gap_pct` idéntico, porque la "
-         "sesión intermedia no existió; entre ellas están los movimientos "
-         "más grandes de la ventana (+29.95%, +26.81%, +17.52%). El "
-         "documento ya midió que la elección «vale la diferencia entre un "
-         "veredicto y el contrario»: `first` → +6.64 pp, p = 0.1847; "
-         "`last` → +9.96 pp, p = 0.0323. **Sin congelar**: es una de las "
-         "cuatro condiciones para levantar el rechazo del pre-registro "
-         "secuencial.\n\n"
-         "El cuarto nivel, `solo_reloj`, viene del forense de "
-         "`GEMELO/resultados/dedup_opciones.md`, que cerró que los 15 "
-         "pares son **dos fenómenos distintos**: 10 (objetivos 31-jul y "
-         "5-ago) nacen de un DEFECTO —`snapshot.py` calcula "
-         "`sesion_objetivo` con el reloj de pared y no con `available_at`, "
-         "así que un sello que cruza la medianoche UTC salta de sesión—, y "
-         "5 (12-ago y 18-ago) de FERIADOS DE MERCADO REALES (XTKS cerrado "
-         "el 11-ago, XKRX el 17-ago), donde las dos emisiones están "
-         "igualmente a tiempo y **ninguna fila es más legítima**. "
-         "`solo_reloj` colapsa a la fila fresca únicamente los 10 del "
-         "defecto y deja intactos los 5 del calendario: es la única de las "
-         "cuatro ramas que no trata un hecho de mercado como si fuera un "
-         "error.\n\n"
-         "**Declarado, porque la regla 6 no distingue:** este cuarto nivel "
-         "se agregó DESPUÉS de computar la matriz con tres, y después de "
-         "ver que `dedup` movía el veredicto. Está justificado por un "
-         "forense independiente y no por el p que produce —de hecho su "
-         "p de clúster no rechaza, igual que los otros tres—, pero un "
-         "nivel añadido tras ver resultados es un hallazgo que se reporta, "
-         "no una mejora silenciosa. La matriz de tres niveles daba "
-         "576 celdas y 142 significativas por McNemar; la de cuatro da "
-         "768 y 201. El cociente no se mueve (24.7% contra 26.2%)."),
         ("2. `empate` — convención de empate",
          "`estricta` · `verificador` · `excluir_cero`",
          "backtest/linea_base.py, cabecera; DECISIONES.md §25.1 (línea "
@@ -1696,8 +1802,8 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
          "entregó. La errata de julio afirma que «el costo fue de "
          "COBERTURA, no de veracidad»; este eje es precisamente la prueba "
          "de esa afirmación. Tres de las cinco fechas son además fechas de "
-         "pares duplicados, así que este eje y `dedup` están enredados — a "
-         "propósito y a la vista."),
+         "pares duplicados, así que este eje y la regla de deduplicación "
+         "se tocan — a propósito y a la vista."),
         ("6. `corte` — corte de sello",
          "`publicado` (2026-08-28, la ventana del README) · `vivo` (toda la "
          "base)",
@@ -1738,11 +1844,14 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         L += [f"### {titulo}", "", f"- **Niveles:** {niveles}",
               f"- **Cita:** {cita}", "", texto, ""]
 
-    L += ["### La evidencia del eje 1, computada", "",
-          "Pares que apuntan a la misma sesión objetivo (corte "
-          f"`{CORTE_PUBLICADO}`). `aciertos_gap` cuenta sobre el total de "
-          "`filas`: donde vale la mitad, las dos emisiones del par "
-          "predijeron signos opuestos sobre un gap idéntico.", "",
+    L += ["### La evidencia del eje retirado, computada", "",
+          "Los 15 pares que apuntan a la misma sesión objetivo, **antes** "
+          f"de aplicar la regla (corte `{CORTE_PUBLICADO}`). "
+          "`aciertos_gap` cuenta sobre el total de `filas`: donde vale la "
+          "mitad, las dos emisiones del par predijeron signos opuestos "
+          "sobre un gap idéntico. La regla firmada retira una fila de "
+          "cada uno de los 10 pares de 31-jul y 5-ago, y no toca los 5 de "
+          "12-ago y 18-ago.", "",
           _tabla(resumen_duplicados()),
           "### La evidencia del eje 5, computada", "",
           _tabla(resumen_parciales()), ""]
@@ -1752,8 +1861,7 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
           "2. `objetivo`: elige el par (acierto, valor real, error) sellado",
           "3. filtros de filas: `ventana_r2`, `filas_29jul`, "
           "`emision_parcial`, `zona_muerta`",
-          "4. `dedup` sobre lo que quedó",
-          "5. `empate` (puntaje, y descarte si `excluir_cero`)",
+          "4. `empate` (puntaje, y descarte si `excluir_cero`)",
           "",
           "Deduplicar DESPUÉS de filtrar es deliberado: si el 29-jul sale, "
           "la sesión del 31-jul se queda con la fila del 30-jul y `first` y "
@@ -1866,22 +1974,29 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
           "predicciones, y las filas selladas no se reescriben "
           "(Constitución 5.0, punto 3). Fuera por construcción, no por "
           "olvido.",
-          "- **El alcance completo (17 filas) de la regla de abstención por "
-          "sello tardío.** Las 15 que tienen pareja fresca ya las cubre "
-          "`dedup=last`; las de 05-ago no tienen pareja y no se dejan "
-          "identificar desde columnas selladas. La reconstrucción por "
-          "calendario a la hora nominal de sello no reproduce y se "
-          "descartó en vez de publicarse.",
+          "- **Qué hacer con las 15 filas SIN pareja cuya "
+          "`sesion_objetivo` tampoco calza con su `available_at`.** Se "
+          "cuentan y se declaran (arriba, en el eje retirado), pero NO se "
+          "retiran: la regla firmada arbitra entre filas que compiten y "
+          "estas 15 están solas. Descartarlas sin reemplazo es otra "
+          "decisión y es de Nicolás — está abierta en "
+          "`cola_decisiones.md`. Nota: en el caso del 5-jul la sesión "
+          "correcta (07-03) YA HABÍA CERRADO al sellar, así que con el "
+          "ancla temporal buena esas 8 filas caerían en "
+          "`no_verificable_timing`. **No las descartaría un criterio "
+          "nuevo: las descartaría la regla maestra que el proyecto ya "
+          "tiene.**",
           "- **Una corrección de multiplicidad sobre las celdas.** A "
           "propósito: comparten casi todas las filas y un Bonferroni "
           "ingenuo sobre ellas no significaría nada. El resultado de este "
           "frente es el COCIENTE y el RANGO, no un p corregido.",
           "- **Un intervalo alrededor de los cocientes de celdas** "
-          "(«142/576», «0/576»). No se pone, y no por olvido: las 576 "
+          f"(«{sig_e}/{n_tot}», «{sig_d}/{n_tot}»). No se pone, y no por "
+          f"olvido: las {n_tot} "
           "celdas son un CENSO exhaustivo y determinista sobre un solo "
           "conjunto de datos, no una muestra de un universo de caminos. "
           "No hay proceso de muestreo binomial que genere esa fracción, "
-          "así que un Wilson encima supondría 576 Bernoulli "
+          f"así que un Wilson encima supondría {n_tot} Bernoulli "
           "independientes — exactamente el supuesto de independencia que "
           "este informe rechaza dos secciones más arriba, y el mismo "
           "argumento que descarta Bonferroni. La incertidumbre real vive "
@@ -1895,13 +2010,16 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
           "intento**, incluidas las descartadas. Este frente evaluó "
           f"{n_tot} configuraciones de MEDICIÓN, no de modelo: no eligió "
           "features, no ajustó parámetros y no seleccionó una variante "
-          "ganadora. Por eso NO se suma como 576 intentos al `N_intentos` "
+          f"ganadora. Por eso NO se suma como {n_tot} intentos al "
+          "`N_intentos` "
           "del DSR, que cuenta selección de modelo.", "",
           "**Pero la exposición existe y se declara:** este informe publica "
           "celdas individuales que alguien podría citar sueltas —la de "
-          f"ventaja máxima ({v['ventaja_pp'].max():+.1f} pp), o el "
-          f"`dedup=last` que el pre-registro secuencial midió en +9.96 pp "
-          "con p = 0.0323—. **Citar cualquier celda individual como "
+          f"ventaja máxima ({v['ventaja_pp'].max():+.1f} pp), o la propia "
+          f"celda ancla bajo la regla firmada "
+          f"({ANCLA_REGLA['ventaja_pp']:+} pp, p = "
+          f"{ANCLA_REGLA['p_exacto']})—. **Citar cualquier celda "
+          "individual como "
           "resultado del proyecto mueve `N_intentos` y hay que decirlo en "
           "el mismo párrafo en que se la cita.** El resultado de este "
           "frente es el COCIENTE, el RANGO y la lista de supervivientes; "
