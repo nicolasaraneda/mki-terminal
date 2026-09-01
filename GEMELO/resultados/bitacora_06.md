@@ -78,4 +78,66 @@ frentes, uno en versión con bugs.
   correlacionar con el acierto** si un sello tardío usa datos distintos —
   y sabemos que los usa, porque ése es el defecto. **Que lo mida, no que
   lo suponga.**
+- **11:50** — **Dictamen del guardián sobre la quinta corrida: OBSERVADO,
+  sin rechazos.** Verificó lo duro sin creerme nada: motor intacto,
+  ninguna fila sellada tocada, **las bases conservan su mtime del sello
+  antes y después de correr la suite completa**, portada entera sin mover,
+  holdout sin gastar, 470 tests en verde, nada que se autoejecute. Y
+  confirmó que **la firma se aplicó como Nicolás la escribió**: la regla
+  **no es equivalente a `keep="last"`** ni por construcción ni por
+  resultado, y **no hay listas de fechas cableadas**.
+  - **Sus observaciones son deuda de memoria institucional, que es la más
+    cara de dejar abierta**, y su criterio lo explica: en un proyecto donde
+    `DECISIONES.md` se lee **antes** de arreglar nada, un acta equivocada
+    hace daño solo. Textual: ***"quien lea sólo la memoria institucional
+    reimplementa el bug"***.
+  - **Lo que falta y estoy cerrando:** el acta §59 sigue prescribiendo
+    `min()` donde el código hace `max()`; **faltan las actas de tres
+    frentes**, y una de ellas —la del Frente B— **revierte la conclusión
+    central de §59** (R3 pasó de disparar a estar limpio) y **vivía sólo
+    en un mensaje de commit**; y **la errata del barrido omite
+    `backtest/linea_base.py`**, que es justamente el archivo que carga la
+    regla firmada entera.
+  - **Y me corrigió una premisa del propio encargo:** le dije que
+    `.claude/` estaba intacto y **no lo estaba** — `evaluacion.py` cambió.
+    Verificó que **no mueve ninguna cifra** (desvío máximo 5,1e-13, anclas
+    reproducen) y que estaba documentado, pero **es el módulo árbitro que
+    juzga toda cifra del proyecto y yo lo presenté como no tocado**. Va al
+    acta.
+- **11:55** — Arreglada la **errata que rompía la frase que corregía**:
+  la nota del conteo de sesiones se había insertado **a mitad de la
+  oración original** y la partía. Reordenada —primero el texto original
+  completo, después las notas— con su propia errata de la errata. **Una
+  errata que rompe la frase que corrige es peor que el error que
+  arregla.**
+- **12:05** — **Frente E cerrado: acta §61 escrita y el parche preparado,
+  con 14 bloques verificados contra el repo.**
+  - El acta cubre las tres cosas: la **confirmación** con su razón
+    independiente del p, el **tercer desenlace** con su mecanismo (b=72
+    sin cambio, c 56→49, siete discordantes y los siete a favor de la
+    baseline), y **la degradación del McNemar**. Cada mención del +9,7 pp
+    o del p=0,0451 lleva el **IC95 [−7,2, +26,5] pegado, sin excepción**.
+  - **La comparación que hace obvia la degradación**, y que el acta cita:
+    **0 de 192 celdas por clúster contra 59 de 192 y 201 de 768 por
+    McNemar**. La diferencia no la produce ninguna bifurcación: la produce
+    el supuesto de independencia.
+  - **Y verificó la lista del parche en vez de copiarla, y encontró una
+    discrepancia:** `GEMELO/RELEVO.md` tiene la cifra en **6 líneas**, no
+    en las 2 que citaban los documentos anteriores. Declarado. De los 14
+    bloques, **2 no se mueven en ningún escenario** por estar congelados.
+  - **La cuarta regla aplicada al propio estadístico, y es el hallazgo del
+    frente:** el McNemar **sigue siendo el único campo de significancia**
+    en tres funciones — `backtest/linea_base.py`:394 (`duelo`),
+    `.claude/skills/estadistica-evaluacion/scripts/evaluacion.py`:193
+    (`comparar_pareado`, **la skill compartida**) y
+    `GEMELO/control_lineal.py`:287. **Ninguna ofrece alternativa de
+    clúster en su firma.** Degradarlo en los documentos y dejarlo como
+    única salida del código sería exactamente el patrón que la regla 4
+    describe. Señalado con `archivo:línea`, **no corregido**: la skill
+    compartida y `linea_base` son territorio de decisión, no de arreglo
+    de paso.
+  - Y una observación de guía que agregó: `.claude/rules/backtest.md`:15-16
+    **recomienda McNemar para comparaciones pareadas sin advertir el
+    supuesto de independencia**. Es la regla escrita empujando hacia el
+    estadístico que se acaba de degradar.
 

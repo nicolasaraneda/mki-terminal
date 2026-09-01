@@ -5640,3 +5640,158 @@ histórica, previa a la firma, con la que siguen reproduciendo 21/21 (§25) y
 `test_las_diez_filas_retiradas_favorecian_todas_a_la_baseline` fijan el
 hallazgo, no la implementación: si la regla se revierte, esos tests deben
 fallar, y ese fallo es la señal de que la reversión ocurrió.
+
+## 61. La regla de deduplicación queda CONFIRMADA, y el McNemar deja de ser el estadístico principal de la ventana sellada
+
+**Fecha:** 1-sep-2026. Fuente: instrucción directa de Nicolás. Evidencia en
+`GEMELO/resultados/dedup_opciones.md`, `GEMELO/resultados/parche_dedup.md` y
+`GEMELO/resultados/bifurcaciones.md` (matriz recomputada a 192 celdas tras la
+firma del §60). Parche preparado y NO aplicado en
+`GEMELO/resultados/parche_degradacion_mcnemar.md`.
+
+**Qué se decidió — primera parte: la regla del §60 queda CONFIRMADA.**
+Nicolás confirma la regla de deduplicación que firmó, **ahora sabiendo que
+produce p = 0,0451** — un tercer desenlace que no era ninguno de los dos que
+tenía a la vista al firmar (0,1847 sin deduplicar, 0,032 con `keep="last"`,
+la rama prohibida).
+
+**Qué se decidió — segunda parte, y es el cambio de fondo: para la ventana
+sellada, el estadístico principal del proyecto deja de ser el McNemar y pasa
+a ser el intervalo que respeta el clúster de día.** Hoy, bajo la regla
+confirmada: **+9,7 pp, IC95 de clúster de día [−7,2, +26,5] pp**, n efectivo
+**67** (no 238), **0 de 192** celdas de la matriz de bifurcaciones
+significativas por clúster. **Cruzar α no es tener evidencia** — la frase
+queda escrita porque es la que evita el malentendido de leer un p menor a
+0,05 como si fuera lo mismo que un intervalo que excluye cero.
+
+**Por qué se confirma la regla, y por qué la razón NO es el p.** La regla se
+sostiene por el **pareo insumo↔objetivo**, que es una razón independiente del
+p que produce: las 10 filas que la regla retira tienen una `sesion_objetivo`
+que no corresponde a su `available_at` — la predicción es β·SOX(t) puntuada
+contra el gap de t+2, un desajuste demostrable en el código y en los
+timestamps, no una preferencia por una fila sobre otra. **Esto es lo que
+queda clavado, porque dentro de un año va a parecer otra cosa:** la decisión
+se tomó **conociendo los tres desenlaces** (0,1847 · 0,032 · 0,0451), la
+razón de la firma **no fue el p**, y la razón **no cambió cuando el tercer p
+apareció**. Eso es, por definición, el test de que la razón era
+independiente del resultado — si la razón hubiera sido el p, un tercer p no
+previsto habría obligado a re-justificar la decisión, y no fue necesario.
+
+**El tercer desenlace, con su mecanismo, y por qué no cambia la razón.**
+Bajo la regla confirmada (`excluir_cero`, n=238): `b` queda en **72 sin
+cambio**; `c` baja de **56 a 49**. Las 10 filas retiradas contenían **7
+pares discordantes, y los 7 favorecían a la baseline — cero al modelo**. Es
+la misma asimetría, con el mismo signo, que motivó prohibir `keep="last"`
+(que retiraba 10 de 12 discordancias a favor de la baseline). **Las dos
+cosas quedan dichas juntas a propósito**: la asimetría existe, y su
+justificación es distinta y verificable — no es frescura, es
+no-correspondencia demostrable entre lo que la predicción podía saber y la
+sesión contra la que se puntuó.
+
+| rama | n | ventaja | b/c | p (χ²cc) | p (exacta) |
+|---|---|---|---|---|---|
+| sin deduplicar (publicado) | 248 | +6,5 pp | 72/56 | 0,1849 | 0,1847 |
+| **regla confirmada** | **238** | **+9,7 pp** | **72/49** | **0,0455** | **0,0451** |
+| `keep="last"` (prohibida) | 233 | +10,3 pp | 70/46 | 0,0327 | 0,0323 |
+
+**La degradación del McNemar, con la medición que la sostiene.** McNemar
+supone que las filas son independientes, y no lo son: las ~7 filas de una
+misma sesión de emisión son todas β·SOX sobre el MISMO movimiento del SOX,
+así que fallan y aciertan casi todas juntas. Medido sobre las 238 filas de
+la regla confirmada, en 34 días: **ICC (ANOVA de una vía, ajuste de Fisher)
+≈ 0,392**, **DEFF (tamaño de Kish, Σn²/N) ≈ 3,55–3,6**, **n efectivo ≈ 67**.
+La matriz de bifurcaciones lo mostró de la forma más clara, sobre su versión
+de 8 ejes y 768 celdas (previa a que la deduplicación se fijara como regla):
+**201 de 768 celdas cruzaban α por McNemar y 0 de 768 por el estimador de
+clúster** — la diferencia entre 201 y 0 no la produce ninguna bifurcación de
+diseño: **la produce el supuesto de independencia**. Sobre la matriz
+recomputada tras la firma (192 celdas, `dedup` retirado como eje), la misma
+brecha se repite: **59 de 192 por McNemar contra 0 de 192 por clúster**. Y
+toda la información discriminante de la ventana, contada en enteros y sin
+necesitar ningún aparato para verla: contra "siempre al alza" el modelo solo
+puede diferir cuando predice BAJA, y en los 17 días (de 34) donde hay algún
+desacuerdo el saldo es **10 días ganados, 6 perdidos, 1 empatado** —
+binomial exacta **p = 0,45**. **Un 10-6 en 17 días es toda la evidencia que
+la ventana sellada acumuló hasta hoy**, y es exactamente lo que el IC95
+[−7,2, +26,5] está diciendo con más aparato.
+
+**Qué se descartó y por qué.** Re-verificar las 10 filas del defecto de
+reloj contra su sesión objetivo correcta, en vez de descartarlas, seguiría
+siendo lo más completo — pero exige recomputar valores sellados, y las
+filas selladas no se reescriben nunca (Constitución 5.0, punto 3);
+descartarlas sigue siendo la única salida disponible, por restricción y no
+por preferencia (ya dicho en el §60, se repite porque la confirmación no lo
+cambia). Sobre el McNemar: no se descartó el estadístico ni se lo declaró
+erróneo — sigue siendo aritméticamente correcto y sigue siendo el criterio
+**V1 congelado** de `GEMELO/DISEÑO.md` §6.1 ("Ventaja sobre siempre al alza,
+McNemar p < 0,05"), que **no se toca** porque es un criterio pre-registrado
+y los criterios congelados no se mueven después de ver resultados. Lo que se
+degrada es su rol como **cifra principal de lectura** en la prosa del
+proyecto (README, skills, agentes): satisfacer V1 sigue siendo necesario
+para un retador, pero **satisfacerlo ya no se lee, por sí solo, como
+evidencia** — necesita además el intervalo de clúster, y ese intervalo pasa
+a citarse siempre al lado.
+
+**Qué queda abierto.** (1) Las 15 filas sin pareja del §60 (hallazgo A)
+siguen sin decidirse, y su cifra bajo coherencia (n=223, +14,3 pp,
+p=0,0024) sigue en `cola_decisiones.md` §2a-ter. (2) El parche que mueve las
+cifras publicadas del README y de las skills a la lectura degradada está
+**escrito y no aplicado** — ver más abajo. (3) La pregunta constitucional
+que el Frente A de esta misma corrida está resolviendo en paralelo (si la
+verificación es parte del sello, y si las 10 filas del defecto de reloj se
+podrían re-verificar en vez de descartarse) puede cambiar el n de la regla
+otra vez; esta acta no espera esa respuesta porque la confirmación de
+Nicolás y la degradación del McNemar son válidas independientemente de cómo
+se resuelva. (4) Con n efectivo del orden de 67, el proyecto no tiene hoy
+potencia para distinguir al campeón de una constante en ninguna dirección
+sobre la ventana sellada — eso no lo resuelve esta acta, lo declara.
+
+**El parche, preparado y NO aplicado.** `GEMELO/resultados/parche_degradacion_mcnemar.md`
+verifica contra el repo (no copia de memoria) la lista de bloques de
+`GEMELO/resultados/mcnemar_dos_rutas.md` (12 bloques originales) más los 2
+que el Frente A de ayer agregó en `parche_dedup.md` (el arnés de asserts de
+`evaluacion.py` y `GEMELO/RELEVO.md`) — 14 ubicaciones en total, de las
+cuales 2 (el pre-registro `GEMELO/DISEÑO.md` §2.8 y `LINEA_BASE_OFICIAL` en
+`backtest/linea_base.py`) **no se mueven**, por ser cifras congeladas
+anteriores a la firma. **Ninguna cifra publicada se movió al escribir esta
+acta.** Mover el README, las skills o el agente lleva la firma de Nicolás,
+igual que mover el parche de deduplicación del §60.
+
+**La cuarta regla de la casa, aplicada al propio estadístico que se degrada.**
+Se revisó si McNemar sigue ofrecido como valor por defecto en alguna función
+o firma, en los tres lugares que corresponde mirar:
+
+- `backtest/linea_base.py:394-413` (`duelo()`) — la función que arma **toda**
+  cifra de comparación pareada del proyecto (README, GEMELO, bifurcaciones)
+  devuelve `mcnemar_p` como **el único** campo de significancia del
+  diccionario. No hay una alternativa de clúster en la firma ni un
+  parámetro para pedirla: quien llama a `duelo()` recibe McNemar sin poder
+  no recibirlo. **No se cambia acá** — está fuera del alcance de esta acta —
+  pero queda señalado con archivo y línea.
+- `.claude/skills/estadistica-evaluacion/scripts/evaluacion.py:193-213`
+  (`comparar_pareado()` / `ComparacionPareada`) — la función de comparación
+  pareada de la **skill compartida** del proyecto expone `p_mcnemar` como
+  único campo inferencial; el módulo no tiene ninguna función de
+  clúster-por-día. Es la ruta que la propia skill recomienda ("¿la
+  diferencia es real? `mcnemar_exact(b, c)`", `SKILL.md`:41) sin ninguna
+  advertencia de que supone independencia. **No se cambia acá.**
+- `GEMELO/control_lineal.py:287` (`_mcnemar()`) — el comparador que usó el
+  WS2b para C1/C2/C3 tiene el mismo problema: sin corrección de clúster. Si
+  algún día se evalúa un retador con este módulo, va a heredar la misma
+  sobreestimación de significancia que esta acta mide en el campeón.
+  **No se cambia acá.**
+
+Las tres quedan **señaladas y no corregidas** porque tocar código de
+medición compartido está fuera del alcance de esta acta (que es de
+prosa/decisión) y porque `evaluacion.py` es la skill árbitro: cambiarla
+exige su propio ciclo de revisión adversaria, no un efecto colateral de
+un acta.
+
+**Cómo se revierte.** La confirmación de la regla se revierte de la misma
+forma que el §60: `dedup=False` en `cargar()`. La degradación del McNemar
+se revierte dejando de citar el intervalo de clúster como principal — no
+hay interruptor de código porque no se tocó ningún ejecutable; revertirla es
+volver a leer el p de McNemar como si bastara solo, lo que esta acta
+documenta como el error que produjo 59 (o 201, en la matriz de 8 ejes)
+falsos cruces de α de cada 192 (o 768) formas legítimas de medir la misma
+ventana.

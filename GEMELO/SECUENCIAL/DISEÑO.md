@@ -367,19 +367,32 @@ hallazgo por derecho propio:
 
 > **30 de las 256 filas (11.7%) son predicciones distintas que apuntan a
 > la MISMA sesión objetivo.** Quince pares, sobre **cuatro** sesiones
-> (31-jul, 5-ago, 12-ago, 18-ago):
+> (31-jul, 5-ago, 12-ago, 18-ago): dos fechas de emisión consecutivas
+> cuyo objetivo es la misma sesión, porque la sesión intermedia no
+> existió. Comparten `gap_pct` y `retorno_real_pct` idénticos, y **entre
+> ellas están los movimientos más grandes de toda la ventana**
+> (000660.KS +29.95%, 005930.KS +26.81%, 3436.T +17.52%). Contadas dos
+> veces, inflan cualquier media.
 >
 > **ERRATA (1-sep-2026).** Esta línea decía "cinco sesiones" y son
 > **cuatro** — las cuatro que la propia línea enumera. Error de conteo
 > mío, sin consecuencia sobre ninguna cifra (los 15 pares y las 30 filas
 > son correctos), corregido acá y no en silencio porque el documento ya
 > estaba commiteado (`d071821`). Lo encontró el forense del Frente A de la
-> quinta corrida. dos fechas de emisión consecutivas cuyo objetivo
-> es la misma sesión, porque la sesión intermedia no existió. Comparten
-> `gap_pct` y `retorno_real_pct` idénticos, y **entre ellas están los
-> movimientos más grandes de toda la ventana** (000660.KS +29.95%,
-> 005930.KS +26.81%, 3436.T +17.52%). Contadas dos veces, inflan cualquier
-> media.
+> quinta corrida.
+>
+> **ERRATA de la errata (1-sep-2026, más tarde).** La primera redacción de
+> esta nota **se insertó a mitad de la oración original y le partió el
+> sentido**: el bloque quedaba diciendo "...de la quinta corrida. dos
+> fechas de emisión consecutivas...". Lo cazó el `guardian-constitucion`.
+> Reordenado: primero el texto original completo, después las notas. Una
+> errata que rompe la frase que corrige es peor que el error que arregla.
+>
+> **Y el alcance creció después:** son **25** las filas con
+> `sesion_objetivo` incorrecta, no 20 — las 10 de estos pares más **15
+> huérfanas sin pareja**, que sólo se ven auditando las 279 filas selladas
+> y no con un `GROUP BY ... HAVING COUNT>1`. Ver
+> `GEMELO/resultados/parche_snapshot140.md`.
 
 Deduplicando por (ticker, sesión objetivo), E|r| = **3.72%**.
 
