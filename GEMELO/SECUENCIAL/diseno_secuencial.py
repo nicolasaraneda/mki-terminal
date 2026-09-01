@@ -68,11 +68,19 @@ P_D_OBSERVADA = 128 / 248
 DEFF_PLANIFICACION = 3.6
 DEFF_RANGO = (2.5, 3.6, 4.6, 5.83, 7.26)
 
-# Ritmo de acumulación medido (`integridad-datos`, corridas anteriores):
-# ~6.5 filas verificadas por día hábil, ~0.89 fechas de emisión por día
-# hábil (34 fechas en 38 días hábiles de la ventana actual).
-FILAS_POR_DIA_HABIL = 6.5
-FECHAS_POR_DIA_HABIL = 34 / 38
+# Ritmo de acumulación medido, recontado al sello del 31-ago-2026:
+# 256 filas en 39 días hábiles y 35 fechas de emisión. La v4 usaba 6.5 y
+# 34/38, que era la medición al 28-ago.
+#
+# ATENCIÓN — este ritmo depende de una decisión que NO está tomada: si se
+# deduplican las predicciones que apuntan a la misma sesión objetivo
+# (`DISEÑO.md` §A3.1.a, 30 de 256 filas), el ritmo baja a 241/39 = 6.18 y
+# todas las fechas del calendario se corren. Se deja en el valor sin
+# deduplicar porque es lo que la base contiene hoy, y la alternativa está
+# declarada al lado en vez de escondida.
+FILAS_POR_DIA_HABIL = 256 / 39          # 6.564
+FILAS_POR_DIA_HABIL_DEDUP = 241 / 39    # 6.179, si se resuelve deduplicar
+FECHAS_POR_DIA_HABIL = 35 / 39
 
 FECHA_CONGELAMIENTO = dt.date(2026, 8, 31)
 
@@ -469,7 +477,7 @@ def main() -> None:
         print(f"  ventaja acá): ac1 = {med['ac1']:+.3f} ± {med['ee']:.3f} sobre "
               f"{med['fechas']} fechas.")
         print("  O sea: los datos de hoy NO distinguen 0 de +0.2. Por eso el")
-        print("  estadístico toma V̂ = max(bloque 1, bloque 5) — el máximo solo")
+        print("  estadístico toma V̂ = max(bloque 1, 5, 10) — el máximo solo")
         print("  puede inflar la varianza, y por lo tanto solo puede bajar el α.")
 
     _linea("6. FUTILIDAD (potencia condicional < 20%, NO vinculante)")

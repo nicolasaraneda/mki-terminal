@@ -29,15 +29,35 @@
 // Elegido porque apertura_estimada_pct real vive en [-5.02, +6.91] y gap_pct
 // en [-9.99, +28.37] — sobra un factor 4 de cabecera y el error de
 // cuantización medido (0.00188 pp máx) es el 0.063% del MAE publicado.
-`define MKI_ANCHO_FEATURE 16
-`define MKI_FRAC_FEATURE  8
+//
+// NOTA FECHADA (31-ago-2026): ese 0.063% es correcto para lo que mide —
+// cuantizar UN valor— pero NO es la pérdida del pipeline, que es el producto
+// de dos valores cuantizados más el truncado: 0.00474 pp = 0.16% del MAE
+// (SINTESIS.md §5, y RTL.md lleva la errata en su §3). El texto de arriba se
+// deja como estaba: se anota, no se reescribe.
+//
+// Los cuatro anchos van guardados con `ifndef` para que un barrido de ancho
+// (`yosys -DMKI_ANCHO_FEATURE=32 ...`) pueda medir qué CUESTA ensanchar sin
+// editar este archivo. El valor por defecto NO cambia: sin -D, sigue siendo
+// Q8.8/Q2.14 exactamente como lo justificó RTL.md §3, así que ninguna cifra
+// ya publicada se mueve. Ver GEMELO/MICRO/SINTESIS_A7.md §4.4.
+`ifndef MKI_ANCHO_FEATURE
+  `define MKI_ANCHO_FEATURE 16
+`endif
+`ifndef MKI_FRAC_FEATURE
+  `define MKI_FRAC_FEATURE  8
+`endif
 
 // Q2.14: 16 bits con signo, 14 fraccionarios. Rango [-2.0, +1.9999],
 // resolución 0.000061. Los pesos del modelo (beta real en [0.05, 1.01])
 // entran con margen; se privilegia resolución sobre rango porque un peso
 // nunca llega a 2 en este modelo.
-`define MKI_ANCHO_PESO 16
-`define MKI_FRAC_PESO  14
+`ifndef MKI_ANCHO_PESO
+  `define MKI_ANCHO_PESO 16
+`endif
+`ifndef MKI_FRAC_PESO
+  `define MKI_FRAC_PESO  14
+`endif
 
 // --- Códigos de decisión ---
 // Se codifican en 2 bits en vez de one-hot: son mutuamente excluyentes por

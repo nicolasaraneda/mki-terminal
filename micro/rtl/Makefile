@@ -49,10 +49,44 @@ PESOS_F1SP := 0
 DISPOSITIVO := hx1k
 PAQUETE     := tq144
 
+# Anchos de bus de entrada para la variante de ingesta ancha (ver
+# etapa_ingesta_ancha.v). B=1 reproduce el comportamiento original y es el
+# control: si esa fila no da 32 ciclos y 181/181, la variante está mal.
+ANCHOS_B := 1 2 4 7 14 28
+
+RTL_ANCHO := etapa_ingesta_ancha.v etapa_features.v etapa_puntaje.v \
+             etapa_decision.v uart_tx.v etapa_salida.v pipeline_top_ancho.v
+
 .PHONY: all vectores simular sintetizar multiplicador etapas placas limpiar \
+        a7 ancho error-ancho \
         $(addprefix sim-,$(CONFIGS)) $(addprefix sint-,$(CONFIGS))
 
 all: simular multiplicador etapas sintetizar placas
+
+# ---------------------------------------------------------------------------
+# Arty A7-100T (XC7A100TCSG324-1). Todo esto es MAPEO TECNOLÓGICO, no place &
+# route: OSS CAD Suite no trae nextpnr-xilinx y Vivado no se pudo instalar
+# (ver micro/TOOLCHAIN.md §3). No hay Fmax y se dice en cada tabla.
+# Resultados y lectura en GEMELO/MICRO/SINTESIS_A7.md.
+# ---------------------------------------------------------------------------
+a7: | $(DIR_SINT)
+	$(PYTHON) medir_a7.py 2>&1 | tee $(DIR_SINT)/a7.log
+
+# Cuánto error de cuantización compra cada bit de más, contra el álgebra en
+# float64 Y contra la fila sellada. Sólo Python: senales.db en modo ro.
+error-ancho:
+	$(PYTHON) medir_ancho_error.py
+
+# La variante de ingesta ancha: MISMO resultado bit a bit, latencia
+# ceil(28/B)+4. La predicción está escrita en pipeline_top_ancho.v ANTES de
+# correr y el banco falla si no se cumple.
+ancho: vectores | $(DIR_SIM)
+	@for b in $(ANCHOS_B); do \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=$$b -DCFG_NF=1 -DCFG_PESOS=1 \
+	        -o $(DIR_SIM)/tb_ancho_$$b.vvp $(RTL_ANCHO) tb/tb_pipeline_ancho.v \
+	        2> $(DIR_SIM)/iverilog_ancho_$$b.log; \
+	    $(VVP) $(DIR_SIM)/tb_ancho_$$b.vvp; \
+	done | tee $(DIR_SIM)/ancho.log
 
 # Área de cada etapa por separado, contra la estimación de RTL.md §2 fila por
 # fila. Es la única forma de decir DÓNDE se equivocó la estimación, y además

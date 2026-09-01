@@ -4796,3 +4796,390 @@ ningún cambio al README ni a ningún skill, y el acta que propone para
 copiar queda sujeta, si se aprueba, a la misma regla de siempre: la
 frontera de la errata es el commit — corregible en su sitio hasta que se
 commitee, errata fechada después.
+
+---
+
+## 52. La regla de verificación independiente, y cobrando su primera pieza el mismo día en que se escribió
+
+**Fecha:** 31-ago-2026. Fuente: `GEMELO/resultados/bitacora_04.md`
+(22:35 UTC en adelante) y `GEMELO/SECUENCIAL/DISEÑO.md` ("De dónde salen
+los números, y contra qué se validan" y §A3.1.a).
+
+**Qué se decidió.** Adoptar como regla de la casa, para todo el proyecto:
+**una verificación que usa el mismo mecanismo que produjo la cifra NO es
+una verificación.** Toda cifra crítica se valida contra una vara
+independiente, de otra familia de método. Si esa vara no existe, se dice,
+en vez de fabricar una que se le parezca.
+
+**Por qué.** Nace de un defecto real, ya documentado en `DECISIONES.md`
+§47: en la tercera corrida (la v1 del diseño secuencial), las fronteras
+salían de un Monte Carlo y se "verificaban" con el mismo generador, el
+mismo `n_sim` y el mismo modelo, en otra semilla. La verificación interna
+medía 0.0507 y el documento lo leía como confirmación de que la frontera
+estaba bien construida. Era el sesgo mismo: el α real de esas fronteras
+era **0.05122**, no 0.05. Un mecanismo no puede detectar su propio sesgo
+midiéndose con una copia de sí mismo.
+
+**La regla se aplicó a sí misma esta misma corrida, y se cobró una pieza
+propia.** En la sección A3.1.a de `GEMELO/SECUENCIAL/DISEÑO.md`, la
+primera redacción de esta corrida afirmaba haber validado E|r| (el
+retorno absoluto medio, insumo del MDE) contra una "vara independiente":
+el precio crudo de Yahoo, recomputado desde cero. El cuarto dictamen del
+`estadistico-adversario` lo midió: emparejada fila a fila contra la
+columna sellada, la desviación máxima es **0,0207 pp** y la media
+**0,0001 pp** sobre **234 filas**. Es el mismo proveedor, el mismo campo y
+la misma fórmula recorrida de nuevo — una reproducción, no una medición
+independiente. Que diera 3,7594% en vez del 4,0231% con duplicados no
+prueba que la vara descarte la contaminación: promedia otra población
+(319 pares ticker-sesión de todo el calendario, contra 246 en 37 sesiones
+objetivo); restringida a las mismas filas da 3,7151% contra 3,6671%
+sellado, y coincide porque es el número sellado. Retractado en
+`GEMELO/SECUENCIAL/DISEÑO.md` §A3.1.a, el mismo día.
+
+**Qué se descartó y por qué.** Instalar `scipy` u otra librería para
+fabricar una tercera vara donde dos ya bastaban (caso del Frente D, ver
+§55): descartado, porque agregar una dependencia solo para "desempatar" es
+en sí mismo el tipo de vara fabricada que la regla prohíbe.
+
+**Qué queda abierto.** No existe hoy, en el repo, una fuente de precios de
+otra familia de método (no Yahoo) con la que contrastar `retorno_real_pct`
+o cualquier otra columna sellada. Conseguirla es trabajo, no un
+`yf.download()` adicional, y queda declarado como lo que es: una vara que
+no existe, no una vara pendiente de instalar.
+
+**Cómo se revierte.** No aplica: es una regla de método, no un cambio de
+código. Se aplica y se documenta cada vez que se invoca, incluida esta
+acta, que documenta la vez que se aplicó contra su propio autor.
+
+---
+
+## 53. α = 0.05 nominal con la banda [0.046, 0.079] publicada
+
+**Fecha:** 31-ago-2026. Decisión de Nicolás. Fuente:
+`GEMELO/SECUENCIAL/DISEÑO.md` ("El α, decidido: 0.05 nominal con la banda
+publicada" y §A3.2).
+
+**Qué se decidió.** El diseño secuencial pre-registrado declara **α = 0.05
+bilateral** y publica, en el cuerpo del documento y no en nota al pie, la
+banda **[0.046, 0.079]** como limitación declarada: es el rango de α real
+que entrega el plan según la autocorrelación lag-1 plausible de las
+contribuciones diarias, medida con `max(1, 5, 10)` bloques de fecha en el
+bootstrap circular. El compromiso es reestimar la banda cuando el N
+permita acotar esa autocorrelación.
+
+**Por qué.** Razón textual de Nicolás: el proyecto publica su
+incertidumbre en todo lo demás — Wilson en cada tasa de acierto, intervalo
+del 80% en cada predicción, "pendiente" cuando el n no alcanza en vez de
+rellenar. Declarar α = 0.10 para que el número fuera "verdadero" habría
+sido absorber la incertidumbre dentro de una cifra más redonda, que es
+exactamente lo contrario del estilo de la casa.
+
+**Qué se descartó y por qué.** Subir α a 0.10 de entrada: es la
+recomendación que el propio documento hacía en su v4, y se descartó
+explícitamente. Congelar el DEFF o la autocorrelación como constantes del
+mundo en vez de banda: descartado en versiones anteriores de este mismo
+diseño (v1 y v2, ver §47) por la misma razón — un α que depende de un
+parámetro estimado a ojo no es un α controlado.
+
+**Qué queda abierto.** El estimador de reestimación quedó **declarado por
+adelantado**, para que no se elija el día que haga falta:
+`mirada.autocorrelacion_lag1` sobre las contribuciones `d_j` (lag 1), con
+error estándar de Bartlett `1/√m`. La banda se reestima cuando `2·EE <
+0.10`, es decir cuando `m ≥ 400` fechas. Con el ritmo actual de
+acumulación (6,56 filas/día hábil, recontado al 31-ago) eso son **unos 8
+años**. Se deja escrito con ese plazo, para que nadie lea "se reestimará"
+como si fuera pronto. Mientras tanto, cada acta que invoque el diseño
+publica `ac1` con su EE y cita la banda entera; la banda no se estrecha
+por una `ac1` puntual que dé chica.
+
+**Cómo se revierte.** Es una decisión de Nicolás y solo él puede
+revertirla. El código no fuerza nada: `mirada.py` reporta la banda y el
+`ac1` en cada acta; cambiar el α declarado es editar una constante y
+recongelar el documento, no un cambio de datos.
+
+---
+
+## 54. La placa: Digilent Arty A7-100T, y la arquitectura de dos modelos
+
+**Fecha:** 31-ago-2026. Decisión de Nicolás. Fuente:
+`GEMELO/MICRO/SINTESIS_A7.md` y `GEMELO/resultados/bitacora_04.md`.
+
+**Qué se decidió.** La placa de la pista de microtrading/RTL es la
+**Digilent Arty A7-100T (original)**, `XC7A100TCSG324-1`. Especificaciones
+confirmadas por Nicolás y verificadas contra DS180 v2.6.1: 101.440 celdas
+lógicas, 240 DSP48E1, 4.860 Kbit de BRAM, 8 transceptores GTP de 6,6 Gb/s,
+300 I/O de usuario, reloj interno sobre 450 MHz, XADC, DDR3L de 256 MB en
+bus de 16 bits, flash QSPI de 16 MB, Ethernet 10/100, USB-JTAG y
+USB-UART, soportada por Vivado incluida su edición gratuita (tier BASIC).
+Queda descartada la A7-35T (33.280 celdas, 90 DSP).
+
+Junto con la placa, **arquitectura de dos modelos**: uno orientado a
+trading general y otro a HFT. La A7-100T es la plataforma del modelo
+general y la de verificación bit a bit contra el modelo de referencia. Más
+adelante, para la ruta HFT, una **Kria KR260** (Zynq UltraScale+ MPSoC
+XCK26: 256.000 celdas, 144 BRAM, 64 UltraRAM, 1.200 DSP, cuatro puertos
+RJ-45 gigabit y un SFP+, DDR4 de 4 GB sin ECC, QSPI de 512 MB, raíz de
+confianza en hardware y TPM 2.0, cuatro Pmod y cabecera Raspberry Pi HAT).
+Estas especificaciones de la KR260 son las que Nicolás dio en esta misma
+corrida; a diferencia de la A7-100T, todavía no tienen un documento de
+diseño propio en `GEMELO/MICRO/` que las verifique contra una hoja de
+datos — queda declarado así, no como una cifra confirmada por una fuente
+del repo.
+
+**Por qué.** El encuadre que hay que dejar clavado: la A7-100T **no es un
+motor de backtesting** — el backtest es un problema de throughput y lo
+gana la CPU. La placa es donde se **demuestra** que el RTL reproduce al
+modelo de referencia bit a bit, y es el proyecto final del ramo de
+Arquitectura de Computadores.
+
+`SINTESIS_A7.md` §1 encontró, además, un hallazgo de unidades que hay que
+declarar antes de comparar nada: las 1.545 "celdas" del iCE40HX1K medidas
+en `SINTESIS.md` y las 101.440 celdas lógicas de la A7-100T **no son la
+misma unidad**. El iCE40 empaqueta LUT4 + flip-flop en la misma celda
+(`ICESTORM_LC`, reportado por `nextpnr` tras place & route); el Artix-7
+separa LUT6 y flip-flop como recursos independientes, y la A7-100T tiene
+**15.850 slices = 63.400 LUT6 y 126.800 flip-flops**. El "101.440" es una
+cifra de catálogo, no un recurso físico que un sintetizador reporte: es
+`Logic Cells = Slices × 4 × 1,6`, y el factor 1,6 se verificó contra
+DS180 con una prueba que no depende de la memoria de nadie: dividiendo
+Logic Cells por (Slices × 4) en los **ocho** dispositivos Artix-7 de la
+tabla, los ocho dan **1,600 exacto**.
+
+**Qué se descartó y por qué.** Comparar directamente "1.545 celdas" contra
+"101.440 celdas" para decidir margen: descartado de plano, es exactamente
+el error de unidades que la regla nueva de la casa (§52) existe para
+evitar.
+
+**Qué queda abierto y el límite que hay que declarar sin maquillar.** Los
+**8,79 ms** medidos en `GEMELO/MICRO/piso_de_latencia.md` (round trip
+`connect()` TCP contra un endpoint público, p50, sin colocation) son
+**internet, no la placa** — el propio documento lo mide como brecha de
+red, no de FPGA. El SFP+ de 10G de la KR260 está pensado para visión
+industrial, no para mercados. **Lo que desbloquea la ruta HFT no es
+hardware, es colocación**, y eso es otro orden de compromiso, no una
+compra de placa. Como dato de planificación, no como crítica de la
+compra ya hecha: la A7-100T es fabric puro, sin procesador duro, así que
+no construye experiencia de co-diseño PS/PL (procesador + lógica
+programable) — esa curva de aprendizaje empieza de cero cuando llegue la
+KR260, que sí lo exige.
+
+**Cómo se revierte.** La compra de la A7-100T ya está hecha y no se
+revierte. La arquitectura de dos modelos y la ruta hacia la KR260 son
+planificación, no compromiso de calendario ni de gasto: se puede
+abandonar la ruta HFT en cualquier momento sin dejar deuda, porque nada
+del trabajo sobre la A7-100T depende de que la KR260 se compre.
+
+---
+
+## 55. El McNemar publicado: dos rutas, ninguna equivocada
+
+**Fecha:** 31-ago-2026. Fuente: `GEMELO/resultados/mcnemar_dos_rutas.md`
+(Frente D de la cuarta corrida), que tiene el detalle completo.
+
+**Qué se decidió.** Ninguna, todavía: se registra el hallazgo y las
+opciones costeadas, sin aplicar ningún parche.
+
+**Por qué existe esta acta.** El README publica p = 0.1849 para la
+ventana sellada (b=72, c=56, `excluir_cero`); el módulo árbitro
+(`evaluacion.mcnemar_exact`) devuelve 0.1847 sobre el mismo par. **Las dos
+cifras son correctas**: 0.1849 es el χ² de McNemar con corrección de
+continuidad (0.184898, `backtest/linea_base.py:126`); 0.1847 es la
+binomial exacta bilateral (0.184683). Mismo par de discordantes, mismo n,
+métodos distintos — no hay redondeo ni arrastre de por medio. Verificado
+contra varas independientes (regla del §52): la binomial exacta
+recomputada con `fractions.Fraction` (aritmética racional, sin un float)
+da idéntica; el χ² por `erfc` y por `2·(1−Φ(√x))`, dos caminos sin código
+compartido, dan idéntico. No se instaló `scipy`: hubiera sido fabricar una
+tercera vara donde dos ya bastaban.
+
+**Errata sobre `DECISIONES.md` §47.** Ahí escribí que el 0.1849 "se
+arrastró desde la medición de n=240". **Es falso**, y se corrige acá
+porque §47 ya está commiteada. El p de McNemar depende solo del par
+(b, c), no de n ni de la ventaja. Reconstruyendo b−c desde los porcentajes
+publicados: las dos mediciones `excluir_cero` (n=240 y n=248) dan b−c=16;
+las dos `estricta` (n=245 y n=253) dan b−c=19; y hoy, sobre la base viva,
+`excluir_cero` da b=72, c=56 (b−c=16) y `estricta` da b=75, c=56 (b−c=19).
+Las filas que se agregaron entre una medición y otra fueron todas
+acuerdos: el p idéntico es el mismo par recomputado tres veces, no un
+número copiado de una tabla a otra.
+
+**El hallazgo real: son cuatro cifras publicadas y una regla escrita
+rota.** Las tres p de la ventana sellada (0.1158 estricta, 0.2542
+verificador, 0.1849 excluir_cero) y el 0.4633 de la línea base congelada
+(`GEMELO/DISEÑO.md` §2.8) salen todos de `backtest/linea_base.py:126`, que
+reimplementa McNemar a mano — con corrección de continuidad de Edwards por
+defecto — cuando `.claude/rules/backtest.md`:26-27 dice literal: "No
+reimplementes Wilson, McNemar, DSR ni CRPS a mano". Atenuante que
+corresponde decirse: `linea_base.py` es del 25-ago (`78c83ea`) y la regla
+es del 30-ago (`55a99c4`) — la regla llegó después y nadie volvió a mirar
+el código que ya estaba. Es deuda por orden de llegada, no negligencia.
+
+**El choque entre dos reglas del propio proyecto, que es lo que impide
+arreglarlo solo.** `GEMELO/DISEÑO.md` §2.8 congeló `McNemar p = 0.4633`
+como parte de un pre-registro. Migrar `linea_base.mcnemar()` al árbitro
+movería esa cifra a 0.4635, y la constitución del proyecto dice que un
+criterio congelado no se mueve después de ver resultados. Si manda "usá
+el módulo árbitro", se mueve una cifra de un pre-registro congelado; si
+manda "un pre-registro no se toca", queda publicada una cifra que la
+propia regla del proyecto descarta como método.
+
+**Qué se descartó y por qué.** Tres opciones quedaron escritas con su
+costo en `mcnemar_dos_rutas.md`, ninguna aplicada: (A) declarar el método
+al lado de cada p sin mover ningún dígito — recomendada, porque el mayor
+Δ entre las dos rutas es 0.0003, ninguna conclusión del README cambia, y
+lo que falta es una palabra, no un número; (B) migrar al árbitro y mover
+las cuatro cifras (0.1158→0.1155, 0.2542→0.2541, 0.1849→0.1847,
+0.4633→0.4635), con errata fechada en §2.8; (C) migrar hacia adelante y
+congelar hacia atrás, dejando un corte de método con fecha que conviviría
+con las cifras viejas.
+
+**Qué queda abierto.** Elegir entre A, B y C: decisión de Nicolás. Bajo
+cualquiera de las tres, `.claude/rules/backtest.md` necesita una excepción
+escrita para `backtest/linea_base.py` (usa χ² con corrección de
+continuidad por precedencia histórica; toda medición nueva usa el módulo
+árbitro) — una regla con una excepción no escrita es una regla que se va
+a volver a romper. El parche de los doce bloques (README, dos skills, el
+agente `estadistico-adversario`, `GEMELO/DISEÑO.md` §2.8, la tupla de
+`linea_base.py`:108, la regla de backtest y esta misma acta) está
+enumerado archivo por línea en `mcnemar_dos_rutas.md` §5, escrito y no
+aplicado.
+
+**Cómo se revierte.** No hay nada que revertir: no se cambió ninguna
+cifra en ningún archivo, no se tocó `backtest/linea_base.py`, y sus tests
+siguen en verde.
+
+---
+
+## 56. El cuarto rechazo del diseño secuencial, y por qué no se congeló
+
+**Fecha:** 31-ago-2026. Fuente: `GEMELO/SECUENCIAL/DISEÑO.md` (encabezado
+"Estado: versión 5 — NO CONGELADO. Rechazado por cuarta vez" y §A3.1) y
+`GEMELO/resultados/bitacora_04.md` (23:30–23:45 UTC).
+
+**Qué se decidió.** No congelar el diseño secuencial pre-registrado. El
+cuarto dictamen del `estadistico-adversario` era la **condición** del
+congelamiento (ver §47) y salió **RECHAZADO**: la instrucción de la
+corrida era registrar por qué y parar. No hay v6.
+
+**Lo que se verificó en verde y no hay que volver a tocar:** las fronteras
+de O'Brien-Fleming contra las dos varas externas (Jennison-Turnbull y
+Armitage-McPherson-Rowe 1969), la tabla de exposición residual por
+autocorrelación (8/8 celdas y sus Wilson reproducen exactas), el candado
+del MDE (`mirada.py` con `MDE_FIRMADO = None`, se niega a computar), la
+contabilidad de miradas de §A1 con su rango α ∈ [0.09, 0.18], y la
+exclusión de la ventana antecedente del cómputo del estadístico.
+
+**Por qué. Lo que lo tumbó, y dos de tres son míos de esta corrida.**
+
+1. **El defecto descalificante.** La v5 descubrió que **30 de 256 filas
+   (11,7%)** apuntan a la misma sesión objetivo que otra fila —quince
+   pares sobre cinco sesiones (31-jul, 5-ago, 12-ago, 18-ago), con los
+   movimientos más grandes de toda la ventana entre ellas (+29,95%,
+   +26,81%, +17,52%)— y **corrigió el parámetro y no el estimador**:
+   `mde_desde_v6.py` deduplica esas filas; `mirada.py` no, y agrupa por
+   fecha de emisión, así que los pares —fechas distintas, resultado
+   idéntico— caen en clústeres distintos. La elección de qué fila
+   conservar quedó abierta valiendo la diferencia entre veredictos:
+   `keep="first"` da +6,64 pp, b=72, c=56, p=0,1847; `keep="last"` da
+   +9,96 pp, b=70, c=46, **p=0,0323**. Descubrir la contaminación fue
+   correcto; congelar antes de decidir qué hacer con ella, no.
+2. **Mío: la "razón 2" de §A3.1.b, publicada sin intervalo y retractada al
+   ponérselo.** Decía que los datos refutaban la simetría de magnitudes
+   por un factor de 3,64×. Con intervalos: la razón de magnitudes 1,33×
+   tiene IC 95% [0,89, 2,16], que incluye 1,0 — la simetría NO está
+   refutada; `E[r|baja]` = −1,059% tiene IC 95% [−3,334, +1,059], que
+   incluye cero; y el 3,64× no tiene intervalo finito, porque su
+   denominador `(2q−1)` no se distingue de cero (q = 53,9%, Wilson [45,3,
+   62,3]). Publiqué un estimador puntual indistinguible del nulo en la
+   sección escrita para prevenir exactamente eso, y lo usé para rechazar
+   un modelo. Retractado en `GEMELO/SECUENCIAL/DISEÑO.md` §A3.1.b.
+3. **Mío: la "vara independiente" que no lo era.** Ver §52. Retractado en
+   `GEMELO/SECUENCIAL/DISEÑO.md` §A3.1.a.
+4. **De reproducibilidad.** El documento dejó de reproducir desde sus
+   propios scripts el día del congelamiento y se contradecía a sí mismo
+   (34 fechas contra 35 fechas para la autocorrelación antecedente). Causa
+   raíz: `mde_desde_v6.py` escribe su propio SQL en vez de usar
+   `backtest.linea_base.cargar(hasta_sello=...)`, o sea **sin ancla
+   temporal** — la misma dependencia del reloj que el WS5 diagnosticó y
+   arregló el 30-ago, reintroducida en el archivo más nuevo del proyecto.
+
+**Y el número propuesto queda retirado, por una quinta razón que corrige
+la escala, no el dictamen.** El MDE se derivó en la escala del retorno de
+sesión, pero el endpoint que el propio documento congela en §A2 es
+`acierto_gap`. Recomputado en la escala del endpoint por el script
+versionado —y con intervalo, que es lo que faltaba— da **8,96 pp, IC95
+[6,67, 11,32]**, sobre E|gap| = 2,9650% [2,3456, 3,9813] en las 241 filas
+deduplicadas.
+
+**Y hay una corrección sobre esta misma acta, del mismo día.** En su
+primera redacción esa cifra estaba escrita como "~7,96 o ~8,96 pp",
+**cableada como texto y sin computarla ningún script, y sin intervalo** —
+en el acta de la corrida cuya lección es exactamente que un estimador
+puntual sin intervalo no se publica. Lo cazó el `guardian-constitucion` en
+su segundo dictamen. Ahora la computa `mde_desde_v6.py` con bootstrap de
+bloques del módulo árbitro, y **lo que reemplaza al 7 pp es un rango, no
+un punto**, que es lo que le faltaba desde el principio.
+
+**Qué se descartó y por qué.** Congelar con la contaminación conocida y
+resolver `keep="first"` vs `keep="last"` después: descartado, porque es
+exactamente elegir el criterio después de ver que cambia el veredicto —
+el pecado que un pre-registro existe para prohibir.
+
+**Qué queda abierto.** Las cuatro condiciones para levantar el rechazo,
+escritas en el encabezado de `GEMELO/SECUENCIAL/DISEÑO.md`: (i) congelar
+la regla de deduplicación, con su sensibilidad publicada, y si es
+decisión de Nicolás que el congelamiento la espere igual que espera al
+MDE; (ii) rehacer §A3.1.b con intervalos; (iii) derivar el MDE en la
+escala del endpoint (`acierto_gap`), con su intervalo; (iv) anclar
+`mde_desde_v6.py` con `hasta_sello`, arreglar las cifras que ya no
+reproducen y darle al menos un test.
+
+**Cómo se revierte.** No aplica revertir: no se congeló nada, así que no
+hay nada que deshacer. `GEMELO/SECUENCIAL/DISEÑO.md` queda con su acta de
+congelamiento escrita pero marcada "NO VIGENTE" hasta que las cuatro
+condiciones se cierren. La frase del cuarto dictamen que resume el
+estado: **un pre-registro que no reproduce el día que se firma no está
+congelado, está fechado.**
+
+---
+
+## 57. ERRATA — las actas 36 y 37 describen una máquina que ya no existe
+
+**Fecha:** 1-sep-2026. **Tipo:** errata fechada sobre actas commiteadas.
+
+**Qué dicen las actas 36 y 37.** Que este PC corre con `MKI_MODO=sombra`
+en `.env`, que no emite, y que el Mac es el titular. §36 lo dice con todas
+las letras: "**`MKI_MODO=sombra` sigue puesto** [...] todavía no emite".
+
+**Qué dice la máquina, que es quien manda.** `modo.py` devuelve
+**`titular`**. Los seis timers están instalados y **emiten**. El Mac quedó
+fuera del rol tras el segundo movimiento del switch.
+
+**Por qué existe esta errata y no una corrección.** §36 y §37 están
+commiteadas y describen correctamente el estado **en el momento en que se
+escribieron**. La frontera de la errata es el commit: lo publicado no se
+reescribe, se le agrega la corrección con su fecha. Las dos actas siguen
+siendo el registro fiel de una etapa que terminó.
+
+**Cómo se descubrió, y es lo incómodo.** No se descubrió hoy: estaba
+anotada como "errata pendiente de registrar" en `ESTADO.md` desde la
+segunda corrida, y **en el cierre de esta cuarta corrida yo la borré de
+`ESTADO.md` al regenerarlo, sin registrarla en ninguna parte**. El
+`guardian-constitucion` lo cazó y rechazó la tanda por eso. Un recordatorio
+de errata que se elimina sin convertirse en errata es peor que no haberlo
+anotado nunca: deja el repo afirmando algo falso y sin rastro de que
+alguien lo supo.
+
+**Alcance — dónde más sobrevive la afirmación vieja.** `CLAUDE.md` la
+repite en su sección de la etapa 5.0.3: dice que el Mac "stays
+**titular**" y que `MKI_MODO=sombra` vive en la línea 18 de `.env`. **Las
+dos cosas son falsas hoy.** No se corrigen en esta acta porque `CLAUDE.md`
+es el documento que gobierna cómo trabaja el agente y tocarlo cambia el
+comportamiento de todas las sesiones futuras: es una edición que Nicolás
+tiene que ver, no un arreglo de paso. Queda declarado acá y en
+`cola_decisiones.md`.
+
+**Regla que sale de esto, y vale más que el caso:** una errata pendiente
+sólo se puede sacar de `ESTADO.md` **escribiéndola en `DECISIONES.md` en
+el mismo movimiento**. `ESTADO.md` es un resumen que se regenera; todo lo
+que viva sólo ahí desaparece en el próximo cierre sin dejar rastro.

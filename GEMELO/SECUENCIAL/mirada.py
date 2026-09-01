@@ -56,13 +56,48 @@ from evaluacion import comparar_pareado, norm_cdf   # noqa: E402
 FECHA_CONGELAMIENTO = "2026-08-31"
 CONVENCION = "excluir_cero"          # GEMELO/DISEÑO.md §2.8
 
-# (n de filas, umbral |Z| O'Brien-Fleming, Z de futilidad, fecha estimada)
-PLAN = {
-    1: (371,  4.048, -1.662, "2026-11-19"),
-    2: (742,  2.862,  0.016, "2027-02-07"),
-    3: (1114, 2.337,  1.033, "2027-04-28"),
-    4: (1485, 2.024,  None,  "2027-07-17"),
+# EL MDE — el único parámetro del pre-registro que NO está firmado.
+# `DISEÑO.md` §A3.1 lo deriva de V6 y propone 7 pp. Mientras valga None,
+# este script se niega a computar: correr una mirada con un N_max que
+# nadie firmó sería elegir el tamaño de muestra después de ver los datos,
+# que es lo mismo que elegir el umbral después de ver los datos.
+MDE_FIRMADO = None          # poner 0.07 (o 0.10) cuando Nicolás firme
+MDE_PROPUESTO = 0.07
+
+# N_max por MDE, de `diseno_secuencial` (Connor × DEFF × 1.0241). Los
+# umbrales y la futilidad NO dependen del MDE: dependen de la fracción de
+# información y del α, así que valen igual para cualquiera de los dos.
+N_MAX_POR_MDE = {0.07: 3039, 0.10: 1485}
+UMBRALES_OBF = (4.048, 2.862, 2.337, 2.024)
+Z_FUTILIDAD = (-1.662, 0.016, 1.033, None)
+FRACCIONES = (0.25, 0.50, 0.75, 1.00)
+
+# Fechas estimadas al ritmo real de 6.56 filas/día hábil (256/39 al
+# 31-ago). Son estimaciones: **la mirada la dispara el n, no la fecha.**
+FECHAS_POR_MDE = {
+    0.07: ("2027-02-09", "2027-07-21", "2027-12-30", "2028-06-10"),
+    0.10: ("2026-11-19", "2027-02-07", "2027-04-28", "2027-07-17"),
 }
+
+
+def plan(mde: float | None = None) -> dict:
+    """(n de filas, umbral |Z|, Z de futilidad, fecha estimada) por mirada."""
+    mde = mde if mde is not None else MDE_FIRMADO
+    if mde is None:
+        raise SystemExit(
+            "MDE SIN FIRMAR. `DISEÑO.md` §A3.1 lo deriva de V6 y propone "
+            f"{MDE_PROPUESTO*100:.0f} pp, pero nadie lo firmó todavía.\n"
+            "Correr una mirada con un N_max que nadie fijó es elegir el "
+            "tamaño de muestra después de ver los datos.\n"
+            "Poner `MDE_FIRMADO` en este módulo cuando la decisión esté "
+            "escrita y fechada en DECISIONES.md.")
+    n_max = N_MAX_POR_MDE[mde]
+    fechas = FECHAS_POR_MDE[mde]
+    return {k + 1: (round(t * n_max), UMBRALES_OBF[k], Z_FUTILIDAD[k], fechas[k])
+            for k, t in enumerate(FRACCIONES)}
+
+
+PLAN = plan(MDE_PROPUESTO)   # para poder inspeccionarlo; NO autoriza a mirar
 
 # El bootstrap de la varianza cluster-robusta. Todo lo que determina V̂ se
 # congela acá Y en DISEÑO.md §A3.2 — la semilla incluida. Elegir semilla,
@@ -251,18 +286,23 @@ def _registrar(salida: dict) -> None:
 
 
 def ejecutar(k: int) -> dict:
-    n_obj, umbral, z_fut, fecha_plan = PLAN[k]
+    ahora = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+
+    # El guard de versiones va PRIMERO: un diseño terminado por relevo está
+    # terminado aunque el MDE nunca se hubiera firmado, y decir "falta el
+    # MDE" cuando en realidad cambió el modelo sería el mensaje equivocado.
+    problema = _guard_versiones()
+    if problema:
+        return {"mirada": k, "corrida_en": ahora, "n": 0,
+                "descartadas_antecedente": 0, "veredicto": problema}
+
+    # Candado del MDE: `plan()` levanta SystemExit si no está firmado.
+    n_obj, umbral, z_fut, fecha_plan = plan()[k]
     salida = {
         "mirada": k, "n_objetivo": n_obj, "umbral": umbral,
         "z_futilidad": z_fut, "fecha_plan": fecha_plan,
-        "corrida_en": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "corrida_en": ahora,
     }
-
-    problema = _guard_versiones()
-    if problema:
-        salida.update({"n": 0, "descartadas_antecedente": 0,
-                       "veredicto": problema})
-        return salida
 
     df, descartadas = cargar_ventana_nueva()
     n = len(df)

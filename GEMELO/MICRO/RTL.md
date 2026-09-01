@@ -7,6 +7,13 @@ se revisa antes de escribirla, como pide `GEMELO/MICRO/DISEÑO.md` §9.
 la lectura "pipeline RTL académico, validado por backtest" sobrevive) y
 `GEMELO/MICRO/fpga.md` (presupuesto de recursos por placa).
 
+> **Errata (31-ago-2026):** dos afirmaciones de este documento (§3 y §4,
+> punto 4) fueron refutadas por la síntesis real en
+> `GEMELO/MICRO/SINTESIS.md` §5 y §6. Se corrigen en su sitio, no en una
+> sección aparte al final: este documento está commiteado desde antes, así
+> que la corrección no puede ser silenciosa — el texto original queda
+> arriba de cada nota fechada, para que quede rastro de qué decía.
+
 > **Regla cero de este documento:** ninguna cifra de LUTs, anchos de bit o
 > tolerancia se ajustó para que el pipeline "quepa" en una placa en
 > particular. Se mide qué exige el pipeline y se compara contra lo que hay
@@ -113,6 +120,22 @@ tomado con los mismos datos en punto flotante.** Reproducible: script en
 `GEMELO/MICRO/` no versionado aún (queda para cuando exista RTL de verdad
 contra el cual validar; el número de arriba ya está medido y no cambia).
 
+> **ERRATA (31-ago-2026), medido en `GEMELO/MICRO/SINTESIS.md` §5.** El
+> 0.00188 pp de arriba mide bien lo que dice medir: cuantizar UN valor
+> (`apertura_estimada_pct` o `beta`) a Q8.8/Q2.14 y reconstruirlo. El
+> problema aparece más abajo (§4, punto 4), donde ese número se adopta
+> como la tolerancia del PUNTAJE del RTL contra la referencia en float64
+> — una operación distinta: el puntaje es el producto de DOS valores ya
+> cuantizados (feature y peso) más el truncado de vuelta a Q8.8, tres
+> fuentes de error, no una. Medido con el pipeline sintetizado sobre las
+> 181 filas selladas de `senales_ticker`: el error real es **0.00474 pp,
+> 2.5 veces la tolerancia declarada más abajo**, y ningún modo de
+> redondeo lo baja de ahí (el problema está en la cuantización de los
+> operandos, no en la del resultado). El 0.00188 no se reescribe: sigue
+> siendo lo que esa medición específica dio ese día, y sigue siendo
+> correcto para esa pregunta. Lo que estaba mal era usarlo como
+> tolerancia de una operación distinta.
+
 ## 4. Protocolo de validación por backtest
 
 Esto es lo que separa "medición" de "demo", y es la parte del proyecto que
@@ -138,6 +161,47 @@ lo hace un ejercicio de arquitectura de computadores, no una maqueta:
    del umbral) sí tolera una diferencia — la que ya se midió en la §3
    (0.00188 pp máximo) — y esa tolerancia se declara ANTES de comparar,
    nunca se ajusta después de ver que algo no calza.
+
+> **ERRATA (31-ago-2026), medido en `GEMELO/MICRO/SINTESIS.md` §5 y §6.**
+> Dos afirmaciones de este punto no sobrevivieron a la síntesis real,
+> sobre las mismas 181 filas selladas:
+>
+> 1. **La tolerancia de 0.00188 pp citada arriba es inalcanzable para
+>    esta comparación** — medido: 0.00474 pp, 2.5 veces más. Ver la
+>    errata de la §3.
+> 2. **"Para el 100% de los mensajes del vector" es falso, y en la
+>    dirección contraria a la que este párrafo argumenta.** 2 casos de
+>    181 (1.1%) deciden distinto que la referencia en float64:
+>    000660.KS del 21-ago-2026 y 4063.T del 25-ago-2026, los dos con el
+>    puntaje real a milésimas del umbral (±0.50 pp), que la cuantización
+>    deposita del otro lado.
+>
+> La intuición de este párrafo era que una decisión discreta es inmune a
+> la cuantización porque "o es la misma decisión o no lo es". **La
+> medición dice lo contrario: lo discreto es MÁS frágil cerca de la
+> frontera de decisión, no inmune** — un error de milésimas en una
+> magnitud continua no cambia nada; el mismo error a milésimas de un
+> umbral invierte la salida por completo. (Contra el modelo ENTERO —la
+> semántica que el hardware promete, no la referencia en punto
+> flotante— la coincidencia SÍ es 181/181 bit a bit en las cuatro
+> configuraciones: esto no invalida el RTL, invalida la intuición de
+> este párrafo sobre por qué sería inmune.)
+>
+> **Nota al pie de esta errata — esto NO es una corrección.** El encargo
+> de esta corrida pedía corregir el encuadre de este documento y de
+> `fpga.md` porque supuestamente presentaban la Arty A7-100T como "motor
+> de backtesting". Se verificó el texto de los dos: ese encuadre no
+> existe en ninguno. Al contrario, la línea 16 de este documento dice
+> "un pipeline de decisión de trading intradía en RTL, validado por
+> backtest" (el backtest valida al RTL, no al revés), y `fpga.md:24-26`
+> dice literal que "la ventaja que el hardware ofrece no es 'más
+> rápido'... es determinismo"; `fpga.md:50-51` aclara que la comparación
+> de throughput contra software "no es 'el hardware gana' por default;
+> hay que medirlo". No se corrigió nada de eso porque no había nada que
+> corregir — fabricar una corrección para cumplir el encargo habría sido
+> lo contrario de la regla de la casa: un negativo ("acá no hay nada que
+> corregir") se publica con la misma firmeza que un positivo.
+
 5. **En hardware real** (si se llega a sintetizar sobre una placa física):
    repetir el mismo vector, y agregar la medición de latencia determinista
    —el hallazgo que esta pista busca demostrar— con el mismo instrumento
@@ -189,3 +253,7 @@ referencia, y en cuántos ciclos, siempre los mismos?".
 - **La tolerancia de la §4 (0.00188 pp) como criterio de aceptación
   formal del proyecto** — el número está medido; que sea EL criterio que
   la materia evalúa es una decisión de alcance académico, no técnica.
+  (Ver la ERRATA de la §4: ese número específico quedó refutado como
+  tolerancia del puntaje del RTL — 0.00474 pp medido. La decisión de
+  alcance sigue siendo de Nicolás, pero con el número corregido, no con
+  el de arriba.)

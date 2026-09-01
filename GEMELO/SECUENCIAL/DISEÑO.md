@@ -1,13 +1,78 @@
 # El diseño secuencial — pre-registro
 
-**Estado: versión 4 — NO CONGELADO.** Es un pre-registro *terminado en su
-aritmética* y **bloqueado por una decisión que no es de un agente**: con
-qué α se declara (ver "La decisión que bloquea el congelamiento", abajo).
+**Estado: versión 5 — NO CONGELADO. Rechazado por cuarta vez.**
+
+> El cuarto dictamen del `estadistico-adversario` era la **condición** del
+> congelamiento y salió **RECHAZADO**, así que el documento no se congela.
+> La instrucción de la corrida era explícita: registrar por qué y parar.
+> No hay v6.
+>
+> **Lo que se verificó en verde y no hay que volver a tocar:** las
+> fronteras contra las dos varas externas, la tabla de exposición residual
+> (8/8 celdas y sus Wilson reproducen exactas), el candado del MDE, la
+> contabilidad de miradas de §A1 con su rango [0.09, 0.18] y los tres p
+> retractados, y la exclusión de la ventana antecedente del estadístico.
+>
+> **Lo que lo tumbó — y dos de los tres son míos, de esta corrida:**
+>
+> 1. **El defecto descalificante.** La v5 descubrió que 11.7% de las filas
+>    están duplicadas, **corrigió el parámetro y no el estimador**:
+>    `mde_desde_v6.py` deduplica, `mirada.py` no, y agrupa por fecha de
+>    emisión — los pares duplicados tienen fechas distintas y resultado
+>    idéntico, así que caen en clústeres distintos. Peor: la elección de
+>    cuál fila conservar quedó abierta, y **vale la diferencia entre un
+>    veredicto y el contrario**:
+>    `keep="first"` → +6.64 pp, b=72, c=56, **p = 0.1847**;
+>    `keep="last"` → +9.96 pp, b=70, c=46, **p = 0.0323**.
+>    Un argumento de una palabra, no declarado, cruza el umbral.
+>    Descubrir la contaminación fue correcto; **congelar antes de decidir
+>    qué hacer con ella, no.**
+> 2. **La razón 2 de §A3.1.b no tiene intervalo y muere cuando se le
+>    pone.** Retractada ahí mismo.
+> 3. **La "vara independiente" de §A3.1.a no era independiente.**
+>    Retractada ahí mismo.
+> 4. **El documento dejó de reproducir desde sus propios scripts el día
+>    del congelamiento**, y se contradice a sí mismo (34 vs 35 fechas).
+>    Causa raíz: `mde_desde_v6.py` escribe su propio SQL en vez de usar
+>    `backtest.linea_base.cargar(hasta_sello=...)`, así que **no tiene
+>    ancla temporal** — la misma dependencia del reloj que el WS5
+>    diagnosticó y arregló el 30-ago, reintroducida en el archivo más
+>    nuevo. Verificado: con corte 26-ago el MDE da 7.38 pp, con 28/30-ago
+>    7.22, hoy 7.13.
+>
+> **Y una que corrige el número propuesto:** el MDE se derivó en la escala
+> del **retorno de sesión**, pero el endpoint congelado (§A2) es
+> **`acierto_gap`**. Recomputado en la escala del endpoint —y ahora sí por
+> el script, con su intervalo— da **8.96 pp, IC95 [6.67, 11.32]** sobre
+> E|gap| = 2.9650% [2.3456, 3.9813]. **El 7 pp propuesto para firma queda
+> retirado**, y el número que lo reemplaza es un rango, no un punto: eso
+> es lo que faltaba desde el principio.
+>
+> **Las cuatro condiciones para levantar el rechazo**, ninguna larga:
+> congelar la regla de deduplicación (con su sensibilidad publicada, y si
+> es decisión de Nicolás el congelamiento la espera como espera al MDE);
+> rehacer §A3.1.b con intervalos; derivar el MDE en la escala del endpoint
+> con su intervalo; y anclar `mde_desde_v6.py` con `hasta_sello`, arreglar
+> las cifras que ya no reproducen y darle al menos un test.
+>
+> **La frase del dictamen que resume el estado:** *un pre-registro que no
+> reproduce el día que se firma no está congelado, está fechado.*
+
+**Lo que el acta de abajo dice sigue siendo lo que se propone congelar**
+cuando esas cuatro cosas se cierren. Se deja escrita, no vigente.
 Escrito el 31-ago-2026, antes de la próxima mirada al track record
-sellado. Toda cifra de este documento sale de
-`GEMELO/SECUENCIAL/diseno_secuencial.py` y `GEMELO/SECUENCIAL/fronteras.py`,
-versionados y reproducibles — es la lección operativa que dejó
+sellado. Toda cifra sale de `diseno_secuencial.py`, `fronteras.py` y
+`mde_desde_v6.py`, versionados y reproducibles — la lección operativa de
 `DECISIONES.md` §45.
+
+**Qué queda congelado (todo lo que no depende del MDE):** el α y su banda,
+las fronteras de O'Brien-Fleming, el estadístico y su varianza
+cluster-robusta, la regla de futilidad, el pasivo declarado, las cinco
+cláusulas de ruptura y toda la gobernanza.
+
+**Qué queda abierto, y es UNA sola cosa:** el **MDE**. §A3.1 lo deriva de
+V6, propone **7 pp** y deja el número para firma. Sólo mueve `N_max` y el
+calendario; **no toca ningún umbral**.
 
 > **No congelarlo esta noche es el resultado, no una tarea pendiente.** El
 > documento fue rechazado **tres veces** por `estadistico-adversario` en el
@@ -20,31 +85,23 @@ versionados y reproducibles — es la lección operativa que dejó
 > es una decisión de Nicolás, de la misma clase que el MDE, y un agente no
 > la toma dentro de otra tarea.
 
-## La decisión que bloquea el congelamiento
+## El α, decidido: 0.05 nominal con la banda publicada
 
-**Qué hay que elegir:** el α declarado del plan, entre dos opciones
-costeadas.
+**Decisión de Nicolás, 31-ago-2026.** El plan declara **α = 0.05
+nominal** y publica **la banda [0.046, 0.079]** como limitación declarada,
+con el compromiso —y el estimador ya escrito, §A3.2— de reestimarla cuando
+el N permita acotar la autocorrelación.
 
-| | α = 0.05 (lo que dice hoy) | α = 0.10 |
-|---|---|---|
-| ¿La promesa es verdadera? | **No** en todo el rango: entrega 0.046–0.079 según la autocorrelación | **Sí** en todo el rango plausible |
-| Qué exige declarar | el residuo, con su tabla (está en §A3.2) | nada extra |
-| Costo | un pre-registro que declara que no puede cumplir su propia promesa | un umbral más laxo, y decirlo de frente |
-| Umbrales | los de §A3.4 | hay que recomputarlos (la maquinaria ya está) |
+**La razón, que es de estilo y no de estadística:** el proyecto publica su
+incertidumbre en todo lo demás. Cada tasa de acierto lleva su Wilson, cada
+predicción su intervalo del 80%, y cuando el n no alcanza la interfaz dice
+"pendiente" en vez de rellenar. Declarar α = 0.10 para que la cifra fuera
+"verdadera" habría sido **absorber la incertidumbre dentro de un número
+más redondo**, que es exactamente lo contrario del estilo de la casa.
 
-**Recomendación, marcada como tal:** α = 0.10, combinado con mover la
-primera mirada a ~100 fechas en vez de ~51. Las dos son baratas, las dos
-hacen verdadera la promesa, y la segunda **no cuesta alfa** —omitir o
-retrasar una mirada solo puede bajarlo, que es la regla 2 que §A3.8 ya
-tiene escrita— además de mejorar justo donde el bootstrap es más débil.
-El argumento de fondo: esto es la primera mirada seria a una pregunta
-abierta, no una presentación regulatoria, y un α de 0.10 honesto vale más
-que un 0.05 con letra chica.
-
-**Mientras esto no se decida, el resto del documento vale igual:** las
-fronteras, el pasivo, el tamaño de muestra, la futilidad, el calendario y
-los tres candados de `mirada.py` no dependen de esa elección. Lo que
-depende son los umbrales de §A3.4, y recomputarlos es un comando.
+Se descartó explícitamente la recomendación que este documento hacía en su
+v4 (subir a 0.10). La banda va en el cuerpo, no en nota al pie, con el
+mecanismo que la produce y con el N que haría falta para cerrarla.
 
 > **Por qué hay una versión 3, y por qué se corrigió en su sitio.** Este
 > documento fue **rechazado dos veces por `estadistico-adversario` el
@@ -72,6 +129,32 @@ depende son los umbrales de §A3.4, y recomputarlos es un comando.
 > nunca**. Un diseño secuencial no hace que los datos digan más: hace que
 > lo que digan sea interpretable. Si este documento se usa para justificar
 > mirar más seguido, se está usando al revés.
+
+## El acta de congelamiento
+
+Lo que un pre-registro tiene que poder mostrar dentro de dos años, sin que
+nadie dependa de la memoria de nadie:
+
+| | |
+|---|---|
+| **Fecha de congelamiento** | **2026-08-31** |
+| **Commit base** | `7d42d9b` (el commit del congelamiento lo agrega el cierre de esta corrida) |
+| **α declarado** | **0.05 bilateral**, con la banda **[0.046, 0.079]** publicada (§A3.2) |
+| **Familia de gasto de α** | O'Brien-Fleming, K=4 miradas equiespaciadas en información |
+| **Umbrales** | 4.048 / 2.862 / 2.337 / 2.024 — α global exacto 0.04995 |
+| **Estadístico** | `Z = [(b−c)/√(b+c)] / √V̂`, V̂ = max sobre bloques (1,5,10), 200.000 sorteos, semilla 20260831 |
+| **Convención** | `excluir_cero`, congelada en `GEMELO/DISEÑO.md` §2.8 |
+| **Población** | filas con fecha de emisión **posterior al 2026-08-31** |
+| **MDE** | **SIN FIRMAR.** Derivado de V6 en §A3.1, propuesto **7 pp**. Es el único parámetro abierto y sólo mueve N_max y el calendario |
+| **Pasivo de miradas anteriores** | **α ∈ [0.09, 0.18]**, o sea 1.8× a 3.6× el nominal, declarado en §A1 |
+| **Ritmo de acumulación** | 6.56 filas/día hábil (256/39 al 31-ago) |
+| **Validación externa** | Jennison-Turnbull (fronteras) y Armitage-McPherson-Rowe 1969 (pasivo) |
+| **Dictámenes adversarios** | rechazado 3 veces y corregido 3 veces antes de congelar; el cuarto dictamen es la condición de este congelamiento |
+
+**El candado que hace esto exigible:** `mirada.py` tiene `MDE_FIRMADO =
+None` y **se niega a computar** mientras siga así. Correr una mirada con
+un N_max que nadie fijó es elegir el tamaño de muestra después de ver los
+datos — el mismo pecado que elegir el umbral después de verlos. Hay test.
 
 ## El punto de partida, que no se discute acá
 
@@ -265,41 +348,200 @@ basura por construcción.
 
 ## A3. El diseño
 
-### A3.1 El efecto mínimo de interés (MDE), y por qué esta elección es de Nicolás
+### A3.1 El efecto mínimo de interés (MDE), derivado de V6
 
-El MDE fija TODO el calendario. Con los parámetros medidos del proyecto
-(p_d=0.516, DEFF=3.6, ritmo de 6.5 filas/día hábil), para un test de
-**muestra fija**:
+El MDE no se inventa: se deriva del único criterio económico que el
+proyecto ya tiene congelado. **V6**, textual (`GEMELO/DISEÑO.md`:460-461):
 
-| Efecto a detectar | n filas (con DEFF) | ≈ fechas | Se alcanza |
+> **V6 — Benchmark obligatorio.** Superar comprar SMH y no hacer nada,
+> después de costos de 25 pb por lado, con barrido de sensibilidad.
+
+Antes de la derivación, dos cosas que hubo que arreglar en los insumos.
+
+#### A3.1.a El insumo estaba contaminado
+
+El parámetro que manda es **E|r|**, el retorno absoluto medio de la sesión
+objetivo — lo que se gana por acertar el signo. Medido sobre las filas
+selladas da **4.02%**. Ese número está **inflado**, y la razón es un
+hallazgo por derecho propio:
+
+> **30 de las 256 filas (11.7%) son predicciones distintas que apuntan a
+> la MISMA sesión objetivo.** Quince pares, sobre cinco sesiones (31-jul,
+> 5-ago, 12-ago, 18-ago): dos fechas de emisión consecutivas cuyo objetivo
+> es la misma sesión, porque la sesión intermedia no existió. Comparten
+> `gap_pct` y `retorno_real_pct` idénticos, y **entre ellas están los
+> movimientos más grandes de toda la ventana** (000660.KS +29.95%,
+> 005930.KS +26.81%, 3436.T +17.52%). Contadas dos veces, inflan cualquier
+> media.
+
+Deduplicando por (ticker, sesión objetivo), E|r| = **3.72%**.
+
+| Fuente | E\|r\| |
+|---|---|
+| base sellada, **con** duplicados | 4.0231 % |
+| base sellada, **deduplicada** | 3.7242 % |
+| precio crudo de Yahoo, recomputado | 3.7594 % |
+
+> **RETRACTACIÓN (31-ago-2026, mismo día).** La primera redacción de este
+> apartado llamaba a la tercera fila «vara independiente» y decía que
+> «confirma la deduplicada y descarta la contaminada». **Las dos cosas son
+> falsas y las retiro.**
+>
+> El cuarto dictamen lo midió: emparejada fila a fila contra la columna
+> sellada, la desviación máxima es **0.0207 pp** y la media **0.0001 pp**
+> sobre 234 filas. Es el **mismo proveedor, el mismo campo y la misma
+> fórmula recorrida de nuevo**: una reproducción, no una medición
+> independiente. Hereda cualquier error de proveedor, de ajuste o de
+> `ffill`; sólo podría cazar un error de agregación.
+>
+> Y la razón de que dé 3.7594 en vez de 4.0231 **no es que descarte la
+> contaminación**: es que promedia **otra población** (319 pares
+> ticker-sesión de todo el calendario contra 246 en 37 sesiones objetivo).
+> Restringida a las mismas filas da 3.7151% contra 3.6671% sellado —
+> coincide porque *es* el número sellado.
+>
+> Esto es exactamente lo que la regla nueva de la casa prohíbe: **fabricar
+> una vara que se le parezca a una independiente**. La regla dice que si
+> no existe, se dice. Acá **no existe**: no hay en el repo una fuente de
+> precios de otra familia con la que contrastar `retorno_real_pct`, y
+> conseguirla es trabajo, no un `yf.download`.
+
+**Lo que queda en pie de este apartado**, y no es poco: los 30 duplicados
+son reales, están identificados uno por uno, e inflan E|r| de 3.72 a 4.02.
+Eso se ve **dentro de la propia base sellada** y no necesitaba vara
+externa. Lo que no queda en pie es la validación externa que decía tener.
+Sale de `GEMELO/SECUENCIAL/mde_desde_v6.py`.
+
+> Los 30 duplicados son la misma familia de problema que la pregunta
+> pendiente de `DECISIONES.md` §33.8 sobre las 8 filas del 29-jul, pero
+> **más grande de lo que esa pregunta suponía**: son 30 filas y cinco
+> sesiones, no 8 y una. Entra a `cola_decisiones.md` con ese alcance.
+
+#### A3.1.b V6 no puede fijar el MDE — una razón se sostiene, la otra fue retractada
+
+**Razón 1 — el benchmark de V6 lo domina su propio camino realizado.**
+Sobre la ventana sellada (3-jul a 28-ago), **SMH cayó 5.18%** en 39
+sesiones. Con un benchmark negativo, la tasa de acierto necesaria para
+superarlo neto de 25 pb es **54.9%** — *por debajo* del 59.7% que ya
+consigue la baseline "siempre al alza". Es decir: **en esta ventana, la
+baseline sola aprueba V6**, y V6 no impone ninguna exigencia sobre la
+ventaja direccional del modelo. En una ventana donde SMH hubiera subido,
+la vara sería mucho más alta. Un MDE que depende de si el benchmark subió
+o bajó no es un MDE.
+
+**Razón 2 — RETRACTADA el mismo día. No se sostiene.**
+
+> La primera redacción decía: «el puente de la economía a los puntos de
+> acierto está roto, y por un factor de 3.6», apoyándose en que los
+> aciertos de las filas "baja" tienen |r| = 5.162% contra 3.870% de los
+> errores (razón 1.33×), y en que `E[r|baja]` real (−1.059%) es 3.64×
+> más negativo que el −0.291% que predice la fórmula simétrica.
+>
+> **Le puse los intervalos que no le había puesto, y se cae:**
+>
+> | cifra | IC 95% | |
+> |---|---|---|
+> | razón de magnitudes 1.33× | **[0.89, 2.16]** | **incluye 1.0: la simetría NO está refutada** |
+> | `E[r\|baja]` = −1.059% | **[−3.334, +1.059]** | incluye cero, y cubre −2c |
+> | q = 53.9% | Wilson [45.3, 62.3] | incluye 50% |
+>
+> (bootstrap de bloques del módulo árbitro, bloque 20, 10.000 réplicas,
+> semilla 7)
+>
+> **El "3.64×" ni siquiera tiene intervalo finito**, porque su denominador
+> es `(2q−1)` y `q` no se distingue de 0.5.
+>
+> Publiqué un estimador puntual indistinguible del nulo y lo presenté como
+> hallazgo — **la regla 1 del proyecto, rota en la sección escrita para
+> prevenir exactamente eso**, y usada para rechazar un modelo. El
+> documento imprimía la Wilson honesta de `q` una línea antes y dividía
+> por `(2q−1)` a la línea siguiente.
+
+**Lo que sí se puede decir, con la misma evidencia y sin sobrepasarla:**
+la ventaja económica de este modelo **podría** venir de la magnitud más
+que del signo —es la lectura compatible con lo que el proyecto ya publica
+(MAE 2.98 vs 3.33, con la dirección sin distinguirse de cero)— pero **la
+ventana sellada no alcanza para establecerlo**. Es una hipótesis, no un
+hallazgo, y no puede sostener sola la conclusión de esta sección.
+
+**Consecuencia para el MDE:** la razón 1 (el benchmark lo domina su camino
+realizado) se sostiene por sí sola y alcanza para decir que V6 no fija el
+MDE en esta ventana. La razón 2 se retira. Y el rango [2, 7] pp que este
+documento presentaba como "el supuesto que manda" **descansaba en la razón
+2**, así que también se retira: sin ella, el MDE bajo magnitudes
+simétricas es un número, no un rango con un extremo preferible.
+
+#### A3.1.c La derivación que sí funciona, y su rango
+
+Lo que sí se puede derivar sin depender del camino de SMH: **la ventaja
+direccional mínima que paga sus propios costos de transacción.**
+
+"Siempre al alza" como *estrategia* es comprar y mantener: no opera. El
+modelo sólo difiere de ella en las filas donde dice BAJA — ahí sale (o se
+pone corto) y paga `2c` por salir y volver. Con `f` = fracción de
+predicciones a la baja (0.531 observada) y `q` = P(r<0 | baja):
+
+```
+ventaja en puntos de acierto:  δ = (2q − 1) · f
+condición económica:           E[r | baja] < −2c
+bajo magnitudes simétricas:    δ_min = f · 2c / E|r|
+```
+
+| Costo por lado | MDE bajo magnitudes **simétricas** (conservador) | MDE con la asimetría **observada** |
+|---|---|---|
+| 10 pb | 2.85 pp | 0.78 pp |
+| **25 pb (el caso base de V6)** | **7.13 pp** | **1.96 pp** |
+| 50 pb | 14.26 pp | 3.92 pp |
+
+Sensibilidad a E|r| (a 25 pb): 8.17 pp con E|r|=3.25%, **7.13 pp** con
+3.72%, 7.06 pp con 3.76%, 6.61 pp con 4.02%. Sensibilidad a `f`: 6.04 pp
+con f=0.45, **7.13** con 0.531, 8.06 con 0.60.
+
+> **A qué supuesto es más sensible: NO a E|r|.** Mover E|r| en todo su
+> rango plausible mueve el MDE entre 6.6 y 8.2 pp. **El supuesto que
+> manda es el de simetría de magnitudes**, que mueve el MDE entre 2 y 7
+> pp — un factor de 3.6. Es el mismo supuesto que la razón 2 refuta.
+
+#### A3.1.d El número propuesto para firma
+
+> **MDE = 7 pp**, el extremo conservador del rango [2, 7] a 25 pb.
+
+**Por qué el extremo conservador y no el 2 pp:** diseñar para 2 pp es
+apostar a que la ventaja de **magnitud** persiste, y la ventaja de
+magnitud es precisamente lo que **nunca se probó de forma prospectiva**.
+Este diseño mide dirección (McNemar sobre tasas de acierto); si el valor
+económico vive en la magnitud, el instrumento correcto es otro y hay que
+construirlo. Diseñar la prueba de dirección para el MDE que sólo se
+alcanza gracias a la magnitud sería usar un termómetro para pesar.
+
+**Lo que cuesta en calendario**, con el ritmo real de acumulación:
+
+| MDE | N_max filas | Se alcanza (ritmo actual) | (si se deduplican) |
 |---|---|---|---|
-| +15.66 pp (el de la ventana larga) | 586 | 81 | ene-2027 |
-| **+10 pp (propuesto)** | **1.450** | **200** | **jul-2027** |
-| +6.45 pp (el punto estimado sellado hoy) | 3.497 | 481 | sep-2028 |
-| +5 pp (el umbral de relevo de `RELEVO.md`) | 5.825 | 802 | feb-2030 |
-| +3 pp | 16.196 | 2.229 | mar-2036 |
+| 10 pp (lo que decía la v4) | 1.485 | 2027-07-14 | 2027-08-02 |
+| 8 pp | 2.325 | 2028-01-09 | 2028-02-09 |
+| **7 pp (propuesto)** | **3.039** | **2028-06-10** | **2028-07-20** |
+| 6 pp | 4.140 | 2029-01-31 | 2029-03-26 |
+| 5 pp | 5.966 | 2030-02-24 | 2030-05-13 |
+| 2 pp | 37.331 | 2048-06-23 | 2049-10-26 |
 
-**Propuesta razonada: +10 pp.** Los argumentos, para que se pueda
-discutir con ellos y no con una corazonada:
+**El 10 pp de la versión anterior no estaba derivado de nada**: se eligió
+por calendario. Resulta estar *por encima* del MDE que V6 exige a 25 pb,
+o sea que era más exigente que el criterio económico — defendible, pero
+por accidente y no por argumento.
 
-1. Diseñar para +15.66 pp sería diseñar para el efecto de la ventana
-   larga, que la ventana sellada ya no reproduce — se llegaría rápido a
-   una respuesta sobre un efecto que probablemente no existe a ese
-   tamaño.
-2. Diseñar para +5 pp es defendible (es el umbral que `RELEVO.md` ya
-   declaró como margen mínimo accionable) pero empuja la respuesta a
-   2030. **Un diseño cuya respuesta llega en 2030 tiene alta probabilidad
-   de romperse antes de completarse** (§A3.5), y un diseño que se rompe
-   no responde nada.
-3. +10 pp deja la respuesta dentro de un año. Si el efecto real es menor,
-   el diseño **no lo va a detectar y va a declarar futilidad** — y eso
-   también es una respuesta: "si hay ventaja, es menor que 10 pp", con un
-   intervalo que la acota. Eso es más de lo que el proyecto sabe hoy.
+**Y el hallazgo que hay que decir con todas las letras:** pasar de 10 a 7
+pp mueve la respuesta de mediados de 2027 a **mediados de 2028**, y el
+diseño ya tiene escrito (§A3.7) que un plan que tarda años tiene alta
+probabilidad de romperse antes de completarse. **El MDE derivado y el
+horizonte alcanzable están en tensión, y la tensión es real, no un
+artefacto de cómo se calculó.** Las dos salidas honestas son firmar 7 pp
+y aceptar 2028, o firmar 10 pp declarando explícitamente que es una
+elección de calendario y no una derivación de V6. **Lo que no se puede es
+firmar 10 pp diciendo que sale de V6.**
 
-**La elección final del MDE es de Nicolás, no de este documento.** Cambia
-el horizonte entre cinco meses y tres años y medio; es exactamente la
-clase de decisión que el encargo prohíbe que tome un agente. Lo que este
-documento aporta es el menú con su costo calculado.
+**La elección es de Nicolás.** Este documento aporta la derivación, su
+rango, el supuesto que la manda y el costo en calendario de cada opción.
 
 ### A3.2 El estadístico, escrito — y por qué el DEFF NO se congela adentro
 
@@ -404,7 +646,10 @@ confiar en ella:
 
 Lo medido sobre la ventana antecedente, como parámetro de estorbo de
 varianza (misma clase de acto que `p_d` y el DEFF, ver §A2 — no se computa
-ninguna ventaja): **ac1 = −0.135 ± 0.171 sobre 34 fechas.** El signo es
+ninguna ventaja): **ac1 = −0.134 ± 0.169 sobre 35 fechas.** (La v5
+citaba «−0.135 ± 0.171 sobre 34 fechas», que era la medición previa al
+sello del 31-ago y contradecía a este mismo documento tres párrafos más
+abajo. Es una de las cifras que dejaron de reproducir.) El signo es
 negativo, que es la dirección benigna; pero el error estándar dice que
 **los datos de hoy no distinguen 0 de +0.2**, así que el argumento "está
 medido y da negativo" no alcanza y no se usa.
@@ -421,6 +666,43 @@ es un cómputo que no está en este repo.
 **Qué obliga esto en cada acta:** reportar `ac1` con su EE. Si sale
 distinguible de cero, `mirada.py` lo dice en el acta y el veredicto no se
 lee sin ese dato al lado.
+
+#### El estimador de reestimación, declarado ahora y no cuando haga falta
+
+α = 0.05 se congela **con la banda [0.046, 0.079] declarada**, y con el
+compromiso de reestimarla cuando el N permita acotar la autocorrelación.
+Ese compromiso no vale nada si el estimador se elige el día que se cumple,
+así que se declara acá:
+
+> **Estimador.** `ac1` = autocorrelación de lag 1 de las contribuciones
+> por fecha `d_j`, calculada como
+> `Σ(d_j − d̄)(d_{j+1} − d̄) / Σ(d_j − d̄)²` sobre las fechas acumuladas,
+> ordenadas por sesión objetivo. Implementado en
+> `mirada.autocorrelacion_lag1`, ya escrito y con test.
+>
+> **Error estándar.** `1/√m` con `m` = número de fechas. Es la
+> aproximación de Bartlett bajo la nula de independencia, que es la nula
+> que importa acá.
+>
+> **Cuándo se reestima la banda.** Cuando `2·EE < 0.10`, es decir cuando
+> `m ≥ 400` fechas — el punto en que el intervalo de `ac1` deja de cubrir
+> a la vez 0 y +0.20, que es la ambigüedad que hoy obliga a publicar la
+> banda entera. Con 35 fechas hoy y el ritmo actual, eso **no ocurre
+> dentro de este diseño**: 400 fechas son unos 8 años. Se dice para que
+> nadie lea "se reestimará" como si fuera pronto.
+>
+> **Qué se hace mientras tanto:** cada acta publica `ac1` con su EE y la
+> banda se cita entera. La banda **no se estrecha** por una `ac1` puntual
+> que dé chica: un estimador con EE de 0.17 que devuelve −0.135 no
+> autoriza a elegir el extremo bueno de la banda.
+
+**Y por qué α queda en 0.05 y no en 0.10** (decisión de Nicolás, 31-ago):
+el proyecto publica su incertidumbre en todo lo demás —Wilson en cada tasa
+de acierto, intervalo del 80% en cada predicción, "pendiente" cuando no
+alcanza el n—. Subir el α declarado a 0.10 para que la cifra sea
+"verdadera" sería **absorber la incertidumbre dentro de un número más
+redondo**, que es exactamente lo contrario. Se declara 0.05 nominal, se
+publica la banda al lado, y el lector ve las dos cosas.
 
 #### Un residuo menor, declarado sin número porque no lo tiene
 
@@ -469,11 +751,22 @@ pareado, p_d fija en la observada:
 del plan es 2.024, no el 1.96 de muestra fija. Esa diferencia se paga en
 N o se paga en potencia; no hay una tercera opción.
 
-Se elige pagarla en N:
+Se elige pagarla en N, con el factor **1.0241** (drift requerido 2.8352
+contra 2.802 de muestra fija). Ese factor **no depende del MDE**:
 
-> **N_max = 1.485 filas** (drift requerido 2.8352 contra 2.802 de muestra
-> fija; factor 1.0241). Con eso la potencia del plan es 0.80 exacta —
-> **bajo el estadístico idealizado, con la varianza conocida.**
+| MDE | n iid (Connor) | ×DEFF 3.6 | **N_max** (×1.0241) |
+|---|---|---|---|
+| 10 pp (la v4, sin derivar) | 403 | 1.450 | **1.485** |
+| **7 pp (derivado de V6, §A3.1)** | **824** | **2.966** | **3.039** |
+
+Con eso la potencia del plan es 0.80 exacta — **bajo el estadístico
+idealizado, con la varianza conocida.**
+
+> **Lo único que el MDE mueve son N_max y las fechas.** Las fronteras de
+> §A3.4, el estadístico de §A3.2, la regla de futilidad, el pasivo y toda
+> la gobernanza **son independientes del MDE** y quedan congelados pase lo
+> que pase con él. Las fronteras de O'Brien-Fleming dependen sólo del
+> número de miradas y del α, no del tamaño del efecto.
 
 **Y esa última aclaración importa, porque la regla del máximo se come esta
 corrección.** Tomar `max` sobre tres estimadores ruidosos está sesgado
@@ -503,12 +796,15 @@ misma familia de elección y conviene tomarlas de una vez.
 Fronteras exactas por recursión numérica, validadas contra la literatura
 (ver "De dónde salen los números"):
 
-| Mirada | Información | n filas | Pocock: Z / α nominal | **O'Brien-Fleming: Z / α nominal** |
-|---|---|---|---|---|
-| 1 | 25% | 371 | 2.362 / 0.01819 | **4.048 / 0.00005** |
-| 2 | 50% | 742 | 2.362 / 0.01819 | **2.862 / 0.00420** |
-| 3 | 75% | 1.114 | 2.362 / 0.01819 | **2.337 / 0.01943** |
-| 4 (final) | 100% | 1.485 | 2.362 / 0.01819 | **2.024 / 0.04297** |
+| Mirada | Información | Pocock: Z / α nominal | **O'Brien-Fleming: Z / α nominal** |
+|---|---|---|---|
+| 1 | 25% | 2.362 / 0.01819 | **4.048 / 0.00005** |
+| 2 | 50% | 2.362 / 0.01819 | **2.862 / 0.00420** |
+| 3 | 75% | 2.362 / 0.01819 | **2.337 / 0.01943** |
+| 4 (final) | 100% | 2.362 / 0.01819 | **2.024 / 0.04297** |
+
+**Estos umbrales están CONGELADOS y no dependen del MDE.** La columna de
+n filas se movió a §A3.5, que es donde el MDE la determina.
 
 α global exacto: Pocock 0.04996, OBF 0.04995. (La v1 congelaba
 2.354/4.026/2.847/2.324/2.013, que dan **0.05122**.)
@@ -523,12 +819,18 @@ del final importa más que la velocidad.**
 
 ### A3.5 Las miradas, con su fecha exacta — escritas, no decididas sobre la marcha
 
-| Mirada | n filas | Fecha estimada | Umbral \|Z\| (OBF) |
+El ritmo real de acumulación, recontado hasta el sello del 31-ago:
+**6.56 filas por día hábil** (256 filas en 39 días hábiles) — contra las
+6.5 que usaba la v4. Si se resuelve deduplicar las predicciones que
+apuntan a la misma sesión objetivo (§A3.1.a), el ritmo baja a **6.18**
+(241/39) y las fechas se corren.
+
+| Mirada | Umbral \|Z\| | **si MDE = 7 pp** (n → fecha) | si MDE = 10 pp |
 |---|---|---|---|
-| 1 | 371 | **2026-11-19** | 4.048 |
-| 2 | 742 | **2027-02-07** | 2.862 |
-| 3 | 1.114 | **2027-04-28** | 2.337 |
-| 4 (final) | 1.485 | **2027-07-17** | 2.024 |
+| 1 | 4.048 | 760 → **2027-02-09** | 371 → 2026-11-19 |
+| 2 | 2.862 | 1.520 → **2027-07-21** | 742 → 2027-02-07 |
+| 3 | 2.337 | 2.280 → **2027-12-30** | 1.114 → 2027-04-28 |
+| 4 (final) | 2.024 | 3.039 → **2028-06-10** | 1.485 → 2027-07-17 |
 
 **La mirada la dispara el n, no la fecha.** Las fechas son estimaciones
 al ritmo actual (6.5 filas/día hábil); si el ritmo cambia, se mueven las
@@ -539,11 +841,14 @@ fechas y **no** los n.
 Frontera **NO vinculante** (parar es una opción, no una obligación; no
 consume alfa), por potencia condicional bajo el MDE < 20%:
 
-| Mirada | n filas | Se puede declarar futilidad si Z observado < |
-|---|---|---|
-| 1 | 371 | −1.662 |
-| 2 | 742 | +0.016 |
-| 3 | 1.114 | +1.033 |
+| Mirada | Se puede declarar futilidad si Z observado < |
+|---|---|
+| 1 | −1.662 |
+| 2 | +0.016 |
+| 3 | +1.033 |
+
+**También independientes del MDE:** dependen de la fracción de
+información y del umbral final, no del tamaño del efecto.
 
 Leído en castellano: en la primera mirada solo se para si el modelo va
 claramente PEOR que la constante; para la tercera, basta con que no haya
@@ -702,9 +1007,14 @@ emisión, o aceptar que no se va a responder.
 
 ## A5. La fecha en que el proyecto va a saber algo
 
-**2027-07-17**, si nada rompe el diseño y el ritmo de sellado se
-mantiene. Antes de eso hay tres momentos en que podría saberlo: el
-2026-11-19 (solo si el efecto es enorme), el 2027-02-07 y el 2027-04-28.
+**Con el MDE propuesto de 7 pp: 2028-06-10**, si nada rompe el diseño y el
+ritmo se mantiene. Antes hay tres momentos en que podría saberlo: el
+2027-02-09 (sólo si el efecto es enorme), el 2027-07-21 y el 2027-12-30.
+
+Si se firma 10 pp en vez de 7, la fecha final es **2027-07-17** y las
+intermedias 2026-11-19 / 2027-02-07 / 2027-04-28. **Un año de diferencia,
+y es toda la diferencia entre "el MDE sale de V6" y "el MDE se eligió por
+calendario"** (§A3.1.d).
 
 Y hay un cuarto desenlace, el más probable de todos según lo que el
 proyecto sabe hoy: que en alguna de esas tres fechas el diseño declare

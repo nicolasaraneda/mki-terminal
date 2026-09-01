@@ -192,7 +192,7 @@ def test_la_rama_degenerada_devuelve_todas_las_claves():
 def test_ejecutar_sobrevive_al_caso_degenerado(monkeypatch):
     df = _df_sintetico(n_fechas=60, por_fecha=7, ventaja=60)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
-    monkeypatch.setattr(M, "PLAN", {1: (100, 2.024, -1.662, "2026-11-19")})
+    monkeypatch.setattr(M, "plan", lambda mde=None: {1: (100, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(M, "RUTA_REGISTRO", os.devnull)
     s = M.ejecutar(1)                       # no debe lanzar
     assert "NO COMPUTABLE" in s["veredicto"]
@@ -239,7 +239,7 @@ def test_el_acta_no_se_sobrescribe(tmp_path, monkeypatch):
     """
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
-    monkeypatch.setattr(M, "PLAN", {1: (150, 2.024, -1.662, "2026-11-19")})
+    monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(sys, "argv", ["mirada", "--mirada", "1", "--escribir"])
     M.main()
     acta = os.path.join(M.DIR_ACTAS, "mirada_1.md")
@@ -278,6 +278,30 @@ def test_las_fechas_por_mirada_salen_del_calendario():
     assert D.FECHAS_POR_MIRADA == esperado
 
 
+def test_el_mde_sin_firmar_bloquea_la_mirada():
+    """El candado del parámetro que falta.
+
+    Correr una mirada con un N_max que nadie firmó es elegir el tamaño de
+    muestra después de ver los datos — el mismo pecado que elegir el
+    umbral después de verlos. El script se niega.
+    """
+    assert M.MDE_FIRMADO is None, "si esto cambia, la firma ya ocurrió"
+    with pytest.raises(SystemExit) as exc:
+        M.plan()
+    assert "MDE SIN FIRMAR" in str(exc.value)
+    with pytest.raises(SystemExit):
+        M.ejecutar(1)
+
+
+@pytest.mark.parametrize("mde,n_final", [(0.07, 3039), (0.10, 1485)])
+def test_el_mde_solo_mueve_n_y_fechas_nunca_umbrales(mde, n_final):
+    """Lo que el pre-registro promete: el MDE no toca ninguna frontera."""
+    p = M.plan(mde)
+    assert p[4][0] == n_final
+    assert [p[k][1] for k in (1, 2, 3, 4)] == list(M.UMBRALES_OBF)
+    assert [p[k][2] for k in (1, 2, 3, 4)] == list(M.Z_FUTILIDAD)
+
+
 def test_universo_esperado_esta_congelado():
     """Una constante de pre-registro que 'se completa después' no está
     congelada, y su guard es código muerto hasta entonces."""
@@ -289,7 +313,7 @@ def test_toda_corrida_que_computa_deja_registro(monkeypatch, tmp_path):
     registro = tmp_path / "registro.log"
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
-    monkeypatch.setattr(M, "PLAN", {1: (150, 2.024, -1.662, "2026-11-19")})
+    monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(M, "DIR_ACTAS", str(tmp_path))
     monkeypatch.setattr(M, "RUTA_REGISTRO", str(registro))
     M.ejecutar(1)
@@ -299,6 +323,7 @@ def test_toda_corrida_que_computa_deja_registro(monkeypatch, tmp_path):
 
 def test_avisa_cuando_n_excede_el_plan(monkeypatch, tmp_path):
     df = _df_sintetico(n_fechas=400, por_fecha=1, ventaja=210)
+    monkeypatch.setattr(M, "MDE_FIRMADO", 0.10)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
     monkeypatch.setattr(M, "RUTA_REGISTRO", str(tmp_path / "r.log"))
     s = M.ejecutar(1)
@@ -348,7 +373,7 @@ def test_varianza_cluster_es_uno_sin_agrupamiento():
 def test_veredicto_cruza_con_efecto_enorme(monkeypatch):
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
-    monkeypatch.setattr(M, "PLAN", {1: (150, 2.024, -1.662, "2026-11-19")})
+    monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     s = M.ejecutar(1)
     assert s["z"] > 2.024
     assert "CRUZA" in s["veredicto"]
@@ -358,7 +383,7 @@ def test_veredicto_cruza_con_efecto_enorme(monkeypatch):
 def test_veredicto_futilidad_cuando_el_modelo_va_peor(monkeypatch):
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=80)   # base gana
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
-    monkeypatch.setattr(M, "PLAN", {1: (150, 4.048, -1.662, "2026-11-19")})
+    monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 4.048, -1.662, "2026-11-19")})
     s = M.ejecutar(1)
     assert s["z"] < -1.662
     assert "FUTILIDAD" in s["veredicto"]
@@ -367,6 +392,7 @@ def test_veredicto_futilidad_cuando_el_modelo_va_peor(monkeypatch):
 def test_no_computa_si_faltan_filas(monkeypatch):
     """El candado que impide adelantar una mirada."""
     df = _df_sintetico(n_fechas=10, por_fecha=7, ventaja=6)
+    monkeypatch.setattr(M, "MDE_FIRMADO", 0.10)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
     s = M.ejecutar(1)
     assert s["veredicto"] == "TODAVÍA NO"
