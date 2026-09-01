@@ -164,3 +164,36 @@ dos lecturas:
   Quedan D (MDE contra ventaja observada) y G (lo que espera firma), que
   dependen de los resultados de B y A, y C2 (la condicional sobre la
   ventana larga), que espera a que C1 libere el arnés.
+- **02:40** — **Frente F cerrado: `tests/test_epistemico.py`, 14 tests, 12
+  en verde y 2 en `xfail`.** Cinco noches de errores convertidos en
+  memoria ejecutable.
+  - **Los detectores no son tautológicos, y lo verifiqué:** cada uno
+    heurístico trae una **contraprueba** que le inyecta el texto histórico
+    original —la redacción real que se retractó el 31-ago— y comprueba que
+    lo caza; y después le pone la corrección y comprueba que **se calla**.
+    O sea que el detector distingue afirmar de retractar, no la mera
+    presencia de las palabras. Es el mismo patrón que el proyecto ya usa
+    en la prueba de causalidad, que inyecta un `shift(-1)` para demostrar
+    que el test puede fallar.
+  - **Los dos `xfail` están rojos a propósito y su razón lo dice:** el de
+    duplicados (30/256, la regla no está firmada) y el del McNemar (las
+    dos rutas son correctas; **falta declarar el método**, no corregir una
+    cifra). Los dos apuntan a decisión de Nicolás, y las razones aclaran
+    que ablandarlos borraría el hallazgo, y que si pasan a XPASS hay que
+    sacar el marcador.
+  - **Calibración: cero falsos positivos sobre el corpus completo**, con
+    dos afinados que vale la pena registrar — el detector de "punto sin
+    intervalo" exime `"si MDE = 7 pp"` (escenario) pero **no** exime
+    `"PROPUESTO PARA FIRMA: MDE = 7 pp"`, que es literalmente la frase del
+    caso histórico.
+  - **Y el reporte honesto de lo que NO se pudo convertir en test**, que
+    vale tanto como los tests: **el análisis que nunca se guardó como
+    código versionado** (el defecto raíz de la segunda corrida). Un test
+    estático no puede detectar la ausencia de un archivo que nunca se
+    escribió — no hay nada que escanear. De ahí cuelga la segunda que
+    tampoco se pudo: **desviarse de un criterio pre-registrado congelado
+    sin declararlo**, que sólo es detectable si el análisis está
+    versionado. Misma raíz. **La barrera que sí funcionaría no es un test
+    sino un hook de pre-commit**, y eso es decisión de proceso: el agente
+    hizo bien en no instalarlo solo.
+

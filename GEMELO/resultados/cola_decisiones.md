@@ -571,6 +571,51 @@ tener la regla.
 
 ---
 
+## 13. El hook que atajaría la clase de error que ningún test ataja
+
+**Qué decidir, en una frase:** si se instala un hook de pre-commit que
+rechace un `.md` de resultados que no cite un `.py` versionado del mismo
+frente.
+
+**De dónde sale.** El Frente F de la quinta corrida convirtió en test seis
+de las siete clases de error de las cinco corridas. **La que resistió es
+la raíz de la segunda corrida** (§45): el análisis completo vivió en
+comandos sueltos de una sesión que se perdió, y sólo se pudo auditar
+porque unos archivos intermedios sobrevivieron por casualidad en un
+directorio temporal.
+
+**Por qué ningún test lo ataja:** un test estático no puede detectar la
+ausencia de un archivo que nunca se escribió. No hay nada que escanear. Y
+el sustituto obvio —"toda cifra publicada nombra el script que la
+produce"— o es tautológico o dispara sobre medio repo, y **un test
+epistémico que grita por todo se termina desactivando**.
+
+**Y de ahí cuelga una segunda clase**, también sin test posible:
+desviarse de un criterio pre-registrado congelado sin declararlo — el
+umbral del §44 congelado en 0,0 mientras el análisis usaba 12,9 de un
+subconjunto de entrenamiento, del que dependía la conclusión publicada.
+Detectarlo exige comparar lo que el código **usó** contra lo que el
+pre-registro **congeló**, y eso sólo es posible si el análisis está
+versionado. **Misma raíz.**
+
+**Qué se bloquea:** nada hoy. Es prevención.
+
+**Costo de postergarla un mes:** bajo pero mal distribuido — no pasa nada
+hasta que pasa, y cuando pasa cuesta dos rondas de auditoría y una
+retractación, que es exactamente lo que costó en agosto.
+
+**Recomendación:** es de proceso, no técnica, y por eso el agente que lo
+propuso **no lo instaló solo** — hizo bien. Un hook que rechaza commits
+cambia cómo trabaja todo el mundo, y eso lleva firma.
+
+**Un candidato menor que sí es convertible en test**, por si vale para la
+próxima tanda: todo script de resultados que lea `senales.db` debe anclar
+la lectura con `hasta_sello` — `mde_desde_v6.py` escribió su propio SQL
+sin ancla temporal y el documento dejó de reproducir el día que se
+firmaba. Es un test AST de una tarde.
+
+---
+
 ## Lo que esta lista NO incluye, a propósito
 
 El segundo movimiento del switch (apagar los timers del Mac, quitar
