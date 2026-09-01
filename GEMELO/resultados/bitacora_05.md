@@ -797,4 +797,62 @@ vigentes.
     **189 casos** contra los **181 congelados** en `parametros.vh`.
     Cualquier cosa que lo toque regenera los vectores con 189 y **mueve en
     silencio todas las cifras publicadas como "181 filas"**. No lo tocó.
+- **09:40** — **ERROR DE PROCESO MÍO, y lo registro porque es del tipo que
+  esta corrida viene cazando en otros.** Vengo commiteando con
+  `git add -A` en un árbol con **seis agentes escribiendo en paralelo**.
+  A las 09:21 eso barrió `backtest/datos.py` y `backtest/causalidad.py`
+  —trabajo a medio terminar del Frente B— dentro del commit `6bb1f46`,
+  **cuyo mensaje no los menciona**. El agente lo detectó y me lo dijo.
+  - **Un commit cuyo mensaje no describe lo que contiene es exactamente
+    la clase de desfase que el proyecto documenta como errata**, y encima
+    lo produje con el mismo hábito cómodo que el resto de la corrida
+    estuvo desarmando en el código ajeno.
+  - **No reescribo la historia**: `6bb1f46` queda, y esta entrada es su
+    errata. Los dos archivos estaban completos y la suite pasa, así que el
+    estado es coherente; lo que estuvo mal fue el mensaje y el método.
+  - **Cambio la práctica para lo que queda:** staging **explícito por
+    archivo**, nunca `git add -A` mientras haya agentes vivos. Es más
+    lento y es el precio de que cada commit diga la verdad.
+- **09:45** — **Frente B cerrado, y es el resultado que desbloquea el
+  25-oct: R3 QUEDÓ LIMPIO.**
+  - **B-1 corregida con `max(publicación, analizado_en)`**, no con el
+    `min()` que decía el acta — y hay un test que **falla si alguien
+    vuelve al mínimo**. La errata de `DECISIONES.md`:5459-5460 queda para
+    el cierre, ahora con la evidencia.
+  - **Cuántas observaciones sobreviven al corte honesto: 288 de 4.152, el
+    6,94%.** 40 de 520 días. **Consecuencia con todas las letras: B4 y B5
+    NO son evaluables sobre la ventana larga** — el 93,1% de sus filas se
+    emite con las tres features de noticias en la constante 0,0, así que
+    la capa colapsa a la anterior.
+  - **Y la distinción que salva la lectura:** sus cifras se leen como *"la
+    capa de precios con columnas constantes"*, **jamás** como *"las
+    noticias no aportan"*. Son cosas distintas y confundirlas sería
+    publicar una conclusión sobre noticias que el dato no sostiene.
+  - **B0, B1, B2 y B3 no tocan sentimiento y siguen evaluables** sobre la
+    ventana completa. **Son dos baselines de seis, no el backtest.**
+  - **B-2: la guarda ahora puede disparar, y se demuestra.**
+    `recortar_pit()` recibe la serie **sin recortar**, y
+    `backtest/causalidad.py` reconstruye el arnés entero con la fuente
+    cortada y exige predicción idéntica, **corriendo dentro de
+    `motorbt.correr`**. La contraprueba con `shift(-1)` **dispara 10 de
+    10**, incluidas las cinco features exclusivas de B4/B5. Y hay un test
+    que prueba que **la guarda vieja no habría visto ese `shift(-1)`**.
+  - **R3 PASA: gate INVARIANTE sobre 72 comparaciones** (12 fechas × 6
+    baselines). Corrida en
+    `backtest/resultados/20260901-133154-5.1-arnes-corregido-gatillo-incumplido/`,
+    con **N = 92** declarado en disco antes de computar (86 del registro
+    del Frente E + 6).
+  - **Y el resultado que importa: corregir la fuga NO cambió el
+    desenlace.** B4 pasó de IC 0,2213 a 0,2216 y de MAE 1,575 a 1,564 —
+    **el sentimiento con fuga tampoco estaba aportando**. La conclusión
+    económica es la misma: el gap existe (69% de acierto direccional) y
+    **no es capturable**.
+  - **Regla 4 aplicada por su cuenta:** `ventana_larga.py` imprimía
+    n=215/p=0,36, ya superado; y `veredicto_51._md` tenía **cableadas las
+    cifras de la corrida invalidada** y las habría reimpreso en el reporte
+    nuevo. Reescrito para generarse desde el JSON.
+  - **Abiertos y declarados en la primera pantalla:** B-3 (263 desenlaces
+    duplicados, que **no es fuga temporal** y por eso R3 no lo juzga, pero
+    bloquea igual), S-1, S-3, **no existe holdout material** (la cuarentena
+    de V7 es procedimental) y la fuente **no es point-in-time**.
 

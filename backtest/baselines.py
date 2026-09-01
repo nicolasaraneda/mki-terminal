@@ -24,7 +24,7 @@ from universo import (EXCHANGE_POR_TICKER, FX_POR_EXCHANGE,
                       PARES_COMPETIDORES, TICKERS_POR_NIVEL, UNIVERSO)
 
 from backtest.datos import (FuenteCongelada, SentimientoPIT, recortar_pit,
-                            residual_rolling, validar_sin_futuro)
+                            residual_rolling)
 
 Z80 = motor.Z80
 VENTANA_ENTRENAMIENTO = 250   # sesiones de train para B1/B3-B5 (congelado)

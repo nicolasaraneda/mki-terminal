@@ -247,6 +247,78 @@ visible al pie de esta sección, con su fecha**, y el número original de la
 §1.4 no se reescribe. Ésa es la regla de la casa para todo registro que ya
 fue declarado.
 
+### 1.7 CORRECCIÓN — 2026-09-01, antes de la segunda corrida
+
+> # N = 92
+>
+> **86 (registro con procedencia) + 6 (la corrida con el arnés corregido)
+> = 92**
+>
+> Declarado el **2026-09-01**, **antes de volver a ejecutar el backtest y
+> antes de computar una sola cifra nueva.**
+
+La §1.4 **no se reescribe**: su 82 sigue siendo el número que gobernó la
+corrida `20260901-061708-5.1-invalidada-por-fuga`, y esa corrida quedó
+invalidada por fuga, no por su conteo.
+
+**Por qué la base es 86 y no 82.** El mismo día, y en paralelo a este
+frente, el frente E sustituyó el entero mágico por un **registro de 20
+tramos con procedencia** (`GEMELO/relevo_asiatico.REGISTRO_INTENTOS`), que
+suma **86** e incluye ya como último tramo los 6 de la corrida invalidada.
+Este frente escribió primero «82 + 6 = 88» leyendo la cifra que era canónica
+al empezar; la base correcta es la del registro. **La corrección se hace
+aquí, en su sitio, porque esta declaración todavía no estaba commiteada** —
+la frontera de la errata fechada es el commit, y no lo había cruzado.
+Ningún número declarado y publicado se reescribe.
+
+**Por qué suben 6 y no 2.** La corrida nueva vuelve a mirar las **seis**
+baselines B0–B5 sobre la **misma** ventana (2024-09-02 → 2026-08-28) con el
+arnés corregido. Se podría argumentar que sólo B4 y B5 cambian de cifra —el
+arreglo de B-1 sólo toca las features de noticias, y el de B-2 no mueve
+ningún valor— y que las otras cuatro son "la misma lectura de la misma
+cifra", que la regla del proyecto no cuenta dos veces
+(`GEMELO/SECUENCIAL/DISEÑO.md`:223-225). **Se cuentan las seis igual.**
+Bajar N es lo único que el DSR no perdona, y contar de más es el lado seguro
+del error: el argumento para contar 2 sólo puede verificarse comparando
+resultados, o sea DESPUÉS de mirarlos, que es exactamente lo que el conteo
+declarado existe para impedir.
+
+**Banda de sensibilidad**: 26 / 44 / 82 / 86 / **92** / 110. El 82 y el 86 se
+conservan en la banda para que las dos corridas sean comparables columna a
+columna.
+
+### 1.8 PARÁMETROS DE LA SEGUNDA CORRIDA — declarados aquí, antes de correr
+
+Todo lo de la §2 sigue vigente sin un solo cambio: ventana 2024-09-02 →
+2026-08-28, burn-in 250, ventana de entrenamiento 250, reajuste 7, embargo
+`EMBARGO_DIAS = 5` con su discrepancia declarada, bootstrap circular de
+bloques de 10 días con 2.000 réplicas, semilla **20260901**, `alpha = 0.05`
+(IC 95 %), costos 25 pb con barrido 10/25/50, benchmark SMH obligatorio,
+`MINIMO_DIAS_SHARPE = 60`, momentos empíricos como primarios. **Ninguno se
+movió**, y moverlos ahora sería elegir la configuración favorable con los
+resultados de anoche ya vistos.
+
+Lo único que se agrega es el **gate de causalidad**, y sus fechas se
+declaran aquí antes de correr — doce, repartidas por la ventana:
+
+```
+2024-10-15  2024-12-10  2025-02-11  2025-04-15  2025-06-10  2025-08-12
+2025-10-14  2025-12-09  2026-02-10  2026-04-14  2026-06-09  2026-08-11
+```
+
+× las **seis** baselines = 72 comparaciones de invariancia al truncado. El
+gate **no suma intentos al N**: no evalúa ninguna hipótesis predictiva, mide
+fidelidad del arnés — la misma regla con la que la §1.5 dejó fuera al frente
+MICRO.
+
+**Etiqueta de la corrida**: `5.1-arnes-corregido-gatillo-incumplido`. No es
+el veredicto de la 5.1 y no pretende serlo: el gatillo del GATE B sigue
+incumplido por sus dos vías y Nicolás decidió **no relevarlo** y esperar al
+**25-oct-2026** (vía (b)), porque relevar la (a) habiendo visto ya que N se
+cumple y el régimen no sería mover un criterio congelado habiendo mirado.
+
+**El holdout NO se evalúa y NO se gasta.**
+
 ---
 
 ## 2. PARÁMETROS DE LA CORRIDA — declarados aquí, antes de correr

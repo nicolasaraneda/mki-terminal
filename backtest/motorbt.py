@@ -305,6 +305,24 @@ def _resumen_md(r: dict) -> str:
         for via in gat.get("vias", []):
             lineas.append(f"- {via}")
         lineas.append("")
+        correcciones = gat.get("correcciones_2026_09_01") or []
+        if correcciones:
+            lineas.append("**Correcciones del arnés aplicadas antes de esta "
+                          "corrida** (la corrección va al ejecutable, no al "
+                          "texto):\n")
+            for c in correcciones:
+                lineas.append(f"- {c}")
+            lineas.append("")
+        abiertos = gat.get("defectos_abiertos") or []
+        if abiertos:
+            lineas.append("**Defectos del arnés ABIERTOS.** No son fugas "
+                          "temporales —R3 no los juzga— pero bloquean el "
+                          "veredicto igual, y decirlo separado es la "
+                          "diferencia entre *«el arnés tiene fuga»* y *«el "
+                          "arnés tiene la unidad de observación mal»*:\n")
+            for d in abiertos:
+                lineas.append(f"- {d}")
+            lineas.append("")
         if gat.get("holdout_intacto", True):
             lineas.append("**El holdout en cuarentena NO se evaluó y queda "
                           "INTACTO.** `GEMELO/DISEÑO.md` §6.1 V7 lo define "
@@ -373,10 +391,13 @@ def _resumen_md(r: dict) -> str:
                     if n in ("B4", "B5")
                     and (b.get("grado_S_sin_noticias_pct") or 0) >= 50.0]
     if sin_noticias:
+        detalle_s = " · ".join(
+            f"{n}: {r['baselines'][n]['grado_S_sin_noticias_pct']}%"
+            for n in sin_noticias)
         lineas.append(
             f"\n**{' y '.join(sin_noticias)} NO son evaluables sobre esta "
-            f"ventana.** Más de la mitad de sus filas se emitieron sin un "
-            f"solo juicio de IA disponible: sus tres features de noticias "
+            f"ventana.** Filas emitidas SIN un solo juicio de IA disponible "
+            f"({detalle_s}): sus tres features de noticias "
             f"valen el relleno neutro 0.0 y la capa colapsa a la anterior. "
             f"Sus cifras se leen como lo que son —la capa de precios con "
             f"columnas constantes—, no como *«las noticias no aportan»*. "

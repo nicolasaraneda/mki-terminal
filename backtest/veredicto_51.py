@@ -56,17 +56,28 @@ FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
                date(2025, 10, 14), date(2025, 12, 9), date(2026, 2, 10),
                date(2026, 4, 14), date(2026, 6, 9), date(2026, 8, 11))
 
-# N_intentos del DSR — §1.4 del expediente declaró 82 el 2026-09-01 01:42
-# (25 en código + 1 declarado no corrido + 18 en prosa + 32 reconstruidos +
-# 6 de la corrida de esa noche). Esta corrida vuelve a mirar las SEIS
-# baselines sobre la misma ventana con el arnés CORREGIDO: por la regla
-# congelada, seis configuraciones más. La §1.4 no se reescribe — la
-# corrección se agrega al pie con su fecha, que es la regla de la casa.
-#
-# 82 + 6 = 88. Se sube y no se reusa: bajar N es lo único que el DSR no
-# perdona, y contar de más es el lado seguro del error.
-N_INTENTOS_51 = 88
-BANDA_N = (26, 44, 82, 88, 110)
+# N_intentos del DSR. NO es un entero mágico: sale del registro con
+# procedencia `GEMELO/relevo_asiatico.REGISTRO_INTENTOS`, 20 tramos que
+# suman 86 —el frente E lo reconstruyó el 2026-09-01 y el 82 de la §1.4 del
+# expediente quedó superado por él—. Un test
+# (`test_el_N_del_veredicto_sale_del_registro_con_procedencia`) fija que
+# estos dos números no puedan separarse en silencio; no se importa en
+# runtime para no invertir la dependencia backtest→GEMELO.
+N_INTENTOS_PREVIO = 86
+# Esta corrida vuelve a mirar las SEIS baselines sobre la MISMA ventana con
+# el arnés CORREGIDO. Se podría argumentar que sólo B4 y B5 cambian de
+# cifra —el arreglo de B-1 toca las features de noticias y el de B-2 no
+# mueve ningún valor— y que las otras cuatro son "la misma lectura de la
+# misma cifra". Se cuentan las seis igual: bajar N es lo único que el DSR
+# no perdona, y el argumento para contar 2 sólo se puede verificar mirando
+# los resultados, o sea DESPUÉS, que es justo lo que el conteo declarado
+# existe para impedir.
+N_INTENTOS_NUEVOS = 6
+N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 92
+# La banda conserva los cortes históricos para que las corridas se comparen
+# columna a columna: 82 gobernó la corrida invalidada, 86 es el registro sin
+# esta corrida.
+BANDA_N = (26, 44, 82, 86, N_INTENTOS_51, 110)
 
 # Un Sharpe ANUALIZADO sobre pocas decenas de días es un artefacto de
 # multiplicar por √252. Espejo de GEMELO/control_lineal.py:81 — abajo de
@@ -516,10 +527,20 @@ def evaluar(reporte: dict, dfs: dict) -> dict:
             "cumple_las_tres": bool(vs1.get("supera") and vs2.get("supera")
                                     and sharpe_pos and bate_smh),
         }
-    # Toda cifra de arriba queda marcada por lo que R3 acaba de dictar.
-    for clave, valor in crit.items():
-        if clave.startswith("V") and valor.get("veredicto") in ("PASA", "NO PASA"):
-            valor["veredicto"] = f"{valor['veredicto']} (SOBRE DATOS CON FUGA — no vale)"
+    # Toda cifra de arriba queda marcada por lo que R3 acaba de dictar, y
+    # por lo que el gatillo dicta aparte. Son dos marcas distintas y no
+    # colapsan: "contaminada" y "no es el veredicto" no son lo mismo.
+    if crit["R3"]["veredicto"] != "PASA":
+        marca = " (SOBRE DATOS CON FUGA — no vale)"
+    elif not ESTADO_GATILLO.get("cumplido", False):
+        marca = " (GATILLO NO CUMPLIDO — no es el veredicto de la 5.1)"
+    else:
+        marca = ""
+    if marca:
+        for clave, valor in crit.items():
+            if clave.startswith("V") and valor.get("veredicto") in ("PASA",
+                                                                    "NO PASA"):
+                valor["veredicto"] = f"{valor['veredicto']}{marca}"
 
     crit["veredicto_final_diseno_8"] = {
         "enunciado": "La cadena MKI 'agrega valor' si B5 (o B4) supera a B1 Y "
@@ -745,9 +766,22 @@ def _md(salida: dict, reporte: dict) -> str:
               f"- Primer dato de IA disponible en el sistema: "
               f"**{cob.get('primer_dia_con_dato_disponible')}**. Primer "
               f"titular publicado: {cob.get('primer_titular_publicado')}.",
-              f"- Accesos a la feature de sentimiento con dato REAL: "
-              f"**{con}** de {tot} (**{pct}%**). El resto se emitió con el "
-              f"relleno neutro 0.0, declarado como **grado S**.", ""]
+              f"- Accesos distintos (ticker × fecha × set de columnas) a la "
+              f"feature de sentimiento con dato REAL: **{con}** de {tot} "
+              f"(**{pct}%**). El resto se resolvió con el relleno neutro 0.0, "
+              f"declarado como **grado S**.", ""]
+        emitidas = {b: reporte["baselines"][b]
+                    for b in ("B4", "B5") if b in reporte.get("baselines", {})}
+        if emitidas:
+            L += ["**El denominador que importa — filas EMITIDAS, no accesos "
+                  "a la caché:**", "",
+                  "| B | filas | con sentimiento real | %|", "|---|---|---|---|"]
+            for b, v in emitidas.items():
+                nreal = v.get("n_filas_con_sentimiento_real")
+                n = v["n_pares"]
+                L.append(f"| {b} | {n} | {nreal} | "
+                         f"{round(100 * nreal / n, 2) if nreal is not None and n else '—'}% |")
+            L.append("")
         b45 = {b: reporte["baselines"][b].get("grado_S_sin_noticias_pct")
                for b in ("B4", "B5") if b in reporte.get("baselines", {})}
         if b45 and all((v or 0) >= 50 for v in b45.values()):
@@ -929,7 +963,8 @@ def main(ruta_existente: str | None = None) -> int:
         reporte = motorbt.correr(DESDE, HASTA, etiqueta=ETIQUETA, fuente=fuente,
                                  semilla_bootstrap=SEMILLA_BOOTSTRAP,
                                  alpha_bootstrap=ALPHA_BOOTSTRAP,
-                                 estado_gatillo=ESTADO_GATILLO)
+                                 estado_gatillo=ESTADO_GATILLO,
+                                 fechas_gate=FECHAS_GATE)
     ruta = reporte["ruta"]
     dfs = {}
     for b in ("B0", "B1", "B2", "B3", "B4", "B5"):
@@ -943,7 +978,10 @@ def main(ruta_existente: str | None = None) -> int:
                   "semilla_bootstrap": SEMILLA_BOOTSTRAP,
                   "alpha_bootstrap": ALPHA_BOOTSTRAP,
                   "N_intentos": N_INTENTOS_51, "banda_N": list(BANDA_N),
+                  "fechas_gate_causalidad": [f.isoformat() for f in FECHAS_GATE],
                   "expediente": "GEMELO/resultados/gatillo_51.md"},
+              "gate_causalidad": reporte.get("gate_causalidad"),
+              "cobertura_sentimiento": reporte.get("cobertura_sentimiento"),
               "estado_gatillo": ESTADO_GATILLO,
               "fidelidad_b2_vs_sellos": fidelidad,
               "impacto_b3_duplicados": impacto_b3(dfs),

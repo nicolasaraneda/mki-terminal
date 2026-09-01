@@ -92,16 +92,18 @@ def test_dato_futuro_es_rechazado():
 
 
 def test_guardia_activa_en_cada_acceso(entorno, monkeypatch):
-    """La guardia validar_sin_futuro se ejecuta de verdad en los accesos
-    point-in-time (si una regresión la eliminara, este test muere)."""
+    """La guardia se ejecuta de verdad en los accesos point-in-time (si una
+    regresión la eliminara, este test muere). Desde el arreglo de B-2 la
+    guardia es `recortar_pit`, que RECIBE la serie sin recortar y hace el
+    corte ella misma."""
     llamadas = []
-    original = bl.validar_sin_futuro
+    original = bl.recortar_pit
 
-    def espia(df, fecha):
+    def espia(serie, fecha):
         llamadas.append(fecha)
-        return original(df, fecha)
+        return original(serie, fecha)
 
-    monkeypatch.setattr(bl, "validar_sin_futuro", espia)
+    monkeypatch.setattr(bl, "recortar_pit", espia)
     with entorno:
         ctx = bl.ContextoRun(entorno)
         modelo = bl.B1Momentum(ctx)
@@ -311,6 +313,23 @@ def test_b2_contraprueba_una_fuga_inyectada_HACE_disparar_el_gate(
     with pytest.raises(datos.ErrorLookAhead):
         causalidad.gate(fuente, _fechas_gate(4), CUALES_TODAS,
                         fabrica_ctx=causalidad.fabrica_con_fuga(feature))
+
+
+def test_el_N_del_veredicto_sale_del_registro_con_procedencia():
+    """Cuarta regla de la casa: un entero mágico se corrompe en silencio.
+
+    El N del DSR de la corrida 5.1 no puede ser un número escrito a mano —
+    tiene que ser el registro con procedencia (20 tramos) más lo que ESTA
+    corrida agrega. Si el registro crece y el veredicto no se entera, el DSR
+    miente hacia arriba, que es la única dirección en la que duele."""
+    from GEMELO.relevo_asiatico import N_INTENTOS_ACUMULADO
+
+    from backtest import veredicto_51 as v
+    assert v.N_INTENTOS_PREVIO == N_INTENTOS_ACUMULADO, (
+        "el registro de intentos se movió y el veredicto sigue con el número "
+        "viejo: el DSR quedaría con un N corto")
+    assert v.N_INTENTOS_51 == N_INTENTOS_ACUMULADO + v.N_INTENTOS_NUEVOS
+    assert v.N_INTENTOS_51 in v.BANDA_N
 
 
 def test_b2_la_guarda_vieja_NO_habria_visto_la_fuga():
