@@ -649,4 +649,59 @@ vigentes.
   alcanza** para recomputar cuál sesión objetivo era la correcta. Si no
   alcanzara, cambiaría cómo se implementa la firma, así que no lo lanzo a
   ciegas.
+- **09:20** — El orientador trajo dos cosas que cambian frentes en
+  caliente.
+  - **Para el Frente B: el acta dice `min()` y la causalidad exige
+    `max()`.** `DECISIONES.md`:5459-5460 escribe el arreglo de B-1 como
+    "cortar por `min(titulares.fecha, analisis.analizado_en)`", y eso
+    **reproduciría el corte roto** en vez de corregirlo: `analizado_en` es
+    posterior a `fecha` por construcción (`datos.py`:188), así que el
+    mínimo es casi siempre `fecha`. Lo que la causalidad exige es el
+    **máximo** — una observación es utilizable recién cuando ocurrieron
+    **las dos** cosas. Es el `available_at` de la ruta de sellado aplicado
+    al sentimiento. Avisado al frente; el acta lleva errata al cierre.
+  - Y un dato que separa bien la consecuencia: **sólo B4 y B5 usan
+    sentimiento**. Si el corte honesto colapsa las observaciones, "B4/B5
+    no evaluables" es muy distinto de "el backtest no es evaluable", y hay
+    que decirlo separado.
+- **09:25** — **Frente A: computé yo la consecuencia de la firma antes de
+  despacharlo, y hay que decirla con todas las letras.**
+  - **La regla firmada se implementa sola.** Recomputando
+    `proxima_sesion_despues_de(exchange, available_at)` fila por fila,
+    **exactamente 10 filas no calzan** con su `sesion_objetivo` sellada, y
+    son **exactamente** las de 31-jul y 5-ago — el grupo del defecto. En
+    el grupo de feriados **las dos filas de cada par calzan**, así que la
+    regla no descarta nada ahí. **Separa los dos grupos por construcción**,
+    sin lista de fechas cableada. `available_at` está poblado en las 30,
+    sin nulos, y se calcula independientemente de la línea defectuosa.
+  - **Y el resultado cruza el umbral:**
+
+    | rama | n | ventaja | b/c | p |
+    |---|---|---|---|---|
+    | sin deduplicar (hoy) | 248 | +6,45 pp | 72/56 | 0,1847 |
+    | **REGLA FIRMADA** | **238** | **+9,66 pp** | **72/49** | **0,0451** |
+    | `keep="last"` (prohibida) | 233 | +10,30 pp | 70/46 | 0,0323 |
+    | `keep="first"` | 233 | +6,87 pp | 72/56 | 0,1847 |
+
+  - **Nicolás firmó "conociendo ambos desenlaces, con 0,1847 y 0,032 a la
+    vista" — pero 0,0451 no era ninguno de los dos.** Es un tercer
+    desenlace que su propia regla produce y que no estaba sobre la mesa.
+    Lo reporto antes que nada porque es exactamente el tipo de cosa que no
+    se entierra.
+  - **El mecanismo, igual de claro:** `b` queda en **72 sin cambio** y `c`
+    baja de **56 a 49**. Las 10 filas retiradas contenían **7 pares
+    discordantes y los 7 favorecían a la baseline; cero al modelo.** Es la
+    misma asimetría que motivó prohibir `keep="last"`.
+  - **La diferencia sustantiva, que sostiene la firma:** acá el retiro no
+    es por frescura sino por **corrección demostrable** — esas 10 filas
+    tienen una `sesion_objetivo` que no corresponde a su `available_at`,
+    así que su `gap_pct` se midió **contra la sesión equivocada**. No son
+    predicciones peores: son **desenlaces mal etiquetados**. El criterio
+    firmado sigue siendo el correcto; lo que hay que registrar es que su
+    consecuencia numérica no era la que estaba a la vista.
+  - **Y la opción que no se puede tomar:** lo completo sería
+    **re-verificar** esas 10 filas contra su sesión correcta en vez de
+    descartarlas, pero eso exige recomputar valores sellados y **las filas
+    selladas no se reescriben nunca**. Se descarta por restricción, no por
+    preferencia, y así queda escrito.
 
