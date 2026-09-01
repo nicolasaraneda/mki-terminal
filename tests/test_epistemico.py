@@ -1023,3 +1023,106 @@ def test_el_contraejemplo_ejecutable_del_hueco_sigue_en_pie():
     assert "B3 la LATENCIA sigue en" in r.stdout, (
         "el gate ya no comprueba que la latencia queda verde con los sellos "
         "mal, que es la mitad que hace a la lección")
+
+
+# ---------------------------------------------------------------------------
+# 9. Un módulo que se commitea roto — 1-sep-2026, quinta corrida
+# ---------------------------------------------------------------------------
+
+def test_todo_modulo_de_analisis_importa_sin_reventar():
+    """1-sep-2026, quinta corrida. El error fue mío y lo commiteé.
+
+    Arreglando el `8.96` cableado en `GEMELO/bifurcaciones.py` usé un ancla
+    (`def _bloque_potencia(`) que NO existe en ese archivo, dentro de un
+    `if` que hizo que la inserción de la constante **no ocurriera en
+    silencio** — mientras los dos reemplazos que la USAN sí se aplicaron.
+    Commiteé un `NameError` en `a49ad76`: `python -m GEMELO.bifurcaciones`
+    reventaba antes de escribir nada.
+
+    Una guarda que protege de un duplicado y a cambio produce un archivo
+    roto. Y la suite no lo atajó porque sus tests llamaban a
+    `construir_matriz` pero nunca a `componer_informe`: un generador de
+    informes que lanza `NameError` pasaba en verde.
+
+    **LO QUE ESTE TEST NO HACE, y lo digo porque lo medí.** Le hice la
+    contraprueba borrando esa misma constante y **NO falla**: un
+    `NameError` dentro de una f-string vive en el cuerpo de una función y
+    sólo revienta cuando alguien la llama, no al importar. **Este test no
+    habría cazado el bug que lo motivó.**
+
+    Lo dejo igual porque sí caza la familia vecina —errores en tiempo de
+    import: sintaxis, imports circulares, constantes de nivel de módulo
+    que faltan— y porque es deliberadamente tonto y por eso no puede
+    volverse ruidoso. Pero **no se presenta como más de lo que es**.
+
+    Lo que sí cazaría el caso original es una resolución de nombres tipo
+    `pyflakes`, y **no hay ningún linter instalado en este venv**
+    (verificado: `pyflakes`, `flake8`, `ruff`, ninguno). Agregar una
+    dependencia es una decisión con acta en este proyecto, así que queda
+    propuesto y no instalado. La otra mitad de la defensa ya existe y es
+    más barata: que los tests **llamen** a las funciones que generan
+    informes, que es justo lo que faltaba (`construir_matriz` sí,
+    `componer_informe` no).
+    """
+    import importlib
+    import pkgutil
+
+    fallos = []
+    for paquete in ("GEMELO", "backtest"):
+        ruta = os.path.join(_RAIZ, paquete)
+        if not os.path.isdir(ruta):
+            continue
+        for info in pkgutil.walk_packages([ruta], prefix=f"{paquete}."):
+            if info.ispkg:
+                continue
+            try:
+                importlib.import_module(info.name)
+            except Exception as exc:      # noqa: BLE001 — cualquier cosa cuenta
+                fallos.append(f"{info.name}: {type(exc).__name__}: {exc}")
+    assert not fallos, (
+        "hay módulos que no importan. Un módulo que no importa es un módulo "
+        "que nadie corrió antes de commitearlo:\n  " + "\n  ".join(fallos))
+
+
+def test_ninguna_funcion_de_inferencia_ofrece_un_N_de_intentos_por_defecto():
+    """1-sep-2026, quinta corrida. Cuarta regla, en su forma más cara.
+
+    `backtest/inferencia.py` quitó el valor por defecto de `N_intentos`
+    **a propósito, con acta (§26.1) y con un test que lo exige**: un DSR
+    con un N que alguien olvidó actualizar miente, y miente hacia arriba.
+    `GEMELO/control_lineal.py` lo había **reintroducido** con el N más
+    rancio del repo (9), y `experimento.py` lo consumía sin pasar nada.
+    La defensa estaba anulada desde adentro.
+
+    Medido: SR0(9) = 0,9986 contra SR0(86) = 1,6266. El default regalaba
+    0,63 de umbral, y a Sharpe anualizado de 1,2-1,5 el veredicto V5 se
+    daba vuelta de PASA a NO PASA. Era un vector vivo, no una deuda.
+
+    Se busca por NOMBRE de parámetro en vez de por módulo, para que el
+    día que alguien escriba una tercera función de inferencia también
+    quede cubierta sin acordarse de este test.
+    """
+    import ast
+
+    sospechosos = []
+    for paquete in ("GEMELO", "backtest"):
+        base = os.path.join(_RAIZ, paquete)
+        for raiz, _, archivos in os.walk(base):
+            for nombre in archivos:
+                if not nombre.endswith(".py"):
+                    continue
+                ruta = os.path.join(raiz, nombre)
+                arbol = ast.parse(open(ruta, encoding="utf-8").read(), ruta)
+                for nodo in ast.walk(arbol):
+                    if not isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        continue
+                    args = nodo.args
+                    con_default = args.args[len(args.args) - len(args.defaults):]
+                    for arg in con_default:
+                        if arg.arg.lower().replace("_", "") in ("nintentos", "intentos"):
+                            rel = os.path.relpath(ruta, _RAIZ)
+                            sospechosos.append(f"{rel}:{nodo.lineno} {nodo.name}({arg.arg}=...)")
+    assert not sospechosos, (
+        "una función de inferencia volvió a ofrecer un N de intentos por "
+        "defecto. Obligar a escribirlo en cada llamada es la única defensa "
+        "barata contra el olvido:\n  " + "\n  ".join(sospechosos))

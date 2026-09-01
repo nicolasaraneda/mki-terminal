@@ -966,4 +966,29 @@ vigentes.
   versión de `condicional.py` que producía conclusiones falsas. La
   correcta se commitea ahora. **El staging explícito no era una
   formalidad.**
+- **10:35** — **Dos detectores nuevos en la suite epistémica, uno por cada
+  error nuevo de esta tanda — y el segundo me enseñó algo sobre el
+  primero.**
+  - **`test_ninguna_funcion_de_inferencia_ofrece_un_N_de_intentos_por_defecto`**
+    — busca **por nombre de parámetro**, no por módulo, para que una
+    tercera función de inferencia quede cubierta sin que nadie se acuerde
+    de este test. **Contraprueba: reintroduje el default de 9 y falla.**
+  - **`test_todo_modulo_de_analisis_importa_sin_reventar`** — y acá está
+    la lección. Le hice la contraprueba borrando la constante que yo mismo
+    había olvidado insertar, **y NO falla**: un `NameError` dentro de una
+    f-string vive en el cuerpo de una función y sólo revienta **cuando
+    alguien la llama**, no al importar. **Mi test no habría cazado mi
+    propio bug.**
+  - **No lo ablandé ni lo tiré: le corregí el docstring para que diga lo
+    que NO hace**, con la contraprueba que lo demuestra. Sirve para la
+    familia vecina —sintaxis, imports circulares, constantes de nivel de
+    módulo— y eso vale; presentarlo como más habría sido exactamente el
+    vicio que la suite existe para cazar.
+  - Lo que sí cazaría el caso original es una resolución de nombres tipo
+    `pyflakes`, y **verifiqué que no hay ningún linter instalado** en el
+    venv. Agregar dependencia es decisión con acta: queda **propuesto y no
+    instalado**. Y anoto la otra mitad de la defensa, que es más barata y
+    ya se sabe cuál es: **que los tests llamen a las funciones que generan
+    informes** — `construir_matriz` sí, `componer_informe` no, y por ese
+    hueco pasó el error.
 
