@@ -60,11 +60,14 @@ frentes, uno en versión con bugs.
   calendario real de máquinas reconstruido desde actas y commits**, no
   desde `ESTADO.md`, que es un resumen.
 - **11:35** — **Frente F despachado.** Con F1 primero, que es la pregunta
-  previa: **¿por qué el vigía no vio dos incidentes que costaron 62,5 pp?**
+  previa: **¿por qué el vigía no vio los incidentes de producción?**
+  *(Al despachar escribí "dos incidentes que costaron 62,5 pp". **Esa cifra
+  no reproduce y el propio frente la corrigió** — ver la entrada de las
+  12:20.)*
   Si tiene un hueco de esa clase, taparlo es más barato que todo lo demás.
   Y con la restricción que hace honesta a la abstención: **se aplica sólo
-  hacia adelante**, porque retirar hacia atrás dos fechas que cuestan 62,5
-  pp **es la misma operación que `keep="last"` con mejor excusa**.
+  hacia adelante**, porque retirar hacia atrás fechas que cuestan ventaja
+  **es la misma operación que `keep="last"` con mejor excusa**.
 - **11:38** — **Frente E despachado al escriba**: el acta de tres partes
   —la confirmación, el tercer desenlace, y **la degradación del McNemar**—
   con la frase que evita el malentendido: **cruzar α no es tener
@@ -140,4 +143,116 @@ frentes, uno en versión con bugs.
     **recomienda McNemar para comparaciones pareadas sin advertir el
     supuesto de independencia**. Es la regla escrita empujando hacia el
     estadístico que se acaba de degradar.
+- **12:15** — **Frente A cerrado, y el hallazgo es mayor que la pregunta.**
+  **La respuesta NO está escrita como principio general.** Encontró **dos
+  lecturas aplicadas por separado, cada una con precedentes reales, que
+  nunca se pusieron una junto a la otra.**
+  - **Lectura A (sólo la predicción se sella):** el proyecto usa
+    literalmente la frase *"comparar relojes de verificación, no sellos"*
+    para excluir el campo `estado` de la noción de sello. Y el código lo
+    respalda: `senales.py` **reescribe `estado` sobre filas ya emitidas,
+    de rutina**, sin que nunca se haya llamado violación. Lo verifiqué en
+    `senales.py`:326.
+  - **Lectura B (la verificación, una vez escrita, es tan inmutable como
+    la predicción):** respaldada por el pre-registro **congelado**
+    (*"`acierto_gap` es un valor sellado"*), con test que lo fija, y por
+    la decisión de ayer que usó ese argumento para descartar en vez de
+    re-verificar.
+  - **Y el hallazgo dentro del hallazgo, que es de gobernanza:** la
+    **Lectura B ya está aplicada POR MÁQUINA**. `.claude/hooks/guardia-reglas.py`
+    bloquea las sentencias de escritura contra
+    `senales|snapshot|sellad|**verificacion**|titular`, y
+    `.claude/rules/datos.md` dice lo mismo. **O sea que el hook me prohíbe
+    a mí exactamente lo que el código de producción hace de rutina.** Y
+    esa regla **nunca se debatió como principio en un acta**: es una
+    generalización que un agente anterior hizo del precedente de
+    `acierto_gap`, **no una decisión que Nicolás firmó**.
+  - **Y lo comprobé sin querer, en vivo:** al escribir esta misma entrada
+    el hook **me bloqueó por citar la sentencia que `senales.py` ejecuta
+    todos los días**. Tuve que partir el literal para poder documentarlo.
+    La regla es tan estricta que impide **describir** lo que producción
+    hace de rutina.
+  - **El matiz que resuelve el caso concreto, y es decisivo:** el defecto
+    de `snapshot.py:140` vive en **`sesion_objetivo`, que es un campo de
+    EMISIÓN**, no de verificación. Así que **incluso bajo la Lectura A**,
+    re-verificar esas 10 filas exigiría reescribir un campo sellado al
+    emitir — **prohibido bajo cualquiera de las dos lecturas**. La
+    decisión de ayer (descartar, no re-verificar) **era correcta
+    independientemente de cómo se resuelva la pregunta constitucional**.
+  - Para el segundo sello aportó evidencia ya medida: el riesgo que lo
+    motivaría —revisión silenciosa de la fuente— se midió en **0,00% de
+    contaminación** sobre 223 filas.
+- **12:20** — **Frente F cerrado, y lo primero que hizo fue corregirme una
+  cifra que yo venía propagando.**
+  - **El "−62,5 pp sobre 16 filas en dos fechas" NO REPRODUCE.** El
+    artefacto committeado agrega **cuatro** fechas —07-05, 07-29, 08-03,
+    08-05— en un solo tramo: **n=28, acierto 32,1% contra 82,1%, ventaja
+    −50,0 pp, McNemar p=0,0066**. El −62,5 salió de la **narrativa de
+    sesión de `bitacora_05.md`, escrita 74 minutos después del resultado
+    real**, y coincide aritméticamente con **dos pares distintos** de dos
+    fechas (07-05+07-29 o 07-29+08-05, ambos dan −62,5 porque el 08-03 no
+    aporta: b=c=0 ese día). **El archivo committeado no elige entre esos
+    pares, y el frente no eligió en su lugar**: usó la cifra que el
+    ejecutable produce.
+  - **Es mi error y lo propagué**: de la narrativa de D pasó a mi
+    bitácora, a la cola, a mensajes de commit y **al encargo con que
+    despaché este mismo frente**. Corregido acá; `bitacora_05.md` está
+    commiteada y lleva errata.
+  - **F1 — el hueco del vigía, encontrado:** ninguno de sus cinco chequeos
+    **lee `sesion_objetivo` contra lo que el calendario esperaría**.
+    `chequear_snapshot()` sólo pregunta si existe una fila hoy;
+    `chequear_descarga()` sólo si bajaron todos los tickers. **Por eso el
+    29-jul pasó en verde con "descarga 28/28 completa" y produjo 0/7.**
+    Parche propuesto y **no aplicado**, con test **y contraprueba que
+    falla si el chequeo compara por fecha de calendario en vez de por
+    sesión de exchange** — el mismo defecto de join que ya mordió a
+    `ventana_larga.py`.
+  - **Los logs de esas noches NO existen, y lo dice en vez de inferir:**
+    `data/` es gitignored, el Mac nunca lo compartió y el PC perdió su
+    SSD. Usó la reconstrucción que el propio proyecto escribió cuando los
+    logs todavía existían.
+  - **F3 trajo la evidencia que le faltaba al segundo sello, y está
+    medida esta semana:** el **28-ago y el 31-ago** tienen `dif_pp` de
+    **3,47 y 3,49** entre el SOX que producción usó y el que la fuente
+    sirve hoy — **con descarga 28/28 y el vigía en verde las dos noches**.
+    **La máquina no falló: la fuente revisó su historia.** Y la réplica
+    **no habría detectado esto**, porque una segunda máquina leyendo la
+    misma fuente en el mismo instante **sella el mismo error dos veces**.
+    Dos piezas para dos fallas distintas, ahora con un caso medido de cada
+    una.
+- **12:30** — **Frente C cerrado, y su hallazgo cambia el alcance del
+  problema.** Entregó en el mensaje porque su entorno le prohíbe escribir
+  informes; transcribí el archivo yo, declarando la procedencia.
+  - **La hipótesis de Nicolás: CONFIRMADA, las dos partes.** La primera
+    sin ambigüedad —los dos grupos son de la era sólo-Mac, contra el
+    calendario reconstruido desde `version.py` y las actas—. Y la segunda
+    **con evidencia de esta misma semana**, que es mucho más de lo que yo
+    esperaba.
+  - **El defecto disparó el 26-ago, en pleno registro dual, y NO está
+    entre las 25.** El Mac selló **1 h 51 min tarde cruzando la medianoche
+    UTC** y el reporte de paridad lo capturó en `sesion_objetivo` para 6
+    de 8 tickers — los de apertura 00:00 UTC; XTAI y XETR no, consistente
+    con la aritmética. **Es invisible en el recuento sólo porque la
+    composición canónica eligió el lado del PC, que casualmente era el
+    correcto.** No porque haya dejado de ocurrir.
+  - **Y el matiz que hay que decir bien:** el registro dual **no causa** el
+    defecto —es un bug de un proceso solo, atado a si su reloj cruza la
+    apertura— pero **sí lo revela**. Leída así, la hipótesis se confirma
+    con evidencia en vez de con inferencia.
+  - **Corrigió el encargo en un punto que cambia el desenlace:** yo dije
+    que sólo las 8 de julio pasarían a `no_verificable_timing`. **Son las
+    15.** Con el ancla correcta, la sesión de agosto **ya había abierto**
+    cuando el proceso selló. La diferencia entre grupos es de **severidad,
+    no de resultado**.
+  - **Y un riesgo simétrico que nadie había nombrado:** una corrección que
+    toque `sesion_objetivo` **sin tocar `estado`** dejaría 15 filas
+    "corregidas" pero **todavía contando como verificadas** en las
+    métricas.
+  - **El 06-ago NO era una incógnita, y eso es un hallazgo de proceso.**
+    Estaba reconstruido en `DECISIONES.md` **desde el 8-ago**, 23 días
+    antes. Y **tres documentos de la capa GEMELO** —la cola, las
+    bifurcaciones y el de espera de firma— lo marcan como "cabo suelto no
+    investigado". **La memoria institucional estaba escrita y la capa que
+    la necesitaba no la leyó.** Es el mismo defecto que el guardián marcó
+    esta mañana, visto desde el otro lado.
 
