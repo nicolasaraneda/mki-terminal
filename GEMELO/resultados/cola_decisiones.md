@@ -66,6 +66,48 @@ razón de siempre y con menos excusas que antes.
 
 ---
 
+## 1-bis. El defecto que SIGUE produciendo filas duplicadas
+
+**Qué decidir, en una frase:** si se corrige `snapshot.py` para que
+`sesion_objetivo` se calcule desde `available_at` y no desde el reloj de
+pared del proceso.
+
+**El defecto, con su cita.** `snapshot.py`:140 llama a
+`calendarios.proxima_sesion_despues_de(exchange, ahora_utc)`, donde
+`ahora_utc` es `datetime.now(timezone.utc)` estampado en `:111` — **el
+reloj de pared del momento en que corre el proceso**. Cuando el sello se
+atrasa y cruza la medianoche o las 01h UTC, esa llamada salta
+honestamente a la sesión siguiente porque la asiática **ya abrió**. El
+resultado es una segunda predicción apuntando a la misma sesión objetivo
+que la del día anterior.
+
+**Por qué está tan arriba en la cola:** los otros ítems son decisiones
+sobre datos que ya existen. **Éste sigue ocurriendo.** Cada vez que un
+sello se atrase —y ya pasó al menos tres veces documentadas: 29-jul,
+3-ago, y los pares de 31-jul y 5-ago— se produce una fila más con la
+sesión objetivo equivocada. El track record se sigue contaminando
+mientras la decisión espera.
+
+**Qué NO se puede hacer de paso, y por qué:** `snapshot.py` está en la
+ruta de sellado, que es intocable para un agente. Y hay una razón más
+profunda que la regla: **cambiar cómo se calcula `sesion_objetivo` cambia
+el significado de las filas futuras respecto de las ya selladas**, y las
+selladas no se reescriben nunca. O sea que la corrección crea, por
+construcción, un corte de método con fecha — que es exactamente la clase
+de cosa que se declara antes y no se descubre después.
+
+**Costo de postergarla un mes:** proporcional a cuántos sellos se atrasen.
+No es cero y no es acotado.
+
+**Recomendación, marcada como tal:** corregirlo, declarando el corte de
+método con su fecha. Y una observación que va con la corrección: el
+defecto es **invisible salvo que uno vaya a buscar duplicados por
+`sesion_objetivo`**, que es lo que nadie había hecho en cinco corridas.
+Convendría que el vigía o un test lo detecte solo — hay uno propuesto en
+`tests/test_epistemico.py` (quinta corrida).
+
+---
+
 ## 2. El diseño secuencial — DOS decisiones, y sin ellas no se congela
 
 El pre-registro `GEMELO/SECUENCIAL/DISEÑO.md` sigue **NO CONGELADO**.
@@ -75,48 +117,57 @@ ahora es **la regla de deduplicación** (§2a), que es nueva y urgente, y el
 **MDE** (§2b), cuyo número propuesto quedó retirado por derivarse en la
 escala equivocada.
 
-### 2a. La regla de deduplicación — la que bloquea, y es urgente
+### 2a. La regla de deduplicación — con el forense hecho, la pregunta cambió
 
-**Qué decidir:** si las predicciones que apuntan a la **misma sesión
-objetivo** cuentan una vez o dos, y si cuentan una, **cuál se conserva**.
+**Actualizado 1-sep-2026, quinta corrida.** Nicolás pidió el forense del
+origen antes de firmar, con el argumento correcto: *"quiero saber qué es
+una fila antes de decidir"*. El forense está en
+`GEMELO/resultados/dedup_opciones.md` y **cambió la pregunta**, porque los
+30 duplicados **no son un fenómeno sino dos, con orígenes distintos**:
 
-**Por qué es urgente y no puede esperar:** son **30 de 256 filas (11,7%)**,
-quince pares sobre cinco sesiones, y **la elección mueve el veredicto de un
-lado al otro del umbral**:
+| Grupo | Sesiones | Origen, con evidencia |
+|---|---|---|
+| **10 pares (20 filas)** | 31-jul, 5-ago | **Defecto de la ruta de sellado.** `snapshot.py`:140 calcula `sesion_objetivo` con `ahora_utc` —el reloj de pared del proceso, estampado en `:111`— en vez de con `available_at`. Cuando el sello cruza medianoche/01h UTC, `proxima_sesion_despues_de` salta una sesión asiática **ya abierta**. Coincide con el mecanismo que la Etapa 5.0.1 ya había diagnosticado para el 29-jul y el 3-ago. |
+| **5 pares (10 filas)** | 12-ago, 18-ago | **Feriados de mercado reales**, sin anomalía de reloj: XTKS cerrado el 11-ago, XKRX cerrado el 17-ago (confirmado con `exchange_calendars`). **Las dos emisiones están igualmente a tiempo.** |
 
-| Regla | Ventaja | b / c | McNemar p |
+**Por qué esto cambia la decisión:** una sola regla para los dos grupos
+sería arbitraria por construcción. En los 10 pares de reloj hay una fila
+**fuera de especificación** y otra correcta. En los 5 de feriado **ninguna
+de las dos es más legítima**: el mercado no abrió, y las dos emisiones
+apuntaron honestamente a la siguiente sesión que existía.
+
+**Y hay un hecho que hay que mirar antes de firmar `keep="last"`.** El
+forense lo midió: en estos 15 pares, **la fila fresca nunca discrepa de la
+baseline** (10 veces coinciden en acierto, 2 en error, 3 pares aciertan
+las dos), mientras **la fila vieja discrepa 12 de 15 veces — 10 a favor de
+la baseline y 2 a favor del modelo**. Descartar la vieja **retira
+selectivamente errores del modelo**. Eso no es un argumento contra
+`keep="last"`, y se escribe como aritmética verificable y no como
+sospecha: es la explicación mecánica de por qué esa rama da p = 0,032. Hay
+que saberlo al firmar.
+
+**Las tres ramas, computadas completas** (n vivo 256, `excluir_cero`):
+
+| | `keep="first"` | `keep="last"` | sin deduplicar |
 |---|---|---|---|
-| `keep="first"` (la emisión temprana) | +6,64 pp | 72 / 56 | **0,1847** |
-| `keep="last"` (la emisión tardía) | +9,96 pp | 70 / 46 | **0,0323** |
-| sin deduplicar (lo que hay hoy) | +6,5 pp | 72 / 56 | 0,1849 |
+| n | 241 | 241 | 256 |
+| ventaja | +6,64 pp | **+9,96 pp** | +6,25 pp |
+| McNemar b/c | 72/56 | 70/46 | 72/56 |
+| p (χ²cc / exacta) | 0,1849 / 0,1847 | **0,0327 / 0,0323** | 0,1849 / 0,1847 |
 
-**Un argumento de una palabra, hoy no declarado, decide si la ventaja del
-modelo cruza p = 0.05 o no.** Mientras esté abierta, cualquier análisis de
-la ventana sellada tiene un grado de libertad sin declarar — que es
-exactamente lo que el pre-registro existe para cerrar.
+**El p va al final y como CONSECUENCIA, nunca como argumento.** El orden
+correcto es: primero qué es una fila, después qué sale.
 
-**El argumento de cada lado, para que se decida con ellos:**
-- **`keep="last"`** es defendible: la emisión tardía tiene **más
-  información** y está más cerca del objetivo. Descartarla es tirar la
-  mejor predicción.
-- **`keep="first"`** es defendible: es la que respeta el orden temporal sin
-  privilegiar nada, y **es la que está en uso de hecho**.
-- **Contar las dos** también: son **dos pronósticos distintos del mismo
-  evento** — una observación del resultado, dos del modelo. El modelo
-  cambió de predicción entre las dos emisiones, y eso es información.
+**Lo que el ORIGEN sugiere**, separado a propósito de las consecuencias:
+tratar los dos grupos distinto — para los 10 pares de reloj, quedarse con
+la fila que apunta a la sesión correcta; para los 5 de feriado, no hay
+criterio de origen que prefiera una, así que la regla ahí es una elección
+de convención y hay que declararla como tal.
 
-**Qué NO se puede hacer:** elegir después de ver cuál da mejor p. Por eso
-el pre-registro no se congela hasta que esto esté firmado.
-
-**Expediente:** `GEMELO/SECUENCIAL/DISEÑO.md` §A3.1.a, el cuarto dictamen
-del `estadistico-adversario`, y la pregunta pendiente de `DECISIONES.md`
-§33.8 (que planteaba lo mismo para 8 filas del 29-jul, sin ver que eran 30
-y cinco sesiones).
-
-**Recomendación, marcada como tal:** ninguna. Los tres argumentos son
-buenos y la elección cambia una cifra publicada. Lo único que recomiendo
-es **decidirla antes de la próxima mirada al track record**, y dejar la
-sensibilidad de las tres opciones publicada al lado del resultado.
+**Lo que el forense NO pudo determinar:** la causa última del DarkWake que
+provocó los sellos tardíos, la exactitud del calendario de
+`exchange_calendars` contra una fuente externa, y el dropout parcial de
+tickers del 17-ago. Los logs de esas fechas **ya rotaron y no existen**.
 
 ### 2a-bis. El α declarado — RESUELTO el 31-ago
 

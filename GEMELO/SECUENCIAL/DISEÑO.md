@@ -366,8 +366,15 @@ selladas da **4.02%**. Ese número está **inflado**, y la razón es un
 hallazgo por derecho propio:
 
 > **30 de las 256 filas (11.7%) son predicciones distintas que apuntan a
-> la MISMA sesión objetivo.** Quince pares, sobre cinco sesiones (31-jul,
-> 5-ago, 12-ago, 18-ago): dos fechas de emisión consecutivas cuyo objetivo
+> la MISMA sesión objetivo.** Quince pares, sobre **cuatro** sesiones
+> (31-jul, 5-ago, 12-ago, 18-ago):
+>
+> **ERRATA (1-sep-2026).** Esta línea decía "cinco sesiones" y son
+> **cuatro** — las cuatro que la propia línea enumera. Error de conteo
+> mío, sin consecuencia sobre ninguna cifra (los 15 pares y las 30 filas
+> son correctos), corregido acá y no en silencio porque el documento ya
+> estaba commiteado (`d071821`). Lo encontró el forense del Frente A de la
+> quinta corrida. dos fechas de emisión consecutivas cuyo objetivo
 > es la misma sesión, porque la sesión intermedia no existió. Comparten
 > `gap_pct` y `retorno_real_pct` idénticos, y **entre ellas están los
 > movimientos más grandes de toda la ventana** (000660.KS +29.95%,

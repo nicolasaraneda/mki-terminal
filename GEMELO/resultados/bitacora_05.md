@@ -118,6 +118,48 @@ dos lecturas:
   base vieja, escrito en la misma corrida que encontró el 43. **La
   retractación de esa corrida fue sobre su conclusión, no sobre que los
   análisis se corrieron: por la regla del DSR cuentan igual.**
+- **02:15** — **Frente A cerrado, y el forense dio vuelta la pregunta.**
+  `dedup_opciones.md` escrito. Lo central: **los 30 duplicados no son un
+  fenómeno, son dos, con orígenes distintos.**
+  - **10 pares (31-jul y 5-ago): defecto de la ruta de sellado.**
+    `snapshot.py`:140 calcula `sesion_objetivo` con `ahora_utc` —el reloj
+    de pared, estampado en `:111`— en vez de con `available_at`. Si el
+    sello cruza medianoche/01h UTC, salta a la sesión siguiente porque la
+    asiática **ya abrió**. Verificado por mí en el código, no sólo
+    reportado. Coincide con lo que la Etapa 5.0.1 ya había diagnosticado
+    para el 29-jul y el 3-ago.
+  - **5 pares (12-ago y 18-ago): feriados reales.** XTKS cerrado el
+    11-ago, XKRX el 17-ago. **Ninguna anomalía de reloj: las dos
+    emisiones están igualmente a tiempo, y ninguna es más legítima.**
+  - **Por qué esto cambia la decisión de Nicolás:** una sola regla para
+    los dos grupos sería arbitraria por construcción. Su instinto de
+    pedir el origen antes de firmar era el correcto, y el forense lo
+    justifica: en un grupo hay una fila fuera de especificación, en el
+    otro no hay ninguna.
+  - **El hecho que hay que mirar antes de firmar `keep="last"`**, medido
+    y escrito como aritmética y no como sospecha: la fila **fresca nunca
+    discrepa de la baseline** en estos 15 pares, mientras la **vieja
+    discrepa 12 de 15 veces, 10 de ellas a favor de la baseline**.
+    Descartar la vieja **retira selectivamente errores del modelo**. Ésa
+    es la explicación mecánica de por qué esa rama da p = 0,032.
+  - Verificado también que **ninguno de los 30 es una fila copiada** (el
+    chequeo estructural de unicidad de `timestamp_utc` no tiene
+    colisiones) y que **no se concentran en el bloque 15-23-jul**.
+  - **Errata mía, corregida con fecha:** `DISEÑO.md` §A3.1.a decía "cinco
+    sesiones" y son **cuatro**. Sin consecuencia sobre ninguna cifra, pero
+    el documento ya estaba commiteado, así que va errata y no corrección
+    silenciosa.
+  - Lo que el forense **no** pudo determinar, y lo dice: la causa última
+    del DarkWake, la exactitud de `exchange_calendars` contra fuente
+    externa, y el dropout parcial del 17-ago. **Los logs de esas fechas ya
+    rotaron y no existen.**
+- **02:20** — El defecto de `snapshot.py` entra a la cola como **§1-bis**,
+  arriba de casi todo, por una razón que lo distingue del resto: **los
+  otros ítems son decisiones sobre datos que ya existen; éste sigue
+  ocurriendo.** Cada sello que se atrase produce una fila más con la
+  sesión objetivo equivocada. No lo toco —está en la ruta de sellado— y
+  además su corrección crea por construcción un corte de método con fecha,
+  que se declara antes y no se descubre después.
 - **01:45** — Cinco frentes corriendo en paralelo más el orientador.
   Quedan D (MDE contra ventaja observada) y G (lo que espera firma), que
   dependen de los resultados de B y A, y C2 (la condicional sobre la
