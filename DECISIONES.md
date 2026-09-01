@@ -5795,3 +5795,474 @@ volver a leer el p de McNemar como si bastara solo, lo que esta acta
 documenta como el error que produjo 59 (o 201, en la matriz de 8 ejes)
 falsos cruces de α de cada 192 (o 768) formas legítimas de medir la misma
 ventana.
+
+---
+
+## 62. ERRATA — el acta §59 prescribe `min()` donde la causalidad exige `max()`, y donde el código ya no lo hace
+
+**Fecha:** 1-sep-2026. **Tipo:** errata fechada sobre acta commiteada.
+**Evidencia:** `backtest/datos.py` (docstring de `SentimientoPIT`),
+`tests/test_backtest.py::test_b1_el_corte_es_el_maximo_de_las_dos_marcas_no_el_minimo`,
+`GEMELO/resultados/gatillo_51.md` §3.11 punto 1 (de donde salió la
+redacción original).
+
+**Qué dice el acta §59.** En su lista de arreglos pendientes, punto (1):
+*"cortar el sentimiento por `min(titulares.fecha, analisis.analizado_en)`"*.
+
+**Por qué es incorrecto.** `analizado_en` es **posterior** a
+`titulares.fecha` por construcción: el juicio de la IA sólo puede existir
+después de que el titular se publicó. Por lo tanto
+`min(fecha, analizado_en) == fecha` casi siempre, y el corte propuesto
+**reproduce exactamente el predicado roto que el mismo punto (1) decía
+estar arreglando** — el que cortaba por publicación y nunca miraba el
+juicio. La causalidad exige lo contrario: una observación es utilizable
+recién cuando **las dos** cosas ya ocurrieron, y eso es el máximo, no el
+mínimo. Es el `available_at` de la ruta de sellado, trasladado al
+sentimiento.
+
+**Qué hace el código, y desde cuándo.** `SentimientoPIT` corta por
+`disponible_ord = max(publicado_ord, analizado_ord)` contra el instante de
+emisión (22:15 UTC). Su docstring deja escrito, con fecha, que el
+expediente que originó el arreglo escribió "min" y que la corrección fue
+directamente al ejecutable, no a la prosa que la pidió mal. Hay un test
+dedicado que **falla si alguien vuelve al mínimo**: arma un juicio
+publicado el 2026-01-05 y analizado el 2026-06-01, y exige que el valor sea
+`None` el 2026-05-31 y sólo exista desde el 2026-06-01 — con `min()` esa
+fila entraría cinco meses antes de lo que la causalidad permite.
+
+**Por qué es errata y no corrección del texto de §59.** §59 está commiteada
+y describe correctamente lo que el expediente `gatillo_51.md` pedía en el
+momento en que se escribió — el propio expediente trae la misma redacción
+con "min()". La frontera de la errata es el commit: lo publicado no se
+reescribe, se le agrega la corrección con su fecha al lado.
+
+**Por qué esto importa más que un error de tipeo.** En un proyecto donde
+`DECISIONES.md` es la constitución de segundo orden y se lee **antes** de
+arreglar nada, un acta que prescribe el predicado roto es peor que no
+prescribir nada: **quien lea sólo la memoria institucional reimplementa el
+bug**. El código ya tenía la corrección y el test que la fija; lo que
+faltaba era que la memoria dejara de contradecirlo.
+
+**Cómo se revierte.** No aplica: es una errata de texto sobre una acta ya
+commiteada. La ancla de que el estado correcto se mantiene es el test: si
+`test_b1_el_corte_es_el_maximo_de_las_dos_marcas_no_el_minimo` empieza a
+fallar, algo volvió al mínimo.
+
+---
+
+## 63. El Frente B corrigió las dos fugas del arnés: R3 quedó LIMPIO, y desbloquea el veredicto del 25-oct — revierte la conclusión central del acta §59
+
+**Fecha:** 1-sep-2026. **Tipo:** hallazgo que reemplaza la consecuencia de
+una acta anterior; hasta hoy vivía sólo en el mensaje del commit `2872d9b`
+("Frente B: R3 QUEDO LIMPIO. Las dos fugas del arnes, corregidas"). Esta
+acta es su primer registro en `DECISIONES.md`. **Evidencia:**
+`backtest/datos.py`, `backtest/causalidad.py`, `tests/test_backtest.py`,
+corrida
+`backtest/resultados/20260901-133154-5.1-arnes-corregido-gatillo-incumplido/`.
+
+**Qué encontró §59, para que el contraste sea explícito.** El acta §59
+declaró que `GEMELO/DISEÑO.md` §6.2 (R3: *"cualquier fuga detectada por el
+test de causalidad. Sin discusión y sin excepción"*) **disparaba**, por dos
+defectos demostrados en el arnés: B-1 (el sentimiento se cortaba por
+publicación y no por el juicio de la IA) y B-2 (la guarda
+`validar_sin_futuro` se llamaba sobre un frame ya recortado con el mismo
+predicado que comprobaba, así que su condición de disparo era inalcanzable
+por construcción). Consecuencia declarada entonces: **no hubo veredicto de
+la Etapa 5.1.**
+
+**Qué corrigió este frente, y por qué revierte esa conclusión.**
+
+- **B-1, corregida con `max(publicación, analizado_en)`**, no con el
+  `min()` que el propio expediente —y el acta §59— habían escrito (errata
+  de la acta anterior).
+- **B-2, corregida reemplazando la guarda tautológica por invariancia al
+  truncado.** `recortar_pit()` recibe ahora la serie **sin recortar**, y
+  `backtest/causalidad.py` reconstruye el arnés entero (precios, OHLC **y
+  la base de noticias**) con la fuente cortada en la fecha de emisión,
+  exigiendo predicción idéntica a la de la fuente completa — corriendo
+  **dentro de `motorbt.correr`**, no como chequeo aparte. La contraprueba
+  —inyectar la fuga canónica `shift(-1)`— **dispara 10 de 10**, incluidas
+  las cinco features exclusivas de B4/B5 (`roca_pct`, `upstream`,
+  `sentimiento`, `sentimiento_sector`, `buzz`), invisibles para la suite de
+  causalidad anterior. Hay un test que prueba que **la guarda vieja no la
+  habría visto**.
+
+**El resultado del gate, con el mismo rigor con que §59 declaró el
+disparo.** R3 corre sobre 12 fechas repartidas en la ventana de evaluación
+(2024-10-15 → 2026-08-11) × las 6 baselines = **72 comparaciones de
+invariancia al truncado**, y las 72 salen **INVARIANTES**. `N = 92` (86 del
+registro de intentos con procedencia del Frente E + los 6 de esta corrida
+sobre la ventana nueva) declarado en disco **antes de computar** una sola
+cifra. **El holdout (V7) sigue sin gastarse**: el gatillo del GATE B sigue
+sin cumplirse por ninguna de sus dos vías (falta el cambio de régimen del
+track record en vivo para la (a); faltan 54 días para la (b), el
+25-oct-2026), así que esta corrida tampoco es el veredicto pleno de la
+Etapa 5.1 — pero **ya no está bloqueada por R3**.
+
+**Cuántas observaciones sobreviven al corte honesto del sentimiento, y la
+consecuencia sobre B4/B5.** Sobre la ventana larga (520 días, 4.152 pares),
+**288 filas (6,94%) sobreviven al corte honesto de disponibilidad** — 40 de
+520 días. El 93,1% restante se emite con las tres features de noticias en
+la constante 0,0 (ningún juicio de IA existía a la emisión), así que la
+capa colapsa a la anterior. **Consecuencia declarada con todas las letras:
+B4 y B5 no son evaluables sobre la ventana larga.** Esto se lee como *"la
+capa de precios con columnas constantes"*, **nunca** como *"las noticias no
+aportan"* — son afirmaciones distintas y la segunda no está sostenida por
+este dato. **B0, B1, B2 y B3 no tocan sentimiento y siguen evaluables sobre
+la ventana completa: son dos baselines de seis las que quedan fuera, no el
+backtest entero.**
+
+**El resultado que importa, dicho sin adornos: corregir la fuga no cambió
+el desenlace.** B4 pasó de rank-IC 0,2213 a 0,2216 y de MAE 1,575 a 1,564
+entre la corrida invalidada y la corregida. **El sentimiento con fuga
+tampoco estaba aportando.** La lectura económica de §59 se mantiene sin
+cambios: el gap direccional existe (69,0% de acierto contra 55,4% de
+"siempre al alza") y **no es capturable** (la cartera long-short pierde con
+y sin la fuga).
+
+**Qué sigue abierto y bloqueando igual.** B-3 (263 de 4.160 filas, 6,3%,
+son desenlaces duplicados por sesión objetivo) **no es una fuga temporal**,
+así que R3 no lo juzga, pero sigue siendo un defecto de la unidad de
+observación. S-1 (el embargo declarado en días corridos no es el embargo
+aplicado en sesiones), S-3 (`estado_gatillo` se recibe en vez de
+calcularse), la fuente que no es point-in-time (S-5) y la ausencia de un
+holdout material (la cuarentena de V7 es hoy sólo procedimental) tampoco se
+tocaron en este frente.
+
+**Qué NO se hizo.** No se tocó `motor.py`; el modelo 4.6.0 sigue sellando
+sin enterarse de que este frente existe. No se gastó el holdout. No se
+movió ninguna cifra publicada en README ni en las skills.
+
+**Cómo se revierte.** El mecanismo de invariancia al truncado es el que
+decide: si `backtest/causalidad.py::gate` vuelve a encontrar una diferencia
+entre `con_futuro` y `sin_futuro` sobre las 72 comparaciones declaradas,
+`ErrorLookAhead` dispara y R3 vuelve a estar sucio. Los tests de
+`tests/test_backtest.py` que inyectan `shift(-1)` son la contraprueba
+permanente: si dejan de disparar, la guarda dejó de tener dientes otra vez.
+
+---
+
+## 64. El Frente D: la ventaja del campeón no está concentrada — está más dispersa que el azar, y julio no es de otra especie
+
+**Fecha:** 1-sep-2026. **Tipo:** hallazgo exploratorio; **NO es el
+veredicto de la Etapa 5.1** y no mueve ninguna cifra publicada. **Hasta
+hoy vivía sólo en el mensaje del commit `e900236`** ("Frente D: la ventaja
+NO esta concentrada, esta MAS DISPERSA que el azar"); esta acta es su
+primer registro en `DECISIONES.md`. **Evidencia:**
+`GEMELO/resultados/condicional_ventana_larga.md`, pre-registro
+`GEMELO/CONDICIONAL/DISEÑO.md`.
+
+**De dónde viene la sospecha que este frente revisó.** Tres corridas
+anteriores venían sospechando que la ventaja del campeón sobre "siempre al
+alza" estaba concentrada en pocas fechas (el bloque del 15 al 23-jul-2026,
+que R2 congeló como vara de comparación permanente). Este frente lo midió
+sobre la ventana larga reconstruida (2018-10-31 → 2026-08-31, **2.030
+fechas de emisión, 14.000 filas de evaluación**), el único tramo del
+proyecto con potencia real para responder esa pregunta: la ventana sellada
+tiene n efectivo 67-68 (acta §61) y toda su información discriminante es un
+9-7 en 17 días.
+
+**El clúster de día, re-medido, no heredado.** Sobre esta ventana: **ICC
+0,3256, clúster de tamaño Kish 7,27, DEFF 3,04, n efectivo 4.601,3.** No es
+el DEFF de la ventana sellada trasladado: se computó de nuevo porque el
+tamaño y la composición de los clústeres son distintos.
+
+**El resultado central, y da vuelta la sospecha.** El 100% de la ventaja
+neta vive en el **16,5%** de las fechas, contra **0,64%** bajo la nula de
+permutar el signo por fecha: la curva observada es **26 veces más dispersa
+que la del azar, no más concentrada**. La medida que no depende de ninguna
+nula: quitando el 10% de las fechas más favorables queda **+6,6 pp, IC95
+[4,7, 8,4]** (excluye cero); quitando el 20%, la ventaja **se da vuelta a
+−1,9 pp**. La ventaja vive en el mejor quinto de las fechas — ni en seis
+días puntuales ni repartida uniformemente.
+
+**¿Las condiciones predicen fuera de muestra? Sí, y casi
+tautológicamente.** 4 de 7 configuraciones cumplen el criterio congelado
+del §4(a) del pre-registro (`vol_sox_5`, `mag_sox`, `mag_predicha`,
+`CONJUNTO`); no lo cumplen `vol_sox_10`, `disp_asia`, `dias_trimestre`.
+Pero lo que discrimina es **la magnitud del movimiento del SOX**, y la
+predicción del campeón **es** beta × ese movimiento: es aritmética del
+propio modelo, no un hallazgo sobre el mercado. **Las condiciones que
+aportarían información nueva son exactamente las que fallan** — dispersión
+asiática, distancia al trimestre y la ventana de volatilidad de 10 sesiones
+tienen el intervalo del AUC sobre 0,5.
+
+**Julio no es de otra especie.** El bloque 15–23-jul-2026 (+40,91 pp
+reconstruido, +40,9 pp sellado sobre las mismas 44 filas — dos caminos de
+cómputo, el mismo número) está en el **percentil 90,3** de todos los
+bloques contiguos de su mismo ancho, con **157 bloques históricos sin
+solape iguales o mejores**. Su firma de condiciones sí es atípica
+(Mahalanobis en el percentil 100,0), pero el motor de esa distancia es
+`disp_asia` — una de las condiciones que **no** discrimina: es descripción,
+no explicación.
+
+**La reconciliación entre la ventana larga y la ventana sellada, que era la
+pregunta pendiente.** Pareando por fecha de emisión **y** sesión objetivo
+(214 filas): 100,0% de las predicciones con el mismo signo, 100,0% de los
+gaps idénticos a menos de 0,01 pp, cero desacuerdos. **La reconstrucción es
+fiel.** Los +6,2 pp sellados (256 filas, 35 fechas) se descomponen en el
+bloque de julio (+40,9 pp, 44 filas, 6 fechas), dos fechas de incidente de
+producción (**−62,5 pp, 16 filas**, según el cuerpo del expediente) y un
+resto de **+4,1 pp, p = 0,44** (196 filas). **Esto es una descomposición,
+no una corrección**: ninguna fila sellada se toca y ninguna cifra publicada
+se mueve — los +6,2 pp de la ventana completa y el 65,8%/+5,3 pp del README
+siguen vigentes tal cual.
+
+> **Discrepancia interna del propio expediente, dejada señalada y no
+> resuelta acá.** `condicional_ventana_larga.md` trae, en una tabla aparte,
+> una segunda partición de las mismas 256 filas —"fechas con incidente de
+> producción": 28 filas, 4 fechas, −50,0 pp— que no reconcilia
+> aritméticamente con la del párrafo anterior (256 − 44 − 28 = 184, no 196).
+> Las dos particiones suman 256 por separado, así que ninguna tiene un error
+> de aritmética; lo que no está escrito es **qué define "incidente de
+> producción"** en cada caso, y las dos conviven en el mismo documento. Esta
+> acta cita la versión que aparece en el resumen ejecutivo y en el cuerpo
+> del expediente (16 filas, −62,5 pp) porque es la que se repite dos veces;
+> la tabla queda señalada para quien reabra ese frente.
+
+**Cinco errores propios del propio frente, corregidos en el ejecutable y
+reportados — cuatro habrían producido conclusiones falsas publicables.** El
+más instructivo, con su mecanismo completo: parear las dos ventanas sólo
+por sesión objetivo (sin exigir también la misma fecha de emisión) producía
+una **firma de fuga perfecta** —13 de 14 desacuerdos de signo a favor de la
+reconstrucción, p = 0,0018— que era **pura ilusión**. La emisión sellada
+del 2026-07-05 apunta a una sesión que no es la inmediatamente siguiente
+porque la corrida intermedia falló y dejó sus filas vacías: emparejarla por
+sesión nada más le regala a la reconstrucción un día entero de SOX que el
+sello nunca tuvo, comparando dos predicciones hechas con un día de
+diferencia. **Es el defecto de `snapshot.py` (acta §60) apareciendo
+disfrazado de fuga.** Filas descartadas por este desfase de emisión: 25.
+
+**Qué quedó NO EVALUABLE.** `densidad_noticias` (condición 4 del
+pre-registro), por dos razones independientes: hereda la fuga B-1 (aunque
+se arregle, sigue habiendo el problema 2) y **cobertura** —
+`titulares` empieza el 2025-09-09 contra una ventana que arranca en 2018.
+
+**Conteo de intentos de este frente.** 8 nuevos (N acumulado 25 → 33): seis
+condiciones + el modelo conjunto + el scan-statistic de bloques, declarado
+el mismo día. La curva de concentración de la §1 no cuenta como intento:
+es descriptiva, no elige entre configuraciones.
+
+**Deuda que este frente no corrigió, y queda señalada por la regla de la
+casa #4.** `GEMELO/ventana_larga.py` sigue ofreciendo el 91,4% de
+coincidencia con el track record sellado, una cifra **refutada aquí mismo**
+(la coincidencia real, emparejando por la clave correcta, es 100,0% sobre
+las 214 filas comparables). El arreglo va al ejecutable, no se hizo en este
+frente para no pisar el trabajo en curso sobre `backtest/`, y
+`ventana_larga.{md,json}` quedan **stale**.
+
+**Qué NO se hizo.** No se tocó `motor.py`. No se releva ni se propone
+relevar el gatillo de la Etapa 5.1 a partir de este hallazgo. No se
+publica ninguna cifra de este frente en README ni en las skills.
+
+**Cómo se revierte.** No aplica: es un hallazgo de medición sobre datos
+reconstruidos, no una configuración del sistema. La ancla de reproducción
+es el propio expediente, con los hashes de archivo de las dependencias
+declarados en su §0 para que quien lo re-corra sobre otro árbol sepa por
+qué el número puede no coincidir.
+
+---
+
+## 65. La suite de regresión epistémica llega a 19 tests: cinco noches de errores convertidos en memoria ejecutable
+
+**Fecha:** 1-sep-2026. **Tipo:** infraestructura de verificación (no es una
+decisión de diseño de señal). **Evidencia:** `tests/test_epistemico.py`.
+**Commits:** `bc35371` ("Frente F: la suite de regresion epistemica, 14
+tests") + el trabajo de la segunda tanda del mismo día sobre el RTL y sobre
+el propio proceso de esta corrida.
+
+**Qué es.** Cada test nombra, en español y con la fecha del caso real, un
+error que el proyecto cometió y publicó en alguna de sus corridas
+autónomas, y comprueba que el defecto —o su versión retractada— no vuelve a
+aparecer en README, en el código o en las bases. Hoy tiene **19 tests: 14
+de la primera tanda de esta corrida, 3 del frente sobre el RTL (silencio de
+8 ciclos) y 2 agregados después sobre el proceso de la propia corrida.**
+Corrida completa: **17 pasan y 2 quedan `xfail` a propósito**, cada uno con
+la razón escrita de por qué ablandarlo borraría el hallazgo:
+
+- `test_ninguna_prediccion_sellada_comparte_sesion_objetivo_con_otra` — los
+  30 duplicados de la ventana sellada existen en `senales_ticker` /
+  `verificacion_apertura` tal cual están (la deduplicación firmada en el
+  acta §60 vive en la capa de MEDICIÓN, `backtest/linea_base.py`, y no toca
+  las filas selladas). Rojo mientras eso sea así; si pasa a verde sin que
+  las filas cambien, hay que revisar el test, no celebrar.
+- `test_toda_p_publicada_declara_con_que_test_se_computo` — el README
+  publica p=0,1849 (χ² con corrección de continuidad) donde el módulo
+  árbitro devuelve 0,1847 (exacto): las dos son correctas y son tests
+  distintos; falta declarar cuál se usó, no corregir una cifra. Decisión de
+  Nicolás, pendiente.
+
+**No son tautológicos: cada detector heurístico trae su contraprueba.** El
+patrón se repite en los ocho detectores del archivo: se le inyecta el
+**texto histórico real** que se retractó (la redacción original del caso,
+no una paráfrasis) y se comprueba que el detector lo caza; después se le
+pone la corrección ya aplicada y se comprueba que **se calla**. Es la misma
+disciplina que `backtest/causalidad.py` aplica al gate de causalidad con
+`shift(-1)` (acta 63): una guarda sin contraprueba no es una guarda.
+
+**El hallazgo que más excede al RTL.**
+`test_ningun_banco_de_pruebas_mide_ciclos_sin_comparar_bit_a_bit` codifica
+el error de la acta §58: el silencio de 8 ciclos entre mensajes, descrito
+en dos documentos como una comodidad del banco, resultó ser **un requisito
+de corrección que nadie había escrito** — con 0 ó 1 ciclos de hueco, **178
+de 181 sellos salen mal**, y **la latencia sigue dando 11 ciclos exactos y
+perfectamente constante** mientras eso ocurre. El agravante, que el test
+también deja escrito: como la **decisión** sellada sale bien en 181 de 181
+(el error vive en el puntaje, no en el bit de decisión), **una comprobación
+restringida a la decisión —la vara que `GEMELO/MICRO/RTL.md` §4 defendía
+como la que importa— también habría pasado 181/181 en verde.** Una prueba
+de rendimiento que no verifica corrección puede pasar en verde sobre un
+diseño roto, y el criterio de verificación preferido del proyecto era ciego
+a esto.
+
+Antes de fijar esa forma de detector se midió y descartó otra: un detector
+de prosa sobre `GEMELO/MICRO/*.md` (cifras de ciclos/MHz/ns sin una
+afirmación de corrección cerca) daría positivo en **76 de 110 líneas
+(69%)**, casi todas legítimas. *Un detector que grita en dos de cada tres
+casos se desactiva y no previene nada* — se prefirió el que corre sobre los
+cinco bancos de `micro/rtl/tb/` con una convención propia (tres marcas de
+verificación juntas, no una sola) y hoy da cero falsos positivos.
+
+**Lo que NO se pudo convertir en test, y vale tanto como lo que sí.** El
+defecto raíz de la segunda corrida autónoma —el análisis que retractó la
+concentración de julio nunca se guardó como código versionado, sólo como
+prosa— **no es detectable por un test estático**: no hay archivo que
+escanear si el archivo nunca se escribió. De la misma raíz cuelga una
+segunda cosa que tampoco se pudo codificar: desviarse de un criterio
+pre-registrado congelado sin declararlo, sólo detectable si el análisis que
+se desvía está versionado. **La barrera que funcionaría no es un test, es
+un hook de pre-commit** que exija que todo análisis citado en una acta
+tenga un script versionado detrás — decisión de proceso que ningún agente
+instaló por su cuenta, y sigue sin instalarse.
+
+**Dos detectores agregados sobre el proceso de esta misma corrida, con una
+lección sobre los límites del primero.**
+
+- `test_ninguna_funcion_de_inferencia_ofrece_un_N_de_intentos_por_defecto`
+  busca por **nombre de parámetro**, no por módulo, para que una tercera
+  función de inferencia quede cubierta sin que nadie tenga que acordarse de
+  este test. Contraprueba: reintroducir el default de 9 en
+  `GEMELO/control_lineal.py` lo hace fallar.
+- `test_todo_modulo_de_analisis_importa_sin_reventar` nació para cazar el
+  `NameError` que un `git add -A` sin verificar dejó commiteado en
+  `GEMELO/bifurcaciones.py` (acta 66). Su propia contraprueba —borrar la
+  misma constante que causó el bug real— **no lo hace fallar**: un
+  `NameError` dentro de una f-string vive en el cuerpo de una función y
+  sólo revienta cuando alguien la llama, no al importar el módulo. El test
+  no se ablandó ni se descartó: se le corrigió el docstring para decir
+  exactamente qué SÍ cubre (sintaxis, imports circulares, constantes de
+  nivel de módulo) y qué no, con la contraprueba que lo demuestra. Lo que sí
+  habría cazado el caso original es un linter de resolución de nombres
+  (tipo `pyflakes`); se verificó que no hay ninguno instalado en el venv del
+  proyecto y queda **propuesto y no instalado**.
+
+**Qué NO se hizo.** No se ablandó ningún `xfail` para que pasara. No se
+tocó `motor.py`, `senales.py` ni `snapshot.py`: el propio archivo de tests
+está bajo una guarda que se hace cumplir a sí misma
+(`test_este_archivo_no_escribe_en_ninguna_base_ni_toca_el_sellado`).
+
+**Cómo se revierte.** No aplica: es infraestructura de verificación
+aditiva. Cada test lleva su propia contraprueba como ancla de que sigue
+siendo capaz de fallar.
+
+---
+
+## 66. ERRATA completa del barrido de `git add -A`: faltaba `backtest/linea_base.py` y `tests/test_linea_base.py`, y el barrido nunca llegó a `DECISIONES.md`
+
+**Fecha:** 1-sep-2026. **Tipo:** errata fechada sobre commits ya escritos
+en la historia local (no reescribe ninguno) + un hecho verificado que se
+deja asentado. **Evidencia:** reflog de `HEAD` en `.git`,
+`GEMELO/resultados/bitacora_05.md` (entradas de las 09:40 y 10:12),
+`GEMELO/resultados/bitacora_06.md` (11:50).
+
+**Qué pasó, sin rodeos.** El 1-sep-2026 a las 09:21, un `git add -A`
+corrido con seis agentes escribiendo el mismo árbol en paralelo empaquetó
+trabajo a medio terminar de dos frentes dentro del commit `6bb1f46`
+("Frentes C, E y F: el conteo es 86, y se cerró un vector vivo que volteaba
+V5"), **cuyo mensaje no menciona ninguno de los dos**. Los archivos
+arrastrados: `backtest/datos.py` y `backtest/causalidad.py` (trabajo del
+Frente B, completo pero fuera del alcance declarado de ese commit) y una
+**versión temprana y buggeada** de `GEMELO/CONDICIONAL/condicional.py`
+(Frente D) — con el McNemar comparado contra un hombre de paja y el pareo
+hecho sólo por sesión objetivo, la combinación que producía la "firma de
+fuga" ilusoria de p=0,0018 (acta 64). Durante unas horas el repo tuvo
+commiteada una versión de `condicional.py` que producía **conclusiones
+falsas**.
+
+**La corrección, y por qué no reescribe la historia.** `6bb1f46` queda tal
+cual: los dos archivos de `backtest/` estaban completos en ese commit y la
+suite pasaba, así que el estado del árbol era coherente — lo que estuvo mal
+fue el mensaje y el método, no el contenido de esos dos archivos. La
+versión correcta de `condicional.py` se commiteó después, en `e900236`. La
+corrección de la lista de archivos afectados quedó parcialmente en los
+mensajes de los commits `2872d9b` ("Frente B: R3 QUEDO LIMPIO...", acta 63)
+y `e900236` ("Frente D: la ventaja NO esta concentrada...", acta 64), que
+nombran `backtest/datos.py`, `backtest/causalidad.py` y
+`GEMELO/CONDICIONAL/condicional.py` como los archivos arrastrados por el
+barrido.
+
+**Lo que esas erratas omiten, y es lo más consecuente del barrido.** Ni
+`2872d9b` ni `e900236` mencionan que el mismo `git add -A` de las 09:21
+también arrastró **`backtest/linea_base.py`** (contiene, íntegra, la regla
+de deduplicación que Nicolás firmó el mismo día: `sesion_correcta()`,
+`marcar_sesion()`, `deduplicar_por_sesion()`, `auditar_dedup()`,
+`filtrar_sesion_coherente()` y la constante `DEDUP_OFICIAL`) y
+**`tests/test_linea_base.py`** (la suite que la protege). De los tres
+archivos que sí quedaron nombrados, ninguno es el que decide qué cuenta
+como una fila para **toda** cifra pareada del proyecto — README, GEMELO,
+matriz de bifurcaciones — pasa por `linea_base.cargar()` (acta 60 ya
+declaró que `GEMELO/bifurcaciones.py` y otros cuatro módulos heredan la
+regla de ahí). Un barrido sin declarar que toca justamente ese archivo es
+el caso de manual de por qué la regla de "staging explícito por archivo"
+—adoptada la noche anterior, ver bitácora— no era una formalidad.
+
+**Por qué esta acta no trae una cifra de líneas agregadas por archivo.** El
+encargo que originó esta errata trae una cifra de líneas por archivo para
+`backtest/linea_base.py` y `tests/test_linea_base.py` que no pude
+reproducir de forma independiente con las herramientas de este entorno de
+escritura (sin acceso a `git diff` / `git show --stat` sobre commits
+arbitrarios; sólo lectura de archivos, búsqueda de texto y el reflog en
+texto plano). Se deja señalado en vez de repetido de memoria — es
+exactamente la falta que este proyecto persigue en cualquier otro frente.
+Quien reabra esto con acceso a `git` puede correr
+`git show --stat 6bb1f46 -- backtest/linea_base.py tests/test_linea_base.py`
+para fijar la cifra.
+
+**El barrido, hasta hoy, no vivía en `DECISIONES.md`.** Sólo estaba en el
+mensaje de los commits y en `GEMELO/resultados/bitacora_05.md`. Esta acta
+es su primer registro en la memoria institucional.
+
+**La práctica cambió.** Desde las 09:40 de esta misma corrida, staging
+explícito por archivo (`git add <archivo>` uno por uno), nunca
+`git add -A` mientras haya agentes escribiendo el árbol. Es más lento y es
+el precio de que cada commit diga la verdad.
+
+**Un segundo hecho, sin relación de causa con el barrido pero que el
+guardián verificó en la misma revisión y que hay que dejar asentado.**
+`.claude/skills/estadistica-evaluacion/scripts/evaluacion.py` — el módulo
+árbitro que juzga toda comparación pareada del proyecto — **sí se
+modificó** durante esta corrida: `mcnemar_exact` desbordaba con
+`OverflowError` en n ≥ 1024 (el denominador `2,0**n` excede el rango de un
+float), así que el tramo declarado como exacto (1024 ≤ n ≤ 2000) nunca
+llegaba al *fallback* normal. Corregido en espacio logarítmico con
+`lgamma`; el umbral de 2000 no se movió, lo que se corrigió es que ahora se
+cumple. Está documentado en el acta §59, con desvío máximo medido de
+**5,1e-13** contra una vara de otra familia (aritmética racional exacta con
+`Fraction`) y las anclas históricas del `_self_test` reproduciendo. **Pero
+al pedirse el dictamen de esta tanda se presentó `.claude/` como intacto, y
+no lo estaba.** El guardián lo cazó verificando en vez de creer la premisa
+del encargo. No mueve ninguna cifra publicada — se deja dicho porque es el
+módulo que decide si cualquier otra cifra del proyecto cruza o no un
+umbral, y merece que su propio historial de cambios esté completo y no
+dependa de que alguien lo recuerde.
+
+**Qué queda abierto.** Fijar con `git show --stat` la extensión exacta del
+arrastre en `backtest/linea_base.py` y `tests/test_linea_base.py` (ver
+arriba). Decidir si conviene alguna referencia cruzada adicional en
+`cola_decisiones.md` — no se hizo aquí para no pisar el trabajo de otro
+frente escribiendo en paralelo.
+
+**Cómo se revierte.** No aplica: es un registro de lo ocurrido, no una
+configuración. La práctica de staging explícito no tiene interruptor de
+código; se revierte dejando de seguirla, y esta acta queda como el motivo
+escrito de por qué no conviene hacerlo.

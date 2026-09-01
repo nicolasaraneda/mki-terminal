@@ -255,4 +255,38 @@ frentes, uno en versión con bugs.
     investigado". **La memoria institucional estaba escrita y la capa que
     la necesitaba no la leyó.** Es el mismo defecto que el guardián marcó
     esta mañana, visto desde el otro lado.
+- **12:45** — **Actas §62 a §66 escritas**, cerrando la deuda que marcó el
+  guardián: la errata del `min()`/`max()` sobre §59, las tres actas que
+  faltaban (Frente B —que **revierte la conclusión central de §59**—,
+  Frente D y Frente F), y la **errata completa del barrido**, que ahora sí
+  nombra `backtest/linea_base.py` y `tests/test_linea_base.py`.
+  **Verifiqué las cifras que el escriba no pudo**: `git show --stat` da
+  **+250 y +164, 398 inserciones**. Exactas.
+  - Y el escriba **reportó tres discrepancias en vez de pasarlas de
+    largo**, que es la conducta que se quiere. Una corrigió una cifra mía:
+    el conteo de la suite epistémica no es "12 pasan de 19" sino **17
+    pasan y 2 `xfail`** — el 12 era el estado antes de sumar cinco tests.
+- **12:50** — **Y la tercera discrepancia me obliga a corregir mi propia
+  corrección de esta mañana. El artefacto del Frente D se contradice a sí
+  mismo.**
+  - Yo escribí, siguiendo al Frente F, que el "−62,5 pp sobre 16 filas"
+    salió de **mi narrativa de sesión**. **Es falso: está en el `.md` del
+    propio Frente D, dos veces.** Lo verifiqué.
+  - Lo que pasa es peor y más interesante: **la prosa del informe dice una
+    partición y su propio `.json` dice otra.** El JSON —que es lo que el
+    ejecutable produce y por lo tanto **manda**— da **4 fechas, n=28,
+    −50,0 pp, p=0,0066**, y un resto de **+6,5 pp con p=0,2007**. La prosa
+    dice 2 fechas, 16 filas, −62,5 pp, y un resto de +4,1 pp con p=0,44.
+  - **Por qué nadie lo cazó, y es la lección:** **las dos particiones suman
+    256** (44+16+196 y 44+28+184), así que **ningún chequeo aritmético las
+    distingue**. Hizo falta que otro frente fuera a buscar la cifra al
+    `.json`.
+  - **Y la prosa exagera en las dos direcciones**: hace los incidentes
+    peores **y** el resto más débil. El resto real es prácticamente el
+    mismo +6,2 de la ventana completa, lo cual **cambia la lectura**:
+    sacar los incidentes **no deja un resto flojo, lo deja igual**.
+  - Errata escrita **en el artefacto**, con la cadena completa de la
+    corrección: la cifra nació ahí, yo la propagué, F la cazó por no
+    reproducir pero le erró el origen, y el escriba encontró que el
+    documento traía **las dos particiones a la vez**.
 

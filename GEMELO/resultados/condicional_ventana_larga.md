@@ -10,6 +10,40 @@
 >
 > **El bloque de julio NO es excepcional en la ventana larga.** Su +40.91 pp está en el percentil **90.3** de todos los bloques contiguos de su mismo ancho, y hay **157** bloques históricos sin solape iguales o mejores. Su firma de condiciones sí es atípica (Mahalanobis en el percentil 100.0), pero el motor de esa distancia es `disp_asia` — una de las condiciones que NO discrimina, así que es una descripción, no una explicación. Ver §3.3.
 >
+> **ERRATA (1-sep-2026, sexta corrida) — este documento se contradice a sí mismo.**
+>
+> La prosa de este informe dice **"dos fechas de incidente de producción que
+> cuestan −62.5 pp sobre 16 filas, y un resto de +4.1 pp (p=0.44)"**, y lo dice
+> **dos veces**. Su propio `.json` —que es lo que el ejecutable produce— dice
+> otra cosa:
+>
+> | tramo | n | fechas | ventaja | p |
+> |---|---|---|---|---|
+> | ventana sellada completa | 256 | 35 | +6.2 pp | 0.1847 |
+> | bloque 15→23-jul | 44 | 6 | +40.9 pp | 0.0014 |
+> | **fechas con incidente** | **28** | **4** | **−50.0 pp** | **0.0066** |
+> | todo lo demás | 184 | 25 | **+6.5 pp** | 0.2007 |
+>
+> **Manda el JSON**: es la salida del ejecutable, y la prosa es una narración
+> escrita encima.
+>
+> **Por qué nadie lo cazó, y es lo que hay que aprender:** las **dos**
+> particiones suman 256 (44+16+196 y 44+28+184), así que **ningún chequeo
+> aritmético las distingue**. Hizo falta que otro frente fuera a buscar la
+> cifra en el `.json` para que apareciera.
+>
+> **Y la prosa exagera en las dos direcciones**: hace los incidentes peores
+> (−62.5 contra −50.0) **y** el resto más débil (+4.1 con p=0.44 contra +6.5
+> con p=0.2007). El resto real es prácticamente el mismo +6.2 de la ventana
+> completa, lo cual cambia la lectura: **sacar los incidentes no deja un resto
+> flojo, lo deja igual.**
+>
+> Cadena de la corrección, para que quede el rastro: la cifra salió de este
+> documento, **yo la propagué** a la bitácora, a la cola, a mensajes de commit
+> y a un encargo; el Frente F la cazó por no reproducir, aunque atribuyó su
+> origen a mi narrativa y estaba acá; y el escriba de actas encontró que el
+> documento **traía las dos particiones a la vez**.
+
 > **La reconstrucción es FIEL al sello, y la brecha de 16 pp contra 6 pp no está en el mecanismo.** Sobre las 214 filas que comparten fecha de emisión Y sesión objetivo: 100.0% de predicciones con el mismo signo, 100.0% de gaps idénticos, dif 0.0 pp. **Los +6.2 pp de la ventana sellada son la resta de un bloque de julio de +40.9 pp, dos fechas de incidente de producción que cuestan −62.5 pp sobre 16 filas, y un resto de +4.1 pp (p=0.44)** — descomposición, no corrección: ninguna fila sellada se toca y ninguna cifra publicada se mueve.
 >
 > Intentos sumados: **8** (N acumulado 25 → **33**). NO EVALUABLE: **densidad_noticias**.
