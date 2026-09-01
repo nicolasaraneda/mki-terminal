@@ -5183,3 +5183,282 @@ tiene que ver, no un arreglo de paso. Queda declarado acá y en
 sólo se puede sacar de `ESTADO.md` **escribiéndola en `DECISIONES.md` en
 el mismo movimiento**. `ESTADO.md` es un resumen que se regenera; todo lo
 que viva sólo ahí desaparece en el próximo cierre sin dejar rastro.
+
+---
+
+## 58. La ingesta ancha confirmada, el techo que no se movió, y un paréntesis sin dueño
+
+**Fecha:** 1-sep-2026. **Tipo:** decisión de diseño + **cuatro** erratas
+fechadas —tres sobre documentos commiteados y una sobre CÓDIGO commiteado—
++ una deuda técnica declarada.
+**Evidencia:** `GEMELO/MICRO/INGESTA_ANCHA.md`, `micro/rtl/`.
+**Reproducible con:** `cd micro/rtl && make ancho ancho-gate techo variantes multi demo huecos semillas`.
+
+**Qué se confirmó.** Las dos cifras que la cuarta corrida había medido —11
+ciclos de latencia a 4 bytes/ciclo y las 181 filas selladas reproduciendo bit
+a bit, con el área **bajando** de 108 a 93 LUT6— se reprodujeron exactas. La
+novedad no es la repetición: es que se atacaron con dos familias de evidencia
+que antes no existían, porque repetir la misma simulación con el mismo banco
+no es una verificación. Se cambió el **instrumento** (una cuenta de flancos
+del lado del banco, ciega al contador de 48 bits que vive en `etapa_salida`,
+con la relación `banco = DUT + 1` escrita antes de correr) y el **diseño bajo
+prueba** (la netlist **mapeada a celdas**, iCE40 y Artix-7, donde ya no hay
+Verilog sino LUT6, CARRY4, FDRE y DSP48E1). 181/181 y las mismas latencias en
+las tres, con cero desajustes entre instrumentos.
+
+**Qué se decidió medir en vez de deducir, y por qué.** Que el techo de 240
+tickers no se movía era deducible en una línea: el DSP no lo toca la ingesta.
+Se sintetizó igual el barrido entero con B=4 y B=28 —21 síntesis— porque
+`SINTESIS.md` §3.4 ya midió que el área de un pipeline **no** es la suma de
+sus partes, y dar por sentado un comportamiento del mapeo tecnológico es
+exactamente el error que ese hallazgo documentó. **Resultado: 240 en los tres
+anchos.** Con una lectura que el número solo no da: ensanchar **agranda** la
+ventaja del DSP como cuello, porque baja LUT y FF por instancia (el techo de
+LUT6 sube de 817 a 1.006 tickers) y no toca el DSP.
+
+**Resultado negativo, publicado igual.** Subir el techo por el camino obvio
+—mapear el multiplicador a fabric con `-nodsp`— cuesta **685,8 LUT6 por
+ticker** medidos y **baja** el techo de 240 a 92. El camino que sí funciona es
+dejar de replicar: una tabla de pesos por instrumento sirve 8 tickers con **1
+DSP y 109 LUT6** contra los 8 DSP y 577 LUT6 de ocho pipelines, y una tabla de
+240 instrumentos cuesta 3 DSP.
+
+**Dos variantes construidas, y por qué ésas.** No se eligieron por lo que
+impresionan: las eligieron los propios documentos del proyecto, que las
+nombran como faltantes y nunca las construyeron. (1) **La tabla de pesos por
+instrumento** — `SINTESIS_A7.md` §4.2, §3.5 y el encabezado de `multi_top.v`
+la nombran tres veces. Cuesta **+6 LUT6** para los ocho tickers del universo.
+(2) **La fuente interna desde memoria** — último pendiente de `SINTESIS_A7.md`
+§8. `demo_top.v` reproduce las 181 filas desde la memoria del chip con un solo
+pulso, sin UART, sin DDR3L y sin un pin de datos: 181/181 a 11 ciclos (B=4) y
+a **5 ciclos (B=28)**. Es la primera configuración del proyecto que usa BRAM, y
+es lo que vuelve realizable el B=28, que con fuente externa exigiría 224 pines
+contra las 32 señales que la placa expone por sus Pmod.
+
+**El hallazgo que no se buscaba, y es el que más importa.** Los 8 ciclos de
+silencio entre mensajes que el banco insertaba —descritos en `SINTESIS.md` §9
+como una comodidad para medir la latencia limpia— **son un requisito de
+corrección que nadie había escrito**. Con 0 ó 1 ciclos de hueco, **178 de 181
+sellos salen mal, corridos un mensaje**, y **la latencia sigue dando 11 ciclos
+exactos y perfectamente constante**. El mínimo medido es 2, igual en los dos
+anchos. De paso queda medido el caudal espalda-con-espalda, pendiente desde
+`SINTESIS.md` §9: **15,00 ciclos por mensaje con B=4 y 9,00 con B=28**,
+contando el reloj de la simulación entera y dividiendo, no convirtiendo una
+latencia en un caudal. La propiedad que este proyecto exhibe —latencia
+determinista— **no implica corrección**, y una prueba que sólo mirara la latencia habría pasado
+en verde. La corrección fue al código antes que a la prosa: `fuente_bram.v`
+aborta en elaboración si `HUECO < 2`.
+
+**Cuatro erratas fechadas, en su sitio.** Tres sobre documentos: `RTL.md` §1
+y §2, `fpga.md` §2 y §4, `SINTESIS.md` §4 y §4.2. Ninguna reescribe el texto
+original: los cuatro archivos son puramente aditivos, cero líneas eliminadas.
+
+**La cuarta es sobre código commiteado y no es de paso: es el entregable.**
+`micro/rtl/medir_a7.py` imprimía en la tabla de anchos una columna rotulada
+*"las latencias de la última columna están MEDIDAS en simulación … no
+calculadas"* mientras el código imprimía `ceil(28/B) + 4` — la **fórmula**. Los
+números coincidían porque la predicción era correcta, y por eso nadie lo vio.
+Pero el encargo de este frente era **confirmar** esas latencias, y una cifra
+calculada rotulada como medida no confirma nada: es exactamente la regla de la
+casa —una verificación que usa el mismo mecanismo que produjo la cifra no es
+una verificación— fallando dentro de la herramienta que produce la cifra.
+**Establecer la procedencia de las dos cifras ERA el entregable de E1**, así
+que esto no fue un arreglo de camino. La corrección: el bloque ahora **lee** la
+latencia de `sim/ancho.log` y escribe `sin medir` si el log no está, o
+`NO CONST` si la latencia no fue constante, con las columnas PREDICHA y MEDIDA
+separadas. La corrección fue al código antes que a la prosa, que es la regla.
+
+**Estado de la suite, dicho como es.** `python -m pytest tests/ -q` en este
+árbol da **409 passed · 1 failed · 2 xfailed** (1-sep 02:25). **El conteo no es
+estable y no debe citarse como si lo fuera**: otro frente está escribiendo en
+el mismo árbol y en tres corridas de la misma hora dio 403/2, 408/2 y 409/1.
+Lo que sí es estable y verificable, y es lo que corresponde afirmar: **ningún
+fallo nombra `micro/` ni `GEMELO/MICRO/`**, y el mensaje de aserción de cada
+uno señala `GEMELO/bifurcaciones.py`, que es del otro frente. El
+anti-look-ahead del motor da **verde, exit 0**. La primera versión de esta acta
+citó "403 passed, 2 failed" de una corrida anterior sin volver a correrla: lo
+cazó el `guardian-constitucion` y queda anotado, porque citar una cifra de
+memoria es la falta que este proyecto persigue en todos los demás frentes.
+
+**El paréntesis sin dueño, que es la parte que vale más que las cifras.** La
+mejora también aplicaba a la Go Board —el área baja ahí también, 1.198 → 1.184
+celdas colocadas y ruteadas— o sea que **no estaba bloqueada por falta de
+espacio**. La pregunta era por qué nadie preguntó, y la respuesta no es que la
+idea no se tuvo: **estaba escrita en `RTL.md` §1, el primer documento de la
+pista**, como *"una máquina de estados que corre un byte (o un word, si el bus
+lo permite) por ciclo"*. La idea se tuvo, se **condicionó a una precondición**
+sobre un bus externo que no existía porque no había placa, y **nadie volvió a
+evaluarla cuando el hecho llegó**. Cuando por fin se evaluó, resultó falsa
+para un bus externo e irrelevante para uno interno — y la fuente interna era
+la arquitectura que `SINTESIS_A7.md` §3.2 ya recomendaba por otros motivos.
+**La precondición era respondible desde el día en que se escribió.**
+
+Dos mecanismos secundarios, ambos apoyados en texto literal: (a) la figura de
+mérito de la latencia era la **varianza** (`fpga.md` §2: *"p50 = p99 = p99.9 =
+máximo"*), y 32 ciclos la cumplen igual de bien que 11, así que la magnitud
+nunca estuvo bajo presión; (b) la única enumeración del espacio de diseño que
+existió (`SINTESIS.md` §4.2) se tituló *"qué habría que **sacrificar** para
+que entre"*, y sus cinco opciones son todas **restas** — un marco que sólo
+admite sacrificios no puede contener una opción que mejora dos cosas a la vez
+y no cuesta nada.
+
+**Regla que sale de esto, y vale más que el caso:** **una idea condicionada a
+un hecho futuro necesita dueño y fecha de revisión, o se convierte en una
+decisión tomada por omisión.** Es la misma clase de deuda que el proyecto ya
+sabe manejar cuando la escribe acá — sólo que ésta vivía en un paréntesis de
+un documento de diseño, donde nada la vigilaba.
+
+**Qué es determinístico y qué no, medido en vez de supuesto.** Las cuentas de
+celdas del mapeo son determinísticas (4/4 corridas idénticas) **pero
+sensibles a la invocación**: el mismo `multi_top` K=64 da 4.964 LUT6 con la
+lista de fuentes de `medir_a7.py` y 4.963 con la mínima, porque arrastrar
+módulos que ni siquiera participan de la jerarquía cambia el resultado. Las
+celdas colocadas por `nextpnr` también son determinísticas (10/10 semillas
+idénticas). **El Fmax no lo es:** 105,27 a 114,19 MHz sobre 10 semillas para
+el F1SP, 66,11 a 73,00 para el pipeline ancho. Todo Fmax publicado por este
+proyecto es un estimador puntual de una realización del colocador; ninguna
+conclusión se mueve, pero los números deberían citarse con su dispersión.
+
+**Deuda técnica declarada.** (1) La tabla de pesos está **sintetizada** hasta
+T=240 pero **simulada** sólo hasta T=16. (2) Dos de los tres DSP48E1 de la
+tabla de 240 son la aritmética de direcciones (`slot × 6`), que con paso 8
+serían desplazamientos: se nombra y no se arregla, porque arreglarlo cambia el
+diseño que hoy está medido. (3) La cifra de BRAM de `demo_top` es la de la
+porción viva del mensaje — yosys poda legítimamente los 12 de 28 bytes que el
+pipeline nunca lee. (4) La ventana rodante de `etapa_features` es estado por
+instrumento: con F=1 no importa, con F≥2 multiplexar sin replicarla mezclaría
+la historia de dos tickers.
+
+**Qué NO se tocó.** `motor.py`, `senales.py`, `snapshot.py`, `universo.py`,
+`.env`, los timers y `CLAUDE.md`. **`senales.db` no se abrió ni una vez** en
+este frente, ni siquiera en `mode=ro`: los vectores son los de 31-ago y
+`empaquetar_vectores.py` los re-agrupa sin importar `sqlite3` ni
+`referencia.py`, de modo que no puede regenerarlos ni por error. El
+denominador sigue siendo 181 y por lo tanto las tablas de `SINTESIS.md` y
+`SINTESIS_A7.md` se pueden seguir comparando de frente.
+
+**Qué queda abierto, y es de Nicolás.** Si el ancho de la ingesta se elige (la
+evidencia cambió: B=28 dejó de ser irrealizable); si la tabla de pesos se
+adopta; si `demo_top` es la arquitectura de la demo del ramo; y la cuenta AMD
+para Vivado, sin la cual sigue sin haber Fmax en Artix-7, ni temporización, ni
+bitstream.
+
+## 59. La Etapa 5.1 se ejecutó y NO produjo veredicto: R3 disparó
+
+**Fecha:** 1-sep-2026, 01:42 → 02:35 hora de Chile. **Tipo:** decisión de
+diseño + hallazgo bloqueante. **Expediente:**
+`GEMELO/resultados/gatillo_51.md`. **Corrida:**
+`backtest/resultados/20260901-061708-5.1-invalidada-por-fuga/`.
+
+**Qué se autorizó.** Nicolás autorizó explícitamente ejecutar el veredicto
+del backtest B0–B5 *"con los criterios congelados de `backtest/DISEÑO.md`,
+sin tocarlos"*, contando todos los intentos y escribiendo el veredicto *"con
+la misma firmeza si es negativo"*.
+
+**Primer hallazgo, antes de correr: la instrucción se contradice a sí
+misma.** El gatillo del GATE B (`backtest/DISEÑO.md`:226-233) **es uno de
+los criterios congelados**, y no está cumplido por ninguna de sus dos vías.
+La vía (a) pide N ≥ 150 verificaciones limpias **Y** un cambio de régimen del
+SOX: hay 261 verificaciones, pero la columna `regimen` de `snapshots` tiene
+**una sola etiqueta** (`Alcista · vol alta`, 38 filas, más 2 nulas) — cero
+varianza. La vía (b) cae el 25-oct-2026, a 54 días. **Ejecutar el veredicto
+pleno hoy violaría el documento que la instrucción manda respetar.** Esa
+contradicción no la resuelve un agente: queda como expediente para que
+Nicolás decida entre esperar al 25-oct o relevar por escrito la condición
+(a2). Se ejecutó lo reversible; **no se gastó el holdout**, que es de un
+solo uso.
+
+**El conteo de intentos, declarado a las 01:42 y antes de computar nada:
+N = 82.** Estratos: 25 en código (`relevo_asiatico.py`:76) + 1 declarado y
+no corrido + 18 declarados en prosa y nunca llevados al código
+(`concentracion.md`:333) + 32 reconstruidos desde las actas + 6 de esta
+corrida sobre ventana nueva. Se declaró además la banda 26/44/82/110 y se
+listaron los 28 candidatos **excluidos a propósito**, para que la exclusión
+sea auditable. Hallazgo de paso: **cuatro documentos del repo declaran
+cuatro N distintos (25, 26, 32, 43) y el único ejecutable dice el más bajo.**
+
+**Segundo hallazgo, y el que decide: el arnés tiene tres defectos
+demostrados.** La auditoría adversaria del arnés encontró, y se verificó de
+forma independiente:
+
+- **B-1 (fuga temporal).** `backtest/datos.py` corta el sentimiento por
+  `titulares.fecha` y **nunca mira `analisis.analizado_en`**. Medido:
+  **3.407 de 5.094 análisis (66.9 %)** se emitieron después de la hora de
+  emisión de su día; rezago máximo **320 días**; y el **primer juicio de IA
+  del sistema es del 2026-07-04**, con titulares desde 2025-09-09. En la
+  ventana evaluada, casi 22 de 24 meses alimentan B4/B5 con juicios que no
+  existían. El `grado B` lo declara, pero **ninguna métrica lo excluye**, y
+  `buzz` sale del mismo join sin grado ninguno.
+- **B-2 (la guarda no guarda).** `validar_sin_futuro` se llama sobre frames
+  recortados con el MISMO predicado que ella comprueba: la condición de
+  disparo es inalcanzable por construcción. Medido: **401.184 invocaciones,
+  cero capaces de disparar.** Y una fuga real (`shift(-1)`) desplaza
+  valores, no el índice — la guarda no la ve. La prueba maestra cubre **una
+  fecha y tres baselines**, así que las cinco features exclusivas de B4/B5
+  son invisibles para toda la suite.
+- **B-3 (unidad de observación).** Varias emisiones apuntan a la misma
+  sesión objetivo en feriados largos: **263 de 4.160 filas (6.3 %)** son
+  desenlaces duplicados, dos pares contados **8 veces**.
+
+**Consecuencia, aplicada sin ablandar: R3 dispara.** `GEMELO/DISEÑO.md`
+§6.2 dice *"cualquier fuga detectada por el test de causalidad. Sin
+discusión y sin excepción"*. **No hay veredicto de la Etapa 5.1.** V1 a V6
+se publican como referencia contaminada, marcadas fila por fila como tales;
+V7 y R1 quedan NO EVALUABLES; el veredicto final del §8 sale **NO AGREGA
+VALOR**. Ningún criterio se movió, se reinterpretó ni se ablandó.
+
+**Lo que la corrida sí dejó, y vale más que el veredicto que no hubo.**
+Sobre 520 días y 4.151 pares, el campeón acierta la dirección del gap el
+**69.0 %** [67.5, 70.4] contra el 55.4 % de "siempre al alza" —**+13.6 pp**,
+McNemar p ≈ 0— y **la cartera long-short pierde 40.7 % sin un solo punto
+básico de costo** (Sharpe bruto −1.08). Con costos a 25 pb por lado cae a
+−95.6 %, contra **+137.1 %** de comprar SMH y no hacer nada. **El gap existe
+y no es capturable**: entrar en la subasta de apertura ya es tarde. Es la
+distinción EXISTE/CAPTURABLE de la Etapa 4.6, medida por primera vez sobre
+dos años de walk-forward. El DSR sale **0.0000** en las seis baselines y en
+los cuatro valores de N — **el conteo de intentos no era la restricción que
+decidía**, y se dice porque reconstruirlo costó trabajo.
+
+**Una corrección de código, no de prosa.** `mcnemar_exact` de
+`.claude/skills/estadistica-evaluacion/scripts/evaluacion.py` **desbordaba
+con `OverflowError` en n ≥ 1024**: la rama exacta dividía por `2.0**n`, así
+que el tramo 1024 ≤ n ≤ 2000 que el docstring declaraba exacto nunca llegaba
+al fallback normal. Se descubrió al aplicarlo sobre 4.151 filas; ningún uso
+anterior había llegado a esa escala. Corregido en espacio logarítmico con
+`lgamma`. **El umbral declarado de 2000 no se movió: lo que se corrigió es
+que ahora se cumple.** Las dos anclas históricas del `_self_test` siguen
+reproduciendo.
+
+**Un defecto que introduje yo y lo digo.** Al añadir los tres estados del
+sello de una corrida (humo / veredicto con gatillo incumplido / veredicto
+pleno), `estado_gatillo` quedó como un diccionario que **provee quien
+llama**, sin bandera en el CLI y sin que nada lo verifique: `--etiqueta 5.1`
+desde la línea de comandos se autoproclama veredicto pleno. Queda como deuda
+declarada — arreglarlo en medio de la corrida habría sido mover el arnés
+después de ver el diseño.
+
+**Y una predicción mía que salió al revés.** La auditoría supuso que los
+duplicados de B-3 **inflaban** el t-stat. Releídas las mismas filas
+deduplicadas, la ventaja **sube** (B2: 13.55 → 14.29 pp) y el t(NW) también
+(11.21 → 11.65) en todas las capas. El defecto es real y hay que arreglarlo
+igual, pero su dirección no era la supuesta, y arreglarlo **empeora** el
+resultado económico en vez de rescatarlo.
+
+**Qué hay que arreglar antes de que exista un veredicto**, y el primer
+entregable de cada punto es el **test**, no el arreglo: (1) cortar el
+sentimiento por `min(titulares.fecha, analisis.analizado_en)`; (2)
+parametrizar la prueba maestra sobre B0–B5 × ≥10 fechas y añadir la
+contraprueba `shift(-1)` como test permanente —que el test pueda fallar es
+parte del test—; (3) deduplicar por `(ticker, sesión objetivo)`; (4) contar
+sesiones y no días corridos en el embargo (hoy `timedelta(days=5)` purga una
+mediana de **3** sesiones y el número depende del día de la semana en que
+arranca la corrida, así que el `embargo_dias: 5` sellado **no describe lo que
+ocurrió**); (5) computar `estado_gatillo` en vez de recibirlo; (6) construir
+un **holdout material** — hoy la cuarentena es sólo procedimental.
+
+**Regla que sale de esto.** Una guarda que valida el resultado de su propio
+recorte no es una guarda, y un test que no puede fallar no es un test. La
+regla de la casa —*una verificación que usa el mismo mecanismo que produjo
+la cifra no es una verificación*— se estaba aplicando a las cifras y no al
+arnés que las produce. Desde ahora, toda guarda nueva se acompaña de la
+contraprueba que la hace fallar.

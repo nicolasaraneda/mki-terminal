@@ -191,6 +191,65 @@ def test_dry_run_humo_no_concluyente(entorno):
     assert os.path.exists(os.path.join(ruta, "metricas.json"))
 
 
+# ------------------------------------------------------------
+# Los TRES estados del sello de una corrida (Etapa 5.1)
+#
+# Colapsarlos en dos —humo / veredicto— es lo que permitiría que una
+# corrida ejecutada antes de que el gatillo se cumpla se leyera como el
+# veredicto definitivo. El aviso va en la PRIMERA pantalla del resumen.
+# ------------------------------------------------------------
+def _resumen_de(reporte) -> str:
+    with open(os.path.join(reporte["ruta"], "resumen.md"), encoding="utf-8") as f:
+        return f.read()
+
+
+def test_estado_1_humo_lleva_el_aviso_de_no_concluyente(entorno):
+    reporte = motorbt.correr(date(2026, 5, 4), date(2026, 5, 15),
+                             cuales=("B0", "B1"), etiqueta="humo-sintetico",
+                             fuente=entorno)
+    assert reporte["no_concluyente"] is True
+    assert "NO-CONCLUYENTE" in _resumen_de(reporte).split("\n")[0]
+
+
+def test_estado_2_gatillo_incumplido_lo_declara_en_la_primera_pantalla(entorno):
+    """Una corrida con veredicto pero con el gatillo sin cumplir NO es
+    NO-CONCLUYENTE ni es el veredicto definitivo: es su propio estado, y
+    tiene que decirlo arriba de todo junto con el holdout sin gastar."""
+    gatillo = {
+        "cumplido": False,
+        "vias": ["(a) N>=150 SÍ, cambio de régimen NO — una sola etiqueta",
+                 "(b) faltan 54 días (25-oct-2026)"],
+        "holdout_intacto": True,
+        "expediente": "GEMELO/resultados/gatillo_51.md",
+    }
+    reporte = motorbt.correr(date(2026, 5, 4), date(2026, 5, 15),
+                             cuales=("B0", "B1"),
+                             etiqueta="5.1-gatillo-incumplido",
+                             fuente=entorno, estado_gatillo=gatillo)
+    assert reporte["no_concluyente"] is False
+    assert reporte["estado_gatillo"] == gatillo
+    resumen = _resumen_de(reporte)
+    primera_pantalla = "\n".join(resumen.split("\n")[:25])
+    assert "NO CUMPLIDO" in primera_pantalla
+    assert "NO es el veredicto definitivo" in primera_pantalla
+    assert "holdout" in primera_pantalla.lower()
+    assert "INTACTO" in primera_pantalla
+    # y NO se disfraza de corrida de humo ni de veredicto pleno
+    assert "NO-CONCLUYENTE" not in resumen
+    assert "CORRIDA DE VEREDICTO — Etapa 5.1" not in resumen
+
+
+def test_estado_3_veredicto_pleno_solo_sin_gatillo_pendiente(entorno):
+    reporte = motorbt.correr(date(2026, 5, 4), date(2026, 5, 15),
+                             cuales=("B0", "B1"), etiqueta="5.1",
+                             fuente=entorno,
+                             estado_gatillo={"cumplido": True})
+    assert reporte["no_concluyente"] is False
+    resumen = _resumen_de(reporte)
+    assert "CORRIDA DE VEREDICTO — Etapa 5.1" in resumen.split("\n")[0]
+    assert "NO-CONCLUYENTE" not in resumen
+
+
 # ============================================================
 # Migración del bootstrap al circular (Etapa 6.0.0 WS1 · DECISIONES.md §28)
 # ============================================================

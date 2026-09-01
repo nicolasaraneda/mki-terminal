@@ -53,6 +53,37 @@ que usa el resto de este arnés (percentiles, nunca medias):
   dedicados usados vs. disponibles) — es la evidencia dura de qué cupo y
   qué no, no una estimación a ojo.
 
+> **ERRATA (1-sep-2026), medido en `GEMELO/MICRO/INGESTA_ANCHA.md` §4.2.**
+> Las cuatro viñetas de arriba son correctas y se cumplieron. Lo que hay que
+> anotar es lo que **no** está en ellas, y que explica un año de ceguera: la
+> figura de mérito que esta sección le asigna a la latencia es la **forma de
+> la distribución** —*"p50 = p99 = p99.9 = máximo"*—, o sea la **varianza**.
+> Nunca la **magnitud**. Y **32 ciclos cumplen esa predicción exactamente
+> igual de bien que 11**. El número de la latencia jamás estuvo bajo presión
+> de optimización porque sólo tenía que ser *constante*, no *chico*: se lo
+> midió mucho, con el único instrumento que no podía detectar que sobraba.
+> Medido después: 27 de los 32 ciclos eran la ingesta byte a byte, y
+> ensanchar el bus los baja a 11 (o a 5) **bajando el área** y sin tocar la
+> propiedad de determinismo — 181/181 filas selladas bit a bit en los seis
+> anchos, con latencia mín = máx en cada uno.
+>
+> **La predicción falsable de esta sección sigue en pie y sigue siendo la
+> correcta.** Lo que se agrega es que una figura de mérito de varianza deja
+> la magnitud sin dueño, y que conviene declarar las dos.
+>
+> **Y una que sí corrige un número.** Esta sección pide medir la latencia "en
+> ciclos de reloj **y en tiempo real** (ciclos × periodo del reloj de la
+> placa)". El segundo factor no es determinístico: el Fmax que reporta
+> `nextpnr` **depende de la semilla del colocador**. Medido sobre 10
+> semillas: el F1SP de `SINTESIS.md` §4 va de **105,27 a 114,19 MHz** (el
+> 114,19 publicado es la semilla 1), y el pipeline de ingesta ancha va de
+> **66,11 a 73,00 MHz**. Las celdas colocadas, en cambio, salieron
+> **idénticas en las 10 semillas**. O sea: las cuentas de celdas son
+> determinísticas y no llevan intervalo; **todo Fmax de este proyecto es un
+> estimador puntual de una sola realización del colocador** y debería citarse
+> con su dispersión. Ninguna conclusión publicada se mueve (105,27 MHz siguen
+> siendo 8,8 veces los 12 MHz del oscilador de la Go Board).
+
 ## 3. Qué cabe en cada placa
 
 | | Nandland Go Board (Lattice iCE40HX1K) | Digilent Arty A7-100T (Xilinx Artix-7 XC7A100T) |
@@ -83,6 +114,12 @@ Para responder la pregunta de investigación de este pre-registro (§1-2 de
 1. Un **parser** del mensaje binario de formato fijo (comparadores y
    registros de desplazamiento — barato, cabe cómodo en cualquiera de las
    dos placas).
+
+   > **ERRATA (1-sep-2026).** "Barato" es cierto **en área** y falso en
+   > **latencia**: medido, el parser es **27 de los 32 ciclos**. Y su forma
+   > —un byte por ciclo— no la impuso el presupuesto de LUTs de ninguna de
+   > las dos placas, sino el supuesto de que la fuente sería un UART. Ver
+   > `INGESTA_ANCHA.md` §4 y la errata de `RTL.md` §1.
 2. Un **núcleo de decisión** con al menos una comparación contra umbral —
    eso también cabe en el iCE40HX1K sin problema. Pero si la pregunta de
    investigación exige algo más cercano al modelo real (una combinación

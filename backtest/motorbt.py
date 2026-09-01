@@ -28,12 +28,21 @@ REGION = {"XKRX": "Corea", "XTKS": "Japón", "XTAI": "Taiwán",
           "XETR": "Europa", "XNYS": "EE.UU."}
 COSTOS_PB = (10, 25, 50)
 
+# Prefijo de las corridas CON veredicto. Una etiqueta que empieza por "5.1"
+# deja de ser corrida de humo; si además viene un `estado_gatillo` que
+# declara el gatillo INCUMPLIDO, el resumen lo dice en la primera pantalla.
+# Son TRES estados, no dos: humo / veredicto con gatillo incumplido /
+# veredicto pleno. Colapsarlos en dos es lo que permitiría que una corrida
+# ejecutada antes de tiempo se leyera como el veredicto definitivo.
+PREFIJO_VEREDICTO = "5.1"
+
 
 def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B4", "B5"),
            etiqueta: str = "dry-run", fuente: FuenteCongelada | None = None,
            escribir: bool = True, embargo_dias: int = bl.EMBARGO_DIAS,
-           semilla_bootstrap: int = 500, alpha_bootstrap: float = 0.10) -> dict:
-    no_concluyente = etiqueta != "5.1"
+           semilla_bootstrap: int = 500, alpha_bootstrap: float = 0.10,
+           estado_gatillo: dict | None = None) -> dict:
+    no_concluyente = not etiqueta.startswith(PREFIJO_VEREDICTO)
     fuente = fuente or FuenteCongelada()
     with fuente:
         ctx = bl.ContextoRun(fuente, embargo_dias=embargo_dias)
@@ -90,7 +99,8 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
     reporte = _evaluar(dfs, smh, descartes, etiqueta, no_concluyente,
                        desde, hasta, embargo_dias=embargo_dias,
                        semilla_bootstrap=semilla_bootstrap,
-                       alpha_bootstrap=alpha_bootstrap)
+                       alpha_bootstrap=alpha_bootstrap,
+                       estado_gatillo=estado_gatillo)
     if escribir:
         reporte["ruta"] = _escribir(reporte, dfs)
     return reporte
@@ -100,7 +110,8 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
              no_concluyente: bool, desde: date, hasta: date,
              embargo_dias: int = bl.EMBARGO_DIAS,
              semilla_bootstrap: int = 500,
-             alpha_bootstrap: float = 0.10) -> dict:
+             alpha_bootstrap: float = 0.10,
+             estado_gatillo: dict | None = None) -> dict:
     ics = {n: metricas.rank_ic_diario(df) for n, df in dfs.items()}
     resumen_bl = {}
     for n, df in dfs.items():
@@ -173,6 +184,7 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
     return {
         "etiqueta": etiqueta,
         "no_concluyente": no_concluyente,
+        "estado_gatillo": estado_gatillo,
         "periodo": {"desde": desde.isoformat(), "hasta": hasta.isoformat()},
         "generado_utc": datetime.now(timezone.utc).isoformat(),
         "commit": _commit_actual(),
@@ -225,12 +237,63 @@ def _ic(par) -> str:
 
 def _resumen_md(r: dict) -> str:
     lineas = []
+    gat = r.get("estado_gatillo") or {}
     if r["no_concluyente"]:
         lineas.append("# ⚠ RESULTADO NO-CONCLUYENTE (corrida de humo)\n")
         lineas.append("El gatillo de la Etapa 5.1 no se ha cumplido o el "
                       "usuario no ha disparado la corrida con veredicto. "
                       "Estos números SOLO prueban que la maquinaria "
                       "funciona.\n")
+    elif gat and not gat.get("cumplido", False):
+        # Primera pantalla, no nota al pie: una corrida de veredicto
+        # ejecutada con el gatillo sin cumplir tiene que decirlo arriba de
+        # todo o se leerá como el veredicto definitivo. Y si además hay
+        # fugas DEMOSTRADAS, la corrida no es "no concluyente": es
+        # INVÁLIDA, que es una cosa peor y distinta.
+        fugas = gat.get("fugas") or []
+        if fugas:
+            lineas.append("# ⛔ CORRIDA **INVALIDADA POR FUGA** — NO es el "
+                          "veredicto de la Etapa 5.1\n")
+            lineas.append("**R3 de `GEMELO/DISEÑO.md` §6.2 dice: *«cualquier "
+                          "fuga detectada por el test de causalidad. Sin "
+                          "discusión y sin excepción»*. Se detectaron fugas "
+                          "DEMOSTRADAS y medidas en el arnés antes de correr. "
+                          "Ninguna cifra de este documento puede citarse como "
+                          "resultado del backtest:**\n")
+            for f in fugas:
+                lineas.append(f"- {f}")
+            lineas.append("")
+            lineas.append("Los números que siguen se publican **sólo** como "
+                          "evidencia de que la maquinaria corre punta a punta "
+                          "y como referencia para dimensionar la "
+                          "contaminación. **No son un veredicto y no aprueban "
+                          "ni reprueban ningún criterio.**\n")
+        else:
+            lineas.append("# ⚠ CORRIDA DE VEREDICTO CON EL GATILLO "
+                          "**NO CUMPLIDO**\n")
+            lineas.append("**Esto NO es el veredicto definitivo de la Etapa "
+                          "5.1.** El gatillo congelado en "
+                          "`backtest/DISEÑO.md` §11 no está cumplido por "
+                          "ninguna de sus dos vías:\n")
+        lineas.append("Estado del gatillo congelado (`backtest/DISEÑO.md` §11):\n")
+        for via in gat.get("vias", []):
+            lineas.append(f"- {via}")
+        lineas.append("")
+        if gat.get("holdout_intacto", True):
+            lineas.append("**El holdout en cuarentena NO se evaluó y queda "
+                          "INTACTO.** `GEMELO/DISEÑO.md` §6.1 V7 lo define "
+                          "como *evaluado una sola vez*: es un recurso "
+                          "irreversible y gastarlo con el gatillo sin "
+                          "cumplir lo quemaría para siempre. V7 queda "
+                          "NO EVALUABLE por esta razón, no por falta de "
+                          "maquinaria.\n")
+        if gat.get("expediente"):
+            lineas.append(f"Expediente de la decisión pendiente: "
+                          f"`{gat['expediente']}`.\n")
+    else:
+        lineas.append("# ✅ CORRIDA DE VEREDICTO — Etapa 5.1\n")
+        lineas.append("Gatillo cumplido y corrida disparada por el usuario. "
+                      "Estos números SÍ constituyen el veredicto.\n")
     lineas.append(f"# Backtest MKI — {r['etiqueta']} · "
                   f"{r['periodo']['desde']} → {r['periodo']['hasta']}\n")
     par = r.get("parametros", {})

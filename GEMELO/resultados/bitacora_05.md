@@ -196,4 +196,127 @@ dos lecturas:
     versionado. Misma raíz. **La barrera que sí funcionaría no es un test
     sino un hook de pre-commit**, y eso es decisión de proceso: el agente
     hizo bien en no instalarlo solo.
+- **02:28** — **Frente C1 cerrado y es el resultado más grande de la
+  corrida: NO HAY VEREDICTO. R3 disparó.** El criterio congelado
+  (`GEMELO/DISEÑO.md` §6.2) dice *"cualquier fuga detectada por el test de
+  causalidad. Sin discusión y sin excepción"*. La fase 2 encontró tres
+  defectos **demostrados y medidos**, así que el veredicto de la 5.1
+  espera. Ningún criterio se movió, reinterpretó ni ablandó.
+  - **Lo primero que hay que decir, porque es lo que más tranquiliza: la
+    fuga NO está en `motor.py`.** Anti-look-ahead 18/18, regla maestra con
+    0 violaciones sobre 172×4 emisiones. **El modelo que sella está
+    limpio.** Lo que estaba roto es el arnés de backtest.
+  - **B-1, la fuga real:** `backtest/datos.py` corta el sentimiento por
+    `titulares.fecha` (publicación) y **nunca mira `analisis.analizado_en`**.
+    Medido: **3.407 de 5.094 análisis (66,9%) se produjeron tarde**, rezago
+    máximo **320 días**, y **el primer juicio de IA del sistema es del
+    2026-07-04** mientras los titulares arrancan el 2025-09-09. Casi 22 de
+    24 meses alimentaban B4 y B5 con juicios que **no existían el día de
+    la emisión**.
+  - **B-2, y es el más incómodo: la guarda no guarda.**
+    `validar_sin_futuro` valida un frame que acaba de recortar **con el
+    mismo predicado**, así que su condición de disparo es inalcanzable por
+    construcción. Medido: **401.184 invocaciones, cero capaces de
+    disparar.** Y una fuga real desplaza VALORES, no el índice: no la ve
+    ni aunque pudiera.
+  - **B-3:** 263 de 4.160 filas (6,3%) son desenlaces duplicados, con dos
+    pares contados **8 veces**. Es el mismo fenómeno que el Frente A
+    encontró en la ventana sellada, acá en la ventana larga.
+  - **B-4, corregido en el código:** `evaluacion.mcnemar_exact`
+    **desbordaba con n ≥ 1024** —el denominador `2.0**n` pasa el rango del
+    float— así que la rama declarada exacta hasta 2000 reventaba en todo
+    el tramo 1024-2000 y nunca llegaba al fallback. Arreglado en espacio
+    logarítmico. **Lo verifiqué yo contra una vara de otra familia**:
+    aritmética racional exacta con `Fraction`, sin un solo float. Coincide
+    a 1e-13 en todo el tramo, las cuatro anclas históricas reproducen, y
+    el borde del umbral es continuo (1998/2000/2002). El umbral declarado
+    de 2000 no se movió: **lo que se corrigió es que ahora se cumple**.
+  - **El conteo de intentos, escrito a las 01:42 antes de correr nada:
+    N = 82**, con desglose sumando por sumando y los **28 candidatos
+    excluidos listados** para que la exclusión sea auditable. Hallazgo de
+    paso: **cuatro documentos del repo declaran cuatro N distintos** —25,
+    26, 32 y 43— **y el único ejecutable dice el más bajo.**
+  - **La corrida se selló `INVALIDADA POR FUGA`** en la primera pantalla,
+    no como NO-CONCLUYENTE ni como "5.1" a secas. **El holdout quedó
+    intacto**, V7 NO EVALUABLE por decisión y no por falta de maquinaria.
+  - **Lo que sí se aprende, y es un hallazgo limpio que sobrevive a la
+    invalidación:** el campeón acierta la dirección del gap **69,0%
+    [67,5, 70,4]** contra 55,4% de la baseline, y la cartera **pierde
+    40,7% sin un solo punto básico de costo**. SMH hizo **+137,1%** contra
+    la mejor cartera en **−91,4%**. **El gap existe y no es capturable.**
+    Eso es exactamente lo que el proyecto venía sospechando y nunca había
+    medido de punta a punta.
+  - **DSR = 0,0000 en las seis baselines y en los cuatro N** — o sea que
+    **el conteo de intentos no era la restricción**, y el agente lo dice
+    aunque le costó reconstruirlo.
+  - **Dos cosas que el agente reporta contra sí mismo**, y las registro
+    porque esa es la conducta que se quiere: introdujo un defecto propio
+    (`--etiqueta 5.1` desde el CLI se autoproclama veredicto), y **su
+    predicción sobre B-3 salió al revés** — deduplicar *sube* la ventaja y
+    el t-stat, no los baja.
+- **02:35** — Avisado el Frente B: `GEMELO/bifurcaciones.py` abre
+  `sqlite3` directo y **rompe el invariante de aislamiento del GEMELO**,
+  dejando la suite en 409/1. No es formalidad: `senales.db` es la base que
+  sella, y un `connect` directo puede abrir en escritura. Le pasé también
+  el arreglo del árbitro y el hallazgo de los dos fenómenos del Frente A,
+  por si le cambia una celda.
+- **02:38** — El Frente E terminó **sin entregar informe** ("espero al
+  guardián antes de reportar"), que es un malentendido: el dictamen se
+  pide una vez sobre la tanda completa, al cierre, y **necesita su
+  resultado para poder juzgarlo**. Se lo pedí de nuevo. Su acta §58 ya
+  está escrita, así que el trabajo existe.
+- **02:45** — **Frente E cerrado, y es el frente que mejor aplicó las
+  reglas de la casa — mejor que yo.** `GEMELO/MICRO/INGESTA_ANCHA.md`,
+  acta §58, ocho targets reproducibles.
+  - **E1 confirmado: 11 ciclos a B=4, 5 a B=28, área bajando 108 → 93
+    LUT6, 181/181 bit a bit en los seis anchos.** Pero lo que importa es
+    **cómo** lo verificó: *"repetir la misma simulación con el mismo banco
+    no verifica nada"*, así que cambió **las dos** variables — un banco
+    nuevo que cuenta flancos, **ciego al contador interno** del que salía
+    la cifra original, con la relación `banco = DUT + 1` escrita **antes**
+    de correr; y simulación **a nivel de compuerta sobre la netlist
+    mapeada**, iCE40 y Artix-7 con DSP48E1 reales. 0 desajustes.
+  - **Errata sobre código, y es la regla 1 fallando adentro de la
+    herramienta:** `medir_a7.py` imprimía la latencia **calculada**
+    (`ceil(28/B)+4`) bajo un encabezado que decía *"están MEDIDAS en
+    simulación, no calculadas"*. Coincidían porque la predicción era
+    correcta — **y una cifra calculada rotulada como medida no confirma
+    nada**. Ahora lee del log de simulación y escribe `sin medir` si no
+    está.
+  - **E2: el techo sigue en 240 y el cuello es independiente de la
+    latencia**, con la lectura contraintuitiva medida: **ensanchar
+    agranda** el dominio del DSP como cuello, porque baja lo único que la
+    ingesta toca. Sintetizó 21 configuraciones en vez de deducirlo, porque
+    el propio proyecto ya midió que el área de un pipeline no es la suma
+    de sus partes.
+  - **E3, y el hallazgo que no buscaba es el más incómodo de la corrida:**
+    el silencio de 8 ciclos entre mensajes **no era una comodidad del
+    banco, es un requisito de corrección que nadie había escrito**. Con 0
+    ó 1 ciclos salen **178 de 181 sellos mal** — y **la latencia sigue
+    dando 11 ciclos exactos y perfectamente constante**. Una prueba que
+    sólo mirara la latencia habría pasado en verde. Guardia puesto.
+  - **E4, y llega más lejos que mi hipótesis.** La mejora también bajaba
+    el área en la Go Board (1.198 → 1.184 tras place & route), y **dice lo
+    que la errata no dice**: no la rescata, el F1 completo son 1.545
+    contra 1.280. Sobre por qué nadie preguntó encontró tres capas, y la
+    tercera es la mía con el mecanismo preciso: las cinco alternativas del
+    espacio de diseño **eran todas restas**, y *"un marco que sólo admite
+    sacrificios no puede contener una opción que mejora dos cosas y no
+    cuesta nada"*. **Y el remate: la opción estaba escrita en el primer
+    documento** — `RTL.md` §1 dice "un byte **(o un word, si el bus lo
+    permite)**". La idea se tuvo, se condicionó a un hecho futuro, y nadie
+    volvió a evaluarla cuando el hecho llegó. **La regla que sale: una
+    idea condicionada a un hecho futuro necesita dueño y fecha de
+    revisión, o se convierte en una decisión tomada por omisión.**
+  - **Y aplicó la regla 3 midiendo en vez de suponer:** las cuentas de
+    celdas son determinísticas (4/4 y 10/10 corridas idénticas), pero **el
+    Fmax NO lo es** — sobre 10 semillas F1SP va de **105,27 a 114,19
+    MHz**. Todo Fmax publicado por el proyecto es un estimador puntual de
+    una realización del colocador. Y de paso: el `icetime` de 114,59 MHz
+    **parecía la vara independiente y no lo es** — no coloca, mide la ruta
+    crítica del `.asc` de esa misma semilla.
+  - **Dos abstenciones correctas:** no tocó la afirmación de los 0,00474
+    pp que el guardián marcó (§12 de la cola), y **no regeneró `ESTADO.md`
+    a propósito**, citando el acta §57 — que es exactamente la falta que
+    cometí yo en la corrida anterior. El agente aprendió del acta.
 

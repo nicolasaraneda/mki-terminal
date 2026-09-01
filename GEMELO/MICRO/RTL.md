@@ -47,6 +47,32 @@ los mismos).
    software puede permitirse; en hardware cada campo se ensambla
    explícitamente con selects de bits, que es la forma nativa de hacerlo,
    no un rodeo.
+> **ERRATA (1-sep-2026), medido en `GEMELO/MICRO/INGESTA_ANCHA.md`.** El
+> paréntesis *"(o un word, si el bus lo permite)"* de arriba es correcto y
+> resultó ser, sin que nadie lo notara, **la decisión más importante de todo
+> el diseño**. El default de un byte por ciclo se congeló como implementación
+> y la alternativa quedó condicionada a una precondición sobre un bus externo
+> que en ese momento no existía porque no había placa. **Nadie volvió a
+> evaluar esa precondición cuando el hecho llegó.** El costo de no evaluarla:
+> de los 32 ciclos de latencia del pipeline, **27 son esta etapa y sólo 5 son
+> cómputo** — el 84% de la latencia determinista que este proyecto exhibe es
+> el ancho de este bus. Ensanchándolo a 4 bytes/ciclo la latencia cae a **11
+> ciclos** y a 28 bytes/ciclo a **5**, con las **181 filas selladas
+> reproduciendo bit a bit** y con **menos área, no más** (108 → 93 LUT6 en
+> Artix-7; 1.198 → 1.184 celdas colocadas y ruteadas en iCE40).
+>
+> Y la precondición era respondible desde el día en que se escribió: **es
+> falsa para un bus externo** —28 bytes son 224 pines y la Arty A7 expone 32
+> señales por sus cuatro Pmod— **e irrelevante para uno interno**, que es
+> exactamente la arquitectura que `SINTESIS_A7.md` §3.2 recomienda para la
+> demo por otros motivos. `micro/rtl/demo_top.v` la implementa y reproduce las
+> 181 filas desde memoria del chip con un solo pulso de arranque.
+>
+> **El texto de arriba no se reescribe**: era correcto y honesto: la idea
+> estaba. Lo que faltó fue ponerle dueño y fecha de revisión a un paréntesis.
+> La lectura completa de por qué la pregunta no se formuló está en
+> `INGESTA_ANCHA.md` §4.2.
+
 2. **ESTADO/FEATURES** — mantiene acumuladores rodantes de ancho fijo (ej.
    una ventana de N mensajes para una media o una volatilidad simple):
    un registro de desplazamiento de N entradas más una suma corrida
@@ -80,6 +106,19 @@ correr en cuanto exista RTL.
 | **Total, F=1 (solo umbral)** | **~300-450** | ~475 | 0 | 0 |
 | **Total, F=3** (1 acumulador + 3 features ponderadas) | **~750-1.150** | ~570 | 0 | 3 |
 | **Total, F≥6** (algo parecido al modelo real, 15-16 features causales de WS2a) | **~1.500-2.100+** | ~700+ | 0-1 | 6+ |
+
+> **ERRATA (1-sep-2026), medido en `GEMELO/MICRO/INGESTA_ANCHA.md` §4.2.**
+> Esta tabla es de **área**, y sus cifras de área para la ingesta quedaron
+> razonablemente cerca de lo medido. El problema no está en ninguna fila: está
+> en que **la tabla no tiene una columna de latencia, y ninguna de las que
+> vinieron después la tuvo tampoco**. La ingesta quedó clasificada como una
+> etapa barata —lo es, en área— y una etapa barata no se vuelve a mirar en un
+> marco de área. Pero **era el 84% de la latencia**, que es el entregable
+> científico de esta pista según `fpga.md` §2. Un presupuesto de recursos que
+> sólo presupuesta el recurso equivocado no falla en sus números: falla en
+> hacer invisible la palanca. Ninguna fila se reescribe; lo que se agrega es
+> la advertencia de que **este presupuesto no dice nada sobre latencia y
+> nunca dijo que lo dijera**.
 
 **Lectura del presupuesto, sin adornarla:**
 - **F=1 cabe cómodo en el iCE40HX1K** (1.280 LUTs): deja 60-75% de margen.

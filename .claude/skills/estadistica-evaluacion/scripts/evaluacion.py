@@ -142,13 +142,28 @@ def mcnemar_exact(b: int, c: int) -> float:
     2*P(X <= min(b,c)), acotado a 1. Exacto hasta n=2000; por encima usa la
     aproximacion normal con correccion de continuidad, que a ese n ya es
     indistinguible.
+
+    CORRECCION (1-sep-2026, corrida de veredicto 5.1). La rama exacta se
+    calculaba como sum(comb(n,i)) / 2.0**n. Ese denominador es un float y
+    **desborda en n = 1024** (2**1024 > 1.8e308), asi que la rama que el
+    docstring declaraba exacta hasta 2000 reventaba con OverflowError en
+    todo el tramo 1024 <= n <= 2000 — nunca llegaba al fallback normal.
+    Se descubrio al aplicar McNemar sobre 4151 filas del backtest, donde
+    los pares discordantes pasan de mil; ningun uso anterior habia llegado
+    a esa escala. El umbral declarado de 2000 no se movio: lo que se
+    corrigio es que ahora se cumple. La suma va en espacio logaritmico
+    (lgamma), que no desborda para ningun n representable.
     """
     n = b + c
     if n == 0:
         return 1.0
     k = min(b, c)
     if n <= 2000:
-        cola = sum(math.comb(n, i) for i in range(k + 1)) / (2.0 ** n)
+        ln2 = math.log(2.0)
+        lgn = math.lgamma(n + 1)
+        cola = math.fsum(
+            math.exp(lgn - math.lgamma(i + 1) - math.lgamma(n - i + 1) - n * ln2)
+            for i in range(k + 1))
         return float(min(1.0, 2.0 * cola))
     z = (abs(b - c) - 1) / math.sqrt(n)
     return float(min(1.0, 2.0 * (1.0 - float(norm_cdf(z)))))

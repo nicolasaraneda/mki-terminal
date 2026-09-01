@@ -57,8 +57,19 @@ ANCHOS_B := 1 2 4 7 14 28
 RTL_ANCHO := etapa_ingesta_ancha.v etapa_features.v etapa_puntaje.v \
              etapa_decision.v uart_tx.v etapa_salida.v pipeline_top_ancho.v
 
+# Frente E (1-sep-2026). Las fuentes de las tres variantes nuevas. Cada lista
+# es explícita y no se deriva de otra: `medir_techo.py` mide una cosa distinta
+# con cada una y una lista compartida haría que tocar una moviera las otras.
+RTL_MULTI := etapa_ingesta_ancha.v etapa_features.v etapa_puntaje.v \
+             etapa_decision.v uart_tx.v etapa_salida.v pipeline_top_multi.v
+
+RTL_DEMO  := $(RTL_ANCHO) fuente_bram.v demo_top.v
+
+TABLAS_T  := 1 8 16
+
 .PHONY: all vectores simular sintetizar multiplicador etapas placas limpiar \
         a7 ancho error-ancho \
+        ancho-gate multi demo huecos techo variantes semillas empaquetar \
         $(addprefix sim-,$(CONFIGS)) $(addprefix sint-,$(CONFIGS))
 
 all: simular multiplicador etapas sintetizar placas
@@ -87,6 +98,108 @@ ancho: vectores | $(DIR_SIM)
 	        2> $(DIR_SIM)/iverilog_ancho_$$b.log; \
 	    $(VVP) $(DIR_SIM)/tb_ancho_$$b.vvp; \
 	done | tee $(DIR_SIM)/ancho.log
+
+# ---------------------------------------------------------------------------
+# FRENTE E (1-sep-2026) — confirmación de la ingesta ancha, techo recalculado y
+# dos variantes. Lectura completa en GEMELO/MICRO/INGESTA_ANCHA.md.
+# ---------------------------------------------------------------------------
+
+# La MISMA prueba contra tres diseños bajo prueba distintos: el RTL, la netlist
+# mapeada a celdas iCE40 y la mapeada a celdas Artix-7. Que los 181 vectores y
+# la latencia sobrevivan al MAPEO TECNOLOGICO es una familia de evidencia
+# distinta de simular el RTL — que es justo lo que la regla de la casa pide
+# cuando hay que confirmar una cifra que produjo el propio RTL. El banco lleva
+# ademas su propio contador de flancos, independiente del contador de 48 bits
+# que vive en `etapa_salida`.
+ancho-gate: vectores | $(DIR_SIM) $(DIR_SINT)
+	@for b in 1 4 28; do \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=$$b -DCFG_NF=1 -DCFG_PESOS=1 \
+	        -DCFG_ETIQUETA='"rtl"' -o $(DIR_SIM)/tb_gate_rtl_$$b.vvp \
+	        $(RTL_ANCHO) tb/tb_pipeline_gate.v 2>/dev/null; \
+	    $(VVP) $(DIR_SIM)/tb_gate_rtl_$$b.vvp; \
+	    $(YOSYS) -p "read_verilog -I. -DCFG_B=$$b -DCFG_NF=1 -DCFG_PESOS=1 $(RTL_ANCHO); \
+	        synth_ice40 -top pipeline_top_ancho; \
+	        write_verilog -noattr $(DIR_SINT)/netlist_ice40_B$$b.v" \
+	        > $(DIR_SINT)/yosys_netlist_ice40_B$$b.log 2>&1; \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=$$b -DCFG_ETIQUETA='"gate-ice40"' \
+	        -o $(DIR_SIM)/tb_gate_ice40_$$b.vvp $(DIR_SINT)/netlist_ice40_B$$b.v \
+	        `$(YOSYS)-config --datdir`/ice40/cells_sim.v tb/tb_pipeline_gate.v 2>/dev/null; \
+	    $(VVP) $(DIR_SIM)/tb_gate_ice40_$$b.vvp; \
+	    $(YOSYS) -p "read_verilog -I. -DCFG_B=$$b -DCFG_NF=1 -DCFG_PESOS=1 $(RTL_ANCHO); \
+	        synth_xilinx -family xc7 -flatten -top pipeline_top_ancho; \
+	        write_verilog -noattr $(DIR_SINT)/netlist_xc7_B$$b.v" \
+	        > $(DIR_SINT)/yosys_netlist_xc7_B$$b.log 2>&1; \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=$$b -DCFG_ETIQUETA='"gate-xc7"' \
+	        -o $(DIR_SIM)/tb_gate_xc7_$$b.vvp $(DIR_SINT)/netlist_xc7_B$$b.v \
+	        `$(YOSYS)-config --datdir`/xilinx/cells_sim.v \
+	        `$(YOSYS)-config --datdir`/xilinx/cells_xtra.v tb/tb_pipeline_gate.v 2>/dev/null; \
+	    $(VVP) $(DIR_SIM)/tb_gate_xc7_$$b.vvp; \
+	done | tee $(DIR_SIM)/ancho_gate.log
+
+# VARIANTE 1: tabla de pesos por instrumento. Los señuelos en los T-1 slots que
+# no corresponden son lo que hace que este test distinga una tabla de un
+# registro único. La contraprueba (`-DCFG_SABOTAJE_SLOT`) tiene que FALLAR.
+multi: vectores | $(DIR_SIM)
+	@for t in $(TABLAS_T); do \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=4 -DCFG_T=$$t -DCFG_NF=1 \
+	        -DCFG_PESOS=1 -o $(DIR_SIM)/tb_multi_T$$t.vvp \
+	        $(RTL_MULTI) tb/tb_pipeline_multi.v 2>/dev/null; \
+	    $(VVP) $(DIR_SIM)/tb_multi_T$$t.vvp; \
+	done | tee $(DIR_SIM)/multi.log
+	@echo "########## contraprueba: con el decodificador saboteado TIENE que fallar ##########"
+	@$(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=4 -DCFG_T=8 -DCFG_NF=1 -DCFG_PESOS=1 \
+	    -DCFG_SABOTAJE_SLOT -o $(DIR_SIM)/tb_multi_sabotaje.vvp \
+	    $(RTL_MULTI) tb/tb_pipeline_multi.v 2>/dev/null
+	@$(VVP) $(DIR_SIM)/tb_multi_sabotaje.vvp | tail -6 || true
+
+# VARIANTE 2: el sistema autónomo. Un pulso de arranque y 181 sellos desde
+# memoria del chip, sin estímulo externo. Es lo que hace realizable B=28.
+demo: empaquetar | $(DIR_SIM)
+	@for b in 4 28; do \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=$$b \
+	        -o $(DIR_SIM)/tb_demo_$$b.vvp $(RTL_DEMO) tb/tb_demo.v 2>/dev/null; \
+	    $(VVP) $(DIR_SIM)/tb_demo_$$b.vvp; \
+	done | tee $(DIR_SIM)/demo.log
+
+# El hueco mínimo entre mensajes. Con 0 ó 1 la latencia SIGUE dando 11 ciclos
+# exactos y los sellos salen corridos un mensaje: por eso hace falta barrerlo
+# y no confiar en que "la latencia da bien". Necesita el bypass del guardia.
+huecos: empaquetar | $(DIR_SIM)
+	@for h in 0 1 2 3 8; do \
+	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=4 -DCFG_HUECO=$$h \
+	        -DCFG_PERMITIR_HUECO_INSEGURO -o $(DIR_SIM)/tb_hueco_$$h.vvp \
+	        $(RTL_DEMO) tb/tb_demo.v 2>/dev/null; \
+	    printf "HUECO=%-2s " $$h; \
+	    $(VVP) $(DIR_SIM)/tb_hueco_$$h.vvp 2>&1 | grep -E "fallos bit a bit" || true; \
+	done | tee $(DIR_SIM)/huecos.log
+
+empaquetar: $(DIR_VEC)/mensajes_b4.hex $(DIR_VEC)/mensajes_b28.hex
+
+$(DIR_VEC)/mensajes_b4.hex $(DIR_VEC)/mensajes_b28.hex: empaquetar_vectores.py $(DIR_VEC)/mensajes.hex
+	$(PYTHON) empaquetar_vectores.py 4 28
+
+# ¿Se movió el techo de 240 tickers? Se sintetiza el barrido entero otra vez en
+# vez de deducirlo. Es lo caro de este Makefile: son 21 síntesis.
+techo: | $(DIR_SINT)
+	$(PYTHON) medir_techo.py techo 2>&1 | tee $(DIR_SINT)/techo.log
+
+variantes: | $(DIR_SINT)
+	$(PYTHON) medir_techo.py sin_dsp tabla demo 2>&1 | tee $(DIR_SINT)/variantes.log
+
+# QUÉ TIENE INTERVALO Y QUÉ NO. Las cuentas de celdas son determinísticas; el
+# Fmax de nextpnr NO — depende de la semilla del colocador. Este target lo
+# mide en vez de suponerlo, y es la razón por la que ningún Fmax de este
+# proyecto debería citarse como un número pelado.
+semillas: | $(DIR_SINT)
+	@echo "semilla  LC  Fmax(MHz)   [F1SP sobre hx1k-tq144, la fila que dice CABE]"
+	@for s in 1 2 3 4 5 6 7 8 9 10; do \
+	    $(NEXTPNR) --$(DISPOSITIVO) --package $(PAQUETE) \
+	        --json $(DIR_SINT)/sint_F1SP.json --asc /dev/null --freq 12 --seed $$s \
+	        > $(DIR_SINT)/semilla_$$s.log 2>&1; \
+	    printf "%-8s %s  %s\n" $$s \
+	      "`grep -oE 'ICESTORM_LC: *[0-9]+' $(DIR_SINT)/semilla_$$s.log | head -1 | grep -oE '[0-9]+'`" \
+	      "`grep -oE \"Max frequency for clock '[^']+': *[0-9.]+\" $(DIR_SINT)/semilla_$$s.log | tail -1 | grep -oE '[0-9.]+$$'`"; \
+	done | tee $(DIR_SINT)/semillas_f1sp.log
 
 # Área de cada etapa por separado, contra la estimación de RTL.md §2 fila por
 # fila. Es la única forma de decir DÓNDE se equivocó la estimación, y además

@@ -322,19 +322,50 @@ FUENTES_ANCHO = ["etapa_ingesta_ancha.v", "etapa_features.v", "etapa_puntaje.v",
                  "pipeline_top_ancho.v"]
 
 
+def latencias_medidas(ruta="sim/ancho.log"):
+    """Lee las latencias que la SIMULACION midio, si el log existe.
+
+    ERRATA DE CODIGO (1-sep-2026). Esta funcion no existia: la columna
+    "latencia" de este bloque imprimia `ceil(28/B) + 4` — la FORMULA — bajo un
+    encabezado que decia "estan MEDIDAS en simulacion ... no calculadas". Los
+    numeros coincidian porque la prediccion resulto correcta, pero la etiqueta
+    era falsa: una cifra calculada presentada como medida es exactamente lo que
+    la regla de la casa prohibe. La medicion de verdad vive en
+    `tb/tb_pipeline_ancho.v` (`make ancho`) y ahora se LEE de ahi; si el log no
+    existe la columna dice "sin medir" en vez de rellenarla con la formula.
+    """
+    p = os.path.join(DIR, ruta)
+    if not os.path.exists(p):
+        return {}
+    med, b_actual = {}, None
+    with open(p) as f:
+        for linea in f:
+            m = re.search(r"tb_pipeline_ancho: B=(\d+)", linea)
+            if m:
+                b_actual = int(m.group(1))
+            m = re.search(r"latencia min/max\s*:\s*(\d+)\s*/\s*(\d+)", linea)
+            if m and b_actual is not None:
+                lo, hi = int(m.group(1)), int(m.group(2))
+                med[b_actual] = lo if lo == hi else None   # None = no constante
+    return med
+
+
 def bloque_ingesta(bs=(1, 2, 4, 7, 14, 28)):
     print("=" * 92)
     print("6. ENSANCHAR EL BUS DE ENTRADA — la palanca REAL de la latencia")
     print("=" * 92)
     print("   De los 32 ciclos de latencia, 27 son la ingesta byte a byte y 5 son")
     print("   las cuatro etapas siguientes. La latencia de este pipeline no la pone")
-    print("   el computo: la pone el ancho del bus. Latencia = ceil(28/B) + 4.")
-    print("   Las latencias de la ultima columna estan MEDIDAS en simulacion sobre")
-    print("   los 181 vectores reales (tb/tb_pipeline_ancho.v), no calculadas.")
+    print("   el computo: la pone el ancho del bus.")
+    print("   PREDICHA = ceil(28/B) + 4, escrita en pipeline_top_ancho.v antes de")
+    print("   correr nada. MEDIDA = lo que `make ancho` observo sobre los 181")
+    print("   vectores reales; se lee de sim/ancho.log y dice 'sin medir' si no esta.")
     print()
-    print("   %-3s %8s %6s %6s %6s | %8s %8s | %s"
-          % ("B", "palabras", "DSP", "LUT6", "FF", "LUT4 ice", "FF ice", "latencia"))
-    print("   " + "-" * 78)
+    med = latencias_medidas()
+    print("   %-3s %8s %6s %6s %6s | %8s %8s | %9s %9s"
+          % ("B", "palabras", "DSP", "LUT6", "FF", "LUT4 ice", "FF ice",
+             "PREDICHA", "MEDIDA"))
+    print("   " + "-" * 88)
     for b in bs:
         n_pal = -(-28 // b)
         a, ea = sint("pipeline_top_ancho", ["CFG_B=%d" % b, "CFG_NF=1", "CFG_PESOS=1"],
@@ -344,9 +375,15 @@ def bloque_ingesta(bs=(1, 2, 4, 7, 14, 28)):
         if a is None:
             print("   %-3d FALLO: %s" % (b, ea))
             continue
-        print("   %-3d %8d %6d %6d %6d | %8s %8s | %d ciclos"
+        if b not in med:
+            lat = "sin medir"
+        elif med[b] is None:
+            lat = "NO CONST"
+        else:
+            lat = "%d ciclos" % med[b]
+        print("   %-3d %8d %6d %6d %6d | %8s %8s | %7d   %9s"
               % (b, n_pal, a["dsp"], a["lut"], a["ff"],
-                 i["lut"] if i else "-", i["ff"] if i else "-", n_pal + 4))
+                 i["lut"] if i else "-", i["ff"] if i else "-", n_pal + 4, lat))
     print()
 
 

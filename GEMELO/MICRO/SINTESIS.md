@@ -218,6 +218,30 @@ instrumento de medición, no una placa propuesta.**
 (nextpnr) y **114,59 MHz** con `icetime` (ruta crítica 8,73 ns). Con creces
 por encima de los 12 MHz del oscilador de la Go Board.
 
+> **ERRATA (1-sep-2026), medido en `GEMELO/MICRO/INGESTA_ANCHA.md` §6.2.**
+> **A la columna Fmax de esta tabla le falta su dispersión.** Los cuatro
+> valores salen de `--seed 1`, y el Fmax de `nextpnr` **depende de la semilla
+> del colocador**. Medido sobre 10 semillas con el mismo netlist F1SP sobre
+> el mismo hx1k-tq144: **105,27 a 114,19 MHz** (el 114,19 sale en 8 de las
+> 10; la media es 112,47). O sea que el número publicado es el modal, no un
+> valor único. **La conclusión no se mueve**: incluso la peor semilla son 8,8
+> veces los 12 MHz del oscilador.
+>
+> **Y alcanza también al `icetime` del párrafo de arriba.** Los 114,59 MHz
+> (ruta crítica 8,73 ns) salen del `.asc` que produjo esa misma `--seed 1`:
+> `icetime` no coloca nada, mide la ruta crítica de **una colocación ya
+> hecha**, así que arrastra íntegra la dependencia de la semilla. Es otra
+> herramienta pero no es otra realización, y por lo tanto **tampoco es la vara
+> independiente** del número de nextpnr: las dos cifras miran el mismo
+> `--seed 1`. Se anota acá para que nadie las cite como dos mediciones que se
+> confirman entre sí.
+>
+> **Lo que sí es determinístico y por eso NO lleva intervalo: las celdas
+> colocadas.** Las 742 salieron idénticas en las 10 semillas. La distinción
+> importa — inventarle un intervalo a una cuenta de celdas sería tan
+> deshonesto como omitírselo a un Fmax. Las cuatro filas se dejan como están;
+> lo que se agrega es cómo hay que leerlas.
+
 ### 4.1 Qué etapa la revienta, y por cuánto
 
 **La etapa de puntaje, sin ninguna duda.** Es la única diferencia entre F1SP
@@ -237,6 +261,28 @@ campeón real mide 1.892 LUTs aplanado.
 
 Se listan las opciones con su costo medido o calculado. **Este documento no
 elige ninguna, y tampoco decide si se compra placa.**
+
+> **ERRATA (1-sep-2026), medido en `GEMELO/MICRO/INGESTA_ANCHA.md` §4.**
+> **A esta lista le falta una opción, y la falta es estructural, no un
+> olvido.** Las cinco opciones (a) a (e) son **restas**: angostar la
+> aritmética, un multiplicador más lento, sacrificar el UART y el contador,
+> degradar el modelo, comprar otra placa. El título de la sección —"qué habría
+> que **sacrificar** para que entre"— no sólo enmarcó la pregunta: definió la
+> **forma gramatical** de las respuestas admisibles. **Un marco que sólo
+> admite sacrificios no puede contener una opción que mejora dos cosas a la
+> vez y no cuesta nada.**
+>
+> La opción que faltaba: **ensanchar el bus de la ingesta**. Baja la latencia
+> de 32 a 11 ciclos (4 B/ciclo) o a 5 (28 B/ciclo) **y baja el área**, en las
+> dos placas. Medido en el iCE40, colocado y ruteado: **1.198 → 1.184
+> ICESTORM_LC** de B=1 a B=4, con las **181 filas selladas bit a bit**. O sea
+> que **en la Go Board tampoco estaba bloqueada por falta de espacio: ahí
+> también salía gratis, y nadie lo midió porque nadie lo preguntó.**
+>
+> **Lo que esta errata NO dice.** No rescata a la Go Board: el F1 completo son
+> 1.545 celdas contra 1.280 y 14 celdas no mueven ese veredicto. La §4 sigue
+> firme. El hallazgo es sobre el método, no sobre el resultado — y por qué la
+> pregunta no se formuló está desarrollado en `INGESTA_ANCHA.md` §4.2.
 
 - **(a) Angostar la aritmética.** Un multiplicador 8x8 cuesta 177 LUTs en vez
   de 774. Sustituyendo, F=1 quedaría cerca de 1.288 LUTs — **todavía al
