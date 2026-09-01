@@ -18,6 +18,15 @@
 //      pipeline. Si la latencia sube, la fuente está metida en el camino de
 //      medición y eso sería un hallazgo, no un detalle.
 //   3. La cuenta de flancos del banco sigue dando latencia + 1.
+//
+// CONTADOR DE CORRIMIENTO (agregado 1-sep-2026, Frente F). Cuando el hueco
+// entre mensajes cae por debajo del mínimo (`RTL.md` §7, requisito R1) el banco
+// no falla de cualquier manera: falla de UNA manera concreta y reconocible,
+// el sello k sale con el valor esperado del caso k+1. Contarlo acá, adentro
+// del banco, es lo que permite que `verificar_hueco.py` verifique que la
+// prueba falla POR LA RAZÓN CORRECTA y no por un timeout o un error de
+// compilación — que fallaría igual de rojo sin probar nada. En una corrida
+// sana este contador vale 0 porque no hay ningún fallo que clasificar.
 
 `ifndef CFG_B
   `define CFG_B 4
@@ -60,14 +69,15 @@ module tb_demo;
     integer ciclos_tb, desajustes;
     reg     armado;
 
-    integer vistos, fallos;
+    integer vistos, fallos, corridos, clasificables, contradictorios;
     integer lat_min, lat_max, tb_min, tb_max;
     reg [1:0] dec_esp;
     reg signed [15:0] pun_esp;
 
     initial begin
         ciclos_tb = 0; armado = 1'b0; desajustes = 0;
-        vistos = 0; fallos = 0;
+        vistos = 0; fallos = 0; corridos = 0; clasificables = 0;
+        contradictorios = 0;
         lat_min = 32'h7FFFFFFF; lat_max = 0;
         tb_min = 32'h7FFFFFFF; tb_max = 0;
     end
@@ -90,6 +100,20 @@ module tb_demo;
                         $display("  FALLO sello %0d: puntaje=%0d esperado=%0d decision=%0d esperada=%0d",
                                  vistos, puntaje_sellado, pun_esp,
                                  decision_sellada, dec_esp);
+                    // Firma más fina del hueco corto: el sello SE CONTRADICE A
+                    // SÍ MISMO — la decisión es la correcta del caso k y el
+                    // puntaje no lo es. Medido el 1-sep-2026: con HUECO=1 esto
+                    // vale 178 de 178 fallos, o sea el modo de falla es único.
+                    if (decision_sellada === dec_esp && puntaje_sellado !== pun_esp)
+                        contradictorios = contradictorios + 1;
+                    // ¿Es el modo de falla del hueco corto? El último sello no
+                    // es clasificable: no existe un caso k+1 con que compararlo.
+                    if (vistos < (N_CASOS - 1)) begin
+                        clasificables = clasificables + 1;
+                        if (decision_sellada === esperado[vistos + 1][17:16] &&
+                            puntaje_sellado  === esperado[vistos + 1][15:0])
+                            corridos = corridos + 1;
+                    end
                 end
                 if (latencia_ciclos < lat_min) lat_min = latencia_ciclos;
                 if (latencia_ciclos > lat_max) lat_max = latencia_ciclos;
@@ -122,6 +146,9 @@ module tb_demo;
         $display("");
         $display("  sellos recogidos        : %0d (esperados %0d)", vistos, N_CASOS);
         $display("  fallos bit a bit        : %0d", fallos);
+        $display("  sellos corridos +1      : %0d de %0d fallos clasificables",
+                 corridos, clasificables);
+        $display("  sellos contradictorios  : %0d de %0d fallos", contradictorios, fallos);
         $display("  latencia DUT min/max    : %0d / %0d ciclos", lat_min, lat_max);
         $display("  latencia BANCO min/max  : %0d / %0d ciclos", tb_min, tb_max);
         $display("  desajustes DUT vs banco : %0d", desajustes);

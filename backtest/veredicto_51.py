@@ -45,14 +45,28 @@ DESDE = date(2024, 9, 2)      # 250 sesiones de burn-in del ^SOX cumplidas
 HASTA = date(2026, 8, 28)     # último viernes con desenlace completo
 SEMILLA_BOOTSTRAP = 20260901
 ALPHA_BOOTSTRAP = 0.05        # IC 95%: más ancho, más exigente que el 0.10
-ETIQUETA = "5.1-invalidada-por-fuga"
+ETIQUETA = "5.1-arnes-corregido-gatillo-incumplido"
 
-# N_intentos del DSR — §1.4 del expediente. 25 (en código) + 1 (declarado
-# no corrido) + 18 (declarado en prosa) + 32 (reconstruidos) + 6 (esta
-# corrida sobre ventana nueva). La banda existe para que el veredicto no
-# dependa de dónde se corte el conteo.
-N_INTENTOS_51 = 82
-BANDA_N = (26, 44, 82, 110)
+# Fechas del GATE DE CAUSALIDAD — declaradas ANTES de correr, repartidas
+# por la ventana (una por trimestre aproximado, más los bordes). Doce, no
+# una: la prueba maestra anterior cubría UNA fecha y tres baselines, así
+# que las cinco features exclusivas de B4/B5 eran invisibles.
+FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
+               date(2025, 4, 15), date(2025, 6, 10), date(2025, 8, 12),
+               date(2025, 10, 14), date(2025, 12, 9), date(2026, 2, 10),
+               date(2026, 4, 14), date(2026, 6, 9), date(2026, 8, 11))
+
+# N_intentos del DSR — §1.4 del expediente declaró 82 el 2026-09-01 01:42
+# (25 en código + 1 declarado no corrido + 18 en prosa + 32 reconstruidos +
+# 6 de la corrida de esa noche). Esta corrida vuelve a mirar las SEIS
+# baselines sobre la misma ventana con el arnés CORREGIDO: por la regla
+# congelada, seis configuraciones más. La §1.4 no se reescribe — la
+# corrección se agrega al pie con su fecha, que es la regla de la casa.
+#
+# 82 + 6 = 88. Se sube y no se reusa: bajar N es lo único que el DSR no
+# perdona, y contar de más es el lado seguro del error.
+N_INTENTOS_51 = 88
+BANDA_N = (26, 44, 82, 88, 110)
 
 # Un Sharpe ANUALIZADO sobre pocas decenas de días es un artefacto de
 # multiplicar por √252. Espejo de GEMELO/control_lineal.py:81 — abajo de
@@ -83,41 +97,58 @@ ESTADO_GATILLO = {
     ],
     "holdout_intacto": True,
     "expediente": "GEMELO/resultados/gatillo_51.md",
-    # Fugas DEMOSTRADAS y medidas por la auditoría adversaria del arnés,
-    # antes de correr. Cada una está reproducida de forma independiente en
-    # la §3 del expediente. R3 no admite excepciones.
-    "fugas": [
-        "**B-1 · el sentimiento usa juicios de IA que no existían.** "
-        "`backtest/datos.py` corta por `titulares.fecha` (publicación) y "
-        "**nunca mira `analisis.analizado_en`**. Medido sobre `noticias.db` "
-        "en `mode=ro`: **3407 de 5094 análisis (66.9%)** se produjeron "
-        "después de las 22:15 UTC del día de publicación; rezago máximo "
-        "**320 días**; y el **primer análisis de IA que existe en el "
-        "sistema es del 2026-07-04**, mientras los titulares arrancan el "
-        "2025-09-09. En la ventana declarada, casi 22 de 24 meses alimentan "
-        "B4 y B5 con sentimiento construido con juicios que no existían el "
-        "día de la emisión. El `grado B` lo declara pero **ninguna métrica "
-        "lo excluye**, y `buzz` sale del mismo join sin grado ninguno.",
-        "**B-2 · la guarda `ErrorLookAhead` es tautológica.** "
-        "`backtest/baselines.py:182-184` y `:314-315` validan un frame que "
-        "acaban de recortar con el MISMO predicado (`index.date <= fecha`), "
-        "así que la condición de disparo es inalcanzable por construcción. "
-        "Medido: **401.184 invocaciones en un walk-forward, cero capaces de "
-        "disparar.** Y una fuga real (`shift(-1)`) desplaza VALORES, no el "
-        "índice: la guarda no la ve. La prueba maestra "
-        "`test_truncar_futuro_no_cambia_predicciones` cubre **una fecha y "
-        "tres baselines**, así que una fuga en las cinco features "
-        "exclusivas de B4/B5 es invisible para toda la suite.",
+    # Fugas DEMOSTRADAS. B-1 y B-2 quedaron CORREGIDAS el 2026-09-01 y
+    # están reproducidas en la suite; la lista se vacía porque el arreglo
+    # fue al ejecutable, no a la prosa. Lo que NO se arregló vive abajo, en
+    # `defectos_abiertos`, y sigue bloqueando el veredicto — sólo que por
+    # otra razón que R3.
+    "fugas": [],
+    "correcciones_2026_09_01": [
+        "**B-1 CORREGIDA** — `SentimientoPIT` corta por "
+        "`max(publicación, analizado_en) <= 22:15 UTC`: hacen falta LAS DOS "
+        "marcas para que el juicio exista. (El acta lo había escrito como "
+        "`min()`; con el mínimo el predicado colapsa al roto, porque "
+        "`analizado_en` es posterior a la publicación por construcción — "
+        "errata para DECISIONES.md.) `buzz` pasa por el mismo corte y "
+        "estrena grado propio; el relleno neutro dejó de viajar como si "
+        "fuera dato y se declara como **grado S**. Tests: "
+        "`tests/test_backtest.py::test_b1_*` (5).",
+        "**B-2 CORREGIDA** — el corte lo hace ahora `recortar_pit()`, que "
+        "recibe la serie SIN recortar, y la guarda de verdad es el GATE DE "
+        "CAUSALIDAD (`backtest/causalidad.py`): reconstruye el arnés entero "
+        "—precios, OHLC **y noticias**— con la fuente truncada en D y exige "
+        "predicción idéntica. Corre DENTRO de la corrida, sobre 12 fechas × "
+        "6 baselines, y la mata si algo se mueve. Contraprueba permanente: "
+        "10 tests parametrizados inyectan `shift(-1)` en cada feature "
+        "—incluidas las cinco exclusivas de B4/B5— y exigen que el gate "
+        "DISPARE. Una guarda sin contraprueba no es una guarda.",
+    ],
+    # NO son fugas temporales, y por eso no las juzga R3. Bloquean el
+    # veredicto igual, y decirlo separado es la diferencia entre "el arnés
+    # tiene fuga" y "el arnés tiene la unidad de observación mal".
+    "defectos_abiertos": [
         "**B-3 · el mismo desenlace cuenta hasta 8 veces.** Varias "
         "emisiones consecutivas apuntan a la MISMA sesión objetivo en "
         "feriados largos y `motorbt` escribe una fila por emisión con el "
-        "outcome repetido. Medido sobre la ventana declarada: **263 de "
-        "4160 filas (6.3%) son desenlaces duplicados**, con dos pares "
-        "contados **8 veces** (`2330.TW` 2025-02-03 y 2026-02-23). "
-        "Contamina el rank IC diario, la n de Wilson y los retornos de "
-        "cartera; y `t_newey_west` usa **lag 5**, que no cubre un bloque de "
-        "8 duplicados perfectos: el t-stat del veredicto escalonado sale "
-        "inflado.",
+        "outcome repetido. **No es fuga de futuro: es contaminación de la "
+        "unidad de observación.** Se mide en cada corrida "
+        "(`impacto_b3_duplicados`) y sigue SIN corregir.",
+        "**B4 y B5 no son evaluables sobre la ventana larga.** No es un "
+        "defecto del código sino de los datos que existen: el primer juicio "
+        "de IA del sistema es del 2026-07-04 y la ventana empieza el "
+        "2024-09-02, así que con el corte honesto la enorme mayoría de sus "
+        "filas se emiten con las tres features de noticias en el relleno "
+        "neutro. Sus cifras NO contestan *«¿las noticias aportan?»*.",
+        "**S-1 · el embargo purga días CORRIDOS, no jornadas.** Declarado y "
+        "sin corregir; cambiarlo la víspera del veredicto sería mover el "
+        "arnés después de haber visto el diseño.",
+        "**S-3 · `estado_gatillo` se recibe, no se computa.**",
+        "**No hay holdout MATERIAL.** La cuarentena de V7 es procedimental: "
+        "no hay split, constante de fecha, archivo ni tabla que reserve "
+        "datos. V7 no sólo no se evaluó — hoy no es evaluable.",
+        "**La fuente no es point-in-time.** Yahoo reescribe la historia en "
+        "silencio; se mide contra los sellos reales en cada corrida "
+        "(`fidelidad_b2_vs_sellos`) y es una limitación de primer orden.",
     ],
 }
 
@@ -407,30 +438,37 @@ def evaluar(reporte: dict, dfs: dict) -> dict:
     }
 
     # ---------- R3: fuga detectada por el test de causalidad ----------
-    # Éste es el criterio que decide, y decide en contra. Va ANTES que
-    # cualquier lectura de las cifras de arriba, no después.
+    # Éste es el criterio que decide, y se computa: se lee el resultado del
+    # GATE que la propia corrida ejecutó antes de emitir una sola fila, no
+    # una declaración de intenciones. Si el gate no corrió, R3 NO puede
+    # declararse limpio — la ausencia de prueba no es prueba de ausencia.
+    gate = reporte.get("gate_causalidad") or {}
+    hay_fugas = bool(ESTADO_GATILLO.get("fugas"))
+    gate_limpio = gate.get("resultado") == "INVARIANTE"
     crit["R3"] = {
         "enunciado": "Cualquier fuga detectada por el test de causalidad. Sin "
                      "discusión y sin excepción.",
-        "veredicto": "NO PASA",
-        "fugas_demostradas": ESTADO_GATILLO["fugas"],
+        "veredicto": ("PASA" if (gate_limpio and not hay_fugas)
+                      else "NO PASA"),
+        "gate_de_causalidad": gate,
+        "fugas_declaradas": ESTADO_GATILLO.get("fugas") or [],
+        "correcciones": ESTADO_GATILLO.get("correcciones_2026_09_01") or [],
         "B1_medida_ahora": medir_fuga_sentimiento(),
-        "consecuencia": "R3 no admite excepciones. Con fuga demostrada, "
-                        "NINGÚN otro criterio de esta corrida es un "
-                        "veredicto: las cifras de V1 a V6 se reportan como "
-                        "referencia contaminada y nada más. El veredicto de "
-                        "la Etapa 5.1 ESPERA a que el arnés se arregle.",
-        "lo_que_si_esta_verde": "Suite completa 372/372 antes de tocar nada, "
-                                "`python tests/test_motor.py` verde "
-                                "(anti-look-ahead del MOTOR de producción en "
-                                "4 fechas × 6 funciones), regla maestra de "
-                                "emisión sin una sola violación en 172 "
-                                "emisiones × 4 bolsas, y todas las "
-                                "conexiones a bases de producción en "
-                                "`mode=ro` (sonda: «attempt to write a "
-                                "readonly database»). La fuga NO está en "
-                                "motor.py: está en la capa de datos del "
-                                "backtest.",
+        "sentimiento_pit": reporte.get("cobertura_sentimiento"),
+        "consecuencia": (
+            "R3 no dispara: el test de causalidad —invariancia al truncado "
+            "de precios, OHLC y noticias, con contraprueba shift(-1) que lo "
+            "hace fallar a propósito— no detecta fuga sobre "
+            f"{gate.get('n_comparaciones')} comparaciones. Esto NO convierte "
+            "la corrida en el veredicto de la 5.1: el gatillo del GATE B "
+            "sigue incumplido y quedan defectos abiertos del arnés que no "
+            "son fugas temporales (`defectos_abiertos`)."
+            if (gate_limpio and not hay_fugas) else
+            "R3 no admite excepciones. Con fuga demostrada —o sin gate que "
+            "pueda demostrar lo contrario—, NINGÚN otro criterio de esta "
+            "corrida es un veredicto.") ,
+        "defectos_abiertos_que_no_son_fuga": ESTADO_GATILLO.get(
+            "defectos_abiertos") or [],
     }
 
     # ---------- El veredicto final del §8 de backtest/DISEÑO.md ----------
@@ -623,43 +661,115 @@ def impacto_b3(dfs: dict) -> dict:
 
 
 def _md(salida: dict, reporte: dict) -> str:
-    """El veredicto en prosa, generado desde el JSON. Se escribe con la
-    misma firmeza si es negativo — instrucción de Nicolás, y además es lo
-    único que hace útil publicar un negativo."""
+    """El veredicto en prosa, generado ENTERO desde el JSON de esta corrida.
+
+    Antes esta función llevaba cifras escritas a mano de la corrida del
+    2026-09-01 06:17 —«−40.7 %», «−92.6 %», «520 días», «DSR N=82»—. Esa
+    corrida quedó INVALIDADA por fuga: un número retirado que sigue ofrecido
+    en el código vuelve a circular, y habría vuelto a circular dentro del
+    reporte siguiente. Aquí no queda ninguno: todo lo que se afirma se lee
+    del JSON o no se escribe."""
     c = salida["criterios"]
-    L = ["# Veredicto de la Etapa 5.1 — B0→B5", "",
-         "## ⛔ NO HAY VEREDICTO. R3 lo impide, y R3 no admite excepciones.", "",
-         "`GEMELO/DISEÑO.md` §6.2 **R3**: *«cualquier fuga detectada por el "
-         "test de causalidad. Sin discusión y sin excepción.»* Se detectaron "
-         "**tres** defectos demostrados y medidos en el arnés, uno de ellos "
-         "una fuga temporal de manual. **El veredicto de la Etapa 5.1 "
-         "espera** a que el arnés se arregle.", "",
-         "Además, el gatillo congelado del GATE B **no está cumplido por "
-         "ninguna de sus dos vías** (`backtest/DISEÑO.md` §11), y el "
-         "**holdout NO se gastó**. Expediente completo, con el conteo de "
-         "intentos declarado antes de correr: "
-         f"`{salida['parametros_declarados']['expediente']}`.", "",
-         "## Tabla de criterios", "",
-         "| Criterio | Veredicto | Razón |", "|---|---|---|"]
+    par = salida["parametros_declarados"]
+    gate = salida.get("gate_causalidad") or {}
+    cob = salida.get("cobertura_sentimiento") or {}
+    abiertos = salida.get("estado_gatillo", {}).get("defectos_abiertos") or []
+    N = par["N_intentos"]
+    banda = par["banda_N"]
+    limpio = gate.get("resultado") == "INVARIANTE"
+
+    L = ["# Veredicto de la Etapa 5.1 — B0→B5", ""]
+    if limpio:
+        L += ["## R3: LIMPIO. Y aun así esto NO es el veredicto de la 5.1.", "",
+              "`GEMELO/DISEÑO.md` §6.2 **R3**: *«cualquier fuga detectada por "
+              "el test de causalidad. Sin discusión y sin excepción.»* El "
+              "test de causalidad existe ahora de verdad —invariancia al "
+              "truncado de precios, OHLC **y noticias**, con contraprueba "
+              "`shift(-1)` que lo hace fallar a propósito— y sobre "
+              f"**{gate.get('n_comparaciones')} comparaciones "
+              f"({gate.get('n_fechas')} fechas × "
+              f"{len(gate.get('baselines', []))} baselines)** no detecta "
+              "ninguna fuga. **R3 no dispara.**", "",
+              "Lo que impide el veredicto ahora es otra cosa, y hay que "
+              "decirlo con la misma firmeza: el **gatillo congelado del GATE "
+              "B no está cumplido** (`backtest/DISEÑO.md` §11) y quedan "
+              "**defectos abiertos del arnés que no son fugas temporales** "
+              "pero sí contaminan la unidad de observación. El **holdout NO "
+              "se gastó**."]
+    else:
+        L += ["## ⛔ NO HAY VEREDICTO. R3 lo impide, y R3 no admite "
+              "excepciones.", "",
+              "`GEMELO/DISEÑO.md` §6.2 **R3**: *«cualquier fuga detectada por "
+              "el test de causalidad. Sin discusión y sin excepción.»* "
+              "**El veredicto de la Etapa 5.1 espera** a que el arnés se "
+              "arregle."]
+    L += ["", "Expediente completo, con el conteo de intentos declarado antes "
+          f"de correr: `{par['expediente']}`.", "",
+          "## Tabla de criterios", "",
+          "| Criterio | Veredicto | Razón |", "|---|---|---|"]
     razones = {
-        "V1": "Habilidad sobre 'siempre al alza' — cifra contaminada, ver abajo",
-        "V2": "CRPS vs el campeón — cifra contaminada",
-        "V3": "Cobertura del intervalo 80% — cifra contaminada",
+        "V1": "Habilidad sobre 'siempre al alza' en las MISMAS filas",
+        "V2": "CRPS vs el campeón, IC de bootstrap circular",
+        "V3": "Cobertura empírica del intervalo 80%",
         "V4": "MAE del gap vs el campeón en ventana",
-        "V5": "DSR ≥ 0.95 con N declarado = "
-              f"{salida['parametros_declarados']['N_intentos']}",
+        "V5": f"DSR ≥ 0.95 con N declarado = {N}",
         "V6": "Superar comprar SMH y no hacer nada, a 25 pb por lado",
         "V7": "Holdout en cuarentena — **deliberadamente NO gastado**",
         "R1": "Control lineal vs retador — no hay retador en esta corrida",
         "R2": "La ventaja sobrevive excluyendo 15–23 jul",
-        "R3": "**Fuga detectada. Sin discusión y sin excepción.**",
+        "R3": ("**Gate de causalidad INVARIANTE — no dispara.**" if limpio
+               else "**Fuga detectada. Sin discusión y sin excepción.**"),
         "veredicto_final_diseno_8": "El criterio de lectura del §8",
     }
     for k, v in c.items():
         L.append(f"| **{k}** | {v.get('veredicto')} | {razones.get(k, '')} |")
 
+    # ---------- B-1: qué sobrevive al corte honesto ----------
+    if cob:
+        con = cob.get("accesos_con_sentimiento", 0)
+        sin = cob.get("accesos_sin_sentimiento", 0)
+        tot = con + sin
+        pct = round(100 * con / tot, 2) if tot else 0.0
+        L += ["", "## B-1 corregido — y lo que sobrevive al corte honesto", "",
+              "El sentimiento ya no se corta por la fecha de PUBLICACIÓN del "
+              "titular sino por `max(publicación, analizado_en)`: hacen falta "
+              "**las dos** marcas para que el juicio exista. (El acta lo "
+              "había escrito como `min()`; con el mínimo el predicado colapsa "
+              "al roto, porque `analizado_en` es posterior a la publicación "
+              "por construcción. La corrección va al ejecutable.)", "",
+              f"- Pares (titular × ticker) en `noticias.db`: "
+              f"**{cob.get('filas_ticker_analisis')}**, de los cuales "
+              f"**{cob.get('pct_tarde')}%** quedaron disponibles DESPUÉS de "
+              f"su publicación (rezago máximo "
+              f"{cob.get('rezago_max_dias')} días).",
+              f"- Primer dato de IA disponible en el sistema: "
+              f"**{cob.get('primer_dia_con_dato_disponible')}**. Primer "
+              f"titular publicado: {cob.get('primer_titular_publicado')}.",
+              f"- Accesos a la feature de sentimiento con dato REAL: "
+              f"**{con}** de {tot} (**{pct}%**). El resto se emitió con el "
+              f"relleno neutro 0.0, declarado como **grado S**.", ""]
+        b45 = {b: reporte["baselines"][b].get("grado_S_sin_noticias_pct")
+               for b in ("B4", "B5") if b in reporte.get("baselines", {})}
+        if b45 and all((v or 0) >= 50 for v in b45.values()):
+            L += [f"### {' y '.join(b45)} NO son evaluables sobre esta ventana",
+                  "", "Con el corte honesto, "
+                  + " · ".join(f"**{b}: {v}% de sus filas sin ninguna "
+                               f"noticia disponible**" for b, v in b45.items())
+                  + ". Sus tres features de noticias valen la constante 0.0 en "
+                  "esas filas, así que la capa colapsa a la anterior. Sus "
+                  "cifras se leen como *«la capa de precios con columnas "
+                  "constantes»*, **jamás** como *«las noticias no aportan»*: "
+                  "esa pregunta no se puede contestar con dos años de datos "
+                  "porque el sistema sólo tiene noticias analizadas desde "
+                  f"{cob.get('primer_dia_con_dato_disponible')}.", "",
+                  "**B0, B1, B2 y B3 no tocan el sentimiento y siguen "
+                  "evaluables sobre la ventana completa.** Que dos baselines "
+                  "de seis no sean evaluables no es que el backtest no lo "
+                  "sea.", ""]
+
+    # ---------- V6 ----------
     smh = c["V6"]["benchmark_smh"]
-    L += ["", "## V6 — el benchmark obligatorio, y no está cerca", "",
+    L += ["", "## V6 — el benchmark obligatorio", "",
           f"**Comprar {smh['ticker']} y no hacer nada: "
           f"{smh['acumulado_pct']}% acumulado, Sharpe {smh['sharpe']}, "
           f"MDD {smh['mdd_pct']}%.**", "",
@@ -672,67 +782,77 @@ def _md(salida: dict, reporte: dict) -> str:
                  f"{p[50]['long_short']['acum_pct']}% | "
                  f"{p[25]['long_only']['acum_pct']}% | "
                  f"{p[25]['long_short']['sharpe']} |")
-    L += ["", "**Ninguna cartera, en ningún nivel de costos, en ningún lado, "
-          "se acerca al benchmark.** El diseño ya lo había anticipado con "
-          "*«una estrategia que sólo vive con 10 pb no aprueba»*: aquí no "
-          "vive ninguna ni con 10 pb.", ""]
+    ganan = c["V6"]["quienes"]
+    L += ["", (f"Superan al benchmark a 25 pb: **{', '.join(ganan)}**."
+               if ganan else
+               "**Ninguna cartera, en ningún nivel de costos, supera al "
+               "benchmark.** El diseño ya lo había anticipado con *«una "
+               "estrategia que sólo vive con 10 pb no aprueba»*."), ""]
 
-    L += ["## V5 — Deflated Sharpe: cero, y el conteo de intentos no era el "
-          "problema", "",
-          "| B | Sharpe LS 25 pb | días | skew | curtosis | PSR vs 0 | "
-          "DSR N=26 | DSR N=44 | **DSR N=82** | DSR N=110 |",
-          "|---|---|---|---|---|---|---|---|---|---|"]
+    # ---------- V5 ----------
+    cab = " | ".join(f"DSR N={n}" for n in banda)
+    L += ["## V5 — Deflated Sharpe con el N declarado", "",
+          f"| B | Sharpe LS 25 pb | días | skew | curtosis | PSR vs 0 | {cab} |",
+          "|---|" + "---|" * (5 + len(banda))]
+    dias_vistos, sharpes_vistos = [], []
     for b, v in c["V5"]["detalle"].items():
         if "dsr_por_N" not in v:
+            L.append(f"| {b} | {v.get('sharpe_ls_25pb', '—')} | "
+                     f"{v.get('dias', '—')} | — | — | "
+                     f"{v.get('psr', v.get('estado', '—'))} |"
+                     + " — |" * len(banda))
             continue
         d = v["dsr_por_N"]
+        dias_vistos.append(v["dias"])
+        sharpes_vistos.append(v["sharpe_ls_25pb"])
         L.append(f"| {b} | {v['sharpe_ls_25pb']} | {v['dias']} | {v['skew']} | "
-                 f"{v['kurtosis']} | {v['psr_vs_cero']} | {d[26]['dsr']} | "
-                 f"{d[44]['dsr']} | **{d[82]['dsr']}** | {d[110]['dsr']} |")
-    L += ["", f"`V_intentos` = {c['V5']['V_intentos']} · umbral deflactado "
-          f"`SR0` = {c['V5']['detalle']['B2']['dsr_por_N'][82]['sr0']} a N=82.",
-          "", "Los 520 días superan el mínimo de "
-          f"{MINIMO_DIAS_SHARPE}, así que el DSR **sí es interpretable** "
-          "aquí — no hay que escribir NO INTERPRETABLE. Y lo que dice es "
-          "**0.0000 en las seis baselines y en los cuatro valores de N**. "
-          "Conviene decirlo sin adornos: **el conteo de intentos, que este "
-          "expediente se tomó el trabajo de reconstruir desde 25 hasta 82, "
-          "resultó no ser la restricción que decide.** Con Sharpe entre −5.4 "
-          "y −8.1, ningún N habría cambiado el resultado. El conteo se "
-          "declaró igual y antes de correr, porque su valor no depende de "
-          "que termine siendo decisivo.", ""]
+                 f"{v['kurtosis']} | {v['psr_vs_cero']} | "
+                 + " | ".join(str(d[n]["dsr"]) for n in banda) + " |")
+    detalle_b2 = c["V5"]["detalle"].get(CAMPEON, {})
+    if "dsr_por_N" in detalle_b2:
+        L += ["", f"`V_intentos` = {c['V5']['V_intentos']} · umbral "
+              f"deflactado `SR0` = {detalle_b2['dsr_por_N'][N]['sr0']} a "
+              f"N={N}."]
+    if dias_vistos:
+        d_min = min(dias_vistos)
+        L += ["", (f"Los {d_min} días de retornos superan el mínimo de "
+                   f"{MINIMO_DIAS_SHARPE}: el DSR **es interpretable**."
+                   if d_min >= MINIMO_DIAS_SHARPE else
+                   f"Con {d_min} días de retornos —por debajo del mínimo de "
+                   f"{MINIMO_DIAS_SHARPE}— el Sharpe anualizado es un "
+                   f"artefacto y PSR/DSR se reportan **NO INTERPRETABLE**."),
+              "", f"Sharpe long-short a 25 pb observado: de "
+              f"{min(sharpes_vistos)} a {max(sharpes_vistos)}.",
+              "", f"El conteo de intentos se declaró en **N = {N}** ANTES de "
+              f"correr, con banda {banda}, y no se movió después de ver un "
+              f"solo resultado.", ""]
 
-    L += ["## Lo que sí se aprende, incluso con el arnés roto", "",
-          "Hay una asimetría que conviene mirar, porque la contaminación "
-          "conocida va en la dirección de **favorecer** al modelo y aun así "
-          "el resultado económico es demoledor:", "",
-          "| | |", "|---|---|"]
-    d2 = c["V1"]["detalle"].get(CAMPEON) or {}
-    L += [f"| Acierto direccional del gap ({CAMPEON}) | "
-          f"**{d2.get('modelo_pct')}%** (Wilson95 "
-          f"{d2.get('wilson95_pp')}) vs base {d2.get('base_pct')}%, "
-          f"ventaja **{d2.get('ventaja_pp')} pp**, McNemar p={d2.get('mcnemar_p')} |",
-          "| Cartera long-short **bruta, sin un solo punto básico de costo** | "
-          "**−40.7 %** acumulado, Sharpe **−1.08** |",
-          "| Cartera long-only bruta | −19.8 % acumulado, Sharpe −0.24 |",
-          "| Arrastre puro de costos a 25 pb/lado sobre 520 días | −92.6 % |",
-          "",
-          "**El modelo acierta la dirección del gap y aun así la cartera "
-          "pierde el 41 % antes de costos.** No es un problema de costos: los "
-          "costos rematan algo que ya venía perdiendo. Es la distinción que "
-          "el propio proyecto tiene escrita desde la Etapa 4.6 —¿la señal "
-          "EXISTE? ¿es CAPTURABLE?— medida ahora sobre dos años: **el gap "
-          "existe y no es capturable.** Comprar en la subasta de apertura ya "
-          "es tarde; el gap ocurrió antes de que se pudiera operar.", "",
-          "Esto no es un veredicto, porque R3 lo prohíbe. Pero es la "
-          "dirección en la que el arreglo del arnés tendrá que ser "
-          "sorprendente para cambiar algo.", ""]
+    # ---------- V1 ----------
+    L += ["## V1 — dirección del gap contra 'siempre al alza', mismas filas",
+          "", "| B | n | acierto % | Wilson 95% | base % | ventaja pp | "
+          "McNemar p |", "|---|---|---|---|---|---|---|"]
+    for b, d in c["V1"]["detalle"].items():
+        if not d:
+            L.append(f"| {b} | — | — | — | — | — | — |")
+            continue
+        L.append(f"| {b} | {d['n']} | {d['modelo_pct']}% | "
+                 f"{d['wilson95_pp']} | {d['base_pct']}% | "
+                 f"{d['ventaja_pp']} | {d['mcnemar_p']} |")
+    L.append("")
+
+    # ---------- defectos abiertos ----------
+    if abiertos:
+        L += ["## Defectos ABIERTOS del arnés — no son fugas, y bloquean igual",
+              ""]
+        for d in abiertos:
+            L.append(f"- {d}")
+        L.append("")
 
     b3 = salida.get("impacto_b3_duplicados") or {}
     if b3:
-        L += ["## B-3 medido: y la contaminación va al revés de lo que supuse",
-              "", "Releyendo las MISMAS filas con los desenlaces duplicados "
-              "colapsados por `(ticker, sesión objetivo)`:", "",
+        L += ["### B-3 medido sobre ESTA corrida", "",
+              "Las MISMAS filas releídas colapsando los desenlaces "
+              "duplicados por `(ticker, sesión objetivo)`:", "",
               "| B | filas | ventaja pp | IC medio | t(NW) | MAE |",
               "|---|---|---|---|---|---|"]
         for b, v in b3.items():
@@ -743,60 +863,51 @@ def _md(salida: dict, reporte: dict) -> str:
                      f"{v['ic_medio_como_esta']} → {v['ic_medio_dedup']} | "
                      f"{v['t_nw_como_esta']} → {v['t_nw_dedup']} | "
                      f"{v['mae_como_esta']} → {v['mae_dedup']} |")
-        L += ["", "**La auditoría predijo que los duplicados INFLABAN el "
-              "t-stat. Medido, hacen lo contrario:** al deduplicar, la "
-              "ventaja sube, el IC sube y el t(NW) sube en todas las capas. "
-              "El defecto es real —la unidad de observación está mal y hay "
-              "que arreglarla igual—, pero su dirección no era la que supuse, "
-              "y decirlo es parte del trabajo. Corregir el arnés no va a "
-              "rescatar estos números: va a empeorarlos un poco más del lado "
-              "económico.", ""]
+        L += ["", "La unidad de observación sigue mal y hay que arreglarla; "
+              "la lectura de la dirección del efecto se hace sobre estas "
+              "cifras, no sobre las de ninguna corrida anterior.", ""]
 
     fid = salida.get("fidelidad_b2_vs_sellos") or {}
     if fid:
-        L += ["## La fuente no es point-in-time, y esta vez está medido", "",
+        L += ["## La fuente no es point-in-time, y está medido", "",
               f"`{CAMPEON}` contra las predicciones realmente selladas por "
               f"producción, {fid['n_comparadas']} filas: diferencia mediana "
               f"**{fid['dif_mediana_pp']} pp**, media "
               f"**{fid['dif_media_pp']} pp**, máxima "
-              f"**{fid['dif_max_pp']} pp**. Toda la discrepancia vive en una "
-              f"sola fecha, **{fid['peor_fecha']}** (media "
-              f"{fid['dif_media_peor_fecha_pp']} pp); sin ella, la media cae "
+              f"**{fid['dif_max_pp']} pp**. La peor fecha es "
+              f"**{fid['peor_fecha']}** (media "
+              f"{fid['dif_media_peor_fecha_pp']} pp); sin ella la media cae "
               f"a **{fid['sin_la_peor_fecha']['dif_media_pp']} pp** y el "
               f"máximo a {fid['sin_la_peor_fecha']['dif_max_pp']} pp.", "",
-              "La causa, verificada contra la fuente: **Yahoo borró la sesión "
-              "del 2026-08-28 de `^SOX`, `SMH` y `^GSPC`** (`NVDA` sí la "
-              "tiene). Producción la vivió y la selló —`sox_fecha` "
-              "2026-08-28, `sox_usado_pct` −3.47—; hoy esa barra no existe y "
-              "el backtest reconstruye ese día con el SOX del 27 (+2.33 %), "
-              "**invirtiendo el signo de las ocho acciones**. La barra "
-              "desaparecida es también la del **benchmark obligatorio SMH**.",
-              "", "Es la primera vez que la limitación *«esto no es "
-              "point-in-time»* se mide sobre el camino del backtest, y su "
-              "magnitud no es un decimal: da vuelta una sección transversal "
-              "entera.", ""]
+              "**Yahoo reescribe la historia en silencio**: la serie que se "
+              "descarga hoy no es la que existía el día del sello. Es una "
+              "limitación de primer orden del backtest entero, no una nota "
+              "al pie.", ""]
 
-    L += ["---", "", "## Qué hay que arreglar antes de que exista un veredicto",
-          "", "En este orden, y el primer entregable de cada punto es el "
-          "**test**, no el arreglo. Ver §3.10 del expediente.", "",
-          "1. **B-1** — cortar el sentimiento por "
-          "`min(titulares.fecha, analisis.analizado_en)` contra el instante "
-          "de emisión. Hoy `buzz` no tiene grado ninguno.",
-          "2. **B-2** — parametrizar la prueba maestra sobre **B0–B5 × ≥10 "
-          "fechas** y añadir la contraprueba `shift(-1)` como test "
-          "permanente: que el test pueda fallar es parte del test.",
+    L += ["---", "", "## Qué queda por arreglar antes de que exista un "
+          "veredicto", "",
+          "En este orden, y el primer entregable de cada punto es el "
+          "**test**, no el arreglo:", "",
+          "1. ~~**B-1** — cortar el sentimiento por `analizado_en`.~~ "
+          "**HECHO** (`max(publicación, analizado_en)`); `buzz` pasa por el "
+          "mismo corte y tiene grado propio.",
+          "2. ~~**B-2** — prueba maestra sobre B0–B5 × ≥10 fechas y "
+          "contraprueba `shift(-1)` permanente.~~ **HECHO** "
+          "(`backtest/causalidad.py` + 10 contrapruebas parametrizadas).",
           "3. **B-3** — deduplicar por `(ticker, sesión objetivo)` o declarar "
-          "la sesión objetivo como unidad de observación.",
+          "la sesión objetivo como unidad de observación. **ABIERTO.**",
           "4. **S-1** — contar sesiones del calendario, no días corridos, y "
-          "sellar las efectivamente purgadas.",
-          "5. **S-3** — computar `estado_gatillo` en vez de recibirlo.",
+          "sellar las efectivamente purgadas. **ABIERTO.**",
+          "5. **S-3** — computar `estado_gatillo` en vez de recibirlo. "
+          "**ABIERTO.**",
           "6. Construir un **holdout material**: hoy la cuarentena es sólo "
-          "procedimental.", "",
+          "procedimental. **ABIERTO.**", "",
           "---", "Herramienta de análisis — no constituye asesoría "
           "financiera. Criterios congelados en `backtest/DISEÑO.md` §8 y "
           "`GEMELO/DISEÑO.md` §6; ninguno fue modificado para esta corrida.",
           ""]
     return "\n".join(L)
+
 
 
 def main(ruta_existente: str | None = None) -> int:

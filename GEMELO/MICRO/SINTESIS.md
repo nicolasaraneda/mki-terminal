@@ -454,6 +454,15 @@ sin matices.
   el `inicio_mensaje` del mensaje k+1 pisa el registro del mensaje k). El
   throughput sostenido es otra pregunta y **no se midió**: decir que sí sería
   mentir sobre el experimento que se corrió.
+  > **DOS VECES SUPERADO (1-sep-2026).** (1) El caudal **ya se midió**, con la
+  > fuente interna: 15,00 ciclos por mensaje en B=4 y 9,00 en B=28
+  > (`INGESTA_ANCHA.md` §3.3), contando el reloj de la corrida entera y no
+  > convirtiendo una latencia. (2) Y lo más importante: **los 8 ciclos no son
+  > para medir limpio.** Son un requisito de corrección, con mínimo medido en
+  > 2 — por debajo, 178 de 181 sellos salen mal mientras la latencia sigue
+  > perfecta. Queda escrito y numerado como R1 en `RTL.md` §7 y verificado por
+  > `make hueco-gate`. Esta frase se deja como estaba porque describe lo que
+  > se creía al escribirla, y es el ejemplo del que salió el requisito.
 - **Multiplicador serie** (§4.2b), sin medir.
 - **Artix-7 con place & route real**, que exige `nextpnr-xilinx` + `prjxray` o
   Vivado.

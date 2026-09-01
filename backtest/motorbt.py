@@ -20,7 +20,7 @@ import pandas as pd
 from universo import BENCHMARK, EXCHANGE_POR_TICKER, MERCADOS_POR_ABRIR
 
 from backtest import baselines as bl
-from backtest import cartera, emision, metricas
+from backtest import cartera, causalidad, emision, metricas
 from backtest.datos import FuenteCongelada, predicciones_selladas
 
 DIR_RESULTADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resultados")
@@ -41,10 +41,24 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
            etiqueta: str = "dry-run", fuente: FuenteCongelada | None = None,
            escribir: bool = True, embargo_dias: int = bl.EMBARGO_DIAS,
            semilla_bootstrap: int = 500, alpha_bootstrap: float = 0.10,
-           estado_gatillo: dict | None = None) -> dict:
+           estado_gatillo: dict | None = None,
+           fechas_gate: tuple | None = None) -> dict:
     no_concluyente = not etiqueta.startswith(PREFIJO_VEREDICTO)
     fuente = fuente or FuenteCongelada()
     with fuente:
+        # GATE DE CAUSALIDAD (B-2): antes de emitir una sola fila. Reconstruye
+        # el arnés con la fuente truncada en cada fecha declarada y exige
+        # predicción idéntica. Si algo se mueve, la corrida MUERE aquí — R3
+        # no admite excepciones. `fechas_gate=None` lo declara NO EJECUTADO
+        # en el reporte: no ejecutarlo no puede quedar en silencio.
+        if fechas_gate:
+            gate = causalidad.gate(fuente, fechas_gate, cuales,
+                                   embargo_dias=embargo_dias)
+        else:
+            gate = {"ejecutado": False,
+                    "resultado": "NO EJECUTADO — la corrida no declaró fechas "
+                                 "de gate; ninguna afirmación de ausencia de "
+                                 "fuga se apoya en este reporte"}
         ctx = bl.ContextoRun(fuente, embargo_dias=embargo_dias)
         modelos = bl.construir_baselines(ctx, cuales)
         instantes = emision.emisiones(desde, hasta)
@@ -94,6 +108,9 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
                     })
 
         smh = fuente.serie_benchmark(BENCHMARK)
+        cobertura_sent = {**ctx.sentimiento.cobertura(),
+                          "accesos_con_sentimiento": ctx.filas_con_sentimiento,
+                          "accesos_sin_sentimiento": ctx.filas_sin_sentimiento}
 
     dfs = {n: pd.DataFrame(f) for n, f in filas.items() if f}
     reporte = _evaluar(dfs, smh, descartes, etiqueta, no_concluyente,
@@ -101,6 +118,8 @@ def correr(desde: date, hasta: date, cuales: tuple = ("B0", "B1", "B2", "B3", "B
                        semilla_bootstrap=semilla_bootstrap,
                        alpha_bootstrap=alpha_bootstrap,
                        estado_gatillo=estado_gatillo)
+    reporte["gate_causalidad"] = gate
+    reporte["cobertura_sentimiento"] = cobertura_sent
     if escribir:
         reporte["ruta"] = _escribir(reporte, dfs)
     return reporte
@@ -142,6 +161,13 @@ def _evaluar(dfs: dict, smh: pd.Series, descartes: int, etiqueta: str,
         resumen_bl[n] = {
             "n_pares": int(len(df)),
             "grado_B_pct": round(100 * float((df["grado"] == "B").mean()), 1),
+            # grado S = la fila se emitió SIN un solo juicio de IA
+            # disponible y el hueco se rellenó con el neutro 0.0. Antes esto
+            # no se contaba: el relleno viajaba como si fuera dato.
+            "grado_S_sin_noticias_pct": round(
+                100 * float((df["grado"] == "S").mean()), 1),
+            "n_filas_con_sentimiento_real": int((df["grado"].isin(("A", "B"))).sum())
+            if n in ("B4", "B5") else None,
             "ic_medio": round(float(ic.mean()), 4) if len(ic) else None,
             "ic_t_nw": (round(metricas.t_newey_west(ic), 2)
                         if len(ic) >= 10 else None),
@@ -308,16 +334,54 @@ def _resumen_md(r: dict) -> str:
                   f"{bs.get('bloque_dias', '?')} días · "
                   f"{bs.get('replicas', '?')} réplicas · semilla "
                   f"{bs.get('semilla', '?')} · IC {nivel}%\n")
+    gate = r.get("gate_causalidad") or {}
+    if gate.get("ejecutado"):
+        lineas.append(f"Gate de causalidad: **{gate['resultado']}** · "
+                      f"{gate['n_comparaciones']} comparaciones "
+                      f"({gate['n_fechas']} fechas × "
+                      f"{len(gate['baselines'])} baselines) · invariancia al "
+                      f"truncado de precios, OHLC **y noticias** · "
+                      f"contraprueba `shift(-1)` en la suite\n")
+    else:
+        lineas.append(f"Gate de causalidad: **{gate.get('resultado', 'NO EJECUTADO')}**\n")
+    cob = r.get("cobertura_sentimiento") or {}
+    if cob.get("filas_ticker_analisis"):
+        lineas.append(
+            f"Sentimiento point-in-time (B-1): el corte es "
+            f"`max(publicación, analizado_en) <= 22:15 UTC` — el juicio de la "
+            f"IA sólo existe cuando existe. {cob['pct_tarde']}% de los "
+            f"{cob['filas_ticker_analisis']} pares (titular × ticker) "
+            f"quedaron disponibles DESPUÉS de su publicación (rezago máximo "
+            f"{cob['rezago_max_dias']} días); el primer dato disponible es "
+            f"del **{cob['primer_dia_con_dato_disponible']}** aunque el "
+            f"primer titular sea del {cob['primer_titular_publicado']}. "
+            f"Accesos a la feature con sentimiento real: "
+            f"**{cob['accesos_con_sentimiento']}**; sin ninguno (relleno "
+            f"neutro declarado, grado S): **{cob['accesos_sin_sentimiento']}**.\n")
     lineas.append("\n## Baselines\n")
-    lineas.append(f"| B | n | %grado B | IC medio | t(NW) | MAE gap | "
-                  f"Sharpe LS 25pb [IC{nivel}] | acum. LS 25pb |")
-    lineas.append("|---|---|---|---|---|---|---|---|")
+    lineas.append(f"| B | n | %grado B | %grado S (sin noticias) | IC medio | "
+                  f"t(NW) | MAE gap | Sharpe LS 25pb [IC{nivel}] | acum. LS 25pb |")
+    lineas.append("|---|---|---|---|---|---|---|---|---|")
     for n, b in r["baselines"].items():
         ls = b["carteras"][25]["long_short"]
         lineas.append(
-            f"| {n} | {b['n_pares']} | {b['grado_B_pct']}% | {b['ic_medio']} | "
+            f"| {n} | {b['n_pares']} | {b['grado_B_pct']}% | "
+            f"{b.get('grado_S_sin_noticias_pct', 0.0)}% | {b['ic_medio']} | "
             f"{b['ic_t_nw']} | {b['mae_gap_pp']} | {ls['sharpe']} "
             f"{_ic(ls['sharpe_ic'])} | {ls['acumulado_pct']}% |")
+    sin_noticias = [n for n, b in r["baselines"].items()
+                    if n in ("B4", "B5")
+                    and (b.get("grado_S_sin_noticias_pct") or 0) >= 50.0]
+    if sin_noticias:
+        lineas.append(
+            f"\n**{' y '.join(sin_noticias)} NO son evaluables sobre esta "
+            f"ventana.** Más de la mitad de sus filas se emitieron sin un "
+            f"solo juicio de IA disponible: sus tres features de noticias "
+            f"valen el relleno neutro 0.0 y la capa colapsa a la anterior. "
+            f"Sus cifras se leen como lo que son —la capa de precios con "
+            f"columnas constantes—, no como *«las noticias no aportan»*. "
+            f"**B0, B1, B2 y B3 no tocan el sentimiento y siguen evaluables "
+            f"sobre la ventana completa.**\n")
     smh = r["benchmark_smh"]
     lineas.append(f"\n**Benchmark obligatorio — comprar {smh['ticker']} y no "
                   f"hacer nada**: acumulado {smh['acumulado_pct']}% · Sharpe "

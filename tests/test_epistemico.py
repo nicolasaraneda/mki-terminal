@@ -17,12 +17,18 @@ Los siete tests y el error histórico que cada uno previene:
   6. Cita por número de línea a `DECISIONES.md` que ya no apunta ahí.
   7. Cifra del README que no coincide con la del módulo árbitro, sin
      declarar con qué método se computó.
+  8. Prueba de rendimiento que pasa en verde sobre un diseño roto, por no
+     verificar corrección en la misma corrida.
 
-**Nada de acá escribe.** Los tests 1, 2, 3, 4 y 6 son análisis estático
-sobre archivos; el 5 abre `senales.db` en `mode=ro` por el helper del
-proyecto; el 7 lee el README y llama a dos funciones puras. No se importa
-`motor.py`, no se toca la ruta de sellado, no se abre ninguna base para
-escritura.
+**Nada de acá escribe** en ninguna base ni en la ruta de sellado. Los tests
+1, 2, 3, 4, 6 y 8 son análisis estático sobre archivos; el 5 abre
+`senales.db` en `mode=ro` por el helper del proyecto; el 7 lee el README y
+llama a dos funciones puras. El 8 tiene además una parte ejecutable que
+corre `micro/rtl/verificar_hueco.py` en un subproceso cuando hay toolchain
+(simulación de Icarus sobre vectores ya congelados; su único efecto sobre el
+árbol son artefactos en `micro/rtl/sim/`, que está en `.gitignore`) y se
+salta cuando no lo hay. No se importa `motor.py`, no se toca la ruta de
+sellado, no se abre ninguna base para escritura.
 
 **Sobre los heurísticos.** Los tests 3 y 4 detectan patrones en prosa, y
 eso no se puede hacer sin heurístico. La consigna que siguen, y que está
@@ -856,3 +862,164 @@ def test_este_archivo_no_escribe_en_ninguna_base_ni_toca_el_sellado():
         assert prohibido not in fuente, f"este archivo no puede usar {prohibido!r}"
     assert "_conexion_ro" in fuente, (
         "el acceso a senales.db tiene que ir por el helper de solo lectura")
+
+
+# ==========================================================================
+# 8. La prueba de rendimiento que pasa en verde sobre un diseño roto
+# ==========================================================================
+# Los bancos de pruebas del pipeline RTL. El alcance es DELIBERADAMENTE
+# angosto: no todos los archivos que miden algo en el repo, sólo los cinco
+# bancos de `micro/rtl/tb/`, que son los que producen las cifras de latencia
+# y de caudal que `GEMELO/MICRO/` publica.
+_PATRONES_BANCOS_RTL = ("micro/rtl/tb/*.v",)
+
+# Un banco MIDE ciclos si nombra la latencia, el caudal o su propio contador.
+_RE_BANCO_MIDE_CICLOS = re.compile(
+    r"latencia|LAT_ESPERADA|caudal|ciclos_tb", re.I)
+# Y VERIFICA corrección si lee el vector esperado, lo compara y cuenta fallos.
+# Las tres marcas juntas, no una: `esperado` solo aparece en cualquier
+# comentario, y una comparación sola puede ser de un contador contra sí mismo.
+_RE_BANCO_LEE_ESPERADO = re.compile(
+    r"\$readmemh\s*\(\s*`?\w*ESPERAD|esperado\s*\[", re.I)
+_RE_BANCO_COMPARA = re.compile(r"!==|!=")
+_RE_BANCO_CUENTA_FALLOS = re.compile(r"\bfallos\b")
+# La salida declarada, para el banco que a propósito sólo mide (no existe
+# ninguno hoy). Pedirla por escrito es el punto: R2 no prohíbe medir sin
+# verificar, prohíbe hacerlo sin decirlo.
+_RE_BANCO_EXENTO = re.compile(r"R2-EXENTO", re.I)
+
+
+def detectar_bancos_que_miden_sin_verificar(archivos):
+    """Bancos que miden ciclos y no comparan los sellos contra el esperado.
+
+    Consigna del archivo: preferir falsos negativos. Un banco se marca sólo
+    si mide ciclos Y le falta alguna de las tres marcas de verificación Y no
+    declara la salida `R2-EXENTO`. Un banco que verifica de una forma que
+    este detector no reconoce puede agregar la marca con su razón: eso lo
+    vuelve una decisión escrita, que es todo lo que se pide.
+    """
+    hallazgos = []
+    for nombre, texto in archivos:
+        if not _RE_BANCO_MIDE_CICLOS.search(texto):
+            continue
+        if _RE_BANCO_EXENTO.search(texto):
+            continue
+        faltan = []
+        if not _RE_BANCO_LEE_ESPERADO.search(texto):
+            faltan.append("no lee el vector esperado")
+        if not _RE_BANCO_COMPARA.search(texto):
+            faltan.append("no compara")
+        if not _RE_BANCO_CUENTA_FALLOS.search(texto):
+            faltan.append("no cuenta fallos")
+        if faltan:
+            hallazgos.append((nombre, 0, "mide ciclos pero " + ", ".join(faltan)))
+    return hallazgos
+
+
+def test_ningun_banco_de_pruebas_mide_ciclos_sin_comparar_bit_a_bit():
+    """1-sep-2026, segunda tanda, Frente F. `GEMELO/MICRO/RTL.md` §7, R2.
+
+    El error histórico: entre mensajes, el reproductor de `fuente_bram.v`
+    dejaba 8 ciclos de silencio que dos documentos describían como una
+    comodidad del banco ("para que la latencia se mida limpia"). Barriendo
+    el parámetro resultó ser un requisito de corrección: con 0 ó 1 ciclos,
+    **178 de los 181 sellos salen mal** — y **la latencia sigue dando 11
+    ciclos exactos y perfectamente determinista** mientras eso pasa. La
+    latencia era el entregable científico de esa pista, se la midió mucho, y
+    era ciega a que el diseño producía basura.
+
+    La lección excede al RTL y es la que este test codifica: **una prueba de
+    rendimiento que no verifica corrección puede pasar en verde sobre un
+    diseño roto.** Agravante medido el mismo día: la DECISIÓN sellada salía
+    correcta en 181 de 181 (el puntaje era el que se calculaba con el peso
+    del caso siguiente), así que una comprobación restringida a la decisión
+    —la vara que `RTL.md` §4 punto 4 defendía como la que importa— también
+    habría pasado en verde. Sólo la comparación bit a bit del puntaje lo
+    cazó.
+
+    FORMA QUE SE DESCARTÓ, y por qué. La primera idea fue un detector de
+    prosa sobre `GEMELO/MICRO/*.md`: cifras de ciclos/MHz/ns publicadas sin
+    una afirmación de corrección cerca. Se implementó y se midió antes de
+    descartarlo: **76 de 110 líneas con cifra darían positivo**, casi todas
+    legítimas (tablas de área, presupuestos, texto de diseño). Un detector
+    que grita en el 69% de los casos se desactiva y entonces no previene
+    nada. Éste, en cambio, corre sobre una población de cinco archivos con
+    una convención propia, y hoy da cero.
+
+    El contraejemplo EJECUTABLE de la lección vive en `micro/rtl`
+    (`make hueco-gate`) y lo comprueba el test de más abajo cuando hay
+    toolchain; esta parte es estática a propósito, para que corra en
+    cualquier máquina.
+    """
+    bancos = [(os.path.relpath(r, _RAIZ), _leer(r))
+              for r in _expandir(_PATRONES_BANCOS_RTL)]
+    assert bancos, "no se encontró ningún banco en micro/rtl/tb/"
+    hallazgos = detectar_bancos_que_miden_sin_verificar(bancos)
+    assert not hallazgos, (
+        "Bancos que miden ciclos sin comparar los sellos contra el vector "
+        "esperado. Una cifra de latencia que sale de una corrida que no "
+        "verificó corrección no dice nada (RTL.md §7, R2):\n"
+        + _informe(hallazgos))
+
+
+def test_contraprueba_el_detector_caza_el_banco_que_solo_mide_latencia():
+    """Contraprueba: el detector tiene que cazar la forma histórica."""
+    solo_mide = (
+        "module tb_rapido;\n"
+        "  always @(posedge clk) if (sello_valido) begin\n"
+        "    if (latencia_ciclos < lat_min) lat_min = latencia_ciclos;\n"
+        "  end\n"
+        "  initial $display(\"latencia %0d/%0d\", lat_min, lat_max);\n"
+        "endmodule\n")
+    assert detectar_bancos_que_miden_sin_verificar([("tb_rapido.v", solo_mide)])
+
+    # El mismo banco con la comparación puesta ya no se marca.
+    completo = solo_mide.replace(
+        "  end\n",
+        "    if (puntaje_sellado !== esperado[vistos][15:0]) fallos = fallos + 1;\n"
+        "  end\n")
+    assert not detectar_bancos_que_miden_sin_verificar([("tb_ok.v", completo)])
+
+    # Un banco que no mide ciclos no es asunto de R2.
+    assert not detectar_bancos_que_miden_sin_verificar(
+        [("tb_area.v", "module tb_area; endmodule\n")])
+
+    # Y la salida declarada tiene que funcionar, si no el detector fuerza a
+    # desactivarlo entero cuando aparezca el primer caso legítimo.
+    exento = "// R2-EXENTO: mide caudal puro, la corrección la fija tb_demo.\n" + solo_mide
+    assert not detectar_bancos_que_miden_sin_verificar([("tb_caudal.v", exento)])
+
+
+def test_el_contraejemplo_ejecutable_del_hueco_sigue_en_pie():
+    """1-sep-2026, Frente F. La lección, demostrada en vez de afirmada.
+
+    `micro/rtl/verificar_hueco.py` corre el pipeline con el hueco por debajo
+    del mínimo y comprueba las dos mitades del hallazgo a la vez: que la
+    reproducción bit a bit **se rompe** (178 de 181) y que la latencia
+    **sigue siendo perfecta** (11/11 en B=4, 5/5 en B=28) mientras eso pasa.
+    Y verifica que la rotura es POR ESA RAZÓN — compila, corre entera, 181
+    sellos recogidos, el 100% de los fallos en el modo esperado — porque un
+    rojo de timeout o de compilación habría sido igual de rojo sin probar
+    nada.
+
+    Se salta sin toolchain: en una máquina sin OSS CAD Suite no hay nada que
+    ejecutar, y el detector estático de más arriba es el que corre en todas.
+    """
+    import shutil
+    import subprocess
+
+    guion = os.path.join(_RAIZ, "micro", "rtl", "verificar_hueco.py")
+    if not os.path.exists(guion):
+        pytest.skip("micro/rtl/verificar_hueco.py no está en esta máquina")
+    oss = os.path.expanduser("~/.local/opt/oss-cad-suite/bin")
+    entorno = dict(os.environ, PATH=oss + os.pathsep + os.environ.get("PATH", ""))
+    if not shutil.which("iverilog", path=entorno["PATH"]):
+        pytest.skip("sin iverilog: el contraejemplo ejecutable no corre acá")
+
+    r = subprocess.run([sys.executable, guion], cwd=os.path.dirname(guion),
+                       capture_output=True, text=True, timeout=600, env=entorno)
+    assert r.returncode == 0, (
+        "el contraejemplo del hueco dejó de sostenerse:\n" + r.stdout + r.stderr)
+    assert "B3 la LATENCIA sigue en" in r.stdout, (
+        "el gate ya no comprueba que la latencia queda verde con los sellos "
+        "mal, que es la mitad que hace a la lección")

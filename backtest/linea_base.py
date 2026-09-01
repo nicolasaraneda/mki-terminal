@@ -36,6 +36,42 @@
 # `gap == 0.0` exacto significa apertura idéntica al cierre previo, que es
 # la firma del ffill de feriados (Supuesto #1 de CLAUDE.md): "un feriado
 # se ve como +0.00%". Son artefactos de datos, no eventos de mercado.
+#
+# ------------------------------------------------------------
+# LA REGLA DE DEDUPLICACIÓN — firmada el 1-sep-2026
+# ------------------------------------------------------------
+# Treinta filas selladas (quince pares) apuntan a la MISMA
+# `sesion_objetivo` con el mismo `gap_pct`. Nicolás firmó la regla y su
+# texto es el criterio, no una lista de fechas:
+#
+#   «Los dos grupos se tratan por separado, porque tienen orígenes
+#    distintos y una sola regla sería arbitraria por construcción.
+#    Grupo del defecto de snapshot.py: la fila válida es la que tiene la
+#    sesión objetivo correcta según `available_at`, no la más reciente.
+#    El criterio es la corrección de la sesión, nunca la frescura.
+#    Grupo de feriados reales: las dos emisiones están igualmente a
+#    tiempo, así que no es un problema de deduplicación.
+#    QUEDA PROHIBIDO keep="last" o cualquier regla equivalente por
+#    frescura: el forense demostró que retira selectivamente errores del
+#    modelo.»
+#
+# La regla se implementa SOLA y no clasifica grupos a mano: dentro de cada
+# par, se conserva la fila cuya `sesion_objetivo` coincide con
+# `calendarios.proxima_sesion_despues_de(exchange, available_at)`. En los
+# 10 pares del defecto eso deja UNA fila; en los 5 de feriado las dos
+# calzan y no se descarta nada — la separación es una consecuencia del
+# criterio, no una entrada de él. Una lista de fechas cableada sería la
+# regla escondiendo su propio criterio.
+#
+# ALCANCE, declarado porque importa: la regla es de DEDUPLICACIÓN. Sólo
+# actúa dentro de grupos `(ticker, sesion_objetivo)` con más de una fila.
+# NO es un filtro global de coherencia — ver `auditar_dedup()`, que cuenta
+# cuántas filas SIN pareja tampoco calzan (hoy 15) y las deja intactas a
+# propósito: retirarlas sería otra decisión, no ésta, y no está firmada.
+#
+# La exclusión vive AQUÍ, en la capa de medición, por la misma razón que
+# `excluir_cero`: `senales.py` no se toca y ninguna fila sellada se
+# reescribe.
 # ============================================================
 
 import argparse
@@ -46,6 +82,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
+import calendarios
 from api.utilidades import intervalo_wilson
 from backtest.datos import RUTA_SENALES, _conexion_ro
 from version import MODELO_VERSION
@@ -64,6 +101,15 @@ CONVENCIONES = ("estricta", "verificador", "excluir_cero")
 # `acierto_gap` es un valor sellado, y cambiar el scoring reescribiría el
 # significado de filas ya selladas.
 CONVENCION_OFICIAL = "excluir_cero"
+
+# FIRMADA el 1-sep-2026 (DECISIONES.md, acta de la regla de deduplicación).
+# `cargar()` la aplica por defecto: dejar la rama sin deduplicar como
+# default sería seguir ofreciendo desde el código un conjunto de filas que
+# la firma retiró, y un número retirado que sigue ofrecido vuelve a
+# circular. Quien reproduce una afirmación CONGELADA anterior a la firma
+# —la §2 y la línea base de la §2.8— pasa `dedup=False` explícitamente y
+# dice por qué.
+DEDUP_OFICIAL = True
 
 # ------------------------------------------------------------
 # EL INSTANTE «A LA FECHA» DE LA §2 — hallazgo del 30-ago (WS5)
@@ -141,10 +187,141 @@ def _wilson(aciertos: int, n: int) -> tuple:
 
 
 # ------------------------------------------------------------
+# La regla de deduplicación, firmada — ver la cabecera
+# ------------------------------------------------------------
+_MEMO_SESION: dict = {}
+
+
+def sesion_correcta(exchange: str, available_at: str) -> str | None:
+    """La sesión que la predicción DEBÍA apuntar según el instante en que
+    su información se volvió conocible.
+
+    `available_at` es el cierre UTC real del SOX que alimenta la
+    predicción (`snapshot.py`:133), calculado por una vía independiente de
+    la línea defectuosa (`:140`, que usa el reloj de pared del proceso).
+    Ese es exactamente el motivo por el que sirve de árbitro: no comparte
+    mecanismo con la cifra que juzga."""
+    if not exchange or not available_at or pd.isna(available_at):
+        return None
+    clave = (exchange, str(available_at))
+    if clave not in _MEMO_SESION:
+        t = datetime.fromisoformat(str(available_at))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        try:
+            _MEMO_SESION[clave] = str(
+                calendarios.proxima_sesion_despues_de(exchange, t)[0])
+        except Exception:
+            _MEMO_SESION[clave] = None
+    return _MEMO_SESION[clave]
+
+
+def marcar_sesion(df: pd.DataFrame) -> pd.DataFrame:
+    """Añade `sesion_recomputada` y `sesion_calza`. Sin efectos: es el
+    insumo tanto de la regla como de su auditoría."""
+    out = df.copy()
+    if out.empty:
+        out["sesion_recomputada"] = pd.Series(dtype=object)
+        out["sesion_calza"] = pd.Series(dtype=bool)
+        return out
+    out["sesion_recomputada"] = [
+        sesion_correcta(e, a)
+        for e, a in zip(out["exchange"], out["available_at"])]
+    out["sesion_calza"] = (out["sesion_recomputada"].notna() &
+                           (out["sesion_recomputada"].astype(object)
+                            == out["sesion_objetivo"].astype(object)))
+    return out
+
+
+def deduplicar_por_sesion(df: pd.DataFrame) -> pd.DataFrame:
+    """LA REGLA FIRMADA. Dentro de cada grupo `(ticker, sesion_objetivo)`
+    con más de una fila, conserva la(s) que calza(n) con
+    `sesion_correcta(exchange, available_at)`.
+
+    Tres casos, y los tres son deliberados:
+      · exactamente una calza  → se conserva ésa (grupo del defecto).
+      · calzan las dos         → se conservan las dos: no hay problema de
+        deduplicación que resolver, y el par va a la cola como ítem de
+        calendario y universo (grupo de feriados reales).
+      · no calza ninguna       → se conservan todas. La regla no inventa
+        un criterio donde no lo tiene; callarse es más barato que elegir
+        por frescura, que está PROHIBIDO.
+
+    Las filas SIN pareja no se tocan nunca, calcen o no: esto deduplica,
+    no filtra por coherencia."""
+    if df.empty:
+        return df
+    m = marcar_sesion(df)
+    dup = m.duplicated(["ticker", "sesion_objetivo"], keep=False)
+    if not dup.any():
+        return df
+    piezas = [m[~dup]]
+    for _, g in m[dup].groupby(["ticker", "sesion_objetivo"], sort=False):
+        ok = g[g["sesion_calza"]]
+        piezas.append(ok if 0 < len(ok) < len(g) else g)
+    fuera = pd.concat(piezas).sort_values(["fecha", "ticker"])
+    return fuera.drop(columns=["sesion_recomputada", "sesion_calza"])
+
+
+def filtrar_sesion_coherente(df: pd.DataFrame) -> pd.DataFrame:
+    """NO ES LA REGLA FIRMADA y no se aplica en ningún camino por defecto.
+
+    Es el criterio de COHERENCIA: retira TODA fila cuya `sesion_objetivo`
+    no calce con su `available_at`, tenga pareja o no. Existe sólo para
+    poder poner su cifra al lado de la de la regla, que es lo que la cola
+    de decisiones necesita para que la pregunta de las 15 filas sin pareja
+    se decida con los dos números a la vista.
+
+    La diferencia con la regla firmada es de naturaleza, no de grado: la
+    regla ARBITRA entre dos filas que compiten y siempre deja una; esto
+    DESCARTA sin reemplazo. Nicolás firmó lo primero."""
+    if df.empty:
+        return df
+    m = marcar_sesion(df)
+    return (m[m["sesion_calza"]]
+            .drop(columns=["sesion_recomputada", "sesion_calza"]))
+
+
+def auditar_dedup(df: pd.DataFrame) -> dict:
+    """Lo que la regla hace Y lo que deliberadamente NO hace, en enteros.
+
+    El segundo conteo es el que importa declarar: hay filas cuya
+    `sesion_objetivo` tampoco calza con su `available_at` y que la regla
+    NO retira porque no tienen pareja. Retirarlas sería otra decisión —
+    un criterio de coherencia, no de deduplicación— y no está firmada."""
+    if df.empty:
+        return {}
+    m = marcar_sesion(df)
+    dup = m.duplicated(["ticker", "sesion_objetivo"], keep=False)
+    grupos = m[dup].groupby(["ticker", "sesion_objetivo"], sort=False)
+    resueltos, sin_criterio, ambiguos = [], [], []
+    for clave, g in grupos:
+        k = int(g["sesion_calza"].sum())
+        (resueltos if k == 1 else ambiguos if k > 1
+         else sin_criterio).append(clave)
+    return {
+        "filas": len(m),
+        "pares": grupos.ngroups,
+        "pares_resueltos": len(resueltos),
+        "pares_las_dos_calzan": len(ambiguos),
+        "pares_sin_criterio": len(sin_criterio),
+        "filas_retiradas": len(df) - len(deduplicar_por_sesion(df)),
+        "sesiones_resueltas": sorted({s for _, s in resueltos}),
+        "sesiones_intactas": sorted({s for _, s in ambiguos}),
+        # Lo que la regla NO toca, y hay que decirlo:
+        "filas_sin_pareja_que_no_calzan": int((~dup & ~m["sesion_calza"]).sum()),
+        "fechas_sin_pareja_que_no_calzan": sorted(
+            m.loc[~dup & ~m["sesion_calza"], "fecha"].unique().tolist()),
+        "filas_que_no_calzan_total": int((~m["sesion_calza"]).sum()),
+    }
+
+
+# ------------------------------------------------------------
 # Carga — solo lectura
 # ------------------------------------------------------------
 def cargar(modelo_version: str = MODELO_VERSION,
-           hasta_sello: str | None = None) -> pd.DataFrame:
+           hasta_sello: str | None = None,
+           dedup: bool = DEDUP_OFICIAL) -> pd.DataFrame:
     """Une verificacion_apertura con senales_ticker por (fecha, ticker) y
     con snapshots por fecha. Solo 4.6.0, nunca legacy, solo con gap.
 
@@ -152,6 +329,11 @@ def cargar(modelo_version: str = MODELO_VERSION,
     Sin ella se lee el track record VIVO, que es lo correcto para la
     plataforma. Con `CORTE_SECCION_2` se recupera el conjunto exacto de
     filas sobre el que se midió la §2 — ver el comentario de esa constante.
+
+    `dedup`: aplica la regla firmada (ver cabecera). Va en `True` por
+    defecto. `dedup=False` es la RAMA HISTÓRICA y sólo se justifica para
+    reproducir una afirmación congelada ANTES de la firma; quien la pase
+    tiene que decir cuál.
     """
     if not os.path.exists(RUTA_SENALES):
         return pd.DataFrame()
@@ -165,7 +347,7 @@ def cargar(modelo_version: str = MODELO_VERSION,
                    v.apertura_estimada_pct, v.gap_pct, v.acierto_gap,
                    v.error_gap_pp, v.retorno_real_pct,
                    s.confianza_r2, s.intervalo80_pp, s.n_muestra, s.beta,
-                   s.exchange,
+                   s.exchange, s.sesion_objetivo, s.available_at,
                    snap.regimen, snap.sox_usado_pct, snap.sox_fecha
             FROM verificacion_apertura v
             LEFT JOIN senales_ticker s
@@ -177,7 +359,7 @@ def cargar(modelo_version: str = MODELO_VERSION,
         """, conn, params=params)
     finally:
         conn.close()
-    return df
+    return deduplicar_por_sesion(df) if dedup else df
 
 
 def aplicar_convencion(df: pd.DataFrame, convencion: str) -> pd.DataFrame:
@@ -516,14 +698,65 @@ def componer_informe(base_df: pd.DataFrame, convencion: str) -> str:
     df = aplicar_convencion(base_df, convencion)
     d, mag = duelo(df), magnitud(df)
     cal, salud = calibracion(df), salud_r2_regimen_beta(df)
+    # Las afirmaciones CONGELADAS (§2 y §2.8) son anteriores a la firma de
+    # la regla de deduplicación, así que se contrastan contra su propio
+    # conjunto de filas: el instante `CORTE_SECCION_2` y la rama histórica
+    # `dedup=False`. Contrastarlas contra la base deduplicada compararía
+    # una cifra fija con un conjunto de filas que la firma cambió — el
+    # mismo error de denominador móvil que el WS5 diagnosticó, con otra
+    # cara.
+    historico = cargar(hasta_sello=CORTE_SECCION_2, dedup=False)
+    aud = auditar_dedup(cargar(dedup=False))
 
     L = [f"# Línea base del campeón {MODELO_VERSION} — reproducción de la §2",
          "",
          f"- Generado: {datetime.now(timezone.utc).isoformat()}",
          f"- Fuente: `senales.db` en `mode=ro` (autoridad), NO los CSV de respaldo",
          f"- Convención de empate: **{convencion}**",
+         f"- Regla de deduplicación: **aplicada** (firmada el 1-sep-2026)",
          f"- Filas: **n = {d['n']}** · {df['fecha'].min()} → {df['fecha'].max()}",
-         "",
+         "",]
+    if aud:
+        L += ["## La regla de deduplicación, aplicada", "",
+              "Se conserva la fila cuya `sesion_objetivo` coincide con "
+              "`calendarios.proxima_sesion_despues_de(exchange, "
+              "available_at)`. **El criterio es la corrección de la sesión, "
+              "nunca la frescura** — `keep=\"last\"` está prohibido porque "
+              "el forense mostró que retira selectivamente errores del "
+              "modelo. La regla separa sola los dos grupos: no hay ninguna "
+              "lista de fechas cableada.", "",
+              f"| | |", "|---|---|",
+              f"| Pares `(ticker, sesion_objetivo)` | {aud['pares']} |",
+              f"| Pares donde UNA fila calza → se retira la otra | "
+              f"**{aud['pares_resueltos']}** "
+              f"({', '.join(aud['sesiones_resueltas'])}) |",
+              f"| Pares donde calzan LAS DOS → no se toca nada | "
+              f"**{aud['pares_las_dos_calzan']}** "
+              f"({', '.join(aud['sesiones_intactas'])}) |",
+              f"| Pares sin criterio (no calza ninguna) | "
+              f"{aud['pares_sin_criterio']} |",
+              f"| Filas retiradas | **{aud['filas_retiradas']}** |", "",
+              "> **Lo que la regla NO hace, declarado.** Es una regla de "
+              "DEDUPLICACIÓN: sólo actúa dentro de pares. Hay "
+              f"**{aud['filas_sin_pareja_que_no_calzan']} filas SIN pareja** "
+              f"({', '.join(aud['fechas_sin_pareja_que_no_calzan'])}) cuya "
+              "`sesion_objetivo` tampoco calza con su `available_at`, y "
+              f"quedan intactas — {aud['filas_que_no_calzan_total']} filas "
+              "no calzan en total. Retirarlas sería un criterio de "
+              "COHERENCIA, no de deduplicación, y no está firmado.", ""]
+        crudo = cargar(dedup=False)
+        alt = duelo(aplicar_convencion(
+            filtrar_sesion_coherente(crudo), convencion))
+        L += ["**La cifra de la rama que NO se aplicó**, para que la "
+              "pregunta de esas 15 filas se decida con los dos números a "
+              "la vista y no con uno: retirando además las filas sin "
+              f"pareja que no calzan, bajo `{convencion}` quedaría "
+              f"**n = {alt['n']}**, ventaja **{alt['ventaja_pp']:+} pp**, "
+              f"McNemar {alt['mcnemar_b01']} vs {alt['mcnemar_b10']}, "
+              f"**p = {alt['mcnemar_p']}**. Está computado y **no "
+              "aplicado**: la decisión es de Nicolás y vive en "
+              "`GEMELO/resultados/cola_decisiones.md`.", ""]
+    L += [
          "## Las tres convenciones de empate, juntas",
          "",
          "Hay 5 filas con `gap_pct == 0.0` exacto (apertura idéntica al cierre",
@@ -546,10 +779,10 @@ def componer_informe(base_df: pd.DataFrame, convencion: str) -> str:
     # La reproducción del pre-registro se verifica SIEMPRE bajo `estricta`,
     # que es la convención con que se escribieron esas cifras — evaluarlas
     # bajo otra las haría "fallar" por comparar peras con manzanas.
-    contraste = contrastar(aplicar_convencion(base_df, "estricta"))
+    contraste = contrastar(aplicar_convencion(historico, "estricta"))
     fallan = contraste[contraste["veredicto"] != "reproduce"]
     oficial = contrastar_linea_oficial(
-        aplicar_convencion(base_df, CONVENCION_OFICIAL))
+        aplicar_convencion(historico, CONVENCION_OFICIAL))
     of_mal = oficial[oficial["veredicto"] != "coincide"]
     cb = contrastar_bloques(df)
     cb_mal = cb[cb["veredicto"] != "reproduce"]
@@ -559,6 +792,11 @@ def componer_informe(base_df: pd.DataFrame, convencion: str) -> str:
           "`gap_pct == 0.00` se excluyen de ambos lados (artefactos del ffill "
           "de feriados). La exclusión vive en esta capa de medición; "
           "`senales.py` no se toca.", "",
+          f"Se contrasta contra el conjunto de filas de su propio instante "
+          f"(`hasta_sello = {CORTE_SECCION_2}`) y **sin la regla de "
+          "deduplicación**, que es posterior a la firma de la §2.8: una "
+          "cifra congelada se reproduce sobre las filas que tenía, no "
+          "sobre las que quedan hoy.", "",
           _tabla(oficial),
           ("" if of_mal.empty else
            "> **La línea oficial ya NO coincide con lo congelado.** Eso es un "

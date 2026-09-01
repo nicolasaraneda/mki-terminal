@@ -93,13 +93,34 @@ module fuente_bram #(
     // mirara la latencia habría pasado en verde. Por eso el guardia va acá, en
     // elaboración, y no en un comentario.
     //
+    // PRECISIÓN DEL MODO DE FALLA (1-sep-2026, Frente F). "Corridos un
+    // mensaje" era la descripción a ojo de las primeras diez líneas de la
+    // salida. Medido con contadores dentro del banco y reproducido con el
+    // modelo entero de `referencia.py`, el modo es más fino y más incómodo:
+    //   - el PUNTAJE sellado del mensaje k es el que sale de multiplicar la
+    //     feature de k por el PESO (la beta) del caso k+1 — 178 de 178 fallos
+    //     lo reproducen exacto, o sea el modo de falla es único, no una mezcla;
+    //   - la DECISIÓN sellada, en cambio, es la CORRECTA del caso k, en
+    //     181 de 181. El sello se contradice a sí mismo.
+    //   - el "corrido un mensaje" que se veía es un efecto de segundo orden:
+    //     los casos consecutivos de la misma fecha comparten f0 (el movimiento
+    //     del SOX), así que ahí f_k x beta_{k+1} ES el sello esperado de k+1.
+    //     Pasa en 131 de los 178, no en todos.
+    // Consecuencia que vale más que el detalle: una comprobación que sólo
+    // mirara la DECISIÓN —la que `RTL.md` §4 punto 4 defendía como la que
+    // importa— también habría dado 181/181 en verde con todos los puntajes
+    // mal. Ver `RTL.md` §7, requisito R1.
+    //
     // El bypass existe sólo para poder MEDIR la zona insegura (es como se
-    // encontró el 2) y hay que pedirlo a propósito.
+    // encontró el 2) y hay que pedirlo a propósito. `make hueco-gate` lo usa
+    // para verificar que el diseño se rompe POR ESTA RAZÓN y no por otra.
 `ifndef CFG_PERMITIR_HUECO_INSEGURO
     initial begin
         if (HUECO < 2) begin
-            $display("fuente_bram: HUECO=%0d < 2 produce sellos CORRIDOS UN MENSAJE.", HUECO);
-            $display("             Medido: 178/181 mal con HUECO 0 y 1; 181/181 desde 2.");
+            $display("fuente_bram: HUECO=%0d < 2 viola el requisito R1 de RTL.md.", HUECO);
+            $display("             El puntaje sellado del mensaje k sale con el peso del caso k+1;");
+            $display("             la decision sellada sigue siendo la de k. El sello se contradice.");
+            $display("             Medido: 178/181 mal con HUECO 0 y 1; 181/181 desde 2 (B=4 y B=28).");
             $display("             Si lo que se quiere es medir la zona insegura,");
             $display("             compilar con -DCFG_PERMITIR_HUECO_INSEGURO.");
             $fatal(1);

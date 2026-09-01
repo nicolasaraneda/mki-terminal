@@ -22,10 +22,30 @@ from universo import (EXCHANGE_POR_TICKER, INDICE_LOCAL_POR_EXCHANGE,
                       MERCADOS_POR_ABRIR, PARES_FX, UNIVERSO)
 
 from backtest import baselines as bl
-from backtest import cartera, datos, emision, metricas, motorbt
+from backtest import cartera, causalidad, datos, emision, metricas, motorbt
 
 FIN_DATOS = date(2026, 6, 30)      # las series sintéticas llegan hasta aquí
 DIA_EMISION = date(2026, 5, 20)    # emisión de referencia para los tests
+CUALES_TODAS = ("B0", "B1", "B2", "B3", "B4", "B5")
+
+
+def _filas_noticias_densas():
+    """Una base de noticias sintética DENSA: titulares todos los días para
+    los tickers objetivo, disponibles el mismo día. Hace falta densidad para
+    que la contraprueba de las features de noticias pueda disparar — sin
+    titulares, mirar un día más allá no cambia nada y el test pasaría por
+    vacío en vez de por correcto."""
+    filas, i = [], 1
+    for d in pd.bdate_range("2026-01-01", "2026-06-30"):
+        for k, t in enumerate(MERCADOS_POR_ABRIR):
+            marca = d.strftime("%Y-%m-%dT10:00:00+00:00")
+            sent = ((i * 37) % 200 - 100) / 100.0
+            filas.append((i, marca, marca, t, sent))
+            i += 1
+            if k % 3 == 0:      # densidad variable: el buzz tiene que moverse
+                filas.append((i, marca, marca, t, -sent))
+                i += 1
+    return filas
 
 
 def _series_sinteticas(hasta: date = FIN_DATOS) -> pd.DataFrame:
@@ -108,6 +128,199 @@ def test_truncar_futuro_no_cambia_predicciones(monkeypatch, tmp_path):
                 por_baseline[clase.nombre] = pred.round(6).to_dict("records")
             resultados[nombre_v] = por_baseline
     assert resultados["completa"] == resultados["recortada"]
+
+
+# ============================================================
+# B-1 · el sentimiento sólo puede usar juicios que YA EXISTÍAN
+#
+# La corrida `20260901-061708-5.1-invalidada-por-fuga` se invalidó porque
+# `SentimientoPIT` cortaba por `titulares.fecha` (publicación) y nunca
+# miraba `analisis.analizado_en`. Medido sobre la base real: 66,9 % de los
+# análisis se produjeron después de las 22:15 UTC de su día de publicación.
+# ============================================================
+def _noticias_sintetica(ruta: str, filas):
+    """filas: (id, publicado_en, analizado_en, tickers, sentimiento)."""
+    c = sqlite3.connect(ruta)
+    c.execute("CREATE TABLE titulares (id INTEGER PRIMARY KEY, fecha TEXT, "
+              "fuente TEXT, titular TEXT, url TEXT UNIQUE, tickers TEXT)")
+    c.execute("CREATE TABLE analisis (titular_id INTEGER PRIMARY KEY, "
+              "sentimiento REAL, tickers_afectados TEXT, impacto_estimado TEXT,"
+              " explicacion TEXT, analizado_en TEXT, relevancia REAL)")
+    for i, pub, ana, tk, sent in filas:
+        c.execute("INSERT INTO titulares VALUES (?,?,?,?,?,?)",
+                  (i, pub, "t", "t", f"http://x/{i}", tk))
+        c.execute("INSERT INTO analisis VALUES (?,?,?,?,?,?,?)",
+                  (i, sent, tk, "medio", "e", ana, 1.0))
+    c.commit()
+    c.close()
+    return ruta
+
+
+def test_b1_un_juicio_emitido_despues_no_entra(monkeypatch, tmp_path):
+    """EL test de B-1. Mismo titular, misma fecha de publicación: si el
+    juicio de la IA se emitió meses después, el día de la emisión no
+    existía y no puede alimentar la feature."""
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), [
+        (1, "2026-01-05T10:00:00+00:00", "2026-01-05T12:00:00+00:00", "NVDA", 0.8),
+        (2, "2026-01-05T10:00:00+00:00", "2026-07-04T12:00:00+00:00", "AMD", -0.9),
+    ])
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    s = datos.SentimientoPIT()
+    # el juicio del 05-ene existía ese día: entra
+    assert s.valor("NVDA", date(2026, 1, 5))[0] == pytest.approx(0.8)
+    # el juicio del 04-jul NO existía el 05-ene: no entra, y no es un cero
+    assert s.valor("AMD", date(2026, 1, 5))[0] is None
+    # y a partir del día en que sí existe, entra
+    assert s.valor("AMD", date(2026, 7, 4))[0] == pytest.approx(-0.9)
+
+
+def test_b1_el_corte_es_el_maximo_de_las_dos_marcas_no_el_minimo(monkeypatch, tmp_path):
+    """La causalidad exige el MÁXIMO: un dato es usable sólo cuando las DOS
+    cosas ya ocurrieron (el titular se publicó Y el juicio existe).
+
+    Con `min()` —como quedó escrito en el acta— el predicado colapsa al de
+    hoy, porque `analizado_en` es posterior a la publicación por
+    construcción: `min(fecha, analizado_en) == fecha` casi siempre. Este
+    test falla si alguien vuelve al mínimo."""
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), [
+        (1, "2026-01-05T10:00:00+00:00", "2026-06-01T12:00:00+00:00", "NVDA", 0.7),
+    ])
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    s = datos.SentimientoPIT()
+    assert s.valor("NVDA", date(2026, 5, 31))[0] is None   # min() lo dejaría entrar
+    assert s.valor("NVDA", date(2026, 6, 1))[0] == pytest.approx(0.7)
+
+
+def test_b1_un_juicio_de_las_23h_no_estaba_en_la_emision_de_las_2215(
+        monkeypatch, tmp_path):
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), [
+        (1, "2026-01-05T10:00:00+00:00", "2026-01-05T23:00:00+00:00", "NVDA", 0.5),
+    ])
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    s = datos.SentimientoPIT()
+    assert s.valor("NVDA", date(2026, 1, 5))[0] is None
+    assert s.valor("NVDA", date(2026, 1, 6))[0] == pytest.approx(0.5)
+
+
+def test_b1_el_buzz_pasa_por_el_mismo_corte(monkeypatch, tmp_path):
+    """`buzz` salía del mismo join y no tenía grado ninguno: un titular sólo
+    entra al buzz si fue analizado, y el 66,9 % lo fue tarde."""
+    filas = [(i, f"2026-01-{d:02d}T10:00:00+00:00",
+              "2026-01-01T00:00:00+00:00", "NVDA", 0.1)
+             for i, d in enumerate(range(1, 16), start=1)]
+    # un pico de 20 titulares el día 16, pero analizados medio año después
+    filas += [(100 + k, "2026-01-16T10:00:00+00:00",
+               "2026-07-04T10:00:00+00:00", "NVDA", 0.1) for k in range(20)]
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), filas)
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    s = datos.SentimientoPIT()
+    # el pico NO existía el 16-ene: buzz de ese día es 0, no 20/1
+    assert s.buzz("NVDA", date(2026, 1, 16)) == pytest.approx(0.0)
+
+
+def test_b1_la_cobertura_se_mide_y_se_puede_declarar(monkeypatch, tmp_path):
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), [
+        (1, "2026-01-05T10:00:00+00:00", "2026-01-05T12:00:00+00:00", "NVDA", 0.8),
+        (2, "2026-01-05T10:00:00+00:00", "2026-07-04T12:00:00+00:00", "AMD", -0.9),
+    ])
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    cob = datos.SentimientoPIT().cobertura()
+    assert cob["filas_ticker_analisis"] == 2
+    assert cob["filas_disponibles_tarde"] == 1
+    assert cob["rezago_max_dias"] == 180
+    assert cob["primer_dia_con_dato_disponible"] == "2026-01-05"
+
+
+# ============================================================
+# B-2 · la guarda tiene que poder disparar
+# ============================================================
+def test_b2_la_guarda_recibe_la_serie_sin_recortar():
+    """La forma que hizo tautológica a la guarda: recortar con
+    `index.date <= fecha` y pedirle a `validar_sin_futuro` que compruebe ese
+    mismo recorte. Si vuelve a aparecer en el camino de ejecución, este test
+    muere."""
+    fuente = open(bl.__file__, encoding="utf-8").read()
+    cuerpo = fuente.split("class ContextoRun")[1]
+    assert "validar_sin_futuro(" not in cuerpo, (
+        "el camino de ejecución volvió a validar su propio recorte; el corte "
+        "lo tiene que hacer recortar_pit(), que recibe la serie SIN recortar")
+    assert "recortar_pit(" in cuerpo
+
+
+def test_b2_recortar_pit_exige_indice_ordenado():
+    """Con el índice desordenado, '<= fecha' no separa pasado de futuro y la
+    guarda no puede afirmar nada: revienta en vez de mentir."""
+    idx = pd.to_datetime(["2026-05-20", "2026-06-30", "2026-05-10"])
+    s = pd.Series([1.0, 2.0, 3.0], index=idx)
+    with pytest.raises(datos.ErrorLookAhead):
+        datos.recortar_pit(s, DIA_EMISION)
+
+
+def test_b2_recortar_pit_devuelve_el_pasado_y_nada_mas():
+    idx = pd.bdate_range(end=pd.Timestamp(FIN_DATOS), periods=50)
+    s = pd.Series(range(50), index=idx)
+    corte = datos.recortar_pit(s, DIA_EMISION)
+    assert len(corte) > 0 and corte.index.max().date() <= DIA_EMISION
+    assert len(corte) < len(s)
+
+
+def _fechas_gate(n: int = 12) -> tuple:
+    """≥10 fechas repartidas por la ventana sintética, no una sola."""
+    return tuple(d.date() for d in pd.bdate_range("2026-03-02", periods=n * 3,
+                                                  freq="3B")[:n])
+
+
+def test_b2_gate_de_causalidad_pasa_en_B0_B5_y_en_doce_fechas(monkeypatch, tmp_path):
+    """La prueba maestra, ahora sobre las SEIS baselines y doce fechas —la
+    versión anterior cubría una fecha y tres baselines, así que las cinco
+    features exclusivas de B4/B5 eran invisibles para toda la suite."""
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), _filas_noticias_densas())
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    series = _series_sinteticas()
+    fuente = datos.FuenteCongelada(series=series, ohlc=_ohlc_sintetico(series))
+    info = causalidad.gate(fuente, _fechas_gate(), CUALES_TODAS)
+    assert info["resultado"] == "INVARIANTE"
+    assert info["n_fechas"] >= 10 and len(info["baselines"]) == 6
+
+
+@pytest.mark.parametrize("feature", [
+    "mom20", "beta_sox", "mom20_idx", "regimen_alcista", "z_divergencia",
+    "roca_pct", "upstream", "sentimiento", "sentimiento_sector", "buzz",
+])
+def test_b2_contraprueba_una_fuga_inyectada_HACE_disparar_el_gate(
+        feature, monkeypatch, tmp_path):
+    """LA CONTRAPRUEBA. Se inyecta la fuga canónica —`shift(-1)`: el valor
+    de mañana ocupa el lugar de hoy— en cada feature, una por una, y el gate
+    TIENE que disparar. Un test de fuga que no puede fallar no prueba nada
+    (mismo patrón que `tests/test_gemelo_datos.py`).
+
+    Cubre las cinco features exclusivas de B4/B5 —roca_pct, upstream,
+    sentimiento, sentimiento_sector, buzz—, que son exactamente donde vivía
+    B-1 y donde la suite anterior no miraba."""
+    ruta = _noticias_sintetica(str(tmp_path / "n.db"), _filas_noticias_densas())
+    monkeypatch.setattr(datos, "RUTA_NOTICIAS", ruta)
+    monkeypatch.setattr(datos, "RUTA_SENALES", str(tmp_path / "sin.db"))
+    series = _series_sinteticas()
+    fuente = datos.FuenteCongelada(series=series, ohlc=_ohlc_sintetico(series))
+    with pytest.raises(datos.ErrorLookAhead):
+        causalidad.gate(fuente, _fechas_gate(4), CUALES_TODAS,
+                        fabrica_ctx=causalidad.fabrica_con_fuga(feature))
+
+
+def test_b2_la_guarda_vieja_NO_habria_visto_la_fuga():
+    """La razón por la que hizo falta un gate nuevo: `validar_sin_futuro`
+    mira el ÍNDICE, y un shift(-1) desplaza los VALORES sin tocarlo."""
+    idx = pd.bdate_range(end=pd.Timestamp(DIA_EMISION), periods=40)
+    limpia = pd.Series(np.arange(40.0), index=idx)
+    con_fuga = limpia.shift(-1)                      # ¡mañana en el lugar de hoy!
+    datos.validar_sin_futuro(con_fuga, DIA_EMISION)  # pasa sin chistar
+    assert con_fuga.iloc[0] != limpia.iloc[0]        # y el valor sí cambió
 
 
 def test_regla_maestra_en_sesion_objetivo():

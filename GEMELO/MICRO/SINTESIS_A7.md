@@ -354,6 +354,11 @@ inserta 8 ciclos de silencio entre mensajes. Convertir una latencia en un
 caudal sería justo el tipo de inferencia que este proyecto no se permite. Para
 ocho mensajes diarios no hace falta medirlo para saber que sobra.)*
 
+> **AL 1-sep-2026 el caudal YA se midió** (15,00 ciclos/mensaje en B=4, 9,00 en
+> B=28, `INGESTA_ANCHA.md` §3.3) y el silencio resultó ser un requisito de
+> corrección, no una comodidad: `RTL.md` §7, R1. La prohibición de convertir
+> una latencia en un caudal sigue vigente y sigue sin haberse hecho.
+
 ---
 
 ## 4. B3 — Qué compra el margen, ordenado por lo que le sirve al proyecto
@@ -678,6 +683,11 @@ reescritura silenciosa.
 - **Throughput espalda-con-espalda.** Sigue sin medirse, igual que en
   `SINTESIS.md` §9: el banco inserta 8 ciclos de silencio entre mensajes para
   que la latencia se mida limpia.
+  > **DOS VECES SUPERADO (1-sep-2026).** El caudal se midió con la fuente
+  > interna (15,00 ciclos/mensaje en B=4, 9,00 en B=28 — `INGESTA_ANCHA.md`
+  > §3.3), y los 8 ciclos **no son una comodidad del banco**: son un requisito
+  > de corrección de mínimo 2, hoy numerado como R1 en `RTL.md` §7. Por debajo
+  > del mínimo, 178 de 181 sellos salen mal **con la latencia intacta**.
 - **Corrección** (no costo) de las piezas del 4.6.0 completo: reproducir
   `betas_al` en punto fijo contra `motor.py` en float64.
 - **La ingesta ancha desde BRAM**: hoy la fuente del testbench es el propio

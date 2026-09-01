@@ -63,18 +63,132 @@ from GEMELO.experimento import _tabla, construir_panel
 DIR_RESULTADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "resultados")
 
+# ============================================================
+# CONTEO DE INTENTOS DEL DSR — REGISTRO ESTRUCTURADO
+# ============================================================
+# Regla congelada (`GEMELO/DISEÑO.md`:363-364, §4.2 bis): un intento =
+# (configuración × ventana de evaluación) con resultado reportable.
+# Regla de arbitraje, de Nicolás (2026-09-01): **lo que define un intento
+# es que se evaluó una configuración y se miró el resultado.** Un intento
+# descartado por malo cuenta; uno cuya CONCLUSIÓN se retractó, también —
+# la retractación de la corrida de `concentracion.md` fue sobre su
+# conclusión, no sobre que esos análisis se corrieron. Simétricamente: un
+# experimento **declarado y nunca corrido** NO cuenta, y una condición
+# declarada **NO MEDIBLE** tampoco, porque nadie miró un resultado.
+#
+# Por qué esto es una tabla y no un entero: hasta el 2026-09-01 este
+# archivo declaraba `N_INTENTOS_WS5 = 25` con un test que fijaba el
+# literal, mientras cuatro documentos del repo declaraban 25 / 26 / 32 /
+# 43 / 82. **El test hacía al número inmune a la corrección en vez de
+# protegerlo de la corrupción** — es la cuarta regla de la casa. Con el
+# desglose como DATO, el test verifica que la suma cuadre y que cada
+# tramo cite su evidencia; agregar un intento es agregar una fila, y el
+# número se recalcula solo. Un entero no se puede auditar; una tabla sí.
+#
+# Columnas: (n, tramo, qué se evaluó, dónde vive la evidencia).
 # ------------------------------------------------------------
-# CONTEO DE INTENTOS — declarado en preregistro_ws5.md §2 ANTES de correr.
-# Regla congelada (§4.2 bis): un intento = (configuración × ventana de
-# evaluación) con resultado reportable.
-#   13  acumulado hasta WS3
-#   12  E1,E2,E3 × {XETR, ASIA} × {exploración, holdout}
-# = 25. El desglose por bolsa dentro de ASIA NO suma: el ajuste tiene que
-# ser por bolsa (la trampa), pero el resultado reportable es el del
-# estrato. Si alguna decisión se tomara mirando ese desglose, N sube a 31.
+REGISTRO_INTENTOS = (
+    # --- lo que el WS5 ya contenía cuando se selló (subtotal 25) -------
+    (6, "WS0", "B0-B5, walk-forward de humo 2026-06-01 -> 07-18",
+     "backtest/resultados/20260726-032635-humo-legacy/resumen.md"),
+    (3, "WS2b", "C1, C2, C3 sobre la ventana sellada",
+     "GEMELO/resultados/control_lineal.md:62-64"),
+    (3, "WS3", "C1, C2, C3 sobre la ventana larga",
+     "GEMELO/resultados/ventana_larga.md:124-126"),
+    (1, "WS3", "campeón reconstruido (= B2) sobre la ventana larga, "
+               "convención estricta", "GEMELO/DISEÑO.md:386"),
+    (12, "WS5", "E1, E2, E3 x {XETR, ASIA} x {exploración, holdout}",
+     "GEMELO/resultados/relevo_asiatico.md:149-160"),
+    # --- corridas posteriores al sello del WS5 ------------------------
+    (6, "CONDICIONAL", "5 condiciones candidatas MEDIDAS + el modelo "
+                       "conjunto; la 6a (densidad de noticias) se declaró "
+                       "NO MEDIBLE y por eso NO cuenta",
+     "GEMELO/CONDICIONAL/DISEÑO.md:268-289; medidas en "
+     "GEMELO/resultados/bitacora_02.md:74-94"),
+    (3, "CONCENTRACION", "3 scan-statistics sobre la ventana sellada",
+     "GEMELO/resultados/concentracion.md:85-89"),
+    (8, "CONCENTRACION", "8 McNemar por bolsa (4 bolsas x dentro/fuera "
+                         "del bloque 15-23-jul)",
+     "GEMELO/resultados/concentracion.md:50-55"),
+    (1, "CONCENTRACION", "scan-statistic de ancho fijo 6 sobre la ventana "
+                         "LARGA (ventana distinta de los 3 anteriores)",
+     "GEMELO/resultados/bitacora_02.md:64-67"),
+    (4, "WS4", "campeón desglosado por bolsa sobre la ventana larga "
+               "(+19.1 / +16.8 / +15.4 / +2.5 pp); el WS5 entero nació de "
+               "mirarlos", "GEMELO/resultados/auditoria_ws3.md:26-31"),
+    (2, "WS4", "campeón sobre la ventana larga bajo las convenciones "
+               "`verificador` (+15.27) y `excluir_cero` (+15.66); el "
+               "intento del WS3 sólo cubrió `estricta` (+15.90)",
+     "GEMELO/resultados/auditoria_ws3.md:131-135"),
+    (5, "DISEÑO §2", "abstención por magnitud a los umbrales 0.15 / 0.25 / "
+                     "0.30 / 0.50 / 0.75 (el 0.00 es la mirada base y no "
+                     "se cuenta dos veces)", "GEMELO/DISEÑO.md:115-121"),
+    (1, "RELEVO", "la abstención a 0.25 RE-evaluada sobre la ventana "
+                  "sellada actual (+6.5 -> +10.7 pp); ancla el umbral de "
+                  "5 pp de REL-V4", "GEMELO/RELEVO.md:177-183"),
+    (2, "DISEÑO §2", "hipótesis del punto de giro: particiones "
+                     "SOX usado < 0 y >= 0 (formulada y refutada)",
+     "GEMELO/DISEÑO.md:87-88"),
+    (6, "DISEÑO §2", "los 6 bloques de 40 filas de «dónde está la ventaja "
+                     "en el tiempo». Cuentan: de ahí salió la ventana "
+                     "15-23-jul que R2 congeló como vara permanente, o "
+                     "sea que SÍ se tomó una decisión mirándolos",
+     "GEMELO/DISEÑO.md:66-78"),
+    (4, "DOS VENTANAS", "desglose por bolsa de la ventana sellada COMPLETA "
+                        "(distinta de los 8 McNemar dentro/fuera)",
+     "GEMELO/resultados/dos_ventanas.md:217-222"),
+    (4, "ERRATA §38", "recomputo de C1, C2, C3 y CAMPEÓN sobre la ventana "
+                      "sellada nueva (pares n=240)", "DECISIONES.md §38.2"),
+    (2, "COLA", "reglas de deduplicación keep=\"first\" (+6.64 pp, "
+                "p=0.1847) y keep=\"last\" (+9.96 pp, p=0.0323); «sin "
+                "deduplicar» es el statu quo ya contado",
+     "GEMELO/resultados/cola_decisiones.md:88-91"),
+    (7, "PASIVO", "las miradas al duelo campeón-vs-baseline, contadas por "
+                  "(convención x población) DISTINTA: 9 combinaciones "
+                  "únicas de las 12 lecturas, menos 2 ya contadas aquí "
+                  "(excluir_cero n=240 va en ERRATA §38; excluir_cero "
+                  "n=184 es el umbral 0.25 de DISEÑO §2)",
+     "GEMELO/SECUENCIAL/DISEÑO.md:207-225"),
+    (6, "5.1", "B0-B5 sobre la ventana de evaluación nueva "
+               "2024-09-02 -> 2026-08-28 (ventana nueva => intentos "
+               "nuevos)", "backtest/veredicto_51.py:54"),
+)
+
+# EL número vigente. Se calcula, no se escribe.
+N_INTENTOS_ACUMULADO = sum(f[0] for f in REGISTRO_INTENTOS)
+
+# El sello histórico del WS5: lo que este archivo declaró el 2026-08-30 y
+# lo que el reporte `GEMELO/resultados/relevo_asiatico.md` lleva impreso.
+# Se conserva SOLO para que ese reporte siga siendo reproducible y para
+# que el test pueda verificar su desglose. **No es el N vigente y no se
+# usa para calcular nada**: quien necesite un N para un DSR usa
+# `N_INTENTOS_ACUMULADO`.
+N_ACUMULADO_WS3 = 13                       # sello histórico (WS3, 26-ago)
+N_INTENTOS_WS5 = 25                        # sello histórico (WS5, 30-ago)
+
+# Lo que NO se cuenta, declarado para que la exclusión sea auditable y no
+# desaparezca (cada línea es «se evaluó pero nadie miró un resultado», o
+# «no es selección de modelo»):
+#   - el complemento ventana larga vs. sellada, DECLARADO Y NUNCA CORRIDO
+#     (`dos_ventanas.md`:178-184). El 82 del expediente 5.1 lo incluyó por
+#     conservadurismo; la regla de arbitraje lo excluye.
+#   - la densidad de noticias como condición candidata: NO MEDIBLE
+#     (`bitacora_02.md`:74-76). Incluida en el 43 y en el 82; se excluye.
+#   - las 576 celdas de `GEMELO/bifurcaciones.py`: censo exhaustivo de
+#     convenciones de MEDICIÓN, sin selección de modelo. Pero citar
+#     cualquier celda suelta como resultado del proyecto SÍ mueve este
+#     registro, y hay que decirlo en el mismo párrafo.
+#   - la baseline «siempre al alza» (es la hipótesis nula) y la búsqueda
+#     interna de `alpha` por CV temporal (`GEMELO/DISEÑO.md`:374-377).
+#   - MDE, fronteras de gasto de alpha, BLOQUES_FECHAS, el RTL del frente
+#     MICRO y las tres rutas del McNemar: parámetros de diseño o elección
+#     de método, no configuraciones predictivas.
+#
+# El desglose por bolsa dentro de ASIA en el WS5 tampoco suma: el ajuste
+# tiene que ser por bolsa (la trampa), pero el resultado reportable es el
+# del estrato. Si alguna decisión se tomara mirándolo, son 6 intentos más
+# y hay que declararlo.
 # ------------------------------------------------------------
-N_INTENTOS_WS5 = 25
-N_ACUMULADO_WS3 = 13
 
 ANIOS = 8
 FRACCION_HOLDOUT = 0.20        # último 20% de fechas de emisión, en cuarentena
@@ -326,9 +440,12 @@ def correr(anios: int = ANIOS, usar_cache: bool = True,
         "post_hoc": True,
         "generado_utc": datetime.now(timezone.utc).isoformat(),
         "parametros": {
-            "N_intentos_declarado": N_INTENTOS_WS5,
-            "desglose_N": f"{N_ACUMULADO_WS3} acumulados hasta WS3 + 12 "
-                          "(E1,E2,E3 × {XETR,ASIA} × {exploración,holdout})",
+            "N_intentos_declarado": N_INTENTOS_ACUMULADO,
+            "N_intentos_sello_ws5": N_INTENTOS_WS5,
+            "desglose_N": " + ".join(f"{n} {tramo}"
+                                     for n, tramo, _, _ in REGISTRO_INTENTOS),
+            "registro_intentos": [{"n": n, "tramo": t, "que": q, "fuente": f}
+                                  for n, t, q, f in REGISTRO_INTENTOS],
             "regla_conteo": "un intento = (configuración × ventana de "
                             "evaluación) con resultado reportable",
             "convencion_empate": "excluir_cero (§2.8) — aplicada, a "
@@ -503,7 +620,8 @@ def informe(r: dict) -> str:
           _tabla(r["exclusion_por_bolsa"]),
           "## Parámetros sellados", "",
           "| Parámetro | Valor |", "|---|---|",
-          f"| **N intentos declarado (DSR)** | **{p['N_intentos_declarado']}** |",
+          f"| **N intentos acumulado (DSR)** | **{p['N_intentos_declarado']}** |",
+          f"| Sello histórico del WS5 (superado el 01-sep) | {p['N_intentos_sello_ws5']} |",
           f"| Desglose | {p['desglose_N']} |",
           f"| Regla de conteo | {p['regla_conteo']} |",
           f"| **Convención del empate** | **{p['convencion_empate']}** |",
@@ -520,7 +638,12 @@ def informe(r: dict) -> str:
           f"(corte {p['corte_holdout']}) |",
           f"| Años de datos | {p['anios_datos']} |",
           "",
-          f"**El N sube de {N_ACUMULADO_WS3} a {N_INTENTOS_WS5}.** Doce",
+          f"**El N acumulado vigente es {N_INTENTOS_ACUMULADO}**, reconstruido",
+          "desde las actas y con desglose auditable en la constante",
+          "`REGISTRO_INTENTOS` de este mismo archivo. Al sellarse el WS5 el",
+          f"conteo leía **{N_INTENTOS_WS5}** ({N_ACUMULADO_WS3} hasta WS3 + 12); esa cifra",
+          "quedó **superada** el 2026-09-01 y se conserva sólo como sello",
+          "histórico. Doce",
           "intentos nuevos salen de aplicar la regla congelada",
           "**mecánicamente**: tres configuraciones × dos estratos × dos",
           "porciones, y las doce son reportables. Contarlas de otro modo sería",
@@ -573,7 +696,8 @@ def informe(r: dict) -> str:
           "propio depende de ella), pero el resultado reportable es el del",
           "estrato. Esta tabla se publica para que el lector vea la",
           "heterogeneidad; **ninguna decisión se toma mirándola.** Si alguna se",
-          f"tomara, N sube de {N_INTENTOS_WS5} a 31 y hay que decirlo.", "",
+          f"tomara, N sube de {N_INTENTOS_ACUMULADO} a "
+          f"{N_INTENTOS_ACUMULADO + 6} y hay que decirlo.", "",
           _tabla(r["por_bolsa_descriptivo"])]
     if r["descartadas_por_cobertura"]:
         L += ["## Series descartadas por cobertura", "",

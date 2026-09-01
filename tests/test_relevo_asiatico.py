@@ -14,7 +14,8 @@
 #     conocible a la emisión. Se fija para que no se pierda en silencio.
 #  4. Que la convención `excluir_cero` de la §2.8 SÍ se aplica — la que el
 #     WS3 no aplicó.
-#  5. Que el N declarado es 25 y su desglose cuadra.
+#  5. Que el N del DSR se CALCULA desde un registro con procedencia,
+#     y que ningún sello histórico puede volver a ser el N vigente.
 #  6. Que el carácter POST-HOC está declarado y la regla de decisión se
 #     aplica mecánicamente, no a ojo.
 #
@@ -208,22 +209,64 @@ def test_comparar_tambien_aplica_la_convencion():
 # ============================================================
 # 5. EL N DECLARADO
 # ============================================================
-def test_el_N_del_WS5_es_25_y_su_desglose_cuadra():
-    """13 acumulados hasta WS3 + 3 configuraciones × 2 estratos × 2
-    porciones. Las doce son reportables, así que las doce cuentan."""
-    assert ra.N_INTENTOS_WS5 == 25
-    assert ra.N_INTENTOS_WS5 == ra.N_ACUMULADO_WS3 + 3 * 2 * 2
-    assert ra.N_ACUMULADO_WS3 == 13
+def test_el_N_acumulado_SE_CALCULA_y_no_se_escribe():
+    """La versión anterior de este test decía `assert N_INTENTOS_WS5 == 25`.
+
+    Eso no protegía el número: lo hacía **inmune a la corrección**
+    mientras cuatro documentos del repo declaraban 25 / 26 / 32 / 43 / 82.
+    Es la cuarta regla de la casa —un número retirado que sigue ofrecido
+    en el código vuelve a circular— y el test era el mecanismo que lo
+    ofrecía.
+
+    Lo que se fija ahora es la PROPIEDAD, no el valor: el N vigente es la
+    suma del registro y de ninguna otra parte. Agregar un intento es
+    agregar una fila; el número se recalcula solo y este test sigue
+    verde sin tocarlo, que es exactamente lo que antes no pasaba.
+    """
+    assert ra.N_INTENTOS_ACUMULADO == sum(f[0] for f in ra.REGISTRO_INTENTOS)
+    # y no hay ningún literal suelto: el módulo no puede declarar el
+    # acumulado por asignación directa de un entero
+    import inspect, re
+    fuente = inspect.getsource(ra)
+    assert not re.search(r"^N_INTENTOS_ACUMULADO\s*=\s*\d", fuente, re.M)
 
 
-def test_el_N_del_WS5_es_mayor_que_el_del_WS3():
+def test_cada_tramo_del_registro_de_intentos_cita_su_evidencia():
+    """Un conteo sin procedencia no es auditable: es una cifra de memoria
+    con otro traje. Cada fila declara cuántos, qué se evaluó y dónde vive
+    el resultado que alguien miró."""
+    assert len(ra.REGISTRO_INTENTOS) >= 15
+    for n, tramo, que, fuente in ra.REGISTRO_INTENTOS:
+        assert isinstance(n, int) and n >= 1, tramo
+        assert tramo and que, tramo
+        # la fuente apunta a un archivo o a un acta, con localizador
+        assert (":" in fuente or "§" in fuente or fuente.endswith(".md")), tramo
+
+
+def test_el_acumulado_supera_a_los_sellos_historicos_y_endurece_el_DSR():
     """Ser conservador es gratis: un N de más sube SR0 y hace al DSR más
-    exigente; un N de menos lo inutiliza."""
+    exigente; un N de menos lo inutiliza. Los sellos históricos (WS3=13,
+    WS5=25) se conservan para reproducir sus reportes, pero NINGUNO puede
+    volver a ser el N vigente."""
     from GEMELO import ventana_larga as vl
     from backtest import inferencia as inf
-    assert ra.N_INTENTOS_WS5 > vl.N_INTENTOS_WS3
-    assert (inf.sr0_deflacionado(ra.N_INTENTOS_WS5, 0.25)
-            > inf.sr0_deflacionado(vl.N_INTENTOS_WS3, 0.25))
+    assert ra.N_ACUMULADO_WS3 == 13            # sello histórico, congelado
+    assert ra.N_INTENTOS_WS5 == 25             # sello histórico, congelado
+    assert ra.N_INTENTOS_WS5 == ra.N_ACUMULADO_WS3 + 3 * 2 * 2
+    assert ra.N_INTENTOS_ACUMULADO > ra.N_INTENTOS_WS5 > vl.N_INTENTOS_WS3
+    for previo in (vl.N_INTENTOS_WS3, ra.N_INTENTOS_WS5):
+        assert (inf.sr0_deflacionado(ra.N_INTENTOS_ACUMULADO, 0.25)
+                > inf.sr0_deflacionado(previo, 0.25))
+
+
+def test_el_reporte_emite_el_N_vigente_y_no_el_sello_retirado():
+    """Cuarta regla de la casa aplicada al reporte: el 25 puede quedar
+    como sello histórico, pero no puede ser lo que el reporte publica."""
+    import inspect
+    fuente = inspect.getsource(ra)
+    # el sello nunca alimenta el parámetro que el reporte imprime
+    assert '"N_intentos_declarado": N_INTENTOS_ACUMULADO' in fuente
+    assert '"N_intentos_declarado": N_INTENTOS_WS5' not in fuente
 
 
 def test_el_prerregistro_declara_el_N_y_la_regla_antes_del_reporte():

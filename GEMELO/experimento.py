@@ -131,7 +131,17 @@ def correr(anios: int = 8, usar_cache: bool = True,
         "n_panel": int(len(panel)),
         "resultados": resultados,
         "pares": pares,
-        "inferencia_sharpe": cl.inferencia_sharpe(resultados),
+        # El N va EXPLÍCITO: `inferencia_sharpe` ya no tiene default (ver su
+        # docstring). Se usa el acumulado del registro, no el sello viejo
+        # de 9 que esta llamada consumía a ciegas hasta el 1-sep-2026.
+        #
+        # El import es DIFERIDO porque `relevo_asiatico` importa de este
+        # módulo: al nivel de módulo sería circular. Ese ciclo es, en sí,
+        # la evidencia de que el registro de intentos merece un módulo
+        # propio (`GEMELO/registro_intentos.py`) del que todos importen —
+        # está propuesto y no instalado, con su costo, en la cola.
+        "inferencia_sharpe": cl.inferencia_sharpe(
+            resultados, n_intentos=_n_intentos_vigente()),
         "r2_por_configuracion": [cl.evaluar_r2(df, n)
                                  for n, df in predicciones.items()
                                  if not df.empty],
@@ -150,6 +160,12 @@ def _celda(v) -> str:
         return "" if pd.isna(v) else str(v)
     except (TypeError, ValueError):
         return str(v)
+
+
+def _n_intentos_vigente() -> int:
+    """El N acumulado del registro, importado tarde para evitar el ciclo."""
+    from GEMELO.relevo_asiatico import N_INTENTOS_ACUMULADO
+    return N_INTENTOS_ACUMULADO
 
 
 def _tabla(filas) -> str:

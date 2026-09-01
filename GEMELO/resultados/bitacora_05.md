@@ -704,4 +704,97 @@ vigentes.
     descartarlas, pero eso exige recomputar valores sellados y **las filas
     selladas no se reescriben nunca**. Se descarta por restricción, no por
     preferencia, y así queda escrito.
+- **10:05** — **Frente E cerrado: el conteo es 86, y el hallazgo no pedido
+  es peor que el que fue a buscar.**
+  - **N = 86**, calculado como **suma de un registro de 20 tramos con
+    procedencia línea a línea**. El entero mágico dejó de existir:
+    `N_INTENTOS_ACUMULADO = sum(f[0] for f in REGISTRO_INTENTOS)`.
+    Agregar un intento ahora es agregar una fila.
+  - **El test era el mecanismo que lo mantenía corto.** No protegía al 25
+    de corromperse: **lo protegía de corregirse.** Es la cuarta regla en
+    su forma más limpia. El test nuevo fija la **propiedad** —que el N sea
+    la suma, que cada tramo cite evidencia— y trae **tres contrapruebas**
+    que fallan por la razón correcta.
+  - **Dos correcciones al 82 del Frente C1, de signo opuesto:** −1 por un
+    experimento **declarado y nunca corrido** (contarlo contradice la
+    regla de arbitraje: nadie miró un resultado), −1 por una condición
+    declarada **no medible**, y **+6 por los bloques de 40 filas** — que
+    es el caso de manual, porque de ahí salió la ventana 15-23-jul que R2
+    congeló como vara permanente: **una decisión sí se tomó mirándolos**.
+  - **Ningún veredicto cambia, y la razón es incómoda:** *donde el DSR
+    pasa, pasa porque el Sharpe es ficticio; donde no pasa, no pasa porque
+    el Sharpe es negativo. Nunca porque el umbral esté bien calibrado.*
+    Verificó además el DSR de la 5.1 a **N = 1** —sin deflactar nada— y
+    **sigue 0,0000 en las seis baselines**: el conteo no era la
+    restricción, y ahora está demostrado más fuerte de lo que se dijo.
+  - **Y el hallazgo NO pedido, que sí puede voltear un veredicto:**
+    `GEMELO/control_lineal.py`:363 tenía `n_intentos: int =
+    N_INTENTOS_DECLARADO` con **9**, y `experimento.py`:134 lo llamaba
+    **sin pasar N**. Mientras tanto `backtest/inferencia.py`:127 había
+    quitado ese mismo default **a propósito, con acta (§26.1) y con un
+    test que lo exige**. **La defensa estaba anulada desde adentro.**
+    Medido: `SR0(9) = 0,9986` contra `SR0(86) = 1,6266` — **el default
+    regalaba 0,63 de umbral**, y a Sharpe anualizado de 1,2-1,5 el
+    veredicto **V5 se daba vuelta de PASA a NO PASA**.
+- **10:15** — **Cerré yo ese vector**, que era de cinco minutos y valía
+  más que casi todo lo demás: quité el default de `inferencia_sharpe`, el
+  N va explícito en `experimento.py`, y agregué un test que fija la
+  propiedad —**la firma no puede volver a tener default**— con la
+  medición en el docstring.
+  - Al hacerlo apareció un **import circular** (`relevo_asiatico` ya
+    importa de `experimento`), resuelto con import diferido. **Ese ciclo
+    es, en sí, la evidencia de que el registro merece módulo propio**, que
+    es justo lo que el Frente E propuso y no instaló por riesgo de
+    conflicto. Queda con su costo en la cola.
+  - `README.md`:253 dice **"Va en 25"** en la portada pública. **No lo
+    toco**: es cifra publicada y lleva tu firma.
+- **10:20** — **Frente C cerrado, y encontró MÁS filas de las
+  documentadas: 25, no 20.** Auditó las 279 filas selladas recomputando
+  desde `available_at`, no sólo las que aparecían duplicadas.
+  - **15 son nuevas y NO tienen pareja**, invisibles al `GROUP BY ...
+    HAVING COUNT>1` de anoche: 7 del 5-ago (el snapshot del 6-ago tuvo
+    **caída total de datos**) y 8 del 5-jul (un sello manual con **casi 3
+    días** de atraso).
+  - **Y eso abre un hueco en la firma:** la regla de Nicolás está escrita
+    para **arbitrar entre dos filas que compiten**. Estas 15 están solas y
+    mal. Aplicarla literalmente las descartaría **sin reemplazo**, que es
+    otra operación. Avisado al Frente A: que compute la cifra y **no
+    decida**.
+  - **Un detalle que muestra el sistema funcionando:** en el caso del
+    5-jul la sesión correcta **ya había cerrado** al sellar, así que con
+    el ancla buena esas 8 pasarían a `no_verificable_timing`. **No las
+    descarta un criterio nuevo: las descarta el criterio que el proyecto
+    ya tenía.**
+  - El parche aplica limpio (`patch --dry-run` verificado), la
+    contraprueba **falla hoy** como debe, y el **corte de método está
+    escrito antes de aplicarse**. `snapshot.py` sin tocar: 0 líneas de
+    diff.
+- **10:25** — **Frente F cerrado, y su hallazgo le pega al propio criterio
+  de verificación del proyecto.**
+  - El requisito quedó escrito como **R1** (mínimo 2 ciclos de silencio) y
+    **R2** (ninguna medición de latencia se publica sin la comparación bit
+    a bit de la misma corrida), con un preámbulo que vale por sí solo:
+    *un requisito que sólo existe como el default de un parámetro no es un
+    requisito, es una coincidencia que todavía no falló.*
+  - **El mecanismo salió más fino que anoche:** el **puntaje** sellado del
+    mensaje k es `feature(k) × beta(k+1)` — **178 de 178 fallos exactos**,
+    o sea el modo de falla es **único, no un desorden** — mientras la
+    **decisión** sellada es la correcta, **181 de 181**. **El sello se
+    contradice a sí mismo.**
+  - **Y el agravante es el hallazgo:** como la decisión sale bien, **una
+    comprobación restringida a la decisión —la vara que `RTL.md` §4
+    defendía como la que importa— también habría pasado 181/181 en
+    verde.** El criterio de verificación preferido del proyecto era ciego
+    a esto.
+  - El test verifica **por qué** falla, con dos comprobaciones que
+    descartan los rojos que no prueban nada (compilación, timeout), y
+    **contraprueba del propio gate**.
+  - **Descartó una forma de detector midiéndola antes de tirarla:** un
+    detector de prosa daría positivo en **76 de 110 líneas (69%)**. *Un
+    detector que grita en dos de cada tres se desactiva y no previene
+    nada.*
+  - **Y dejó señalada una trampa latente:** `referencia.py` construye hoy
+    **189 casos** contra los **181 congelados** en `parametros.vh`.
+    Cualquier cosa que lo toque regenera los vectores con 189 y **mueve en
+    silencio todas las cifras publicadas como "181 filas"**. No lo tocó.
 

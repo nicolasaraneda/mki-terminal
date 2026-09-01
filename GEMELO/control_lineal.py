@@ -360,8 +360,28 @@ def evaluar_r2(df: pd.DataFrame, etiqueta: str,
             "sobrevive_R2": bool(ac.mean() > base.mean())}
 
 
-def inferencia_sharpe(resultados: dict, n_intentos: int = N_INTENTOS_DECLARADO) -> list:
-    """PSR y DSR de cada configuración, con el N DECLARADO.
+def inferencia_sharpe(resultados: dict, n_intentos: int) -> list:
+    """PSR y DSR de cada configuración, con el N que el llamador declara.
+
+    **`n_intentos` NO TIENE VALOR POR DEFECTO, y es deliberado.** Esta
+    firma tenía `= N_INTENTOS_DECLARADO` (9) hasta el 1-sep-2026, y
+    `experimento.py` la llamaba sin pasar N, así que consumía a ciegas el
+    conteo más rancio del repo. `backtest/inferencia.py`:127 había quitado
+    ese mismo default **a propósito, con acta (`DECISIONES.md` §26.1) y
+    con un test que lo exige**, porque *"un DSR calculado con un N que
+    alguien olvidó actualizar miente, y miente hacia arriba"*. Este módulo
+    lo había reintroducido, anulando la defensa desde adentro.
+
+    Medido el 1-sep: `SR0(9) = 0.9986` contra `SR0(86) = 1.6266`. **El
+    default regalaba 0.63 de umbral**, y a un Sharpe anualizado de 1.2–1.5
+    —el rango realista— **el veredicto V5 se daba vuelta de PASA a NO
+    PASA**. Hoy no publicaba nada malo sólo porque el WS2b tiene menos de
+    60 días y corta antes por `MINIMO_DIAS_SHARPE`. Era un vector vivo, no
+    una deuda cosmética.
+
+    Es la cuarta regla de la casa: un número retirado que sigue ofrecido
+    en el código vuelve a circular — acá, ofrecido como valor por defecto
+    de un parámetro.
 
     V_intentos se estima con la varianza de los Sharpe disponibles. Es una
     SUBESTIMACIÓN declarada: los Sharpe de las seis baselines B0→B5 vienen

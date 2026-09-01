@@ -14,10 +14,17 @@
 #
 # POR QUÉ EXISTE ESTA ETAPA
 # El WS2b concluyó que el conjunto de información expandido no aporta,
-# pero esa conclusión estaba sub-potenciada: C2 vs C1 dio +2.8 pp con
-# p=0.36 sobre 215 filas. Con esa muestra no se puede distinguir "no hay
-# señal" de "la señal no se ve". El cuello de botella no era información:
-# era muestra. Y la muestra existe.
+# pero esa conclusión estaba sub-potenciada: C2 vs C1 no se distinguía de
+# cero sobre la ventana sellada del WS2b. Con esa muestra no se puede
+# distinguir "no hay señal" de "la señal no se ve". El cuello de botella no
+# era información: era muestra. Y la muestra existe.
+#
+# ERRATA (2026-09-01) — este encabezado y el reporte de abajo citaban
+# "p=0.36 sobre 215 filas". Esa cifra está SUPERADA: la línea base corregida
+# congela n=223, +4.0 pp, p=0.4633 bajo la convención `excluir_cero`
+# (`GEMELO/DISEÑO.md` §2.8; las filas con gap==0.00 son artefactos de ffill
+# y se excluyen de AMBOS lados). Un número retirado que sigue ofrecido en el
+# código vuelve a circular: por eso se corrige aquí y no sólo en prosa.
 #
 # CÓMO SE RECONSTRUYE EL CAMPEÓN
 # Con la MISMA función de producción (`motor.prediccion_apertura_al`, vía
@@ -68,6 +75,12 @@ N_INTENTOS_WS3 = 13
 
 ANIOS = 8
 SUBVENTANA_FILAS = 200      # tamaño de sub-ventana para la distribución R2
+
+# La n canónica de la ventana sellada del WS2b, congelada en
+# `GEMELO/DISEÑO.md` §2.8 bajo la convención `excluir_cero` (n=223, +4.0 pp,
+# p=0.4633). Sustituye al 215 que este módulo seguía ofreciendo — ver la
+# ERRATA del encabezado.
+N_WS2B_CANONICO = 223
 
 
 def _descargar_para_el_campeon(anios: int, usar_cache: bool) -> tuple:
@@ -309,7 +322,9 @@ def informe(r: dict) -> str:
          f"- Generado: {r['generado_utc']}",
          f"- Ventana: **{v['desde']} → {v['hasta']}** · {v['fechas']} fechas de "
          f"emisión · **{v['filas_evaluacion']} filas de evaluación**",
-         f"  (el WS2b tenía 215; esto es **{v['filas_evaluacion'] // 215}× más**)",
+         f"  (la ventana sellada del WS2b tiene {N_WS2B_CANONICO} filas bajo la "
+         f"convención `excluir_cero` de `GEMELO/DISEÑO.md` §2.8; esto es "
+         f"**{v['filas_evaluacion'] // N_WS2B_CANONICO}× más**)",
          "",
          "## ⚠ LIMITACIÓN DE PRIMER ORDEN: esto NO es point-in-time", "",
          "**Yahoo reescribe la historia en silencio.** Sus precios vienen",

@@ -23,9 +23,8 @@ from universo import (EXCHANGE_POR_TICKER, FX_POR_EXCHANGE,
                       INDICE_LOCAL_POR_EXCHANGE, MERCADOS_POR_ABRIR,
                       PARES_COMPETIDORES, TICKERS_POR_NIVEL, UNIVERSO)
 
-from backtest.datos import (FECHA_PRIMER_SELLO, FuenteCongelada,
-                            SentimientoPIT, residual_rolling,
-                            validar_sin_futuro)
+from backtest.datos import (FuenteCongelada, SentimientoPIT, recortar_pit,
+                            residual_rolling, validar_sin_futuro)
 
 Z80 = motor.Z80
 VENTANA_ENTRENAMIENTO = 250   # sesiones de train para B1/B3-B5 (congelado)
@@ -64,13 +63,27 @@ class ContextoRun:
     entrenamiento solo para sesiones ya CONOCIBLES a la emisión (a las
     22:15 UTC toda sesión de Asia/Europa del mismo día ya cerró +2h)."""
 
-    def __init__(self, fuente: FuenteCongelada, embargo_dias: int = EMBARGO_DIAS):
+    def __init__(self, fuente: FuenteCongelada, embargo_dias: int = EMBARGO_DIAS,
+                 sentimiento: SentimientoPIT | None = None):
         self.fuente = fuente
         if int(embargo_dias) < 0:
             raise ValueError("embargo_dias no puede ser negativo")
         self.embargo_dias = int(embargo_dias)
-        self.sentimiento = SentimientoPIT()
+        # inyectable para que el gate de causalidad pueda truncar TAMBIÉN la
+        # base de noticias: truncar sólo los precios dejaría la mitad del
+        # arnés sin probar, que es donde vivía B-1.
+        self.sentimiento = sentimiento if sentimiento is not None else SentimientoPIT()
         self._memo_sent = {}
+        # memo de vectores de features: el walk-forward reajusta cada 7 días
+        # sobre ventanas que se solapan casi enteras, así que el mismo
+        # (ticker, fecha, columnas) se pide decenas de veces. Es memo puro:
+        # nada aquí depende de la fecha de emisión que lo pide.
+        self._memo_fila = {}
+        # contadores de EVIDENCIA, no features: cuántos pares (ticker, fecha)
+        # DISTINTOS se resolvieron con sentimiento real y cuántos con el
+        # relleno neutro.
+        self.filas_con_sentimiento = 0
+        self.filas_sin_sentimiento = 0
         cierres = fuente.cierres(tuple(UNIVERSO.keys()))
         self.cierres = cierres.ffill()
         self.ret = self.cierres.pct_change()
@@ -153,17 +166,11 @@ class ContextoRun:
         self.roca_pct = (cadena.rolling(252, min_periods=61)
                          .apply(lambda v: (v <= v[-1]).mean() * 100, raw=True))
 
-        # --- buzz: titulares por día/ticker vs promedio 14d (retrospectivo)
-        st = self.sentimiento._titulares
-        self.buzz_ratio = {}
-        if not st.empty:
-            conteo = (st.assign(n=1)
-                      .pivot_table(index="fecha", columns="ticker", values="n",
-                                   aggfunc="sum").fillna(0))
-            conteo.index = pd.to_datetime(conteo.index)
-            conteo = conteo.resample("D").sum()
-            base = conteo.rolling(14).mean().shift(1)
-            self.buzz_ratio = (conteo / base.replace(0, np.nan)).fillna(0)
+        # --- buzz: vive en SentimientoPIT y pasa por el MISMO corte de
+        #     disponibilidad que el sentimiento (B-1). El panel precomputado
+        #     que había aquí mezclaba vintages: contaba un titular en su día
+        #     de publicación aunque su análisis —lo único que lo hace
+        #     visible— llegara meses después.
 
         # --- outcomes por ticker: gap por sesión (etiquetas de train)
         self.gaps = {}
@@ -176,13 +183,16 @@ class ContextoRun:
 
     # -------- accesos point-in-time --------
     def _al(self, serie: pd.Series, fecha: date):
-        """Último valor de la serie con índice <= fecha (validado)."""
+        """Último valor de la serie con índice <= fecha.
+
+        El recorte lo hace la guarda (`recortar_pit`), que recibe la serie
+        SIN recortar: antes este método recortaba y después le pedía a
+        `validar_sin_futuro` que comprobara su propio recorte, con lo que la
+        condición de disparo era inalcanzable por construcción."""
         if serie is None or serie.empty:
             return None
-        corte = serie[serie.index.date <= fecha] if hasattr(serie.index, "date") \
-            else serie[serie.index <= pd.Timestamp(fecha)]
-        validar_sin_futuro(corte, fecha)
-        if corte.empty or pd.isna(corte.iloc[-1]):
+        corte = recortar_pit(serie, fecha)
+        if corte is None or corte.empty or pd.isna(corte.iloc[-1]):
             return None
         return float(corte.iloc[-1])
 
@@ -205,6 +215,15 @@ class ContextoRun:
     def fila_features(self, ticker: str, fecha: date, columnas: tuple) -> dict | None:
         """Vector de features de `ticker` conocido al cierre de `fecha`.
         None si falta alguna feature (la fila no se emite/entrena)."""
+        clave = (ticker, fecha, columnas)
+        if clave in self._memo_fila:
+            fila = self._memo_fila[clave]
+            return dict(fila) if fila is not None else None
+        fila = self._fila_features(ticker, fecha, columnas)
+        self._memo_fila[clave] = fila
+        return dict(fila) if fila is not None else None
+
+    def _fila_features(self, ticker: str, fecha: date, columnas: tuple) -> dict | None:
         ex = EXCHANGE_POR_TICKER.get(ticker, "XNYS")
         valores = {}
         for c in columnas:
@@ -217,23 +236,27 @@ class ContextoRun:
             elif c == "mom20_idx":
                 v = self._al(self.mom20_idx.get(ex), fecha)
             elif c == "regimen_alcista":
-                r = self.regimen[self.regimen.index.date <= fecha]
-                v = None if r.empty or pd.isna(r.iloc[-1]) \
+                r = recortar_pit(self.regimen, fecha)
+                v = None if r is None or r.empty or pd.isna(r.iloc[-1]) \
                     else float(r.iloc[-1] == "Alcista")
             elif c == "z_divergencia":
                 v = self._al(self.z_divergencia.get(ticker), fecha)
                 v = 0.0 if v is None else v  # sin par → sin divergencia
             elif c == "sentimiento":
                 v, _ = self.sent(ticker, fecha)
-                v = 0.0 if v is None else v  # sin noticias → neutro
+                # sin juicio DISPONIBLE → relleno neutro. No es un dato: es
+                # una ausencia rellenada, y se cuenta para poder declararla.
+                if v is None:
+                    self.filas_sin_sentimiento += 1
+                    v = 0.0
+                else:
+                    self.filas_con_sentimiento += 1
             elif c == "sentimiento_sector":
                 vals = [self.sent(t, fecha)[0] for t in MERCADOS_POR_ABRIR]
                 vals = [x for x in vals if x is not None]
                 v = float(np.mean(vals)) if vals else 0.0
             elif c == "buzz":
-                serie = (self.buzz_ratio.get(ticker)
-                         if isinstance(self.buzz_ratio, pd.DataFrame) else None)
-                v = self._al(serie, fecha) if serie is not None else 0.0
+                v = self.sentimiento.buzz(ticker, fecha)
                 v = 0.0 if v is None else min(v, 10.0)
             elif c == "roca_pct":
                 v = self._al(self.roca_pct, fecha)
@@ -311,8 +334,7 @@ class _BaselineAjustada:
             # EMBARGO: se purga la frontera. Sin esto, la etiqueta de ayer
             # comparte casi toda su ventana rodante con las features de hoy.
             corte = fecha - timedelta(days=self.ctx.embargo_dias)
-            gaps_t = gaps[gaps.index.date <= corte].tail(VENTANA_ENTRENAMIENTO)
-            validar_sin_futuro(gaps_t, corte)
+            gaps_t = recortar_pit(gaps, corte).tail(VENTANA_ENTRENAMIENTO)
             fechas_sesion = list(gaps_t.index)
             for k in range(1, len(fechas_sesion)):
                 f_label = fechas_sesion[k]
@@ -375,9 +397,17 @@ class B4Noticias(B3Cuant):
     columnas = B3Cuant.columnas + ("sentimiento", "sentimiento_sector", "buzz")
 
     def _grado(self, ticker: str, fecha: date) -> str:
-        if fecha < FECHA_PRIMER_SELLO:
-            return "B"
-        _, grado = self.ctx.sent(ticker, fecha)
+        """A = sentimiento SELLADO por producción ese día.
+        B = reconstruido desde noticias.db con juicios YA disponibles.
+        S = SIN sentimiento: no había ningún juicio de IA disponible a la
+            emisión y la fila se emitió con el relleno neutro (0.0).
+
+        El grado B ya no significa "el juicio llegó después" — esas filas
+        ahora no entran. Y S es el grado que faltaba: la corrida anterior
+        rellenaba con cero y lo contaba como si fuera dato."""
+        v, grado = self.ctx.sent(ticker, fecha)
+        if v is None:
+            return "S"
         return grado
 
 

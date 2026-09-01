@@ -69,7 +69,7 @@ TABLAS_T  := 1 8 16
 
 .PHONY: all vectores simular sintetizar multiplicador etapas placas limpiar \
         a7 ancho error-ancho \
-        ancho-gate multi demo huecos techo variantes semillas empaquetar \
+        ancho-gate multi demo huecos hueco-gate techo variantes semillas empaquetar \
         $(addprefix sim-,$(CONFIGS)) $(addprefix sint-,$(CONFIGS))
 
 all: simular multiplicador etapas sintetizar placas
@@ -161,9 +161,17 @@ demo: empaquetar | $(DIR_SIM)
 	    $(VVP) $(DIR_SIM)/tb_demo_$$b.vvp; \
 	done | tee $(DIR_SIM)/demo.log
 
+# EL REQUISITO R1 DE RTL.md §7, EJECUTABLE. `huecos` (abajo) MIDE el barrido;
+# esto lo VERIFICA: que en el mínimo reproduzca bit a bit, que por debajo se
+# rompa, y —lo que separa este target de un rojo cualquiera— que se rompa POR
+# LA RAZÓN CORRECTA y no por un timeout, un error de compilación o el propio
+# guardia. Corre en medio segundo: no hay excusa para no tenerlo en el gate.
+hueco-gate: empaquetar | $(DIR_SIM)
+	$(PYTHON) verificar_hueco.py 2>&1 | tee $(DIR_SIM)/hueco_gate.log
+
 # El hueco mínimo entre mensajes. Con 0 ó 1 la latencia SIGUE dando 11 ciclos
-# exactos y los sellos salen corridos un mensaje: por eso hace falta barrerlo
-# y no confiar en que "la latencia da bien". Necesita el bypass del guardia.
+# exactos y los sellos salen mal: por eso hace falta barrerlo y no confiar en
+# que "la latencia da bien". Necesita el bypass del guardia.
 huecos: empaquetar | $(DIR_SIM)
 	@for h in 0 1 2 3 8; do \
 	    $(IVERILOG) -g2012 -I. -I$(DIR_VEC) -DCFG_B=4 -DCFG_HUECO=$$h \

@@ -178,8 +178,14 @@ def test_el_modulo_no_abre_ninguna_conexion_de_escritura():
 # La corrección NO toca ninguna cifra del documento: le devuelve su
 # instante. `CORTE_SECCION_2` es el último sello anterior al congelamiento.
 def _congelado():
-    """El track record TAL COMO ESTABA cuando se midió la §2."""
-    return lb.cargar(hasta_sello=lb.CORTE_SECCION_2)
+    """El track record TAL COMO ESTABA cuando se midió la §2.
+
+    `dedup=False` NO es una preferencia: la regla de deduplicación se
+    firmó el 1-sep-2026 y estas afirmaciones son del 25-ago. Reproducir
+    una cifra congelada sobre las filas que la firma dejó sería comparar
+    un numerador fijo con un conjunto de filas que cambió después — la
+    misma clase de error que el WS5 diagnosticó con el corte de sello."""
+    return lb.cargar(hasta_sello=lb.CORTE_SECCION_2, dedup=False)
 
 
 def test_el_corte_congelado_recupera_exactamente_las_228_filas():
@@ -196,7 +202,7 @@ def test_la_base_viva_ya_creció_por_encima_del_corte():
     este test fallara, o la base se vació o el sellado se detuvo."""
     if not os.path.exists(lb.RUTA_SENALES):
         pytest.skip("sin senales.db")
-    assert len(lb.cargar()) >= len(_congelado())
+    assert len(lb.cargar(dedup=False)) >= len(_congelado())
 
 
 def test_pinchar_el_instante_NO_toca_ninguna_cifra_del_documento():
@@ -280,15 +286,38 @@ def test_la_linea_base_oficial_coincide_con_lo_congelado():
 
 
 @solo_con_base
-def test_la_conclusion_de_fondo_vale_en_las_TRES_convenciones():
-    """El punto de la §2.1 no depende de la convención elegida: bajo las
-    tres, la ventaja del campeón sobre una constante NO es distinguible de
-    cero. Si alguna diera p < 0.05, la corrección de la §2.8 habría cambiado
-    la conclusión y no solo la cifra."""
-    base = lb.cargar()
+def test_sin_deduplicar_la_conclusion_de_fondo_vale_en_las_TRES_convenciones():
+    """El punto de la §2.1 no dependía de la convención elegida: sobre la
+    base SIN deduplicar, bajo las tres, la ventaja del campeón sobre una
+    constante no es distinguible de cero. Este test fija ese hecho tal
+    como estaba antes de la firma, para que el cambio que produce la regla
+    sea visible como cambio y no como cifra nueva."""
+    base = lb.cargar(dedup=False)
     for c in lb.CONVENCIONES:
         d = lb.duelo(lb.aplicar_convencion(base, c))
         assert d["mcnemar_p"] > 0.05, c
+
+
+@solo_con_base
+def test_la_regla_firmada_cruza_alfa_y_eso_queda_fijado():
+    """EL HALLAZGO, fijado como test para que no se pierda ni se lea como
+    una cifra de siempre.
+
+    Nicolás firmó la regla conociendo dos desenlaces —p = 0.1847 sin
+    deduplicar y p = 0.0323 con `keep="last"`, prohibida—. **Su firma
+    produce un TERCERO**: bajo la convención oficial la ventaja cruza
+    α = 0.05. La firma sigue siendo el criterio correcto (corrección de la
+    sesión, no frescura), pero el desenlace no estaba a la vista al
+    firmar y el acta lo dice."""
+    sin = lb.duelo(lb.aplicar_convencion(
+        lb.cargar(dedup=False), lb.CONVENCION_OFICIAL))
+    con = lb.duelo(lb.aplicar_convencion(lb.cargar(), lb.CONVENCION_OFICIAL))
+    assert sin["mcnemar_p"] > 0.05          # el desenlace que se conocía
+    assert con["mcnemar_p"] < 0.05          # el que la firma produjo
+    # El mecanismo, también fijado: b no se mueve, c baja. Las filas
+    # retiradas eran discordantes A FAVOR DE LA BASELINE.
+    assert con["mcnemar_b01"] == sin["mcnemar_b01"]
+    assert con["mcnemar_b10"] < sin["mcnemar_b10"]
 
 
 @solo_con_base
@@ -297,8 +326,123 @@ def test_senales_db_conserva_su_scoring_original():
     sellado `acierto_gap` sigue siendo el del verificador (`>=`), incluido
     en las filas de gap cero: si esto cambiara, se habría reescrito el
     significado de filas ya selladas."""
-    df = lb.cargar()
+    df = lb.cargar(dedup=False)
     ceros = df[df["gap_pct"] == 0]
     assert len(ceros) == 5
     con_pred_al_alza = ceros[ceros["apertura_estimada_pct"] >= 0]
     assert (con_pred_al_alza["acierto_gap"] == 1).all()
+    # y la regla de deduplicación no toca ninguna de las cinco
+    assert len(lb.cargar()[lb.cargar()["gap_pct"] == 0]) == 5
+
+
+# ------------------------------------------------------------
+# 7. La regla de deduplicación firmada
+# ------------------------------------------------------------
+def _par(fecha, ticker, sesion, available_at, exchange, acierto):
+    return {"fecha": fecha, "ticker": ticker, "sesion_objetivo": sesion,
+            "available_at": available_at, "exchange": exchange,
+            "gap_pct": 2.0, "apertura_estimada_pct": -1.0,
+            "acierto_gap": acierto, "error_gap_pp": 3.0}
+
+
+def test_la_regla_conserva_la_fila_correcta_no_la_fresca(monkeypatch):
+    """El corazón de la firma, sobre datos sintéticos donde la respuesta se
+    sabe a mano: de un par, sobrevive la que calza con `available_at`,
+    aunque sea la MÁS VIEJA. Si sobreviviera la fresca, la regla sería
+    `keep="last"` con otro nombre — que está prohibida."""
+    df = pd.DataFrame([
+        _par("2026-07-29", "AAA", "2026-07-31", "2026-07-29T20:00:00+00:00",
+             "XKRX", 0),
+        _par("2026-07-30", "AAA", "2026-07-31", "2026-07-30T20:00:00+00:00",
+             "XKRX", 1),
+    ])
+    monkeypatch.setattr(lb, "sesion_correcta",
+                        lambda ex, av: {"2026-07-29T20:00:00+00:00": "2026-07-30",
+                                        "2026-07-30T20:00:00+00:00": "2026-07-31"}[av])
+    out = lb.deduplicar_por_sesion(df)
+    assert len(out) == 1
+    assert out["fecha"].item() == "2026-07-30"
+
+
+def test_la_regla_no_toca_el_par_donde_calzan_las_dos(monkeypatch):
+    """El grupo de feriados reales: las dos emisiones están igualmente a
+    tiempo, así que NO es un problema de deduplicación y la regla se
+    abstiene. Que se abstenga sola —sin lista de fechas— es lo que la hace
+    una regla y no una excepción."""
+    df = pd.DataFrame([
+        _par("2026-08-10", "BBB", "2026-08-12", "2026-08-10T20:00:00+00:00",
+             "XTKS", 0),
+        _par("2026-08-11", "BBB", "2026-08-12", "2026-08-11T20:00:00+00:00",
+             "XTKS", 1),
+    ])
+    monkeypatch.setattr(lb, "sesion_correcta", lambda ex, av: "2026-08-12")
+    assert len(lb.deduplicar_por_sesion(df)) == 2
+
+
+def test_la_regla_se_abstiene_si_no_calza_ninguna(monkeypatch):
+    """Sin criterio no se elige: callarse es más barato que elegir por
+    frescura."""
+    df = pd.DataFrame([
+        _par("2026-08-10", "CCC", "2026-08-12", "2026-08-10T20:00:00+00:00",
+             "XTKS", 0),
+        _par("2026-08-11", "CCC", "2026-08-12", "2026-08-11T20:00:00+00:00",
+             "XTKS", 1),
+    ])
+    monkeypatch.setattr(lb, "sesion_correcta", lambda ex, av: "2026-09-09")
+    assert len(lb.deduplicar_por_sesion(df)) == 2
+
+
+def test_la_regla_no_toca_filas_sin_pareja_aunque_no_calcen(monkeypatch):
+    """Es una regla de DEDUPLICACIÓN, no un filtro de coherencia. Las 15
+    filas sin pareja que tampoco calzan quedan dentro, y eso es una
+    pregunta abierta, no un olvido."""
+    df = pd.DataFrame([
+        _par("2026-08-05", "DDD", "2026-08-07", "2026-08-05T20:00:00+00:00",
+             "XTKS", 1),
+    ])
+    monkeypatch.setattr(lb, "sesion_correcta", lambda ex, av: "2026-08-06")
+    assert len(lb.deduplicar_por_sesion(df)) == 1
+    assert lb.auditar_dedup(df)["filas_sin_pareja_que_no_calzan"] == 1
+    # el criterio de COHERENCIA sí la retiraría — y por eso es otra cosa
+    assert len(lb.filtrar_sesion_coherente(df)) == 0
+
+
+def test_la_regla_esta_activa_por_defecto():
+    """Un número retirado que sigue ofrecido en el código vuelve a
+    circular: la rama sin deduplicar no puede ser el default."""
+    assert lb.DEDUP_OFICIAL is True
+
+
+@solo_con_base
+def test_la_regla_retira_exactamente_diez_filas_y_separa_los_dos_grupos():
+    aud = lb.auditar_dedup(lb.cargar(dedup=False))
+    assert aud["pares"] == 15
+    assert aud["pares_resueltos"] == 10
+    assert aud["pares_las_dos_calzan"] == 5
+    assert aud["pares_sin_criterio"] == 0
+    assert aud["filas_retiradas"] == 10
+    assert aud["sesiones_resueltas"] == ["2026-07-31", "2026-08-05"]
+    assert aud["sesiones_intactas"] == ["2026-08-12", "2026-08-18"]
+    # y el hueco que la firma no previó, contado: 25 filas no calzan, 15
+    # de ellas sin pareja. Ver `cola_decisiones.md`.
+    assert aud["filas_sin_pareja_que_no_calzan"] == 15
+    assert aud["filas_que_no_calzan_total"] == 25
+
+
+@solo_con_base
+def test_las_diez_filas_retiradas_favorecian_todas_a_la_baseline():
+    """La asimetría que hay que decir en voz alta, y es la misma que
+    motivó prohibir `keep="last"`: de las 10 filas que la regla retira, 7
+    son discordantes y las 7 favorecen a la baseline; ninguna al modelo.
+    La justificación es distinta —corrección demostrable, no frescura—
+    pero el efecto sobre el conteo es del mismo signo."""
+    crudo = lb.aplicar_convencion(lb.cargar(dedup=False), lb.CONVENCION_OFICIAL)
+    quedan = lb.deduplicar_por_sesion(lb.cargar(dedup=False))
+    clave = set(zip(quedan["fecha"], quedan["ticker"]))
+    fuera = crudo[[k not in clave
+                   for k in zip(crudo["fecha"], crudo["ticker"])]]
+    disc = fuera["acierto_gap"] - fuera["base_acierto"]
+    assert len(fuera) == 10
+    assert int((disc != 0).sum()) == 7
+    assert int((disc > 0).sum()) == 0        # ninguna favorecía al modelo
+    assert int((disc < 0).sum()) == 7

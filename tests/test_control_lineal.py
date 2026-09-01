@@ -235,7 +235,10 @@ def test_el_sharpe_con_pocos_dias_se_declara_NO_INTERPRETABLE():
     superado. El instrumento debe negarse, no emitir el número."""
     res = {"X": {"sharpe_ls_sin_costos": 5.7, "dias": 30},
            "Y": {"sharpe_ls_sin_costos": 5.5, "dias": 30}}
-    filas = cl.inferencia_sharpe(res)
+    # El N va explícito desde el 1-sep-2026: `inferencia_sharpe` dejó de
+    # tener default. Ver su docstring — el default de 9 regalaba 0.63 de
+    # umbral y daba vuelta V5 a Sharpe realista.
+    filas = cl.inferencia_sharpe(res, n_intentos=9)
     assert all(f["interpretable"] is False for f in filas)
     assert all(f["dsr"] == "NO INTERPRETABLE" for f in filas)
     assert cl.MINIMO_DIAS_SHARPE >= 60
@@ -244,7 +247,10 @@ def test_el_sharpe_con_pocos_dias_se_declara_NO_INTERPRETABLE():
 def test_con_dias_suficientes_el_dsr_si_se_reporta():
     res = {"X": {"sharpe_ls_sin_costos": 0.8, "dias": 500},
            "Y": {"sharpe_ls_sin_costos": 0.4, "dias": 500}}
-    filas = cl.inferencia_sharpe(res)
+    # El N va explícito desde el 1-sep-2026: `inferencia_sharpe` dejó de
+    # tener default. Ver su docstring — el default de 9 regalaba 0.63 de
+    # umbral y daba vuelta V5 a Sharpe realista.
+    filas = cl.inferencia_sharpe(res, n_intentos=9)
     assert all(isinstance(f["dsr"], float) for f in filas)
     assert all(f["N_intentos"] == 9 for f in filas)
 
@@ -336,3 +342,24 @@ def test_el_camino_de_sellado_no_importa_GEMELO():
         ruta = os.path.join(RAIZ, archivo)
         if os.path.exists(ruta):
             assert "GEMELO" not in open(ruta, encoding="utf-8").read(), archivo
+
+
+def test_inferencia_sharpe_no_tiene_valor_por_defecto_para_el_N():
+    """1-sep-2026, quinta corrida. Cuarta regla de la casa.
+
+    `inferencia_sharpe` tenía `n_intentos: int = N_INTENTOS_DECLARADO` (9)
+    y `experimento.py` la llamaba sin pasar N, consumiendo a ciegas el
+    conteo más rancio del repo — mientras `backtest/inferencia.py` había
+    quitado ese mismo default a propósito, con acta (§26.1) y con un test
+    que lo exige. La defensa estaba anulada desde adentro.
+
+    Medido: SR0(9) = 0.9986 contra SR0(86) = 1.6266. El default regalaba
+    0.63 de umbral, y a Sharpe anualizado de 1.2-1.5 el veredicto V5 se
+    daba vuelta de PASA a NO PASA. Era un vector vivo.
+    """
+    import inspect
+    from GEMELO import control_lineal as cl
+    p = inspect.signature(cl.inferencia_sharpe).parameters["n_intentos"]
+    assert p.default is inspect.Parameter.empty, (
+        "`n_intentos` volvió a tener valor por defecto. Un DSR con un N que "
+        "alguien olvidó actualizar miente, y miente hacia arriba.")

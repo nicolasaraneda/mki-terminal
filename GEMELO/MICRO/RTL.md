@@ -296,3 +296,99 @@ referencia, y en cuántos ciclos, siempre los mismos?".
   tolerancia del puntaje del RTL — 0.00474 pp medido. La decisión de
   alcance sigue siendo de Nicolás, pero con el número corregido, no con
   el de arriba.)
+
+## 7. Requisitos de corrección de la interfaz — numerados
+
+**Por qué esta sección existe y por qué llega tarde.** Las §1 a §4 numeran
+etapas y pasos de validación; ningún documento de esta pista numeraba
+*requisitos*. El resultado se midió el 1-sep-2026: un requisito de corrección
+del que dependían **178 de los 181 sellos** vivía desde julio como el valor por
+defecto de un parámetro de un banco de pruebas, descrito en dos documentos
+(`SINTESIS.md` §9 y `SINTESIS_A7.md` §3.5) como *"para que la latencia se mida
+limpia"* — o sea, como una comodidad. **Un requisito que sólo existe como el
+default de un parámetro no es un requisito: es una coincidencia que todavía no
+falló.** Esta sección es donde van los que se encuentren de ahora en adelante,
+y se agregó al final a propósito, para no correr la numeración de las §1 a §6
+que otros documentos ya citan.
+
+### R1 — Entre dos mensajes tiene que haber al menos **2 ciclos** de silencio
+
+**El requisito.** La fuente que alimenta el pipeline (`fuente_bram.v`, o
+cualquier otra que se escriba) debe dejar `HUECO >= 2` ciclos sin
+`palabra_valida` entre el último byte de un mensaje y el primero del
+siguiente. El mínimo medido es **2**; el banco de pruebas usa **8** por
+defecto, y ese 8 se deja como está para que ninguna cifra ya publicada se
+mueva — no porque haga falta.
+
+**Qué pasa mecánicamente por debajo del mínimo.** El escritor de pesos del
+mensaje k+1 pisa el banco de pesos **antes** de que `etapa_puntaje` haya
+muestreado el peso del mensaje k. Medido el 1-sep-2026 con contadores dentro
+del banco y reproducido con el modelo entero de `referencia.py`:
+
+| Qué se observa con `HUECO` = 0 ó 1 | B=4 | B=28 |
+|---|---|---|
+| sellos que NO reproducen la fila sellada | **178 de 181** | **178 de 181** |
+| de esos, los que el puntaje sale de `feature(k) × beta(k+1)` | **178 de 178** | **178 de 178** |
+| de esos, los que además coinciden entero con el sello del caso k+1 | 131 | 131 |
+| **decisiones** selladas correctas | **181 de 181** | **181 de 181** |
+| latencia (min/max, ciclos) | **11 / 11** | **5 / 5** |
+
+Tres lecturas, en orden de incomodidad:
+
+1. **El modo de falla es único, no un desorden.** Los 178 fallos salen del
+   mismo mecanismo: el puntaje del mensaje k calculado con la beta del caso
+   k+1. La descripción anterior —*"los sellos salen corridos un mensaje"*— es
+   un efecto de segundo orden que se ve en 131 de los 178: los casos
+   consecutivos de la misma fecha comparten `f0` (el movimiento del SOX), así
+   que ahí `feature(k) × beta(k+1)` **es** el sello esperado de k+1.
+2. **El sello se contradice a sí mismo**: la decisión es la correcta del caso
+   k y el puntaje no. Con lo cual **una comprobación que sólo mirara la
+   DECISIÓN también habría dado 181/181 en verde** — y la §4, punto 4 de este
+   documento defendía exactamente eso, que lo discreto es lo que importa. Ya
+   tenía una errata por frágil cerca del umbral; ésta es la segunda vez que la
+   decisión sola resulta ser la vara equivocada.
+3. **La latencia no se entera.** Sigue dando el entero exacto y perfectamente
+   determinista mientras 178 sellos están mal. La propiedad que esta pista
+   exhibe —latencia constante— **no implica corrección**, y el número no
+   depende del ancho del bus: el mínimo es 2 en B=4 y en B=28, o sea que R1
+   habla de la profundidad del pipeline entre `msg_valido` y el muestreo del
+   peso, no del bus.
+
+**Qué de esto lleva intervalo.** Nada, y por una razón, no por olvido: la
+simulación de Icarus corre sobre vectores congelados, sin semilla ni reloj de
+pared, así que 178, 181, 131, 11 y 5 son **determinísticos** — dan lo mismo en
+cada corrida y un intervalo sobre ellos sería inventado. La cifra variable de
+esta pista es otra: el **Fmax** de nextpnr, que va de **105,27 a 114,19 MHz
+sobre 10 semillas** (`make semillas`) y por eso nunca se cita pelado. Las
+cuentas de celdas y de LUTs también son determinísticas.
+
+**Dónde está aplicado, y no sólo escrito.**
+- `fuente_bram.v` **aborta en elaboración** si `HUECO < 2`, con el mecanismo en
+  el mensaje. El bypass `CFG_PERMITIR_HUECO_INSEGURO` existe únicamente para
+  poder volver a medir la zona insegura y hay que pedirlo a propósito.
+- `make hueco-gate` (`verificar_hueco.py`) verifica las dos direcciones: que en
+  el mínimo reproduzca bit a bit, y que por debajo **se rompa por esta razón** —
+  compilando bien, corriendo entera, recogiendo los 181 sellos, con la latencia
+  intacta y con el 100% de los fallos en el modo de arriba. Un rojo de timeout o
+  de compilación no prueba nada y el gate lo distingue.
+- `make huecos` sigue siendo el **barrido** que descubrió el 2. Medir y
+  verificar son dos cosas y viven en dos objetivos distintos.
+
+### R2 — Ninguna medición de latencia o caudal se publica sin la comparación bit a bit de la misma corrida
+
+**El requisito.** Todo banco de pruebas de `micro/rtl/tb/` que mida ciclos debe
+comparar además, en la misma simulación, los sellos contra el vector esperado.
+Ninguna cifra de latencia o caudal de esta pista se cita si viene de una corrida
+que no verificó corrección.
+
+**Por qué existe.** Es R1 generalizado, y es la parte del hallazgo que excede al
+RTL: **una prueba de rendimiento que no verifica corrección puede pasar en verde
+sobre un diseño roto.** La latencia era el entregable científico de esta pista
+(`fpga.md` §2), se la midió mucho, y era ciega a que el diseño producía basura.
+No es una hipótesis: es lo que la fila de la latencia de la tabla de R1 muestra
+haciendo, 11/11 con 178 sellos mal.
+
+**Dónde está aplicado.** Los cinco bancos de `micro/rtl/tb/` ya cumplen R2 hoy;
+lo que faltaba era que alguien lo pudiera romper sin que nada avisara. Lo fija
+`tests/test_epistemico.py`, test 15, como análisis estático sobre los bancos —
+corre en cualquier máquina, sin toolchain, y trae su contraprueba.

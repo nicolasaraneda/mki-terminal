@@ -394,6 +394,22 @@ prosa: `fuente_bram.v` aborta en elaboración si `HUECO < 2`, con la cifra
 medida en el mensaje, y hay un bypass explícito para poder volver a medir la
 zona insegura.
 
+> **PRECISIÓN DEL MODO DE FALLA (1-sep-2026, Frente F).** *"Los sellos salen
+> corridos un mensaje"* era la lectura a ojo de las primeras diez líneas de la
+> salida, y describe bien lo que se veía. Medido después con contadores dentro
+> del banco y reproducido con el modelo entero de `referencia.py`, el mecanismo
+> es más fino: el **puntaje** sellado del mensaje k es `feature(k) × beta(k+1)`
+> —**178 de 178 fallos exactos**, o sea el modo es único— mientras que la
+> **decisión** sellada es la CORRECTA del caso k, **181 de 181**. El "corrido un
+> mensaje" es un efecto de segundo orden: los casos consecutivos de la misma
+> fecha comparten `f0`, así que ahí las dos cosas coinciden (131 de los 178).
+> Nada de esto mueve el hallazgo —el mínimo sigue siendo 2 y los 178/181 siguen
+> siendo 178/181—, pero **agrega un agravante**: como la decisión sale bien,
+> una comprobación restringida a la decisión —la que `RTL.md` §4 punto 4
+> defendía como la que importa— **también habría pasado en verde**. El
+> requisito quedó escrito y numerado en `RTL.md` §7 (R1 y R2) y verificado por
+> `make hueco-gate`.
+
 **De paso, la primera medición de caudal espalda-con-espalda del proyecto**
 (pendiente desde `SINTESIS.md` §9). Se cuenta el reloj de la simulación
 completa —181 mensajes, 0 fallos— y se divide, que es una medición de caudal y
