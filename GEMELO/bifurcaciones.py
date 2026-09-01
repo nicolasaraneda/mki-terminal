@@ -1010,7 +1010,7 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "diferencia no la produce ninguna bifurcación: la produce el "
         "supuesto.",
         "> ",
-        "> **3.** No sobrevive a las 576 celdas **ninguna** afirmación "
+        f"> **3.** No sobrevive a las {n_tot} celdas **ninguna** afirmación "
         "sobre la ventaja del modelo — ni direccional ni de magnitud. Lo "
         "único que sobrevive lo comparte con una constante. Y el efecto "
         f"mínimo que este diseño puede detectar es {mde:.0f} pp: el track "

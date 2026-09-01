@@ -8,9 +8,9 @@
 > 
 > **2.** Con inferencia que respeta el clúster de día, **0 de 768 celdas** dan p < 0.05. Por la ruta publicada, que supone filas independientes, serían 201. La diferencia no la produce ninguna bifurcación: la produce el supuesto.
 > 
-> **3.** No sobrevive a las 576 celdas **ninguna** afirmación sobre la ventaja del modelo — ni direccional ni de magnitud. Lo único que sobrevive lo comparte con una constante. Y el efecto mínimo que este diseño puede detectar es 18 pp: el track record **todavía no alcanza para juzgar al campeón**, en ninguna dirección.
+> **3.** No sobrevive a las 768 celdas **ninguna** afirmación sobre la ventaja del modelo — ni direccional ni de magnitud. Lo único que sobrevive lo comparte con una constante. Y el efecto mínimo que este diseño puede detectar es 18 pp: el track record **todavía no alcanza para juzgar al campeón**, en ninguna dirección.
 
-- Generado: 2026-09-01T06:32:49.004253+00:00
+- Generado: 2026-09-01T06:37:08.325515+00:00
 - Fuente: `senales.db` en `mode=ro` · modelo 4.6.0 · `legacy = 0`
 - Reproducible con un comando: `python -m GEMELO.bifurcaciones` (bootstrap de clústeres de día, semilla 0, 10000 réplicas; permutación de signo por día, 4000 permutaciones)
 - **Ancla verificada:** la celda `ninguna · excluir_cero · dentro · dentro · dentro · publicado · gap · 0.00` reproduce la ventana sellada del README (n=248, 66.1% contra 59.7%, +6.5 pp, b=72, c=56, p = 0.1849). Si no reprodujera, este informe no existiría: el código aborta antes de escribir.

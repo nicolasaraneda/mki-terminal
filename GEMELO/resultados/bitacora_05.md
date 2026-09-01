@@ -339,4 +339,50 @@ dos lecturas:
     escribiendo el mismo árbol no es una excusa, es un hecho reproducido.
     El único fallo sigue siendo `GEMELO/bifurcaciones.py` abriendo
     `sqlite3` directo.
+- **02:58** — **Frente B cerrado, y es el hallazgo metodológico más
+  importante que produjo el proyecto.** `GEMELO/resultados/bifurcaciones.md`
+  (283 KB) y `GEMELO/bifurcaciones.py`. Arregló además el aislamiento que
+  había roto: la suite queda **413 passed, 2 xfailed, 0 failed**.
+  - **Ocho decisiones de análisis documentadas dan 768 formas legítimas de
+    medir la misma ventana sellada.** La ventaja recorre **[−4,4, +18,1]
+    pp** — un rango de 22,5 pp alrededor de los +6,5 publicados, con
+    mediana +7,3.
+  - **El veredicto: 0 de 768 celdas dan p < 0,05** con inferencia que
+    respeta el clúster de día. **Por la ruta publicada, que supone filas
+    independientes, serían 201.** Y esto es lo que hay que leer despacio:
+    **la diferencia entre 201 y 0 no la produce ninguna bifurcación — la
+    produce el supuesto de independencia.** El p publicado es el más
+    generoso de los estimadores disponibles.
+  - **Verifiqué por mi cuenta el número que sostiene todo**, porque si el
+    DEFF está mal el frente entero se cae. Computé el ICC por ANOVA de una
+    vía, que es otra familia de método que el bootstrap de fechas del
+    frente: **ICC 0,4034 contra 0,403 reportado; DEFF 3,539 contra 3,54;
+    n efectivo 70,1 contra 70.** Y converge con el DEFF 3,6 que el diseño
+    secuencial venía usando para planificar, obtenido por otra vía todavía.
+    **El n efectivo es 70, no 248.**
+  - **La lectura honesta, y NO es "el modelo no sirve":** el frente se
+    preguntó si el test tiene potencia y lo contestó con un número. **El
+    MDE de la permutación por día es 18,0 pp**, y la ventaja publicada es
+    +6,5. O sea que el test **sí rechaza**, pero necesita casi el triple.
+    **El track record no está refutando al campeón: está diciendo que
+    todavía no alcanza para juzgarlo**, y el supuesto de independencia era
+    lo que hacía parecer que sí.
+  - **Qué sobrevive a las 768 celdas:** ninguna afirmación sobre la
+    ventaja del modelo respecto de su baseline — ni direccional ni de
+    magnitud. Lo único que sobrevive (que el modelo acierta más del 50% y
+    que su Wilson excluye el 50%, ambos 768/768) **lo comparte con una
+    constante**. En magnitud estuvo más cerca: le gana a predecir 0,0 en
+    754 de 768, pero con intervalo cluster-honesto excluye el cero en
+    **9 de 768** contra 419 por la ruta que supone independencia.
+  - **El eje que más mueve el veredicto es `ventana_r2`** (7,4 pp de media,
+    y el único que hace cruzar α por la ruta publicada), seguido de
+    `zona_muerta` (4,6) y `dedup` (3,3). El que menos, `corte` (0,27).
+  - **Diseño del frente, que hay que registrar:** el código **aborta antes
+    de escribir** si la celda ancla no reproduce el README exacto
+    (n=248, 66,1% vs 59,7%, +6,5 pp, b=72, c=56, p=0,1849). Y **declara
+    que los ejes no son ortogonales** en vez de fingirlo, por eso reporta
+    cociente y rango y mide cada eje con los demás fijos.
+  - **Erratas de tipeo corregidas antes de commitear** (el documento no
+    estaba commiteado, así que se corrige en su sitio): seis apariciones
+    de "576" donde la matriz es de 768.
 
