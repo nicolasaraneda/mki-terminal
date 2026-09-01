@@ -61,8 +61,14 @@ CONVENCION = "excluir_cero"          # GEMELO/DISEÑO.md §2.8
 # este script se niega a computar: correr una mirada con un N_max que
 # nadie firmó sería elegir el tamaño de muestra después de ver los datos,
 # que es lo mismo que elegir el umbral después de ver los datos.
-MDE_FIRMADO = None          # poner 0.07 (o 0.10) cuando Nicolás firme
-MDE_PROPUESTO = 0.07
+MDE_FIRMADO = None
+# OJO — el 0.07 que esta línea ofrecía antes está **RETIRADO** desde el
+# 31-ago: se derivó en la escala del retorno de sesión cuando el endpoint
+# congelado es `acierto_gap` (`DISEÑO.md`, bloque de rechazo). En la escala
+# del endpoint da 8.96 pp, y el Frente D del 1-sep mostró que **ese
+# intervalo tampoco es del MDE** sino el de E|gap| invertido. **Hoy NO hay
+# número para firmar**, y ofrecer uno acá sería poner el dedo en la balanza.
+MDE_PROPUESTO = None
 
 # N_max por MDE, de `diseno_secuencial` (Connor × DEFF × 1.0241). Los
 # umbrales y la futilidad NO dependen del MDE: dependen de la fracción de
@@ -85,19 +91,27 @@ def plan(mde: float | None = None) -> dict:
     mde = mde if mde is not None else MDE_FIRMADO
     if mde is None:
         raise SystemExit(
-            "MDE SIN FIRMAR. `DISEÑO.md` §A3.1 lo deriva de V6 y propone "
-            f"{MDE_PROPUESTO*100:.0f} pp, pero nadie lo firmó todavía.\n"
+            "MDE SIN FIRMAR, y hoy NO hay número propuesto.\n"
+            "El 7 pp que este módulo ofrecía quedó RETIRADO el 31-ago (se "
+            "derivó en la escala equivocada), y el 8.96 pp que lo reemplaza "
+            "tiene su propio intervalo en disputa: el Frente D del 1-sep "
+            "mostró que el [6.67, 11.32] publicado es el IC de E|gap| "
+            "invertido, no el del MDE.\n"
             "Correr una mirada con un N_max que nadie fijó es elegir el "
             "tamaño de muestra después de ver los datos.\n"
-            "Poner `MDE_FIRMADO` en este módulo cuando la decisión esté "
-            "escrita y fechada en DECISIONES.md.")
+            "Poner `MDE_FIRMADO` cuando la decisión esté escrita y fechada "
+            "en DECISIONES.md, y agregar su N_max a N_MAX_POR_MDE.")
     n_max = N_MAX_POR_MDE[mde]
     fechas = FECHAS_POR_MDE[mde]
     return {k + 1: (round(t * n_max), UMBRALES_OBF[k], Z_FUTILIDAD[k], fechas[k])
             for k, t in enumerate(FRACCIONES)}
 
 
-PLAN = plan(MDE_PROPUESTO)   # para poder inspeccionarlo; NO autoriza a mirar
+# `PLAN` ya no se materializa al importar: con el MDE retirado no hay
+# ningún valor por defecto honesto, y fabricar uno "para poder
+# inspeccionarlo" es exactamente cómo un número retirado vuelve a
+# circular. Quien quiera ver un plan hipotético llama a `plan(0.07)` o
+# `plan(0.10)` explícitamente y se hace cargo de lo que está mirando.
 
 # El bootstrap de la varianza cluster-robusta. Todo lo que determina V̂ se
 # congela acá Y en DISEÑO.md §A3.2 — la semilla incluida. Elegir semilla,
@@ -316,7 +330,8 @@ def ejecutar(k: int) -> dict:
     # El plan fija fracciones de información 0.25/0.50/0.75/1.00 sobre
     # N_max. Si el n real las excede, el umbral que se aplica corresponde a
     # menos información de la que hay: es conservador, pero hay que decirlo.
-    salida["t_real"] = n / PLAN[max(PLAN)][0]
+    _plan = plan()
+    salida["t_real"] = n / _plan[max(_plan)][0]
     salida["exceso_sobre_plan"] = n - n_obj
 
     cmp = comparar_pareado(df["acierto_gap"].astype(bool),
@@ -352,7 +367,7 @@ def ejecutar(k: int) -> dict:
     elif z_fut is not None and z_k < z_fut:
         salida["veredicto"] = ("FUTILIDAD (no vinculante) — se puede parar y "
                                "declarar 'si hay ventaja, es menor que el MDE'")
-    elif k == len(PLAN):
+    elif k == len(_plan):
         salida["veredicto"] = "NO CRUZA en el análisis final — H₀ no se rechaza"
     else:
         salida["veredicto"] = "SIGUE — ni cruce ni futilidad"
@@ -432,7 +447,11 @@ def _formatear(s: dict) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--mirada", type=int, required=True, choices=sorted(PLAN))
+    # Las cuatro miradas existen por construcción (las fracciones de
+    # información son 0.25/0.50/0.75/1.00); lo que el MDE mueve es su n,
+    # no cuántas son. Por eso el CLI no necesita el plan materializado.
+    ap.add_argument("--mirada", type=int, required=True,
+                    choices=range(1, len(FRACCIONES) + 1))
     ap.add_argument("--escribir", action="store_true",
                     help="deja el acta en GEMELO/SECUENCIAL/miradas/")
     args = ap.parse_args()

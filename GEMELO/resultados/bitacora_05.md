@@ -357,13 +357,22 @@ dos lecturas:
     DEFF está mal el frente entero se cae. Computé el ICC por ANOVA de una
     vía, que es otra familia de método que el bootstrap de fechas del
     frente: **ICC 0,4034 contra 0,403 reportado; DEFF 3,539 contra 3,54;
-    n efectivo 70,1 contra 70.** Y converge con el DEFF 3,6 que el diseño
+    n efectivo 70,1 contra 70.** (El frente pasó después a DEFF **3,63**
+    y n efectivo **68**: el ICC no cambió, cambió el tamaño de clúster que
+    entra al DEFF —Kish, Σn²/N, en vez de la media simple—, corrección del
+    `estadistico-adversario`. Las dos cifras son defendibles y la
+    conclusión no se mueve.) Y converge con el DEFF 3,6 que el diseño
     secuencial venía usando para planificar, obtenido por otra vía todavía.
     **El n efectivo es 70, no 248.**
   - **La lectura honesta, y NO es "el modelo no sirve":** el frente se
     preguntó si el test tiene potencia y lo contestó con un número. **El
-    MDE de la permutación por día es 18,0 pp**, y la ventaja publicada es
-    +6,5. O sea que el test **sí rechaza**, pero necesita casi el triple.
+    MDE de la permutación por día es 18,0 pp al 50% de potencia, IC95
+    [13,5, 21,4]**, y al 80% —el umbral convencional de diseño— **25,6 pp,
+    IC95 [18,1, 30,6]**; la ventaja publicada es +6,5 y la potencia frente
+    a ella, **11%**. O sea que el test **sí rechaza**, pero necesita cerca
+    de cuatro veces el efecto publicado. (Los dos MDE llevan intervalo por
+    bootstrap de días enteros desde la revisión del 1-sep: salen de 34
+    días, no de infinitos.)
     **El track record no está refutando al campeón: está diciendo que
     todavía no alcanza para juzgarlo**, y el supuesto de independencia era
     lo que hacía parecer que sí.
@@ -385,4 +394,162 @@ dos lecturas:
   - **Erratas de tipeo corregidas antes de commitear** (el documento no
     estaba commiteado, así que se corrige en su sitio): seis apariciones
     de "576" donde la matriz es de 768.
+- **03:10** — **El Frente B siguió trabajando después de mi commit y el
+  titular cambió — para mucho mejor.** Pasó **dos rondas de
+  `estadistico-adversario`**: la primera lo rechazó por usar McNemar
+  —ignorando el mismo clúster que el informe invocaba— y por comparar el
+  MAE contra un punto sin intervalo. La segunda verificó las correcciones
+  con su propio código y encontró cuatro defectos más, todos corregidos.
+  - **Actualizo lo que reporté a las 02:58**, que citaba deff 3,54 y n
+    efectivo 70: la versión revisada da **deff 3,63 y n efectivo 68**. No
+    es una errata sino el análisis afinándose bajo revisión adversaria; mi
+    verificación por ANOVA daba 3,539 sobre la versión anterior y sigue
+    siendo consistente. **La conclusión no se mueve: el n efectivo es del
+    orden de 70, no de 248.**
+  - **Y el titular nuevo es más simple y más duro que el de la matriz.**
+    La cifra publicada de +6,5 pp tiene un intervalo honesto de
+    **[−10,5, +23,3] pp**. Con ese ancho el experimento **no distingue al
+    campeón de una constante ni de un modelo el triple de bueno**.
+  - **El hecho que lo sostiene, y lo verifiqué yo:** el modelo sólo puede
+    diferir de "siempre al alza" cuando predice BAJA. Son **128 de 248
+    filas, agrupadas en 17 días de emisión, de los que ganó 9 y perdió 7**
+    (uno empatado), **p = 0,80**. Reproduje los cinco números exactos.
+    **Toda la información discriminante que el track record acumuló en dos
+    meses es un 9-7 en 17 días.** Ése es el tamaño real de la evidencia, y
+    dicho así no hace falta ninguna estadística para entenderlo.
+  - **La potencia frente al efecto publicado es 11%**, y el MDE va con su
+    nivel siempre pegado: **18,0 pp al 50% de potencia y 25 pp al 80%**.
+    Reportarlo a los dos niveles fue una de las correcciones que pidió el
+    adversario, y tiene razón — **un MDE sin su potencia no es
+    interpretable**, es un número suelto.
+  - **El eje `dedup=solo_reloj` que le sugerí** —deduplicar sólo los 10
+    pares de reloj, no los 5 de feriado— da **+9,66 pp con p = 0,0451**,
+    justo sobre el umbral. **El frente lo declara explícitamente como
+    agregado DESPUÉS de ver la matriz de tres niveles**, que es la
+    conducta correcta: un eje que aparece después de mirar y que además
+    cruza α es exactamente el que hay que marcar.
+  - **Nueve candidatos quedaron documentados como NO-ejes** con su cita y
+    su medición, y tres cosas quedaron sin computar y dichas: la
+    residualización y la ventana de betas están horneadas en las filas
+    selladas y variarlas exigiría re-emitir; y el alcance completo de la
+    abstención por sello tardío **no reprodujo**, así que lo descartó en
+    vez de publicarlo.
+  - 27 tests nuevos en `tests/test_bifurcaciones.py`.
+- **03:25** — **La suite epistémica se pagó sola en la misma corrida en
+  que se escribió, y cazó a otro frente.** Al correr la suite completa
+  sobre el informe nuevo de bifurcaciones, dos detectores saltaron. Los
+  miré uno por uno en vez de ablandarlos:
+  - **Falso positivo, y era un hueco real del detector:** marcó la línea
+    que dice "+6.5 pp, IC95 [−10.5, +23.3]" como intervalo con el nulo
+    adentro sin declarar. Pero la línea **sí** lo declara — dice "esta
+    ventana **no separa** al campeón de una constante". El detector no
+    tenía "no separa" en su vocabulario de reconocimiento. **La lógica
+    era correcta y le faltaba idioma**; le agregué seis formas
+    equivalentes, con el comentario de por qué.
+  - **VERDADERO POSITIVO contra el Frente B, y no lo ablando:** el MDE se
+    publica como **punto pelado** —18,0 pp al 50% y 25 pp al 80%— en tabla
+    y en el resumen, **sin intervalo**. Y un MDE derivado de la dispersión
+    observada entre días **tiene incertidumbre muestral**: sale de 34
+    días, no de infinitos. La regla 3 lo cubre de lleno.
+  - **La ironía vale registrarla:** el informe rechaza con razón el
+    supuesto de independencia en todo lo demás, y **sus dos cifras de
+    diseño quedaron sin la incertidumbre que le exige al resto**. Le pedí
+    al frente que las compute por bootstrap de días —la misma unidad de
+    clúster que ya usa— o que publique la razón si sale inestable, que
+    también cumple la regla.
+  - Corregí además mi propia bitácora, que citaba los MDE sin su nivel de
+    potencia en la misma línea: **un MDE sin su potencia no es
+    interpretable**, es un número suelto. Ahora van pegados.
+- **03:45** — **El Frente B cerró el hueco del MDE y de paso explicó mi
+  propia discrepancia.**
+  - **Los dos MDE ahora llevan intervalo**, por bootstrap de días enteros
+    con la misma semilla: **18,0 pp [13,5 · 21,4]** al 50% y **25,6 pp
+    [18,1 · 30,6]** al 80%. No salió caro ni inestable (~70 s), así que
+    hay número y no excusa. Y la lectura que el intervalo habilita es la
+    que importa: **aun en el extremo optimista de la banda (18 pp), el
+    diseño seguiría necesitando 2,8× la ventaja publicada.** La conclusión
+    **no depende de dónde caiga el MDE dentro de su propia
+    incertidumbre**, que es exactamente para lo que sirve tener el
+    intervalo.
+  - **Y el arreglo destapó algo que el frente manejó bien:** en un fixture
+    sintético el punto cae **fuera** de su intervalo de percentiles. No es
+    error de cálculo, es sesgo de la distribución bootstrap cuando los
+    remuestreos son más heterogéneos que la muestra. **En vez de asertarlo
+    para que no moleste**, `ic_mde` devuelve ahora `punto_dentro` y el
+    informe **lo declara si ocurre**. Sobre los datos reales no ocurre, y
+    hay test que lo vigila.
+  - **Por qué mi verificación del DEFF daba 3,539 y la suya 3,63**, que
+    era mi pregunta abierta: **el ICC es idéntico (0,403 por las dos
+    vías)** — que es lo que importaba verificar. Lo que difiere es el
+    resumen de tamaño de clúster: yo usé la **media simple** (7,29) y el
+    frente usa el **tamaño de Kish**, Σn²/N (7,52). **Kish es el correcto
+    cuando los clústeres son de tamaño desigual**, y acá los días tienen
+    de 4 a 8 filas. Lo recomputé: 3,537 con media simple, **3,626 con
+    Kish**, n efectivo **68,4**. Su versión es la que corresponde.
+  - Y el cambio vino de una **corrección del `estadistico-adversario`**,
+    que vio que el docstring prometía Kish y el código usaba la media —
+    la misma clase de desajuste entre lo declarado y lo ejecutado que esta
+    corrida viene cazando en todos lados.
+  - **El 9-7 pasó a ser lo primero que se lee** del informe, antes que el
+    intervalo y que el cociente. Coincido: todo lo demás —ICC, bootstrap,
+    permutación— es la ruta formal hacia ese mismo hecho.
+  - 30 tests en `tests/test_bifurcaciones.py`, tres de ellos nuevos para
+    guardar el hueco que se acaba de cerrar.
+- **04:05** — **Frente D cerrado, y REFUTÓ la hipótesis que yo le di.**
+  Eso es exactamente lo que un adversario debe hacer, y lo registro como
+  el resultado que es.
+  - **Lo que yo pedí que dijera "con todas las letras":** que el efecto
+    observado (+6,5) cae bajo el borde inferior del MDE (6,67), o sea que
+    "no valdría la pena aunque fuera real". **Lo refutó**: eso es punto
+    contra punto, una brecha de **0,17 pp dentro de un intervalo de 33,5
+    pp de ancho**. La comparación pareada —que nadie había hecho, y que es
+    posible justo porque las dos cantidades salen de las mismas filas— da
+    **P(δ_obs < MDE) = 0,569**. **El experimento no ordena las dos
+    cantidades.** Escribirlo habría sido cometer, en la sección escrita
+    para prevenirlo, el error que el proyecto ya se pilló dos veces.
+  - **La escala SÍ coincide, y lo verificó por la vía correcta:** no
+    recorrió `f·2c/E|gap|` otra vez, **atacó el otro lado de la
+    desigualdad**. La identidad `δ = f·(2q−1)` da 6,4516129032 pp, igual a
+    `(b−c)/n` y a la diferencia cruda de tasas, **a diez decimales**. Ni
+    b, ni c, ni las tasas entran en el cómputo del MDE.
+  - **El titular de D4 es el inverso del esperado y más fuerte.** Por
+    punto, **274 de 768** celdas superan 8,96 y **425** superan 6,67. Pero
+    **0 de 768 lo superan por intervalo, 0 quedan por debajo, y 768 de 768
+    lo contienen.** Ancho medio de los IC: **37,7 pp**. Ninguna de las 768
+    formas legítimas de medir esta ventana puede decidir si el efecto es
+    relevante o irrelevante.
+  - **Y el párrafo que se gana su lugar:** MDE de **relevancia** ≈ 8-9 pp
+    contra MDE de **detectabilidad** 25,6 pp al 80%. **El diseño no puede
+    ver el efecto más chico que le importaría.** Hay una franja entera de
+    8 a 25 pp de efectos económicamente relevantes e **invisibles** para
+    esta ventana. Por eso el cero de celdas significativas **no es
+    evidencia sobre el modelo: estaba escrito de antemano**.
+  - **Y juzgó el MDE que le di, que era parte del encargo:** el
+    `[6,67, 11,32]` **no es el intervalo del MDE, es el de E|gap|
+    invertido** — `f` entra como punto y la simetría de magnitudes entra
+    como certeza, siendo el eje que el propio §A3.1.c declara "el supuesto
+    que manda". Además **el signo de la asimetría se da vuelta al cambiar
+    de endpoint** (1,33× en retorno de sesión, 0,816× en gap), que es
+    confirmación empírica de que la razón 2 hizo bien en retractarse.
+- **04:20** — **Arreglados dos de los tres defectos vivos que señaló el
+  Frente D**, los dos del mismo linaje que esta corrida viene cazando:
+  - **El `8.96` estaba cableado como literal en `bifurcaciones.py`**, y
+    encima se dividía por él para producir un "2,8×" publicado. **Es el
+    sexto artefacto con el patrón que el guardián cazó en cinco el
+    31-ago.** Pasó a constante nombrada, con el comentario de por qué y la
+    aclaración de que se cita como referencia externa y no se recomputa.
+  - **`mirada.py` ofrecía firmar el 7 pp RETIRADO** (`poner 0.07 cuando
+    Nicolás firme`). Un número retirado que sigue ofrecido en el código es
+    cómo vuelve a circular. Ahora `MDE_PROPUESTO = None` y el candado dice
+    la verdad completa: **hoy NO hay número para firmar**, y explica por
+    qué el 7 y el 8,96 quedaron los dos fuera.
+  - Al hacerlo **rompí el módulo** —`PLAN` se materializaba al importar y
+    con `None` reventaba— y lo arreglé: `PLAN` ya no existe como global.
+    Fabricar un plan por defecto "para poder inspeccionarlo" es
+    exactamente cómo un número retirado vuelve a circular. Quien quiera un
+    plan hipotético llama a `plan(0.07)` explícito y se hace cargo.
+  - **El tercero NO lo arreglo y lo dejo señalado**: `mde_desde_v6.py`
+    sigue sin ancla temporal, que era una de las cuatro condiciones para
+    levantar el rechazo del 31-ago. **El 8,96 de hoy no es el de mañana**,
+    y el pre-registro lo cita como parámetro. Va a la cola.
 

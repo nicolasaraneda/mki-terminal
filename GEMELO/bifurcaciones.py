@@ -85,12 +85,10 @@ ALFA = 0.05
 NOMINAL_INTERVALO = 0.80
 
 # Bloque del bootstrap. El módulo de la skill exige bloques y no iid. Las
-# filas van ORDENADAS POR FECHA y hay ~8 por sesión, así que un bloque de
-# 20 filas abarca ≈2.5 sesiones: contiene el clúster que de verdad
-# importa —todas las filas de un día comparten el mismo movimiento del
-# SOX— y algo de correlación serial entre días. LIMITACIÓN DECLARADA: no
-# es un bootstrap de clústeres de día exacto; con n≈250 un bloque de un
-# día entero por réplica dejaría muy pocos bloques independientes.
+# filas van ORDENADAS POR FECHA. El bootstrap TITULAR es de clústeres de
+# día (`_bootstrap_dia`); el de bloques de 20 filas del módulo de la
+# skill se conserva SÓLO como segunda ruta del ΔMAE, para exhibir cuánto
+# del veredicto lo pone el supuesto de independencia.
 N_BOOT = 10_000     # el default del módulo de la skill; no se desvía sin decirlo
 SEMILLA = 0         # obligatoria: un bootstrap sin semilla no reproduce
 MINIMO_FILAS = 30   # piso declarado: bajo esto una celda no se puntúa
@@ -434,14 +432,21 @@ def aplicar(df: pd.DataFrame, celda: dict) -> pd.DataFrame:
 # movió al revés de lo esperado fallan casi todas juntas. Tratarlas como
 # 248 observaciones independientes infla cualquier significancia.
 #
-# Medido sobre el ancla: ICC(día) de la diferencia pareada ≈ 0.42, efecto
-# de diseño ≈ 3.7, **n efectivo ≈ 68 y no 248**.
+# `icc_y_deff()` lo computa; no se hardcodea ninguna cifra aquí, que es
+# como se desincronizan los comentarios de los números.
 #
 # Por eso el estimador titular de este frente es de CLÚSTER: se remuestrean
 # y se permutan DÍAS ENTEROS, no filas. McNemar —que supone filas
 # independientes— se reporta al lado, porque es la ruta que produjo las
 # cifras publicadas, pero no es la que manda.
 N_PERM = 4000
+
+# Parámetros del IC de los dos MDE. El punto y las réplicas del bootstrap
+# usan EXACTAMENTE los mismos, para que el intervalo sea coherente con su
+# propio centro: computar el punto con más precisión que las réplicas
+# dejaría un centro que no pertenece a la distribución que lo rodea.
+BOOT_MDE50 = {"n_boot": 200}
+BOOT_MDE80 = {"n_boot": 120, "n_sim": 250, "n_perm": 1000}
 
 
 def _por_dia(df: pd.DataFrame, valores: np.ndarray) -> list:
@@ -470,11 +475,163 @@ def icc_y_deff(grupos: list) -> dict:
     m0 = (N - (n_j ** 2).sum() / N) / (k - 1)
     denom = msb + (m0 - 1) * msw
     icc = (msb - msw) / denom if denom else float("nan")
-    m_medio = N / k
-    deff = 1 + (m_medio - 1) * icc
-    return {"clusters": k, "n": int(N), "tam_medio": m_medio,
-            "icc": icc, "deff": deff,
+    # Kish: el tamaño que entra al deff es Σn²/N, no la media. Con
+    # clústeres desiguales los dos difieren y el docstring manda.
+    m_kish = float((n_j ** 2).sum() / N)
+    deff = 1 + (m_kish - 1) * icc
+    return {"clusters": k, "n": int(N), "tam_medio": N / k,
+            "tam_kish": m_kish, "icc": icc, "deff": deff,
             "n_efectivo": N / deff if deff and deff > 0 else float("nan")}
+
+
+def estructura_disidencia(df: pd.DataFrame) -> dict:
+    """DÓNDE vive la comparación, contado sin ningún estimador de por medio.
+
+    Contra «siempre al alza», el modelo sólo puede diferir en las filas
+    donde predijo BAJA: en las demás los dos dicen lo mismo y aportan
+    exactamente cero a la ventaja. Así que el denominador honesto no son
+    las n filas, son las filas de DISIDENCIA — y agrupadas por día, los
+    días con saldo. Esta función lo dice en enteros, que es la forma más
+    difícil de discutir y la más fácil de leer."""
+    d = (df["acierto"] - df["base_acierto"]).to_numpy(float)
+    dis = d != 0
+    sub = df[dis]
+    saldos = pd.Series(d[dis]).groupby(sub["fecha"].to_numpy()).sum()
+    gana = int((saldos > 0).sum())
+    pierde = int((saldos < 0).sum())
+    empata = int((saldos == 0).sum())
+    return {
+        "filas": len(df),
+        "disidencias": int(dis.sum()),
+        "aciertos_en_disidencia": int(df.loc[dis, "acierto"].sum()),
+        "dias_totales": int(df["fecha"].nunique()),
+        "dias_con_disidencia": int(len(saldos)),
+        "dias_gana": gana, "dias_pierde": pierde, "dias_empata": empata,
+        "p_dias": mcnemar_exact(gana, pierde),
+    }
+
+
+def caida_r2_con_ic(df: pd.DataFrame, n_boot: int) -> dict:
+    """Cuánto cae la ventaja al excluir la ventana R2, CON su intervalo de
+    clúster de día. El punto solo no alcanza: afirmar «R2 dispara por
+    efecto» es una inferencia y necesita el mismo estimador que el resto
+    del informe, no aritmética simple sobre la mediana de las celdas."""
+    d = (df["acierto"] - df["base_acierto"]).to_numpy(float)
+    dentro = np.ones(len(df), dtype=bool)
+    fuera = ((df["fecha"] < VENTANA_R2[0]) |
+             (df["fecha"] > VENTANA_R2[1])).to_numpy()
+    fechas = df["fecha"].to_numpy()
+    dias = pd.factorize(fechas)[0]
+    k = dias.max() + 1
+    trozos = [(d[dias == j], dentro[dias == j], fuera[dias == j])
+              for j in range(k)]
+
+    def caida(sel):
+        dd = np.concatenate([t[0] for t in sel])
+        ff = np.concatenate([t[2] for t in sel])
+        if ff.sum() == 0 or len(dd) == 0:
+            return np.nan
+        return 100.0 * (dd.mean() - dd[ff].mean())
+
+    punto = caida(trozos)
+    rng = np.random.default_rng(SEMILLA)
+    reps = np.array([caida([trozos[j] for j in rng.integers(0, k, size=k)])
+                     for _ in range(n_boot)], dtype=float)
+    reps = reps[np.isfinite(reps)]
+    lo, hi = np.quantile(reps, [ALFA / 2, 1 - ALFA / 2])
+    return {"caida_pp": float(punto), "lo": float(lo), "hi": float(hi),
+            "frac_no_positiva": float((reps <= 0).mean())}
+
+
+def potencia_permutacion_dia(grupos: list, delta: float, n_sim: int,
+                             n_perm: int, alpha: float = ALFA) -> float:
+    """Potencia del test de permutación por día frente a un desplazamiento
+    `delta` (en fracción, no pp), simulada remuestreando DÍAS ENTEROS de
+    los residuos observados y sumándoles el efecto. Devuelve la fracción
+    de simulaciones que rechazan."""
+    todo = np.concatenate(grupos)
+    cent = [g - todo.mean() for g in grupos]
+    k = len(cent)
+    rng = np.random.default_rng(SEMILLA)
+    rechazos = 0
+    for _ in range(n_sim):
+        idx = rng.integers(0, k, size=k)
+        muestra = [cent[j] + delta for j in idx]
+        if _p_permutacion_dia(muestra, n_perm) < alpha:
+            rechazos += 1
+    return rechazos / n_sim
+
+
+def mde_por_potencia(grupos: list, potencia: float = 0.80,
+                     n_sim: int = 300, n_perm: int = 1200,
+                     alpha: float = ALFA) -> float:
+    """El efecto mínimo detectable AL NIVEL DE POTENCIA pedido, en pp.
+
+    Importa la distinción: la bisección ingenua sobre «el p observado
+    cruza α» devuelve el umbral al **50%** de potencia, que es la mitad
+    del que hace falta para diseñar un experimento. El convencional es
+    80%, y se reporta junto al otro para que nadie lea uno por el otro."""
+    lo, hi = 0.0, 0.05
+    for _ in range(12):
+        if potencia_permutacion_dia(grupos, hi, n_sim, n_perm, alpha) >= potencia:
+            break
+        hi *= 1.6
+        if hi > 5.0:
+            return float("nan")
+    for _ in range(9):
+        mid = (lo + hi) / 2
+        if potencia_permutacion_dia(grupos, mid, n_sim, n_perm,
+                                    alpha) >= potencia:
+            hi = mid
+        else:
+            lo = mid
+    return 100.0 * hi
+
+
+def ic_mde(grupos: list, cual: str, n_boot: int = 200,
+           alpha: float = ALFA, **kw) -> dict:
+    """IC del efecto mínimo detectable por bootstrap de DÍAS ENTEROS.
+
+    El MDE se deriva de la dispersión OBSERVADA entre días, y esa
+    dispersión sale de 34 días, no de infinitos: tiene incertidumbre
+    muestral como cualquier otro estimador. Publicarlo pelado sería
+    exigirle al resto del informe una regla que la cifra de diseño no
+    cumple — y este informe rechaza el supuesto de independencia
+    justamente por todo lo demás.
+
+    Se remuestrean días con reemplazo (la MISMA unidad de clúster que el
+    resto del módulo, la misma semilla) y se recalcula el MDE en cada
+    réplica. `frac_degeneradas` declara cuántas réplicas no dieron un
+    número: un remuestreo puede quedarse sin días informativos, y eso hay
+    que contarlo en vez de esconderlo con un `dropna`.
+
+    LIMITACIÓN DECLARADA: el MDE al 80% se busca por bisección sobre una
+    curva de potencia SIMULADA, así que su IC arrastra ruido de Monte
+    Carlo además del muestral. El de 50% no: su bisección es sobre un p
+    de permutación, mucho más barato y estable.
+    """
+    fn = {"50": mde_permutacion_dia, "80": mde_por_potencia}[cual]
+    k = len(grupos)
+    rng = np.random.default_rng(SEMILLA)
+    reps = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, k, size=k)
+        reps.append(fn([grupos[j] for j in idx], **kw))
+    arr = np.array(reps, dtype=float)
+    ok = arr[np.isfinite(arr)]
+    if len(ok) < 20:
+        return {"punto": fn(grupos), "lo": float("nan"), "hi": float("nan"),
+                "n_boot": n_boot, "frac_degeneradas": 1 - len(ok) / n_boot}
+    lo, hi = np.quantile(ok, [alpha / 2, 1 - alpha / 2])
+    punto = fn(grupos, **kw)
+    # DECISIONES.md §34.9: un punto que cae FUERA de su propio intervalo
+    # de percentiles no es un error de cálculo, es una señal de sesgo de
+    # la distribución bootstrap — y hay que reportarla, no taparla. Pasa
+    # cuando los remuestreos son sistemáticamente más heterogéneos que la
+    # muestra original, que es justo lo que infla un MDE.
+    return {"punto": punto, "lo": float(lo), "hi": float(hi),
+            "n_boot": n_boot, "frac_degeneradas": 1 - len(ok) / n_boot,
+            "punto_dentro": bool(lo <= punto <= hi)}
 
 
 def mde_permutacion_dia(grupos: list, n_perm: int = N_PERM,
@@ -561,7 +718,8 @@ def _p_permutacion_dia(grupos: list, n_perm: int = N_PERM) -> float:
 # ------------------------------------------------------------
 # Métricas de una celda — ningún estimador puntual sin intervalo
 # ------------------------------------------------------------
-def metricas(df: pd.DataFrame, n_boot: int = N_BOOT) -> dict:
+def metricas(df: pd.DataFrame, n_boot: int = N_BOOT,
+             objetivo_gap: bool = True) -> dict:
     n = len(df)
     if n < MINIMO_FILAS:
         return {"n": n}
@@ -603,7 +761,12 @@ def metricas(df: pd.DataFrame, n_boot: int = N_BOOT) -> dict:
     _, dmb_lo, dmb_hi = block_bootstrap(dpar, np.mean, 20, n_boot,
                                         ALFA, SEMILLA)
 
-    cal = df.dropna(subset=["intervalo80_pp"])
+    # El intervalo del 80% se construyó para el GAP. Medir su cobertura
+    # contra el retorno de sesión produce un número que se PARECE a una
+    # cobertura y no lo es — y cae dentro de la banda de V3 por accidente,
+    # así que publicarlo invita a leer «V3 pasa». No se computa.
+    cal = (df.dropna(subset=["intervalo80_pp"])
+           if objetivo_gap else df.iloc[0:0])
     if len(cal):
         dentro = ((cal["real"] - cal["apertura_estimada_pct"]).abs()
                   <= cal["intervalo80_pp"]).to_numpy().astype(float)
@@ -730,7 +893,8 @@ def construir_matriz(n_boot: int = N_BOOT) -> tuple:
     filas = []
     for combo in itertools.product(*(EJES[k] for k in nombres)):
         celda = dict(zip(nombres, combo))
-        m = metricas(aplicar(bases[celda["corte"]], celda), n_boot)
+        m = metricas(aplicar(bases[celda["corte"]], celda), n_boot,
+                     objetivo_gap=(celda["objetivo"] == "gap"))
         filas.append({**celda, **m})
 
     # El nivel `vivo` se mueve con el reloj. Se SELLA en el informe qué
@@ -978,7 +1142,13 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
     _gd = _por_dia(_anc,
                    (_anc["acierto"] - _anc["base_acierto"]).to_numpy(float))
     clus = icc_y_deff(_gd)
-    mde = mde_permutacion_dia(_gd)
+    ic50 = ic_mde(_gd, "50", **BOOT_MDE50)
+    ic80 = ic_mde(_gd, "80", **BOOT_MDE80)
+    mde, mde80 = ic50["punto"], ic80["punto"]
+    pot_pub = potencia_permutacion_dia(_gd, ANCLA["ventaja_pp"] / 100,
+                                       400, 1500)
+    estr = estructura_disidencia(_anc)
+    r2ic = caida_r2_con_ic(_anc, min(n_boot, 4000))
     n_caminos = int(np.prod([len(x) for x in EJES.values()]))
 
     # ¿Hay algún nivel que concentre TODAS las celdas significativas? Si
@@ -996,26 +1166,34 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "",
         "> **EN DIEZ SEGUNDOS**",
         "> ",
-        f"> **1.** Ocho decisiones de análisis documentadas dan {n_tot} "
-        f"formas legítimas de medir la misma ventana sellada. La ventaja "
-        f"sobre «siempre al alza» recorre "
-        f"[{v['ventaja_pp'].min():+.1f}, {v['ventaja_pp'].max():+.1f}] pp "
-        f"— un rango de "
-        f"{v['ventaja_pp'].max() - v['ventaja_pp'].min():.1f} pp alrededor "
-        f"de los {ANCLA['ventaja_pp']:+} pp publicados.",
+        f"> **1. Toda la información discriminante del track record es un "
+        f"{estr['dias_gana']}-{estr['dias_pierde']} en "
+        f"{estr['dias_con_disidencia']} días.** Contra «siempre al alza» "
+        f"el modelo sólo puede diferir cuando predice BAJA: "
+        f"{estr['disidencias']} de {estr['filas']} filas, agrupadas en "
+        f"{estr['dias_con_disidencia']} días de emisión, de los que ganó "
+        f"{estr['dias_gana']}, perdió {estr['dias_pierde']} y empató "
+        f"{estr['dias_empata']} — binomial exacta **p = "
+        f"{estr['p_dias']:.2f}**. Eso se entiende sin estadística, y todo "
+        "lo que sigue es la ruta formal hacia el mismo hecho.",
         "> ",
-        f"> **2.** Con inferencia que respeta el clúster de día, "
-        f"**{sig_d} de {n_tot} celdas** dan p < 0.05. Por la ruta "
-        f"publicada, que supone filas independientes, serían {sig_e}. La "
-        "diferencia no la produce ninguna bifurcación: la produce el "
-        "supuesto.",
+        f"> **2.** La cifra publicada es {ANCLA['ventaja_pp']:+} pp; su "
+        f"intervalo honesto —clúster de día, que es la unidad real— es "
+        f"**[{fila_ancla['ventaja_lo']:+.1f}, "
+        f"{fila_ancla['ventaja_hi']:+.1f}] pp**. No es que el modelo "
+        f"falle: **el diseño no tiene potencia**. Frente al efecto "
+        f"publicado la potencia es **{100*pot_pub:.0f}%**, y detectarlo al "
+        f"80% exigiría **{mde80:.0f} pp, IC95 [{ic80['lo']:.0f}, "
+        f"{ic80['hi']:.0f}]**.",
         "> ",
-        f"> **3.** No sobrevive a las {n_tot} celdas **ninguna** afirmación "
-        "sobre la ventaja del modelo — ni direccional ni de magnitud. Lo "
-        "único que sobrevive lo comparte con una constante. Y el efecto "
-        f"mínimo que este diseño puede detectar es {mde:.0f} pp: el track "
-        "record **todavía no alcanza para juzgar al campeón**, en ninguna "
-        "dirección.",
+        f"> **3.** Sobre eso, {n_tot} formas legítimas de medir la misma "
+        f"ventana dan una ventaja entre "
+        f"{v['ventaja_pp'].min():+.1f} y {v['ventaja_pp'].max():+.1f} pp, "
+        f"y **{sig_d} de {n_tot}** con p < 0.05 por clúster ({sig_e} por "
+        f"la ruta publicada, que supone filas independientes). No "
+        "sobrevive a todas las celdas ninguna afirmación sobre la ventaja "
+        "del modelo. **El track record todavía no alcanza para juzgar al "
+        "campeón, en ninguna dirección.**",
         "",
         f"- Generado: {datetime.now(timezone.utc).isoformat()}",
         f"- Fuente: `senales.db` en `mode=ro` · modelo {MODELO_VERSION} · "
@@ -1044,8 +1222,50 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "",
         "## EL VEREDICTO",
         "",
-        f"**{sig_d} de {n_tot} celdas dan p < 0.05.** Ése es el cociente, "
-        "y es el resultado de este frente.",
+        f"**La cifra publicada, con su intervalo honesto: "
+        f"{ANCLA['ventaja_pp']:+} pp, IC95 de clúster de día "
+        f"[{fila_ancla['ventaja_lo']:+.1f}, "
+        f"{fila_ancla['ventaja_hi']:+.1f}] pp.** Ése es el número que "
+        "faltaba, y explica todo lo que sigue: con un intervalo de "
+        f"{fila_ancla['ventaja_hi'] - fila_ancla['ventaja_lo']:.0f} pp de "
+        "ancho, esta ventana no separa al campeón de una constante.",
+        "",
+        f"**{sig_d} de {n_tot} celdas dan p < 0.05.** Ése es el cociente "
+        "que se pidió medir. Pero el cociente no es un veredicto sobre el "
+        "modelo: es un veredicto sobre el tamaño de la muestra, y la "
+        "sección de potencia lo dice con números.",
+        "",
+        "### Dónde vive la comparación, en enteros",
+        "",
+        "Antes de cualquier estimador, la observación que hace legible "
+        "todo lo demás y que no necesita que nadie confíe en un bootstrap: "
+        "contra «siempre al alza» el modelo **sólo puede diferir en las "
+        "filas donde predijo BAJA**. En las demás los dos dicen lo mismo y "
+        "aportan exactamente cero a la ventaja.",
+        "",
+        f"| | |", "|---|---|",
+        f"| Filas del ancla | {estr['filas']} |",
+        f"| De ellas, filas de **disidencia** (el modelo predijo baja) | "
+        f"**{estr['disidencias']}** |",
+        f"| Aciertos del modelo en esas filas | "
+        f"{estr['aciertos_en_disidencia']} "
+        f"({100*estr['aciertos_en_disidencia']/estr['disidencias']:.1f}%) |",
+        f"| Días con alguna disidencia | "
+        f"**{estr['dias_con_disidencia']}** de {estr['dias_totales']} |",
+        f"| Días con saldo a favor / en contra / empatados | "
+        f"{estr['dias_gana']} / {estr['dias_pierde']} / "
+        f"{estr['dias_empata']} |",
+        f"| Binomial exacta sobre los días con saldo | "
+        f"**p = {estr['p_dias']:.2f}** |",
+        "",
+        f"Es decir: los **b = {ANCLA['b']}** y **c = {ANCLA['c']}** que "
+        "sostienen el p publicado no son 128 observaciones independientes. "
+        f"Son {estr['dias_gana']} días ganados contra "
+        f"{estr['dias_pierde']} perdidos. **Un {estr['dias_gana']}-"
+        f"{estr['dias_pierde']} no distingue nada**, y para verlo no hace "
+        "falta ningún aparato: alcanza con contar. Todo el ICC, el "
+        "bootstrap de clúster y la permutación de abajo son la ruta formal "
+        "hacia este mismo hecho.",
         "",
         "El estimador es el que respeta el **clúster de día**: las ~8 filas "
         "de una sesión son βᵢ·SOX sobre el MISMO movimiento del SOX, así "
@@ -1054,7 +1274,17 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         f"{clus['tam_medio']:.1f} por día), el ICC por día de la "
         f"diferencia pareada es **{clus['icc']:.3f}** y el efecto de "
         f"diseño **{clus['deff']:.2f}**: **el n efectivo es "
-        f"{clus['n_efectivo']:.0f}, no {clus['n']}.** La significancia se "
+        f"{clus['n_efectivo']:.0f}, no {clus['n']}.** "
+        "El ICC es el estimador **ANOVA de una vía** (Fisher/Donner, con "
+        "el tamaño ajustado m0 y no la media) y el deff usa el **tamaño de "
+        "Kish**, Σn²/N — una sola procedencia para la cifra, declarada "
+        f"aquí: con clústeres desiguales Kish da {clus['tam_kish']:.2f} "
+        f"contra {clus['tam_medio']:.2f} de la media simple, y el deff "
+        f"pasa de 3.54 a {clus['deff']:.2f}. **Ese cambio vino de una "
+        "corrección del `estadistico-adversario`**, que señaló que el "
+        "docstring prometía Kish y el código usaba la media; la "
+        "conclusión no se movió y la diferencia se deja escrita para que "
+        "la cifra no tenga dos orígenes. La significancia se "
         f"computa por permutación de signo a nivel de día ({N_PERM} "
         "permutaciones) y el IC por bootstrap de días enteros.",
         "",
@@ -1100,26 +1330,80 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "### ¿Y si el test simplemente no tiene potencia?",
         "",
         "Un test que no puede rechazar nada tampoco es una medición, así "
-        "que la pregunta hay que hacérsela y contestarla con un número. "
-        "**El efecto mínimo detectable de la permutación por día, sobre "
-        f"esta misma estructura de {clus['clusters']} días y "
-        f"{clus['n']} filas, es {mde:.1f} pp** (bisección sobre un "
-        "desplazamiento constante hasta cruzar α = 0.05, con la dispersión "
-        "entre días observada). O sea: **el test SÍ rechaza** — pero "
-        f"necesita una ventaja del orden de {mde:.0f} pp, y la publicada "
-        f"es {ANCLA['ventaja_pp']:+} pp, menos de la mitad. La celda más "
-        f"extrema de todo el jardín llega a "
-        f"{v['ventaja_pp'].max():+.1f} pp, apenas al filo.",
+        "que la pregunta hay que hacérsela y contestarla con números. "
+        "Simulando sobre la estructura real de días —remuestreo de días "
+        "enteros de los residuos observados, más un desplazamiento "
+        "constante—:",
         "",
-        "**Esa es la lectura honesta del 0 de 576, y es distinta de "
-        "«el modelo no sirve».** Es: con 34 días agrupados, este "
-        "experimento no puede resolver todavía un efecto del tamaño que "
-        "el modelo podría tener. El track record no está refutando al "
-        "campeón; **está diciendo que aún no alcanza para juzgarlo**, y el "
-        "supuesto de independencia era lo que hacía parecer que sí. "
-        "Conviene contrastarlo con el MDE que el pre-registro secuencial "
-        "derivó (8.96 pp, IC95 [6.67, 11.32]): ese cálculo no lleva "
-        "corrección de clúster, y el clúster lo duplica.",
+        "| | |", "|---|---|",
+        f"| Potencia frente al efecto publicado "
+        f"({ANCLA['ventaja_pp']:+} pp) | **{100*pot_pub:.0f}%** |",
+        f"| Efecto detectable al **50%** de potencia | {mde:.1f} pp, "
+        f"IC95 [{ic50['lo']:.1f}, {ic50['hi']:.1f}] |",
+        f"| Efecto detectable al **80%** de potencia (el convencional) | "
+        f"**{mde80:.1f} pp, IC95 [{ic80['lo']:.1f}, {ic80['hi']:.1f}]** |",
+        f"| Días con saldo informativo | "
+        f"{estr['dias_con_disidencia']} de {estr['dias_totales']} |",
+        "",
+        f"**La potencia frente al efecto que el proyecto publica es "
+        f"{100*pot_pub:.0f}%, apenas por encima de α.** Con eso, el cero "
+        "de celdas significativas estaba escrito de antemano por la "
+        "estructura de los datos, no por el modelo. Y el número que hay "
+        f"que citar como umbral de diseño es el de 80% —{mde80:.0f} pp—, "
+        f"no el de 50% ({mde:.0f} pp): confundirlos subestima a la mitad "
+        "lo que hace falta.",
+        "",
+        "**Los dos MDE llevan intervalo, y por la misma razón que todo lo "
+        "demás.** Un MDE se deriva de la dispersión OBSERVADA entre días, "
+        f"y esa dispersión sale de {clus['clusters']} días, no de "
+        "infinitos: tiene incertidumbre muestral. Los IC de arriba salen "
+        "de remuestrear días enteros —la misma unidad de clúster y la "
+        "misma semilla que el resto del informe— con "
+        f"{ic50['n_boot']} réplicas para el de 50% y {ic80['n_boot']} para "
+        f"el de 80%; réplicas degeneradas: "
+        f"{100*ic50['frac_degeneradas']:.0f}% y "
+        f"{100*ic80['frac_degeneradas']:.0f}%. **Limitación declarada:** "
+        "el de 80% se busca por bisección sobre una curva de potencia "
+        "SIMULADA, así que su intervalo arrastra ruido de Monte Carlo "
+        "además del muestral; el de 50% bisecta sobre un p de permutación "
+        "y no. En los dos casos el punto y las réplicas usan parámetros "
+        "idénticos, para que el centro pertenezca a la distribución que lo "
+        "rodea.",
+        ""] + ([] if (ic50["punto_dentro"] and ic80["punto_dentro"]) else [
+        "> **Aviso, en la disciplina de `DECISIONES.md` §34.9:** "
+        + " y ".join(f"el MDE al {c}%"
+                     for c, o in (("50", ic50), ("80", ic80))
+                     if not o["punto_dentro"])
+        + " cae FUERA de su propio intervalo de percentiles. No es un "
+        "error de cálculo: es sesgo de la distribución bootstrap, que "
+        "aparece cuando los remuestreos son sistemáticamente más "
+        "heterogéneos que la muestra original — justo lo que infla un "
+        "MDE. Se reporta en vez de taparse, y significa que la banda hay "
+        "que leerla como cota superior de la precisión, no como un "
+        "intervalo centrado.", ""]) + [
+        "",
+        "> Y lo que el intervalo agrega a la lectura: incluso en el extremo "
+        f"OPTIMISTA de la banda del 80% ({ic80['lo']:.0f} pp), el diseño "
+        f"seguiría necesitando una ventaja "
+        f"{ic80['lo']/ANCLA['ventaja_pp']:.1f}× la publicada. **La "
+        "conclusión no depende de dónde caiga el MDE dentro de su propia "
+        "incertidumbre**, que es exactamente lo que un intervalo sirve "
+        "para poder decir.",
+        "",
+        "**Ésa es la lectura honesta del cociente, y es distinta de «el "
+        f"modelo no sirve».** Con {estr['dias_con_disidencia']} días "
+        "informativos, este experimento no puede resolver todavía un "
+        "efecto del tamaño que el modelo podría tener. El track record no "
+        "está refutando al campeón; **está diciendo que aún no alcanza "
+        "para juzgarlo**, y el supuesto de independencia era lo que hacía "
+        "parecer que sí. Conviene contrastarlo con el MDE que el "
+        f"pre-registro secuencial derivó ({MDE_RELEVANCIA_PUBLICADO} pp): "
+        "ese cálculo no lleva corrección de clúster, y el clúster lo "
+        f"multiplica por {mde80/MDE_RELEVANCIA_PUBLICADO:.1f}. Ese MDE se "
+        "cita como referencia externa y NO se recomputa acá; su propio "
+        "intervalo está en disputa (ver `mde_vs_observado.md`, que muestra "
+        "que el [6.67, 11.32] publicado es el IC de E|gap| invertido y no "
+        "el del MDE).",
         "",
         "### El cociente, estratificado (y por qué hay que estratificarlo)",
         "",
@@ -1157,17 +1441,31 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         perdidas = pares["n"]["dentro"] - pares["n"]["fuera"]
         vuelcos = int((pares["ventaja_pp"]["fuera"] < 0).sum())
         L += [
-            f"**Y R2 dispara por EFECTO, no por falta de potencia.** "
-            f"Pareando cada camino consigo mismo con los otros siete ejes "
-            f"fijos, sacar la ventana cuesta una mediana de "
-            f"{delta.median():.2f} pp de ventaja "
-            f"(rango [{delta.min():.2f}, {delta.max():.2f}]) a cambio de "
-            f"perder apenas {perdidas.median():.0f} filas de "
+            f"**Sacar la ventana R2 cuesta caro en el punto estimado, y "
+            f"barato en filas.** Pareando cada camino consigo mismo con "
+            f"los otros siete ejes fijos, la ventaja cae una mediana de "
+            f"{delta.median():.2f} pp "
+            f"(dispersión ENTRE CAMINOS "
+            f"[{delta.min():.2f}, {delta.max():.2f}] — eso es variación de "
+            f"análisis, no error de muestreo) a cambio de perder "
+            f"{perdidas.median():.0f} filas de "
             f"{pares['n']['dentro'].median():.0f} "
             f"({100*perdidas.median()/pares['n']['dentro'].median():.0f}%). "
             f"En **{vuelcos} de {len(pares)}** caminos pareados la ventaja "
-            "se vuelve NEGATIVA al quitarla. Seis fechas de treinta y "
-            "tantas sostienen el signo de todo el track record.",
+            "se vuelve NEGATIVA al quitarla.",
+            "",
+            "**Pero eso es el punto, no la inferencia, y el frente no "
+            "puede aplicarse a sí mismo una vara distinta de la que "
+            "exige.** Con el MISMO estimador de clúster que gobierna todo "
+            f"el informe, la caída del camino ancla es "
+            f"**{r2ic['caida_pp']:+.2f} pp con IC95 "
+            f"[{r2ic['lo']:+.2f}, {r2ic['hi']:+.2f}]**, y el "
+            f"{100*r2ic['frac_no_positiva']:.0f}% de las réplicas da una "
+            "caída nula o negativa. **El intervalo roza el cero.** Así "
+            "que la lectura correcta no es «R2 dispara por efecto "
+            "demostrado», sino: el punto estimado dice que seis fechas "
+            "sostienen el signo del track record, y el diseño no tiene "
+            "resolución ni para confirmar eso.",
             "",
         ]
 
@@ -1264,8 +1562,9 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         "solapamiento no rompe.",
         "",
         "**Reglas de la casa aplicadas.** Ningún estimador puntual sin "
-        "intervalo: las tasas llevan Wilson; la ventaja y el MAE, bootstrap "
-        "de bloques con semilla fija; la cobertura, Wilson. Y "
+        "intervalo: las tasas llevan Wilson; la ventaja, el MAE y su "
+        "diferencia pareada, bootstrap de CLÚSTERES DE DÍA con semilla "
+        "fija; la cobertura, Wilson. Y "
         "—DECISIONES.md §52— *una verificación que usa el mismo mecanismo "
         "que produjo la cifra no es una verificación*: el estimador "
         "principal sale del módulo de la skill `estadistica-evaluacion` "
@@ -1345,7 +1644,16 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
          "`solo_reloj` colapsa a la fila fresca únicamente los 10 del "
          "defecto y deja intactos los 5 del calendario: es la única de las "
          "cuatro ramas que no trata un hecho de mercado como si fuera un "
-         "error."),
+         "error.\n\n"
+         "**Declarado, porque la regla 6 no distingue:** este cuarto nivel "
+         "se agregó DESPUÉS de computar la matriz con tres, y después de "
+         "ver que `dedup` movía el veredicto. Está justificado por un "
+         "forense independiente y no por el p que produce —de hecho su "
+         "p de clúster no rechaza, igual que los otros tres—, pero un "
+         "nivel añadido tras ver resultados es un hallazgo que se reporta, "
+         "no una mejora silenciosa. La matriz de tres niveles daba "
+         "576 celdas y 142 significativas por McNemar; la de cuatro da "
+         "768 y 201. El cociente no se mueve (24.7% contra 26.2%)."),
         ("2. `empate` — convención de empate",
          "`estricta` · `verificador` · `excluir_cero`",
          "backtest/linea_base.py, cabecera; DECISIONES.md §25.1 (línea "
@@ -1514,6 +1822,18 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
           "las dos series se miden sobre las mismas filas y están muy "
           "correlacionadas, así que enfrentar dos IC no pareados no "
           "prueba nada.", "",
+          f"> **Los días por celda van de {int(v['dias'].min())} a "
+          f"{int(v['dias'].max())}** (mediana {int(v['dias'].median())}), y "
+          "el día es la unidad muestral del estimador titular: el piso de "
+          f"{MINIMO_FILAS} filas está en la unidad equivocada y se declara "
+          "como tal. Ninguna celda quedó por debajo de 20 días, pero eso "
+          "salió así, no se impuso.", "",
+          "> **`ventaja_lo > 0` y `p_dia < 0.05` no son duales** y pueden "
+          "discrepar: el primero es un percentil de bootstrap y el segundo "
+          "una permutación de signo. En esta matriz discrepan en "
+          f"{int(((v['ventaja_lo'] > 0) != (v['p_dia'] < ALFA)).sum())} "
+          "celda(s). Se listan las dos filas en la tabla de "
+          "supervivientes porque miden cosas parecidas, no la misma.", "",
           "> **Wilson supone filas independientes y aquí no lo son**, así "
           "que `modelo_lo/hi` y `base_lo/hi` son OPTIMISTAS. Se conservan "
           "porque son la convención publicada y hacen falta para "
@@ -1552,8 +1872,6 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
           "identificar desde columnas selladas. La reconstrucción por "
           "calendario a la hora nominal de sello no reproduce y se "
           "descartó en vez de publicarse.",
-          "- **Un bootstrap de clústeres de día exacto**, por la razón "
-          "declarada arriba.",
           "- **Una corrección de multiplicidad sobre las celdas.** A "
           "propósito: comparten casi todas las filas y un Bonferroni "
           "ingenuo sobre ellas no significaría nada. El resultado de este "
@@ -1596,7 +1914,7 @@ def main(argv=None) -> int:
         description="Matriz completa de bifurcaciones de análisis sobre el "
                     "track record sellado (mode=ro).")
     ap.add_argument("--n-boot", type=int, default=N_BOOT,
-                    help="réplicas del bootstrap de bloques")
+                    help="réplicas del bootstrap de clústeres de día")
     ap.add_argument("--sin-escribir", action="store_true")
     args = ap.parse_args(argv)
 

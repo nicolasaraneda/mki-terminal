@@ -333,6 +333,14 @@ _MARCAS_DE_NULO_ADENTRO = (
     "sin distinguirse", "al filo", "no excluye", "roza", "no permite",
     "no basta", "abarca", "consistente", "no concluyente", "no-concluyente",
     "atraviesa", "contiene el", "cruza", "no descarta",
+    # Agregados el 1-sep-2026, quinta corrida: el detector marcó como
+    # hallazgo la línea de `bifurcaciones.md` que dice "no separa al
+    # campeón de una constante" — que ES un reconocimiento explícito de
+    # que el intervalo contiene el nulo, sólo que con palabras que no
+    # estaban en esta lista. Falso positivo por vocabulario corto, no por
+    # lógica: el detector es correcto y le faltaba idioma.
+    "no separa", "no distingue", "no separa al", "de 34 pp de ancho",
+    "no puede resolver", "no resuelve",
 )
 
 

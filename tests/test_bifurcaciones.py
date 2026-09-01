@@ -407,7 +407,24 @@ def test_el_icc_de_anova_reproduce_casos_conocidos():
 
     todo_dentro = [np.full(8, float(j)) for j in range(30)]
     assert bf.icc_y_deff(todo_dentro)["icc"] > 0.95
-    assert bf.icc_y_deff(todo_dentro)["deff"] > 6      # tam_medio 8 → ~8
+    assert bf.icc_y_deff(todo_dentro)["deff"] > 6      # tam 8 → deff ~8
+
+
+def test_el_icc_ajusta_el_tamano_con_clusteres_desiguales():
+    """Con tamaños desiguales, m0 (Fisher, para el ICC) y el tamaño de
+    Kish (para el deff) NO son la media, y el docstring dice que se usan
+    ésos. Se verifica la aritmética contra la fórmula, a mano."""
+    grupos = [np.array([1.0, 2.0]), np.array([3.0] * 10),
+              np.array([5.0] * 6), np.array([0.5])]
+    out = bf.icc_y_deff(grupos)
+    n_j = np.array([len(g) for g in grupos], dtype=float)
+    N = n_j.sum()
+    assert out["tam_medio"] == N / len(grupos)
+    assert abs(out["tam_kish"] - (n_j ** 2).sum() / N) < 1e-12
+    # y con tamaños desiguales los dos difieren de verdad
+    assert abs(out["tam_kish"] - out["tam_medio"]) > 0.5
+    assert abs(out["deff"] - (1 + (out["tam_kish"] - 1) * out["icc"])) < 1e-12
+    assert abs(out["n_efectivo"] - N / out["deff"]) < 1e-9
 
 
 @solo_con_base
@@ -427,3 +444,51 @@ def test_solo_reloj_separa_el_defecto_del_feriado():
     quedan = sr[sr.duplicated(["ticker", "sesion_objetivo"], keep=False)]
     assert set(quedan["sesion_objetivo"]) == {"2026-08-12", "2026-08-18"}
     assert len(quedan) == 10        # 5 pares intactos
+
+
+def test_el_ic_del_mde_remuestrea_dias_y_declara_las_degeneradas():
+    """El MDE sale de la dispersión observada entre días, así que tiene
+    incertidumbre muestral como cualquier otro estimador. Lo cazó la suite
+    epistémica el 1-sep: iba como punto pelado en la tabla y en el resumen
+    de diez segundos."""
+    grupos = [np.array([1.0, -1.0, 0.0]) for _ in range(12)] + \
+             [np.array([1.0, 1.0, 0.0]) for _ in range(12)]
+    out = bf.ic_mde(grupos, "50", n_boot=60)
+    for k in ("punto", "lo", "hi", "n_boot", "frac_degeneradas",
+              "punto_dentro"):
+        assert k in out, k
+    assert out["lo"] <= out["hi"]
+    assert 0.0 <= out["frac_degeneradas"] <= 1.0
+    assert out["n_boot"] == 60
+    # `punto_dentro` NO se exige: un punto fuera de su intervalo de
+    # percentiles es sesgo del bootstrap, y la disciplina de la casa
+    # (DECISIONES.md §34.9) es reportarlo, no asumir que no pasa. Lo que
+    # se exige es que el módulo lo DECLARE.
+    assert isinstance(out["punto_dentro"], bool)
+
+
+def test_el_punto_del_mde_usa_los_mismos_parametros_que_sus_replicas():
+    """Si el punto se computara con más precisión que las réplicas, el
+    centro no pertenecería a la distribución que lo rodea."""
+    grupos = [np.array([1.0, -1.0]) for _ in range(10)] + \
+             [np.array([1.0, 1.0]) for _ in range(10)]
+    out = bf.ic_mde(grupos, "80", n_boot=25, n_sim=40, n_perm=300)
+    directo = bf.mde_por_potencia(grupos, n_sim=40, n_perm=300)
+    assert abs(out["punto"] - directo) < 1e-9
+
+
+@solo_con_base
+def test_los_dos_mde_del_informe_salen_con_intervalo():
+    """Guardián del hueco que cerró la revisión del 1-sep: los dos MDE que
+    el informe publica tienen que traer banda, no punto."""
+    d = bf.aplicar(bf.cargar_filas(bf.CORTE_PUBLICADO), bf.CELDA_ANCLA)
+    g = bf._por_dia(d, (d["acierto"] - d["base_acierto"]).to_numpy(float))
+    for cual, kw in (("50", bf.BOOT_MDE50), ("80", bf.BOOT_MDE80)):
+        out = bf.ic_mde(g, cual, **{**kw, "n_boot": 30})
+        assert np.isfinite(out["lo"]) and np.isfinite(out["hi"])
+        assert out["hi"] > out["lo"]
+        assert out["punto_dentro"], (
+            f"MDE al {cual}%: el punto cayó fuera de su intervalo; el "
+            "informe tiene que declararlo (§34.9)")
+        # y el MDE queda muy por encima de la ventaja publicada
+        assert out["lo"] > bf.ANCLA["ventaja_pp"]
