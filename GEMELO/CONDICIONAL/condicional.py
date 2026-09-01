@@ -738,28 +738,81 @@ def evaluar_walk_forward(oos: pd.DataFrame, mediana_global: float,
     res = ic_auc_por_fecha(s, y, semilla=semilla)
     res["p_permutacion_bloques"] = permutacion_bloques_auc(s, y, semilla=semilla)
 
-    # --- McNemar contra el clasificador trivial "siempre alto" ---
-    # (la clase mayoritaria bajo el corte de la mediana). Unidad: la FECHA.
-    pred = (s > np.median(s)).astype(int)
-    trivial = np.ones_like(y)
+    # --- McNemar contra el clasificador trivial, sobre las MISMAS fechas ---
+    # EL RIVAL ES LA CLASE MAYORITARIA, NO "SIEMPRE ALTO".
+    # Con el corte en la mediana y 1093 de 2030 fechas con ventaja
+    # exactamente 0, "alto" (ventaja > mediana) es la clase MINORITARIA:
+    # ~33% de las fechas. Un rival que dijera "alto" siempre acertaría el
+    # 33% y CUALQUIER cosa le ganaría con p=0.0 — un hombre de paja que
+    # habría hecho pasar el §4(a) a las siete configuraciones, incluidas
+    # tres cuyo AUC ni siquiera se despega de 0.5. La clase mayoritaria se
+    # aprende EXPANSIVAMENTE con el mismo corte y el mismo embargo que el
+    # resto: nunca mirando la fecha que se está clasificando.
+    # El UMBRAL del clasificador también se aprende del pasado purgado: se
+    # toma el cuantil de los scores pasados que reproduce la tasa de "alto"
+    # pasada. Partir por la mediana del score forzaría un 50/50 contra unas
+    # clases que son 33/67, y el clasificador perdería por la partición, no
+    # por la condición.
+    fechas_oos = pd.DatetimeIndex(oos["fecha"])
+    pred = np.zeros(len(y), int)
+    trivial = np.zeros(len(y), int)
+    for i, d in enumerate(fechas_oos):
+        pasado = fechas_oos <= d - pd.Timedelta(days=EMBARGO_DIAS)
+        if not pasado.any():
+            continue
+        tasa = float(y[pasado].mean())
+        trivial[i] = int(tasa > 0.5)
+        umbral = float(np.quantile(s[pasado], 1.0 - tasa))
+        pred[i] = int(s[i] > umbral)
     ac_a = (pred == y).astype(int)
     ac_b = (trivial == y).astype(int)
     b = int(((ac_a == 1) & (ac_b == 0)).sum())
     c = int(((ac_a == 0) & (ac_b == 1)).sum())
-    res["mcnemar_vs_siempre_alto"] = {
-        "b": b, "c": c, "p_exacto": round(ev.mcnemar_exact(b, c), 4),
+    p_mcn = round(ev.mcnemar_exact(b, c), 4)
+    mejor = bool(ac_a.mean() > ac_b.mean())
+    res["mcnemar_vs_clase_mayoritaria"] = {
+        "b": b, "c": c, "p_exacto": p_mcn,
         "acierto_condicion": round(float(ac_a.mean()), 4),
         "acierto_trivial": round(float(ac_b.mean()), 4),
+        "condicion_es_mejor": mejor,
         "wilson95_condicion": [round(x, 4) for x in
                                ev.wilson_ci(int(ac_a.sum()), len(ac_a))],
+        "wilson95_trivial": [round(x, 4) for x in
+                             ev.wilson_ci(int(ac_b.sum()), len(ac_b))],
     }
+    # LA DIRECCIÓN IMPORTA. Un McNemar significativo puede significar que la
+    # condición es significativamente PEOR que el rival trivial; sin este
+    # `and mejor`, esas configuraciones pasaban el §4(a) por ser malas.
     res["cumple_4a"] = bool(res.get("excluye_0.5")
-                            or res["mcnemar_vs_siempre_alto"]["p_exacto"] < 0.05)
+                            or (p_mcn < 0.05 and mejor))
     res["mediana_corte"] = round(float(mediana_global), 4)
     res["fechas_oos"] = int(len(oos))
     res["desde_oos"] = str(pd.Timestamp(oos["fecha"].min()).date())
     res["hasta_oos"] = str(pd.Timestamp(oos["fecha"].max()).date())
     return res
+
+
+def holm(ps: dict) -> dict:
+    """Corrección de Holm-Bonferroni sobre las p de permutación de las
+    configuraciones evaluadas.
+
+    POR QUÉ ESTÁ AQUÍ AUNQUE EL PRE-REGISTRO NO LA PIDA: la §4(a) congelada
+    fija un umbral nominal por candidata, y se aplica tal cual —no se toca
+    un criterio congelado—. Pero siete configuraciones contra un umbral
+    nominal del 5% dan ~30% de probabilidad de al menos un falso positivo,
+    y este proyecto ya tiene un DSR precisamente porque elegir entre
+    resultados infla la significancia. Se reporta AL LADO del criterio
+    congelado, nunca en su lugar: el §4(a) decide, Holm informa.
+    """
+    items = sorted(((k, v) for k, v in ps.items() if v == v),
+                   key=lambda kv: kv[1])
+    m = len(items)
+    salida, previo = {}, 0.0
+    for i, (k, v) in enumerate(items):
+        ajustada = min(1.0, max(previo, (m - i) * v))
+        previo = ajustada
+        salida[k] = round(ajustada, 4)
+    return salida
 
 
 def julio_cae_del_lado_alto(oos: pd.DataFrame, mediana_global: float) -> dict:
@@ -843,6 +896,36 @@ def scan_bloques(tabla: pd.DataFrame, anchos=ANCHOS_SCAN,
     m = (fechas >= BLOQUE_JULIO[0]) & (fechas <= BLOQUE_JULIO[1])
     jul_pp = (100.0 * neto[m].sum() / n_fila[m].sum()) if m.sum() else float("nan")
 
+    # --- EL MÁXIMO SATURA, Y ESO HAY QUE DECIRLO ---
+    # Sobre la ventana larga el campeón reconstruido saca ventaja media de
+    # dos dígitos, así que hay MUCHOS bloques de 3 fechas donde acierta
+    # 7/7 y "siempre al alza" 0/7: la ventaja del bloque toca su techo de
+    # 100 pp. Un scan cuyo estadístico es el MÁXIMO se satura, y su p sale
+    # ~1 por construcción, no por evidencia. Se reporta igual, marcado como
+    # saturado, y al lado va el estadístico que NO se satura: el percentil
+    # de julio entre TODOS los bloques contiguos de su mismo ancho.
+    w_jul = int(m.sum())
+    percentil_julio = None
+    if w_jul and w_jul <= len(neto):
+        cs_net = np.concatenate([[0.0], np.cumsum(neto)])
+        cs_n = np.concatenate([[0.0], np.cumsum(n_fila)])
+        with np.errstate(invalid="ignore", divide="ignore"):
+            todos = 100.0 * (cs_net[w_jul:] - cs_net[:-w_jul]) / (
+                cs_n[w_jul:] - cs_n[:-w_jul])
+        todos = todos[~np.isnan(todos)]
+        percentil_julio = round(float((todos < jul_pp).mean() * 100), 1)
+        dist_bloques = {
+            "ancho": w_jul, "n_bloques": int(len(todos)),
+            "mediana_pp": round(float(np.median(todos)), 2),
+            "p90_pp": round(float(np.quantile(todos, 0.90)), 2),
+            "p95_pp": round(float(np.quantile(todos, 0.95)), 2),
+            "p99_pp": round(float(np.quantile(todos, 0.99)), 2),
+            "max_pp": round(float(todos.max()), 2),
+            "pct_bloques_>=_julio": round(float((todos >= jul_pp - 1e-9).mean() * 100), 1),
+        }
+    else:
+        dist_bloques = {}
+
     # cuántos bloques históricos igualan o superan a julio
     iguales = []
     for w in anchos:
@@ -870,6 +953,9 @@ def scan_bloques(tabla: pd.DataFrame, anchos=ANCHOS_SCAN,
     return {
         "anchos_probados": list(anchos),
         "mejor_bloque_observado": obs,
+        "scan_saturado": bool(obs["ventaja_pp"] >= 99.999),
+        "distribucion_de_bloques_del_ancho_de_julio": dist_bloques,
+        "percentil_de_julio_entre_bloques_de_su_ancho": percentil_julio,
         "p_scan": round(float((nulos >= obs["ventaja_pp"] - 1e-9).mean()), 4),
         "nula_mediana_pp": round(float(np.median(nulos)), 2),
         "nula_ic90_pp": [round(float(np.quantile(nulos, 0.05)), 2),
@@ -1010,7 +1096,7 @@ def reproduccion_sellada_de_julio() -> dict:
                 "ventaja_pp": round(100.0 * (b - c) / len(d), 1),
                 "mcnemar_p": round(ev.mcnemar_exact(b, c), 4)}
 
-    return {"disponible": True, "convencion": "excluir_cero",
+    return {"disponible": True, "convencion": "excluir_cero", "df": df,
             "bloque_julio": _duelo(df[m]), "resto": _duelo(df[~m]),
             "ventana_completa": _duelo(df)}
 
@@ -1019,7 +1105,7 @@ def procedencia() -> dict:
     """Qué árbol produjo estas cifras. No es adorno: esta corrida se hizo
     mientras OTROS frentes editaban `backtest/datos.py`,
     `backtest/baselines.py` y `GEMELO/experimento.py`. Sin el hash de cada
-    dependencia, «reproducible con un comando» sería una promesa vacía —
+    dependencia, `reproducible con un comando` sería una promesa vacía —
     el mismo comando sobre otro árbol da otro número."""
     import hashlib
     import subprocess
@@ -1042,6 +1128,327 @@ def procedencia() -> dict:
             with open(p, "rb") as f:
                 huellas[rel] = hashlib.sha256(f.read()).hexdigest()[:12]
     return {"commit": commit, "sha256_12_por_dependencia": huellas}
+
+
+def sox_sellado_vs_reconstruido(feats: pd.DataFrame) -> pd.DataFrame:
+    """Para cada fecha sellada: el SOX que la producción USÓ (columna
+    `sox_usado_pct` de `snapshots`, con su `sox_fecha`) contra el SOX que la
+    reconstrucción ve hoy para esa misma fecha.
+
+    Es un criterio de calidad de dato OBJETIVO y anterior a cualquier
+    resultado: no se define mirando qué filas discrepan, sino comparando el
+    insumo. Sirve para distinguir dos cosas que se confunden con facilidad:
+    una reconstrucción que MIENTE (fuga) y una producción que ese día
+    trabajó con un dato ROTO (incidente). El proyecto ya tiene incidentes
+    documentados en esas fechas (CLAUDE.md 5.0.1: el Mac se durmió el 29 y
+    el 31 de julio y Yahoo falló por ticker)."""
+    if not os.path.exists(RUTA_SENALES) or feats.empty or "sox_t" not in feats:
+        return pd.DataFrame()
+    con = sqlite3.connect(f"file:{RUTA_SENALES}?mode=ro", uri=True)
+    try:
+        snap = pd.read_sql_query(
+            "SELECT fecha, sox_fecha, sox_usado_pct, descarga_ok, "
+            "descarga_total FROM snapshots", con)
+    finally:
+        con.close()
+    if snap.empty:
+        return pd.DataFrame()
+    snap["fecha"] = pd.to_datetime(snap["fecha"])
+    # `features._ret` YA devuelve el retorno en %, no en fracción. Ojo con
+    # multiplicar por 100 aquí: la primera versión lo hizo y marcó las 40
+    # fechas selladas como degradadas con diferencias de 200-800 pp, que es
+    # un error de unidades disfrazado de hallazgo.
+    rec = feats["sox_t"].rename("sox_reconstruido_pct")
+    out = snap.merge(rec, left_on="fecha", right_index=True, how="left")
+    out["dif_pp"] = (out["sox_usado_pct"] - out["sox_reconstruido_pct"]).abs()
+    # Un `sox_fecha` NULO es una columna que no existía antes de la 5.0, no
+    # una desalineación: se marca solo cuando está PRESENTE y difiere.
+    sf = pd.to_datetime(out["sox_fecha"], errors="coerce")
+    out["sox_fecha_desalineada"] = sf.notna() & (sf != out["fecha"])
+    descarga_parcial = (out["descarga_ok"].notna()
+                        & out["descarga_total"].notna()
+                        & (out["descarga_ok"] < out["descarga_total"]))
+    out["dato_degradado"] = ((out["dif_pp"] > 0.5).fillna(False)
+                             | out["sox_fecha_desalineada"]
+                             | descarga_parcial)
+    return out
+
+
+def descomponer_ventana_sellada(sellado: dict,
+                                incidentes: tuple = ()) -> list:
+    """La ventana sellada, partida en sus tres tramos.
+
+    NO ES UNA CORRECCIÓN NI UNA RETRACTACIÓN. Las filas selladas jamás se
+    reescriben y ninguna cifra publicada se mueve: los +6.2 pp de la
+    ventana completa siguen siendo la cifra de la ventana completa. Esto es
+    una DESCOMPOSICIÓN — dice de dónde viene ese número, no lo sustituye.
+    Presentar el tramo "sin incidentes" como el resultado sería exactamente
+    la trampa de quitar los días malos de un track record.
+    """
+    df = sellado.get("df")
+    if df is None or df.empty:
+        return []
+    inc = df["fecha"].isin(incidentes)
+    jul = (df["fecha"] >= BLOQUE_JULIO[0]) & (df["fecha"] <= BLOQUE_JULIO[1])
+
+    def _fila(d, etiqueta):
+        if d.empty:
+            return None
+        b = int(((d["acierto_gap"] == 1) & (d["base"] == 0)).sum())
+        c = int(((d["acierto_gap"] == 0) & (d["base"] == 1)).sum())
+        return {"tramo": etiqueta, "n": int(len(d)),
+                "fechas": int(d["fecha"].nunique()),
+                "acierto_pct": round(100 * float(d["acierto_gap"].mean()), 1),
+                "base_pct": round(100 * float(d["base"].mean()), 1),
+                "ventaja_pp": round(100.0 * (b - c) / len(d), 1),
+                "mcnemar_p": round(ev.mcnemar_exact(b, c), 4)}
+
+    filas = [_fila(df, "TODA la ventana sellada (la cifra vigente)"),
+             _fila(df[jul], f"bloque {BLOQUE_JULIO[0]} → {BLOQUE_JULIO[1]}"),
+             _fila(df[inc], "fechas con incidente de producción"),
+             _fila(df[~jul & ~inc], "todo lo demás")]
+    return [f for f in filas if f]
+
+
+def reconciliar_ventanas(filas: pd.DataFrame, sellado: dict,
+                         feats: pd.DataFrame | None = None) -> dict:
+    """LA COMPARACIÓN QUE NADIE PIDIÓ Y QUE HAY QUE HACER IGUAL.
+
+    Sobre la ventana larga el campeón RECONSTRUIDO saca ~16 pp sobre
+    "siempre al alza"; sobre la ventana sellada saca ~6 pp. Publicar el
+    primero sin explicar el segundo sería exactamente lo que este proyecto
+    no hace. Hay dos explicaciones posibles y se distinguen con una sola
+    medición: RESTRINGIR la reconstrucción a las fechas selladas.
+
+      - Si ahí también da ~6 pp, la diferencia es de RÉGIMEN: en 2026
+        "siempre al alza" es un rival mucho más duro (el mercado subió),
+        así que la misma habilidad rinde menos ventaja. El +16 pp es real
+        para su ventana y no dice nada malo de la reconstrucción.
+      - Si ahí da ~16 pp, la reconstrucción está viendo algo que el sello
+        no vio, y entonces TODO este documento se lee como una medición
+        sobre datos revisados, no sobre historia.
+
+    No se elige la respuesta: se mide y se declara la que salga.
+    """
+    if filas.empty or not sellado.get("disponible"):
+        return {}
+    sel = sellado.get("df")
+    if sel is None or sel.empty:
+        return {}
+
+    def _resumen(d: pd.DataFrame, col_ac="acierto", col_base="base") -> dict:
+        if d.empty:
+            return {}
+        b = int(((d[col_ac] == 1) & (d[col_base] == 0)).sum())
+        c = int(((d[col_ac] == 0) & (d[col_base] == 1)).sum())
+        por_fecha = d.groupby("fecha").apply(
+            lambda x: 100.0 * (x[col_ac].sum() - x[col_base].sum()) / len(x),
+            include_groups=False)
+        ic = ic_media_por_fecha(por_fecha.to_numpy(float),
+                                bloque=min(BLOQUE_FECHAS, max(2, len(por_fecha) // 4)))
+        return {"n": int(len(d)), "fechas": int(d["fecha"].nunique()),
+                "acierto_pct": round(100 * float(d[col_ac].mean()), 1),
+                "base_pct": round(100 * float(d[col_base].mean()), 1),
+                "ventaja_pp": round(100.0 * (b - c) / len(d), 1),
+                "ic95_por_fecha": [round(float(ic["lo"]), 2),
+                                   round(float(ic["hi"]), 2)],
+                "mcnemar_p": round(ev.mcnemar_exact(b, c), 4)}
+
+    f = filas.copy()
+    f["fecha"] = pd.to_datetime(f["fecha"])
+    s = sel.copy()
+    s["fecha"] = pd.to_datetime(s["fecha"])
+    lo, hi = str(s["fecha"].min().date()), str(s["fecha"].max().date())
+    solape_fechas = f[(f["fecha"] >= s["fecha"].min())
+                      & (f["fecha"] <= s["fecha"].max())]
+
+    # --- LAS MISMAS FILAS: se emparejan por (ticker, SESIÓN OBJETIVO) ---
+    # No por ("fecha","ticker"). La sesión objetivo es la clave semántica
+    # —qué sesión predice esta fila— y es la única que sobrevive a que dos
+    # sesiones distintas caigan sobre la misma fecha de emisión. Es también
+    # el emparejamiento correcto que `GEMELO/ventana_larga.py`:214 no hace,
+    # y de donde salía la cifra de contaminación ya refutada que este
+    # documento no republica.
+    s["clave_sesion"] = pd.to_datetime(s["sesion_objetivo"],
+                                       errors="coerce").dt.date
+    f["clave_sesion"] = pd.to_datetime(f["sesion"], errors="coerce").dt.date
+    j_sesion = s.merge(
+        f[["fecha", "ticker", "clave_sesion", "pred", "gap_pct", "acierto", "base"]],
+        on=["ticker", "clave_sesion"], how="inner", suffixes=("_sell", "_rec"))
+
+    # ------------------------------------------------------------
+    # PERO LA SESIÓN OBJETIVO, SOLA, NO ALCANZA — y esto es un hallazgo.
+    # ------------------------------------------------------------
+    # La emisión sellada del 2026-08-05 apunta a la sesión del 2026-08-07,
+    # no a la del 06: la corrida del 06 falló y dejó sus filas vacías. Una
+    # reconstrucción que asume "la emisión de D anticipa la sesión
+    # siguiente" empareja ESA sesión con la emisión del 06 — y le regala un
+    # día entero de SOX que el sello no tuvo. Emparejar solo por sesión
+    # objetivo compara dos predicciones hechas con conjuntos de información
+    # DISTINTOS, y la diferencia se lee como fuga cuando es un desfase de
+    # emisión. La comparación honesta exige las DOS claves: misma sesión
+    # objetivo Y misma fecha de emisión.
+    mismo_instante = (pd.to_datetime(j_sesion["fecha_sell"]).dt.date
+                      == pd.to_datetime(j_sesion["fecha_rec"]).dt.date) \
+        if "fecha_sell" in j_sesion.columns else \
+        (pd.to_datetime(j_sesion["fecha_x"]).dt.date
+         == pd.to_datetime(j_sesion["fecha_y"]).dt.date)
+    desfasadas = int((~mismo_instante).sum())
+    # Las fechas de emisión con desfase son un criterio OBJETIVO e
+    # independiente del resultado para señalar "acá la producción no emitió
+    # para la sesión siguiente": la corrida intermedia falló. No se eligen a
+    # mano ni mirando quién gana.
+    col_fs = "fecha_sell" if "fecha_sell" in j_sesion.columns else "fecha_x"
+    fechas_desfase = sorted({str(pd.Timestamp(x).date()) for x in
+                             j_sesion.loc[~mismo_instante, col_fs]})
+    j = j_sesion[mismo_instante].copy()
+    j = j.rename(columns={c: c.replace("_x", "_sell").replace("_y", "_rec")
+                          for c in j.columns if c.endswith(("_x", "_y"))})
+    if "fecha_sell" in j.columns:
+        j["fecha"] = pd.to_datetime(j["fecha_sell"])
+    pareadas = {"filas_descartadas_por_desfase_de_emision": desfasadas,
+                "fechas_de_emision_desfasadas": fechas_desfase}
+    if not j.empty:
+        j = j.drop_duplicates(subset=["ticker", "clave_sesion"])
+        mismo_signo = float(((j["apertura_estimada_pct"] >= 0)
+                             == (j["pred"] >= 0)).mean())
+        gap_igual = float((j["gap_pct_sell"] - j["gap_pct_rec"]).abs().lt(0.01).mean())
+        # ---- EL DIAGNÓSTICO DECISIVO ----
+        # Si el gap coincide al 100% pero la ventaja no, la diferencia está
+        # en la PREDICCIÓN, no en los datos de resultado. Y entonces la
+        # pregunta es una sola: cuando las dos predicciones discrepan de
+        # signo, ¿a quién le da la razón el mercado? Si el reparto es ~50/50,
+        # es ruido de reconstrucción. Si casi todas las gana la
+        # reconstrucción, eso es la firma de una fuga —la reconstrucción de
+        # hoy sabe algo que el sello de entonces no sabía— y no hay lectura
+        # benigna. Prueba de signo exacta, unidad = fila en desacuerdo.
+        des = j[(j["apertura_estimada_pct"] >= 0) != (j["pred"] >= 0)]
+        gana_rec = int((des["acierto"] == 1).sum())
+        gana_sell = int((des["acierto_gap"] == 1).sum())
+        p_signo = ev.mcnemar_exact(gana_rec, gana_sell) if len(des) else None
+
+        # ¿Los desacuerdos son SISTEMÁTICOS o viven en unas pocas fechas con
+        # el insumo roto? La diferencia entre "fuga" e "incidente" no se
+        # decide por intuición: se decide con el criterio objetivo de
+        # `sox_sellado_vs_reconstruido`, que compara el INSUMO y no el
+        # resultado, y que por tanto no se puede acomodar a la conclusión.
+        calidad = (sox_sellado_vs_reconstruido(feats)
+                   if feats is not None else pd.DataFrame())
+        degradadas = (set(calidad.loc[calidad["dato_degradado"], "fecha"])
+                      if not calidad.empty else set())
+        fechas_des = sorted({pd.Timestamp(x) for x in des["fecha"]})
+        des_en_degradadas = int(des["fecha"].isin(degradadas).sum())
+        limpias = j[~j["fecha"].isin(degradadas)]
+        pareadas_limpias = (
+            {"reconstruida": _resumen(
+                limpias.assign(ac_r=limpias["acierto"],
+                               b_r=(limpias["gap_pct_rec"] > 0).astype(int)),
+                col_ac="ac_r", col_base="b_r"),
+             "sellada": _resumen(
+                 limpias.assign(ac_s=limpias["acierto_gap"],
+                                b_s=(limpias["gap_pct_sell"] > 0).astype(int)),
+                 col_ac="ac_s", col_base="b_s")}
+            if not limpias.empty else {})
+
+        if p_signo is None or p_signo >= 0.05:
+            lectura = "ruido de reconstrucción: el reparto es compatible con el azar"
+        elif len(fechas_des) <= 3 and des_en_degradadas == len(des):
+            lectura = (
+                f"INCIDENTE DE PRODUCCIÓN, NO FUGA. Los {len(des)} desacuerdos "
+                f"viven íntegramente en {len(fechas_des)} fechas, y las "
+                "{n} son fechas que el criterio objetivo de calidad del insumo "
+                "marca como DEGRADADAS: el SOX que la producción usó ese día "
+                "no es el SOX que la serie tiene hoy. La reconstrucción no "
+                "está viendo el futuro; la producción vio un dato roto."
+            ).replace("{n}", str(des_en_degradadas))
+        else:
+            lectura = (
+                "FIRMA DE FUGA: los desacuerdos los gana la reconstrucción de "
+                "forma sistemática y NO se explican por fechas con el insumo "
+                "degradado. Es lo que pasa cuando la serie de hoy contiene "
+                "información que no existía en la fecha de emisión.")
+
+        pareadas |= {
+            "n_filas_pareadas": int(len(j)),
+            "desacuerdos_de_signo": {
+                "n": int(len(des)),
+                "los_gana_la_reconstruccion": gana_rec,
+                "los_gana_el_sello": gana_sell,
+                "p_prueba_de_signo": (round(p_signo, 5)
+                                      if p_signo is not None else None),
+                "fechas_con_desacuerdo": [str(x.date()) for x in fechas_des],
+                "desacuerdos_en_fechas_degradadas": des_en_degradadas,
+                "lectura": lectura,
+            },
+            "calidad_del_insumo": (
+                [] if calidad.empty else
+                [{"fecha": str(pd.Timestamp(r["fecha"]).date()),
+                  "sox_usado_sellado_pct": r["sox_usado_pct"],
+                  "sox_reconstruido_pct": (None if pd.isna(r["sox_reconstruido_pct"])
+                                           else round(float(r["sox_reconstruido_pct"]), 2)),
+                  "dif_pp": (None if pd.isna(r["dif_pp"])
+                             else round(float(r["dif_pp"]), 2)),
+                  "descarga": f"{r['descarga_ok']}/{r['descarga_total']}",
+                  "degradado": bool(r["dato_degradado"])}
+                 for _, r in calidad[calidad["dato_degradado"]].iterrows()]),
+            "n_fechas_degradadas": len(degradadas),
+            "sobre_fechas_NO_degradadas": pareadas_limpias,
+            "sellada": _resumen(j.rename(columns={"acierto_gap": "ac_s",
+                                                  "base_sell": "b_s"}),
+                                col_ac="ac_s", col_base="b_s")
+            if "base_sell" in j.columns else
+            _resumen(j.assign(ac_s=j["acierto_gap"], b_s=(j["gap_pct_sell"] > 0).astype(int)),
+                     col_ac="ac_s", col_base="b_s"),
+            "reconstruida": _resumen(j.assign(ac_r=j["acierto"],
+                                              b_r=(j["gap_pct_rec"] > 0).astype(int)),
+                                     col_ac="ac_r", col_base="b_r"),
+            "pct_misma_direccion_de_prediccion": round(mismo_signo * 100, 1),
+            "pct_gap_identico_a_0.01pp": round(gap_igual * 100, 1),
+        }
+
+    larga = _resumen(f)
+    por_fechas = _resumen(solape_fechas)
+    comp = sellado.get("ventana_completa") or {}
+    dif_pareada = None
+    if pareadas:
+        dif_pareada = round(pareadas["reconstruida"]["ventaja_pp"]
+                            - pareadas["sellada"]["ventaja_pp"], 1)
+    return {
+        "ventana_sellada_desde": lo, "ventana_sellada_hasta": hi,
+        "reconstruida_ventana_larga": larga,
+        "reconstruida_mismo_rango_de_fechas": por_fechas,
+        "sellada_completa": comp,
+        "sobre_las_mismas_filas": pareadas,
+        "diferencia_pareada_pp": dif_pareada,
+        "descomposicion_sellada": descomponer_ventana_sellada(
+            sellado, tuple(fechas_desfase)),
+        "veredicto": _veredicto_reconciliacion(larga, por_fechas, pareadas,
+                                               dif_pareada),
+    }
+
+
+def _veredicto_reconciliacion(larga, por_fechas, pareadas, dif) -> str:
+    if not pareadas or dif is None:
+        return "no evaluable"
+    n = pareadas.get("n_filas_pareadas")
+    signo = pareadas.get("pct_misma_direccion_de_prediccion")
+    gap = pareadas.get("pct_gap_identico_a_0.01pp")
+    desf = pareadas.get("filas_descartadas_por_desfase_de_emision", 0)
+    if abs(dif) <= 0.5 and signo == 100.0 and gap == 100.0:
+        return (f"LA RECONSTRUCCIÓN ES FIEL. Sobre las {n} filas que comparten "
+                f"fecha de emisión Y sesión objetivo: {signo}% de las "
+                f"predicciones con el mismo signo, {gap}% de los gaps "
+                f"idénticos, y la misma ventaja (dif {dif} pp). No hay fuga ni "
+                "revisión silenciosa que explique nada, porque no hay nada que "
+                f"explicar. Las {desf} filas que NO se pueden parear son las "
+                "de emisiones desfasadas, y son un hallazgo aparte.")
+    if abs(dif) <= 3.0:
+        return (f"COINCIDEN sobre las mismas filas (dif {dif} pp sobre {n}): "
+                "la brecha entre las dos ventanas no está en el mecanismo.")
+    return (f"DISCREPAN sobre las MISMAS filas (dif {dif} pp): la "
+            "reconstrucción y el sello no miden lo mismo. Todo este "
+            "documento se lee entonces como una medición sobre historia "
+            "revisada, no sobre historia.")
 
 
 def diagnostico_condicion_4() -> dict:
@@ -1133,11 +1540,21 @@ def correr(anios: int = ANIOS, usar_cache: bool = True,
         q2["CONJUNTO"] = evaluar_walk_forward(oos_conj, mediana)
         q2b["CONJUNTO"] = julio_cae_del_lado_alto(oos_conj, mediana)
 
+    # Multiplicidad: se informa al lado del criterio congelado, no en su lugar
+    ajustadas = holm({c: r.get("p_permutacion_bloques")
+                      for c, r in q2.items() if r.get("n_fechas", 1)})
+    for c, v in ajustadas.items():
+        q2[c]["p_permutacion_holm"] = v
+        q2[c]["sobrevive_holm"] = bool(v < 0.05)
+
+    sellado = reproduccion_sellada_de_julio()
     q3 = {
         "scan": scan_bloques(tabla, semilla=SEMILLA, n_perm=n_permutaciones),
         "firma": firma_de_julio(tabla),
-        "sellado": reproduccion_sellada_de_julio(),
+        "sellado": sellado,
+        "reconciliacion": reconciliar_ventanas(filas, sellado, feats),
     }
+    sellado.pop("df", None)   # el frame crudo no va al JSON del reporte
 
     veredicto = _veredicto(q1, q2, q2b, q3)
     return {
@@ -1187,10 +1604,9 @@ def _veredicto(q1, q2, q2b, q3) -> dict:
                               "Alguna condición discrimina en general, pero "
                               "ninguna predice a julio-2026 como bloque alto.")
     else:
-        clave, texto = "NO REFUTADA", (
-            "La hipótesis condicional sobrevive: hay discriminación fuera de "
-            "muestra Y julio cae del lado alto. Exploratorio, nunca "
-            "'confirmado' (§1.1 del pre-registro).")
+        clave, texto = "NO REFUTADA, Y MÁS DÉBIL DE LO QUE SUENA", (
+            "Bajo los criterios congelados sobrevive, pero lo que la sostiene "
+            "es casi una identidad algebraica, no una condición de mercado.")
     scan = q3.get("scan", {})
     return {"clave": clave, "texto": texto,
             "condiciones_que_discriminan": discriminan,
@@ -1215,6 +1631,14 @@ def _tabla(filas: list) -> str:
     return "\n".join(L) + "\n"
 
 
+def _q(q1: dict, pct: int, campo: str):
+    """Un valor de la tabla `quitando las mejores fechas`, por porcentaje."""
+    for fila in q1.get("quitando_las_mejores", []):
+        if fila.get("quitando_top_pct") == pct:
+            return fila.get(campo)
+    return None
+
+
 def informe(r: dict) -> str:
     v, p, w = r["veredicto"], r["parametros"], r["ventana"]
     q1, q2, q2b, q3 = (r["q1_concentracion"], r["q2_walk_forward"],
@@ -1222,28 +1646,88 @@ def informe(r: dict) -> str:
     cl4, cls = r["condicion_4"], r["clustering"]
     scan, firma, sell = q3["scan"], q3["firma"], q3["sellado"]
 
+    rec = q3.get("reconciliacion") or {}
+    obs100 = q1["pct_fechas_para_100_del_neto"]
+    nulo100 = q1["nula_pct_fechas_para_100_mediana"]
+    mas_dispersa = (obs100 is not None and nulo100 is not None
+                    and obs100 > nulo100)
+    disc = v["condiciones_que_discriminan"]
+    julio_alto = v["condiciones_con_julio_alto"]
+    pct_jul = scan.get("percentil_de_julio_entre_bloques_de_su_ancho")
+
     L = [
         "# La hipótesis condicional sobre la ventana larga — veredicto", "",
         f"> ## {v['clave']} — {v['texto']}", ">",
-        f"> **La ventaja no se concentra más de lo que el azar concentra.** El "
-        f"{q1['pct_fechas_para_100_del_neto']}% de las fechas contiene el 100% "
-        f"de la ventaja neta; bajo la nula de permutar el signo por fecha, la "
-        f"mediana es {q1['nula_pct_fechas_para_100_mediana']}% "
-        f"(IC90 {q1['nula_pct_fechas_para_100_ic90']}). Es la firma de una "
-        "ventaja que no existe, no la de una ventaja concentrada.",
+        (f"> **La ventaja NO está concentrada: está repartida — hasta un "
+         f"punto.** Quitando el 10% de fechas más favorables quedan "
+         f"**{_q(q1, 10, 'ventaja_pp_media_por_fecha')} pp** con IC95 "
+         f"{[_q(q1, 10, 'ic95_lo'), _q(q1, 10, 'ic95_hi')]}, que excluye el "
+         f"cero; quitando el 20% la ventaja se da vuelta a "
+         f"**{_q(q1, 20, 'ventaja_pp_media_por_fecha')} pp**. El 100% de la "
+         f"ventaja neta vive en el {obs100}% de las fechas, contra {nulo100}% "
+         f"bajo la nula de permutar el signo por fecha: la curva observada es "
+         f"mucho MÁS dispersa que la del azar, no más concentrada."
+         if mas_dispersa else
+         f"> **La ventaja se concentra tanto como el azar concentra.** El 100% "
+         f"de la ventaja neta vive en el {obs100}% de las fechas; la nula da "
+         f"{nulo100}%."),
         ">",
-        f"> **Ninguna condición predice los bloques altos fuera de muestra.** "
-        f"{len(v['condiciones_que_discriminan'])} de {len(q2)} configuraciones "
-        f"cumplen el §4(a) congelado.",
+        (f"> **Sí hay condiciones que predicen fuera de muestra, y son las de "
+         f"magnitud.** {len(disc)} de {len(q2)} configuraciones cumplen el "
+         f"§4(a) congelado: {', '.join(f'`{c}`' for c in disc)}. Las que no: "
+         f"{', '.join(f'`{c}`' for c in q2 if c not in disc) or '(ninguna)'}."
+         if disc else
+         f"> **Ninguna condición predice los bloques altos fuera de muestra.** "
+         f"0 de {len(q2)} configuraciones cumplen el §4(a) congelado."),
         ">",
-        f"> **El bloque de julio no es de otra especie.** En ocho años hay "
-        f"**{scan['n_bloques_iguales_o_mejores_sin_solape']}** bloques "
-        f"históricos sin solape iguales o mejores que el de julio, y el scan "
-        f"statistic sobre la ventana larga da **p={scan['p_scan']}**.",
+        (f"> **Julio-2026 cae del lado alto para "
+         f"{', '.join(f'`{c}`' for c in julio_alto)}**, y del lado bajo para el "
+         f"resto — incluido el modelo conjunto." if julio_alto else
+         "> **Ninguna condición predice a julio-2026 como bloque alto.**"),
+        ">",
+        (f"> **El bloque de julio NO es excepcional en la ventana larga.** Su "
+         f"+{scan['julio_2026']['ventaja_pp_reconstruida']} pp está en el "
+         f"percentil **{pct_jul}** de todos los bloques contiguos de su mismo "
+         f"ancho, y hay **{scan['n_bloques_iguales_o_mejores_sin_solape']}** "
+         f"bloques históricos sin solape iguales o mejores. Su firma de "
+         f"condiciones sí es atípica (Mahalanobis en el percentil "
+         f"{firma.get('percentil_de_julio')}), pero el motor de esa distancia "
+         f"es `disp_asia` — una de las condiciones que NO discrimina, así que "
+         f"es una descripción, no una explicación. Ver §3.3."
+         if pct_jul is not None else "> (bloque de julio no evaluable)"),
+        ">",
+        (f"> **La reconstrucción es FIEL al sello, y la brecha de 16 pp contra "
+         f"6 pp no está en el mecanismo.** Sobre las "
+         f"{rec['sobre_las_mismas_filas'].get('n_filas_pareadas')} filas que "
+         f"comparten fecha de emisión Y sesión objetivo: "
+         f"{rec['sobre_las_mismas_filas'].get('pct_misma_direccion_de_prediccion')}% "
+         f"de predicciones con el mismo signo, "
+         f"{rec['sobre_las_mismas_filas'].get('pct_gap_identico_a_0.01pp')}% de "
+         f"gaps idénticos, dif {rec['diferencia_pareada_pp']} pp. **Los +6.2 pp "
+         "de la ventana sellada son la resta de un bloque de julio de +40.9 pp, "
+         "dos fechas de incidente de producción que cuestan −62.5 pp sobre 16 "
+         "filas, y un resto de +4.1 pp (p=0.44)** — descomposición, no "
+         "corrección: ninguna fila sellada se toca y ninguna cifra publicada "
+         "se mueve."
+         if rec.get("veredicto") else
+         "> (reconciliación entre ventanas no evaluable)"),
         ">",
         f"> Intentos sumados: **{p['N_intentos_nuevos']}** "
         f"(N acumulado {p['N_intentos_previo']} → **{p['N_intentos_acumulado']}**). "
         f"NO EVALUABLE: **{cl4['condicion']}**.",
+        "",
+        "### Por qué `no refutada` aquí vale poco", "",
+        "1. **Lo único que discrimina es la MAGNITUD del movimiento del SOX**, y",
+        "   el mecanismo es casi una identidad: la predicción del campeón *es*",
+        "   beta × ese movimiento, así que cuando el SOX se mueve fuerte la",
+        "   apuesta se distingue más de `siempre al alza`. No es un hallazgo",
+        "   sobre el mercado; es aritmética del propio modelo.",
+        "2. **Las condiciones que aportarían información NUEVA son justo las que",
+        "   fallan** — dispersión asiática, distancia al trimestre y la ventana",
+        "   de volatilidad de 10 sesiones tienen el IC del AUC sobre 0.5.",
+        "3. **Las dos patas del criterio nunca se cumplen fuerte a la vez:** la",
+        "   condición más sólida en el §4(a) es la más floja en el §4(b), y al",
+        "   revés. Ver la §2.",
         "",
         "Frente D de la segunda tanda (01-sep-2026). Ejecuta el pre-registro",
         f"`{r['preregistro']}` sobre la ventana larga reconstruida, que es el",
@@ -1282,7 +1766,7 @@ def informe(r: dict) -> str:
         "Y las huellas de las dependencias, porque esta corrida se hizo con",
         "otros frentes editando `backtest/` y `GEMELO/` al mismo tiempo: el",
         "mismo comando sobre otro árbol da otro número, y sin esto",
-        "«reproducible» sería una promesa vacía.",
+        "`reproducible` sería una promesa vacía.",
         "",
         _tabla([{"archivo": k, "sha256[:12]": v}
                 for k, v in r["procedencia"]["sha256_12_por_dependencia"].items()]),
@@ -1299,12 +1783,12 @@ def informe(r: dict) -> str:
         f"{r['causalidad']['cortes_probados']} fechas repartidas por toda la",
         f"ventana: **{r['causalidad']['celdas_con_fuga']} celdas con fuga**. Y la",
         "CONTRAPRUEBA —una condición envenenada con `shift(-1)`— **sí fue",
-        "detectada**, así que el «pasa» no es el pase de un test que no",
+        "detectada**, así que el `pasa` no es el pase de un test que no",
         "discrimina. Si la contraprueba no falla, el módulo se niega a correr.",
         "", "---", "",
         "## 1. La curva de concentración de la ventaja", "",
         f"Sobre {q1['fechas']} fechas y {q1['filas']} filas, la ventaja total",
-        f"del campeón reconstruido sobre «siempre al alza» es",
+        f"del campeón reconstruido sobre `siempre al alza` es",
         f"**{q1['ventaja_total_pp_ponderada_por_fila']} pp** ponderada por fila,",
         f"y **{q1['ventaja_media_por_fecha_pp']} pp** como media por fecha, con",
         f"IC95 circular por fecha **{q1['ic95_ventaja_por_fecha']}** — que",
@@ -1320,13 +1804,15 @@ def informe(r: dict) -> str:
         f"- El **{q1['pct_fechas_para_80_del_neto']}%**, el 80%",
         f"- El **{q1['pct_fechas_para_100_del_neto']}%**, el 100%",
         "",
-        "### Y por qué ese número, solo, no significa nada", "",
-        "Una ventaja total cercana a cero produce una curva extrema por",
-        "ARITMÉTICA: las fechas positivas suman el total y las negativas lo",
-        "cancelan, así que la «cima» siempre es una fracción pequeña. La curva",
-        "solo es interpretable contra su nula. La nula es la permutación de",
-        "signo por fecha que exige el frente: se conserva |b−c| de cada fecha y",
-        "se sortea su signo.",
+        "### Y por qué ese número, SOLO, no significa nada", "",
+        "Que el 16.5% de las fechas contenga el 100% de la ventaja suena a",
+        "concentración extrema, y leído solo no dice nada. Una ventaja",
+        "cercana a cero produce una curva extrema por pura ARITMÉTICA: las",
+        "fechas positivas suman el total y las negativas lo cancelan, así que",
+        "la cima sale minúscula aunque no haya ninguna estructura. La curva",
+        "solo es interpretable contra su nula, y la nula es la permutación de",
+        "signo por fecha que este frente exige: se conserva |b−c| de cada",
+        "fecha y se sortea su signo.",
         "",
         _tabla([{
             "curva": "observada",
@@ -1337,12 +1823,44 @@ def informe(r: dict) -> str:
                  f"{q1['nula_pct_fechas_para_100_mediana']} "
                  f"(IC90 {q1['nula_pct_fechas_para_100_ic90']})",
              "% fechas para el 50%": q1["nula_pct_fechas_para_50_mediana"]}]),
-        "**La curva observada cae dentro de lo que produce el puro azar.** La",
-        "concentración de la ventaja no es un hallazgo: es lo que se ve cuando",
-        "la ventaja no existe y las fechas se cancelan entre sí.",
+        (f"**La curva observada es {round(obs100 / nulo100)}× MÁS DISPERSA que "
+         f"la del azar, no más concentrada.** Bajo la nula bastan {nulo100}% "
+         f"de las fechas para acumular el neto entero; en los datos hacen "
+         f"falta {obs100}%. La lectura correcta es la contraria de la que "
+         "sugería la pregunta: sobre ocho años la ventaja del campeón "
+         "reconstruido **está repartida**, no vive en unos pocos días "
+         "afortunados."
+         if mas_dispersa else
+         "**La curva observada cae dentro de lo que produce el puro azar.** La "
+         "concentración no es un hallazgo: es lo que se ve cuando la ventaja "
+         "no existe y las fechas se cancelan entre sí."),
         "",
-        "### La ventaja al quitar las mejores fechas", "",
+        "> Esto **no contradice** el hallazgo de la ventana sellada, lo pone en",
+        "> su sitio: en 34 fechas, que toda la ventaja viva en 6 días es lo que",
+        "> se espera de una muestra sin potencia (n efectivo 68). En 2030",
+        "> fechas, la misma medición muestra una ventaja repartida. Son la",
+        "> misma señal vista con dos potencias distintas — y con dos rivales",
+        "> distintos, que es la parte incómoda de la §3.4.",
+        "",
+        "> Y una advertencia sobre este contraste, porque un revisor la haría:",
+        "> la nula aleatoriza el SIGNO, así que también destruye el hecho de que",
+        "> la ventaja media sea positiva. En rigor esta comparación confirma que",
+        "> la ventaja total es > 0 tanto como que está repartida. **La medida de",
+        "> concentración que no depende de eso es la tabla siguiente**, y es la",
+        "> que hay que mirar.",
+        "",
+        "### La ventaja al quitar las mejores fechas — la medida que importa", "",
+        "Cada fila quita el X% de fechas más favorables y vuelve a medir, con IC",
+        "circular por bloques de fechas. Es la versión con potencia del criterio",
+        "R2 del `GEMELO/DISEÑO.md`, y no depende de ninguna nula.",
+        "",
         _tabla(q1["quitando_las_mejores"]),
+        f"**La ventaja aguanta que le quiten el 10% de las mejores fechas "
+        f"({_q(q1, 10, 'ventaja_pp_media_por_fecha')} pp, IC95 "
+        f"{[_q(q1, 10, 'ic95_lo'), _q(q1, 10, 'ic95_hi')]}) y NO aguanta que le "
+        f"quiten el 20% ({_q(q1, 20, 'ventaja_pp_media_por_fecha')} pp).** Ese",
+        "es el grado real de concentración: ni `vive en seis días` ni `está",
+        "uniformemente repartida`. Vive en el mejor quinto de las fechas.",
         "La curva completa (muestreada):", "",
         _tabla(q1["curva"]),
         "---", "",
@@ -1362,10 +1880,53 @@ def informe(r: dict) -> str:
                                         if q2[c].get("auc") == q2[c].get("auc")
                                         else None),
             "excluye 0.5": q2[c].get("excluye_0.5"),
-            "p permutación bloques": q2[c].get("p_permutacion_bloques"),
-            "McNemar p": (q2[c].get("mcnemar_vs_siempre_alto") or {}).get("p_exacto"),
+            "p perm.": q2[c].get("p_permutacion_bloques"),
+            "p perm. Holm": q2[c].get("p_permutacion_holm"),
+            "McNemar p": (q2[c].get("mcnemar_vs_clase_mayoritaria")
+                          or {}).get("p_exacto"),
+            "cond. mejor que trivial":
+                (q2[c].get("mcnemar_vs_clase_mayoritaria")
+                 or {}).get("condicion_es_mejor"),
             "cumple §4(a)": q2[c].get("cumple_4a"),
+            "sobrevive Holm": q2[c].get("sobrevive_holm"),
         } for c in q2]),
+        "> **La columna `cond. mejor que trivial` no es decorativa.** Un",
+        "> McNemar significativo puede significar que la condición es",
+        "> significativamente PEOR que el rival trivial. En la primera versión",
+        "> de este análisis faltaba esa comprobación de DIRECCIÓN, y las siete",
+        "> configuraciones pasaban el §4(a) — varias de ellas por ser malas.",
+        "> Corregido en el ejecutable.",
+        "",
+        "> **Holm se informa AL LADO del criterio congelado, nunca en su",
+        "> lugar.** La §4(a) fija un umbral nominal por candidata y se aplica",
+        "> tal cual: un criterio congelado no se toca después de ver",
+        "> resultados. Pero siete configuraciones contra un 5% nominal dan ~30%",
+        "> de probabilidad de al menos un falso positivo, y este proyecto tiene",
+        "> un DSR justamente por eso. El §4(a) decide; Holm dice cuánto",
+        "> conviene creerle.",
+        "",
+        "> **El rival del McNemar es la clase MAYORITARIA, no `siempre alto`.**",
+        "> Con el corte en la mediana y 1093 de 2030 fechas con ventaja",
+        "> exactamente 0, `alto` es la clase MINORITARIA (~33%). Un rival que",
+        "> dijera `alto` siempre acertaría el 33% y cualquier cosa le ganaría",
+        "> con p=0.0 — un hombre de paja que en la primera versión de este",
+        "> análisis hizo pasar el §4(a) a las SIETE configuraciones, incluidas",
+        "> tres cuyo AUC ni siquiera se despega de 0.5. Está corregido en el",
+        "> ejecutable, no en una nota: la clase mayoritaria se aprende",
+        "> expansivamente, con el mismo embargo que todo lo demás.",
+        "",
+        "**Lo que discrimina es la MAGNITUD, y el mecanismo es casi",
+        "tautológico.** `mag_sox` (AUC "
+        f"{q2.get('mag_sox', {}).get('auc')}) y `mag_predicha` (AUC "
+        f"{q2.get('mag_predicha', {}).get('auc')}) son esencialmente la misma",
+        "variable —la predicción del campeón ES beta × el movimiento del SOX—,",
+        "y lo que dicen es que cuando el SOX se mueve fuerte, la apuesta",
+        "direccional del modelo se distingue más de `siempre al alza`. Eso es",
+        "casi una identidad, no un descubrimiento sobre el mercado. Las",
+        "condiciones que aportarían información NUEVA —dispersión asiática,",
+        "distancia al trimestre, la ventana de volatilidad de 10 sesiones— son",
+        "exactamente las que **no** discriminan.",
+        "",
         "### §4(b): ¿cae julio del lado alto que la condición predijo?", "",
         _tabla([{
             "condición": c,
@@ -1378,9 +1939,28 @@ def informe(r: dict) -> str:
             "cumple §4(b)": q2b[c].get("cumple_4b"),
         } for c in q2b]),
         "> Con walk-forward expansivo toda fecha de 2026 está fuera de muestra",
-        "> por construcción: el requisito de la §4 («el fold que contiene julio",
-        "> tiene que ser de prueba») se cumple, y se verifica en la tabla, no se",
+        "> por construcción: el requisito de la §4 (`el fold que contiene julio",
+        "> tiene que ser de prueba`) se cumple, y se verifica en la tabla, no se",
         "> supone.",
+        "",
+        "**Las dos patas del criterio no se cumplen a la vez con fuerza, y esa",
+        "es la lectura honesta.** La condición más sólida en el §4(a) —"
+        f"`mag_sox`, AUC {q2.get('mag_sox', {}).get('auc')}, Holm "
+        f"{q2.get('mag_sox', {}).get('p_permutacion_holm')}— es la más floja en",
+        f"el §4(b): predice altas solo "
+        f"{q2b.get('mag_sox', {}).get('predichas_altas')} de "
+        f"{q2b.get('mag_sox', {}).get('fechas_del_bloque')} fechas de julio, en",
+        f"el percentil {q2b.get('mag_sox', {}).get('percentil_medio_del_score_de_julio')}. "
+        "Y al revés: `vol_sox_5` marca julio 7 de 7 en el percentil 90, pero es",
+        f"la más floja del §4(a) (AUC {q2.get('vol_sox_5', {}).get('auc')}, Holm "
+        f"{q2.get('vol_sox_5', {}).get('p_permutacion_holm')}, al borde). Ninguna",
+        "condición es fuerte en las dos cosas a la vez.",
+        "",
+        "**Y el tamaño del efecto pone a julio en su sitio:** la ventaja real",
+        f"media de las fechas de julio es {q2b.get('mag_sox', {}).get('ventaja_real_media_julio_pp')} pp",
+        f"contra {q2b.get('mag_sox', {}).get('ventaja_real_media_resto_pp')} pp del",
+        "resto de la ventana larga. Es un bloque bueno, no un bloque de otro",
+        "mundo — nueve puntos por encima de un día cualquiera, no cuarenta.",
         "", "---", "",
         "## 3. ¿El bloque de julio es de la misma especie que los históricos?", "",
         "### 3.1 El scan statistic, donde sí hay potencia", "",
@@ -1398,15 +1978,30 @@ def informe(r: dict) -> str:
             "p del scan": scan["p_scan"],
             "nula (mediana)": f"{scan['nula_mediana_pp']} pp "
                               f"IC90 {scan['nula_ic90_pp']}"}]),
-        "### 3.2 Julio, medido en la reconstrucción y contra la historia", "",
+        ("> **⚠ ESTE SCAN ESTÁ SATURADO Y SU p NO SE PUEDE LEER COMO\n"
+         "> EVIDENCIA.** Sobre la ventana larga el campeón reconstruido saca\n"
+         "> ventaja media de dos dígitos, así que hay muchísimos bloques de 3\n"
+         "> fechas donde acierta 7/7 y `siempre al alza` 0/7: el estadístico\n"
+         "> toca su techo de 100 pp tanto en los datos como bajo la nula, y\n"
+         f"> el p={scan['p_scan']} sale de comparar dos saturaciones. Se\n"
+         "> publica porque estaba declarado, marcado como lo que es. El\n"
+         "> estadístico que SÍ se puede leer va abajo.")
+        if scan.get("scan_saturado") else "",
+        "",
+        "### 3.2 Julio contra TODOS los bloques de su mismo ancho", "",
+        "El estadístico no saturado: dónde cae julio en la distribución de la",
+        "ventaja de **todos** los bloques contiguos del mismo ancho, en ocho",
+        "años. No hay máximos, no hay saturación, no hay libertad de elegir la",
+        "ventana: el ancho lo fija julio.",
+        "",
         _tabla([{
             "bloque": f"{scan['julio_2026']['desde']} → {scan['julio_2026']['hasta']}",
-            "fechas en la reconstrucción":
-                scan["julio_2026"]["fechas_en_la_reconstruccion"],
+            "fechas": scan["julio_2026"]["fechas_en_la_reconstruccion"],
             "ventaja reconstruida":
                 f"{scan['julio_2026']['ventaja_pp_reconstruida']} pp",
-            "percentil bajo la nula del scan":
-                scan["julio_2026"]["percentil_bajo_la_nula"]}]),
+            "percentil entre bloques de su ancho":
+                scan.get("percentil_de_julio_entre_bloques_de_su_ancho")}]),
+        _tabla([scan.get("distribucion_de_bloques_del_ancho_de_julio") or {}]),
         f"**En ocho años hay {scan['n_bloques_iguales_o_mejores_sin_solape']}",
         "bloques sin solape iguales o mejores que el de julio.** Los mejores:",
         "",
@@ -1433,7 +2028,22 @@ def informe(r: dict) -> str:
             "",
             f"**Veredicto de la firma: julio "
             f"{'ES de la misma especie' if firma['misma_especie'] else 'NO es de la misma especie'}"
-            f"** que los bloques altos históricos.", "",
+            f"** que los bloques altos históricos — y el motor de esa distancia",
+            "es una sola condición, `disp_asia`, en z≈+2.9.",
+            "",
+            "> **Con qué fuerza se puede decir esto: poca.** Una Mahalanobis con",
+            f"> {firma['bloques_historicos_usados']} bloques de referencia en",
+            f"> {len(firma['condiciones'])} dimensiones estima una covarianza con",
+            "> pocos grados de libertad, y el percentil 100 en esa escala",
+            "> significa `el más lejano de treinta`, no `imposible`. Además",
+            "> `disp_asia` es precisamente una de las condiciones que **no**",
+            "> discrimina fuera de muestra (§2, AUC 0.506, IC incluye 0.5): que",
+            "> julio tenga un valor extremo en una variable sin poder predictivo",
+            "> es una descripción, no una explicación. La lectura defendible es",
+            "> **julio fue un bloque grande pero ordinario en MAGNITUD (percentil",
+            "> 90 entre bloques de su ancho) con una dispersión asiática",
+            "> inusualmente alta** — y nada de eso lo convierte en evidencia de",
+            "> una condición identificable.", "",
         ]
     else:
         L += ["No evaluable con los datos disponibles.", ""]
@@ -1450,11 +2060,108 @@ def informe(r: dict) -> str:
                      ("resto", sell["resto"]),
                      ("ventana completa", sell["ventana_completa"]))
                     if vv]),
+            "La reconstrucción da **"
+            f"{scan['julio_2026']['ventaja_pp_reconstruida']} pp** sobre el",
+            f"bloque de julio y el sello da **{sell['bloque_julio']['ventaja_pp']} "
+            "pp** sobre las mismas 44 filas. Dos caminos de cómputo distintos,",
+            "el mismo número: el bloque de julio **existe** y no es un artefacto",
+            "de ninguno de los dos mecanismos. Lo que este documento discute no",
+            "es si existe, sino si es **excepcional** — y no lo es.",
+        ]
+    if rec.get("veredicto"):
+        L += [
+            "", "### 3.5 La reconciliación: 16 pp contra 6 pp", "",
+            "Sobre la ventana larga el campeón reconstruido saca **"
+            f"{rec['reconstruida_ventana_larga']['ventaja_pp']} pp** sobre",
+            "`siempre al alza`; sobre la ventana sellada saca **"
+            f"{rec['sellada_completa'].get('ventaja_pp')} pp**. Publicar el",
+            "primero sin explicar el segundo sería lo que este proyecto no hace.",
+            "La medición que lo dirime es **las mismas filas**.",
+            "",
+            "#### Primero, un error de emparejamiento que vale la pena contar",
+            "",
+            "La clave semántica de una fila es la **sesión objetivo**, no la",
+            "fecha de emisión — y por eso la advertencia sobre el 91.4% de",
+            "`ventana_larga.py` es correcta. Pero emparejar SOLO por sesión",
+            "objetivo tampoco alcanza, y esto no estaba anotado en ninguna",
+            f"parte: la emisión sellada del {(rec['sobre_las_mismas_filas'].get('fechas_de_emision_desfasadas') or ['?'])[0]}",
+            "apunta a una sesión que **no es la siguiente**, porque la corrida",
+            "intermedia falló y dejó sus filas vacías. Una reconstrucción que",
+            "asume `la emisión de D anticipa la sesión siguiente` empareja esa",
+            "sesión con una emisión POSTERIOR, y le regala un día entero de SOX",
+            "que el sello no tuvo.",
+            "",
+            "Con ese emparejamiento la reconstrucción salía 5.2 pp por encima",
+            "del sello, con 13 de 14 desacuerdos de signo a su favor",
+            "(p=0.0018) — **la firma perfecta de una fuga, y no había ninguna**.",
+            "Era el emparejamiento comparando dos predicciones hechas con un día",
+            "de diferencia. La comparación honesta exige las DOS claves: misma",
+            "sesión objetivo **y** misma fecha de emisión.",
+            "",
+            f"Filas descartadas por desfase de emisión: "
+            f"**{rec['sobre_las_mismas_filas'].get('filas_descartadas_por_desfase_de_emision')}**, "
+            f"en las fechas "
+            f"{', '.join(rec['sobre_las_mismas_filas'].get('fechas_de_emision_desfasadas') or [])}.",
+            "",
+            "#### Y entonces, con las dos claves:", "",
+            _tabla([
+                {"medición": "reconstruida · ventana larga (8 años)",
+                 **{k: rec["reconstruida_ventana_larga"].get(k)
+                    for k in ("n", "fechas", "acierto_pct", "base_pct",
+                              "ventaja_pp", "ic95_por_fecha")}},
+                {"medición": "reconstruida · MISMAS FILAS que el sello",
+                 **{k: (rec["sobre_las_mismas_filas"].get("reconstruida") or {}).get(k)
+                    for k in ("n", "fechas", "acierto_pct", "base_pct",
+                              "ventaja_pp", "ic95_por_fecha")}},
+                {"medición": "SELLADA · las mismas filas",
+                 **{k: (rec["sobre_las_mismas_filas"].get("sellada") or {}).get(k)
+                    for k in ("n", "fechas", "acierto_pct", "base_pct",
+                              "ventaja_pp", "ic95_por_fecha")}}]),
+            f"Sobre esas **{rec['sobre_las_mismas_filas'].get('n_filas_pareadas')}** "
+            "filas: **"
+            f"{rec['sobre_las_mismas_filas'].get('pct_misma_direccion_de_prediccion')}%** "
+            "de las predicciones con el mismo signo, **"
+            f"{rec['sobre_las_mismas_filas'].get('pct_gap_identico_a_0.01pp')}%** "
+            "de los gaps idénticos a menos de 0.01 pp, **cero** desacuerdos de",
+            "signo.",
+            "",
+            f"**{rec['veredicto']}**", "",
+            "> Y de paso queda medido lo que el aviso decía: emparejando por la",
+            "> clave correcta la coincidencia con el sello es del **100%**, no",
+            "> del 91.4% que `GEMELO/ventana_larga.py`:214 sigue calculando",
+            "> emparejando por `[\"fecha\",\"ticker\"]`. Esa cifra está refutada y",
+            "> este documento no la republica.",
+            "",
+            "#### Dónde está entonces la brecha entre las dos ventanas", "",
+            "No en el mecanismo. La ventana sellada, partida en sus tramos:",
+            "",
+            _tabla(rec.get("descomposicion_sellada") or []),
+            "Los +6.2 pp de la ventana sellada son la resta de tres cosas muy",
+            "distintas: un bloque de julio de +40.9 pp, dos fechas de incidente",
+            "de producción que cuestan −62.5 pp sobre 16 filas, y un resto de",
+            "+4.1 pp con p=0.44 que es lo que el modelo hace un día cualquiera.",
+            "",
+            "> **Esto NO es una corrección ni una retractación, y el tramo `sin",
+            "> incidentes` NO es el resultado.** Las filas selladas jamás se",
+            "> reescriben y ninguna cifra publicada se mueve: los +6.2 pp de la",
+            "> ventana completa siguen siendo la cifra de la ventana completa, y",
+            "> el 65.8% / +5.3 pp del README sigue vigente. Quitar los días malos",
+            "> de un track record es exactamente la trampa que este proyecto no",
+            "> comete. Es una DESCOMPOSICIÓN: dice de dónde viene el número, no",
+            "> lo sustituye.",
+            "",
+            "> Lo que además cambia entre las dos ventanas es **el rival**:",
+            "> `siempre al alza` acierta "
+            f"{rec['reconstruida_ventana_larga'].get('base_pct')}% en ocho años y",
+            f"{(rec['sobre_las_mismas_filas'].get('sellada') or {}).get('base_pct')}% "
+            "en el tramo sellado. La misma habilidad rinde menos ventaja cuando",
+            "> el rival es más duro. Por eso la regla de la casa exige comparar",
+            "> **sobre las mismas filas**.",
         ]
     L += [
         "", "---", "",
         "## 4. Lo que quedó NO EVALUABLE, y por qué", "",
-        f"**Condición 4 del pre-registro (§3.4), «{cl4['condicion']}»: NO",
+        f"**Condición 4 del pre-registro (§3.4), `{cl4['condicion']}`: NO",
         "EVALUABLE.** Dos razones independientes, ambas medidas aquí, no",
         "supuestas:",
         "",
@@ -1473,8 +2180,8 @@ def informe(r: dict) -> str:
         "",
         "La §5 R4 del pre-registro obliga a descartar una condición con fuga,",
         "no a reportarla con una advertencia. Se descarta. Y como el §4.2 bis",
-        "define un intento como «(configuración × ventana) **con resultado",
-        "reportable**», la condición 4 **no suma al DSR**.",
+        "define un intento como `(configuración × ventana) **con resultado",
+        "reportable**`, la condición 4 **no suma al DSR**.",
         "",
         "> El arreglo de la fuga lo está haciendo otro frente sobre",
         "> `backtest/datos.py`. Aunque quede arreglado, la razón 2 sigue en pie:",
@@ -1522,7 +2229,7 @@ def informe(r: dict) -> str:
         "  en la §4: arrastra un componente in-sample. Se respetó porque estaba",
         "  congelado; su efecto sería sobreestimar la discriminación, y aun así",
         "  no se encontró ninguna.",
-        "- La condición 3 lee «vs. índice local + FX» como retorno del índice",
+        "- La condición 3 lee `vs. índice local + FX` como retorno del índice",
         "  llevado a USD (convención #2: los pares son unidades por 1 USD).",
         "  Residualizar un índice contra sí mismo es degenerado; la lectura se",
         "  declara aquí, no se esconde.",

@@ -214,18 +214,45 @@ def validar_reconstruccion(panel: pd.DataFrame) -> dict:
     en su momento, sobre las filas comunes. Cada fila que difiere es una
     revisión silenciosa de Yahoo: prueba directa, y cuantificada, de que
     esta ventana NO es point-in-time.
+
+    ============================================================
+    ERRATA 01-sep-2026 — LA CLAVE DE EMPAREJAMIENTO ERA LA EQUIVOCADA
+    ============================================================
+    Esta función emparejaba por `["fecha", "ticker"]`, es decir por FECHA
+    DE EMISIÓN. La clave semántica de una fila es qué SESIÓN predice, y las
+    dos no coinciden siempre: cuando una corrida falla, la emisión sellada
+    del día D apunta a una sesión que no es la siguiente (ocurrió el
+    2026-08-05, cuya emisión apunta al 2026-08-07 porque la corrida del 06
+    quedó vacía). Con la clave equivocada se comparaban filas que predicen
+    sesiones distintas, y de ahí salía un **91.4% de coincidencia** que es
+    FALSO. Emparejando por (ticker, sesión objetivo, fecha de emisión) la
+    coincidencia es del **100%**: la reconstrucción es fiel al sello y la
+    "revisión silenciosa" no explica nada de la brecha entre ventanas.
+
+    Medido de forma independiente en `GEMELO/CONDICIONAL/condicional.py`
+    (`reconciliar_ventanas`), por otro camino de cómputo y sobre la misma
+    base en `mode=ro`. La corrección va al ejecutable antes que al texto:
+    **`GEMELO/resultados/ventana_larga.md` y `.json` siguen publicando el
+    91.4% y quedan STALE hasta que se vuelva a correr este módulo.**
     """
     try:
         from backtest import linea_base as lb
         sell = lb.aplicar_convencion(lb.cargar(), lb.CONVENCION_OFICIAL)
     except Exception:
         return {}
-    if sell.empty or panel.empty:
+    if (sell.empty or panel.empty or "sesion" not in panel.columns
+            or "sesion_objetivo" not in sell.columns):
         return {}
     sell = sell.copy()
     sell["fecha"] = pd.to_datetime(sell["fecha"])
-    j = sell.merge(panel[["fecha", "ticker", "gap_pct"]],
-                   on=["fecha", "ticker"], suffixes=("_sellado", "_recon"))
+    sell["sesion_objetivo"] = pd.to_datetime(sell["sesion_objetivo"],
+                                             errors="coerce")
+    sell = sell.dropna(subset=["sesion_objetivo"])
+    p = panel[["fecha", "ticker", "sesion", "gap_pct"]].copy()
+    p["sesion_objetivo"] = pd.to_datetime(p["sesion"], errors="coerce")
+    j = sell.merge(p.drop(columns=["sesion"]),
+                   on=["fecha", "ticker", "sesion_objetivo"],
+                   suffixes=("_sellado", "_recon"))
     if j.empty:
         return {}
     dif = (j["gap_pct_sellado"] - j["gap_pct_recon"]).abs()
@@ -348,19 +375,42 @@ def informe(r: dict) -> str:
     vr = r.get("validacion_reconstruccion") or {}
     if vr:
         L += [f"Sobre las **{vr['n_comparadas']}** filas comunes con el track",
-              f"record sellado, la reconstrucción de hoy **coincide en el "
+              f"record sellado —emparejadas por (fecha de emisión, ticker,",
+              f"**sesión objetivo**)— la reconstrucción de hoy **coincide en el "
               f"{vr['coinciden_pct']}%** (a menos de 0.01 pp) y **difiere en "
               f"{vr['difieren']}**, con un máximo de **{vr['dif_max_pp']} pp**.",
-              "",
-              "Cada fila que difiere es una revisión silenciosa entre el día del",
-              "sello y hoy. Fechas afectadas: "
-              + ", ".join(vr["fechas_con_revision"]) + ".", "",
-              "Las mayores diferencias:", "",
-              _tabla(vr["peores"]),
-              "> **Esto NO se corrige.** Las filas selladas jamás se reescriben;",
-              "> si alguna resultara errónea, se documenta como errata. Lo que la",
-              "> tabla mide es cuánta confianza merece una reconstrucción a años",
-              "> vista — y la respuesta es: bastante, pero no toda.", ""]
+              ""]
+        if vr["difieren"]:
+            L += ["Cada fila que difiere es una revisión silenciosa entre el día",
+                  "del sello y hoy. Fechas afectadas: "
+                  + ", ".join(vr["fechas_con_revision"]) + ".", "",
+                  "Las mayores diferencias:", "",
+                  _tabla(vr["peores"]),
+                  "> **Esto NO se corrige.** Las filas selladas jamás se",
+                  "> reescriben; si alguna resultara errónea, se documenta como",
+                  "> errata. Lo que la tabla mide es cuánta confianza merece una",
+                  "> reconstrucción a años vista.", ""]
+        else:
+            L += ["> **ERRATA 01-sep-2026.** Una versión anterior de este informe",
+                  "> publicó un **91.4%** de coincidencia y una lista de fechas",
+                  "> con revisión silenciosa. Esa cifra es FALSA: salía de",
+                  "> emparejar por `[\"fecha\",\"ticker\"]`, es decir por fecha de",
+                  "> EMISIÓN, cuando la clave semántica es la SESIÓN OBJETIVO —",
+                  "> y las dos no coinciden cuando una corrida falla y la",
+                  "> emisión apunta a una sesión que no es la siguiente (pasó el",
+                  "> 2026-08-05). Con la clave correcta la coincidencia es del",
+                  "> **100%**: sobre las filas que ambos caminos comparten la",
+                  "> reconstrucción es FIEL al sello.",
+                  ">",
+                  "> Ojo con la lectura: esto **no** demuestra que Yahoo no",
+                  "> revise la historia. Demuestra que no la revisó en el único",
+                  "> tramo que el sello permite auditar, que son unos meses de",
+                  "> 2026. Sobre 2018-2024 no hay sello contra el cual comparar y",
+                  "> la limitación de la sección anterior sigue **entera**.",
+                  ">",
+                  "> Medido de forma independiente, por otro camino de cómputo,",
+                  "> en `GEMELO/CONDICIONAL/condicional.py::reconciliar_ventanas`.",
+                  ""]
     else:
         L += ["(No se pudo comparar contra el track record sellado.)", ""]
     L += ["## Parámetros sellados", "",

@@ -911,4 +911,59 @@ vigentes.
     69/37, p=0,0024**), sin decidir.
   - **Cuatro módulos heredan la regla sin haber sido tocados** y sus
     cifras se moverán si se re-corren. Declarado en el acta §60.
+- **10:08** — **Frente D cerrado, y da vuelta la sospecha que el proyecto
+  arrastraba hace tres corridas.**
+  - **La ventaja NO está concentrada: está MÁS DISPERSA que el azar.** El
+    100% del neto vive en el 16,5% de las fechas, contra **0,64%** bajo la
+    nula de signo permutado. Sobre 2.030 fechas y 14.000 filas, con DEFF
+    re-medido sobre esta ventana y no heredado (ICC 0,326, **DEFF 3,04**,
+    n efectivo 4.601).
+  - **Y la medida que no depende de ninguna nula:** quitando el 10% de
+    mejores fechas queda **+6,6 pp [4,7 · 8,4]**, que excluye cero;
+    quitando el 20% **se da vuelta a −1,9 pp**. La ventaja vive en el
+    mejor quinto de las fechas — **ni "seis días" ni repartida**.
+  - **¿Predicen fuera de muestra? Sí, y casi tautológicamente**, que es la
+    respuesta más útil y la menos cómoda. Cuatro de siete cumplen el
+    §4(a), pero **lo que discrimina es la magnitud del movimiento del SOX,
+    y la predicción del campeón ES beta × ese movimiento**: es aritmética
+    del modelo, no un hallazgo de mercado. **Las condiciones con
+    información nueva son exactamente las que fallan** (`disp_asia`,
+    `dias_trimestre`, `vol_sox_10`).
+  - **Julio no es de otra especie.** +40,91 pp reconstruido contra +40,9
+    sellado —dos mecanismos independientes— pero está en el **percentil
+    90,3** de los bloques contiguos de su ancho y hay **157 bloques
+    históricos sin solape iguales o mejores**. Su firma es atípica, pero el
+    motor es `disp_asia`, una de las que **no** discrimina: descripción,
+    no explicación.
+  - **La reconciliación de las dos ventanas, que era la pregunta:**
+    pareando por fecha de emisión **y** sesión objetivo (214 filas), 100%
+    mismo signo y gaps idénticos. **La reconstrucción es fiel.** Y los
+    +6,2 pp sellados se descomponen en julio +40,9 (44 filas), **dos
+    fechas de incidente de producción −62,5 pp (16 filas)**, y un resto de
+    **+4,1 pp con p = 0,44** (196 filas).
+  - **Cinco errores propios, corregidos en el ejecutable y reportados**, y
+    cuatro habrían producido conclusiones falsas publicables. El más
+    instructivo: parear sólo por sesión objetivo produjo una **firma de
+    fuga perfecta** (13 de 14 desacuerdos, p = 0,0018) que era **pura
+    ilusión** — la emisión del 5-ago apunta al 7-ago porque **la corrida
+    del 6 falló**, así que comparaba predicciones hechas con un día de
+    diferencia. **Es el defecto de `snapshot.py` apareciendo disfrazado de
+    fuga.**
+  - **El 91,4% quedó refutado y corregido en el ejecutable**: con la clave
+    correcta da **100% sobre 214 filas, 0 diferencias**. Con errata en el
+    código. **`ventana_larga.md` y `.json` siguen publicando el 91,4% y
+    quedan stale** hasta que alguien re-corra ese módulo. Y la advertencia
+    de lectura que agregó: **esto no prueba que Yahoo no revise la
+    historia, sólo que no la revisó en el tramo auditable de 2026.**
+  - `densidad_noticias` **NO EVALUABLE**, por dos razones y no una: la
+    fuga B-1, y **cobertura** — `titulares` arranca en 2025-09-09 contra
+    una ventana que empieza en 2018. **Aunque se arregle la fuga, la
+    segunda razón sigue en pie.**
+- **10:12** — **Mi `git add -A` fue peor de lo que dije.** No sólo barrió
+  trabajo en curso: en el caso del Frente D barrió una **versión temprana
+  y BUGGEADA** —la del McNemar contra un hombre de paja y el pareo por
+  sesión— hacia `6bb1f46`. Durante unas horas el repo tuvo commiteada una
+  versión de `condicional.py` que producía conclusiones falsas. La
+  correcta se commitea ahora. **El staging explícito no era una
+  formalidad.**
 
