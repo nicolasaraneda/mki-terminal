@@ -165,6 +165,27 @@ REGISTRO_INTENTOS = (
                  "reportar una sería elegir la definición sin decirlo",
      "GEMELO/resultados/clausulas.md; ejecutable en "
      "GEMELO/banco_clausulas.py:CANDIDATAS"),
+    # --- séptima corrida, 2-sep-2026: registrados por exigencia del
+    # dictamen del estadistico-adversario ("ninguna configuración nueva
+    # puede alimentar un DSR hasta que el registro las absorba") ---------
+    (4, "TRAY", "cuatro estadísticos principales candidatos NUEVOS evaluados "
+                "sobre la trayectoria real de la ventana sellada (Frente C): "
+                "t sobre medias diarias, posterior con prior N(0, 0,05²), "
+                "proceso de apuestas anytime-valid (c=0,5, α=0,05) y signo "
+                "de los días. McNemar, IC de clúster de día y permutación de "
+                "signo por día no cuentan: eran maquinaria ya registrada",
+     "GEMELO/SECUENCIAL/trayectoria.py:CANDIDATOS; "
+     "GEMELO/resultados/propuestas_cde.md §C"),
+    (5, "ESTIM", "cinco estimandos alternativos evaluados sobre la ventana "
+                 "sellada y la larga (Frente E): magnitud |g|−|p−g|, gap "
+                 "capturado continuo, pendiente de calibración g~p, "
+                 "pendiente del decaimiento por hora y contraste "
+                 "Asia−Fráncfort. La dirección (E0) no cuenta: es el "
+                 "endpoint congelado. Se cuentan como configuraciones, no "
+                 "como configuraciones × ventana: ninguno se eligió por "
+                 "ventana",
+     "GEMELO/SECUENCIAL/estimandos.py:CLAVES; "
+     "GEMELO/resultados/propuestas_cde.md §E"),
 )
 
 # EL número vigente. Se calcula, no se escribe.

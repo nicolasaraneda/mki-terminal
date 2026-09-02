@@ -82,7 +82,9 @@ FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
 #   · Subir N sólo puede hacer el DSR MÁS exigente, nunca más favorable:
 #     el veredicto NO-CONCLUYENTE de aquella corrida no puede darse
 #     vuelta por esto.
-N_INTENTOS_PREVIO = 91
+# 2026-09-02 (séptima corrida): 91 -> 100 con los tramos TRAY (4) y ESTIM
+# (5) del registro. Misma mecánica: el test obliga a acompañar al registro.
+N_INTENTOS_PREVIO = 100
 # Esta corrida vuelve a mirar las SEIS baselines sobre la MISMA ventana con
 # el arnés CORREGIDO. Se podría argumentar que sólo B4 y B5 cambian de
 # cifra —el arreglo de B-1 toca las features de noticias y el de B-2 no
@@ -92,13 +94,31 @@ N_INTENTOS_PREVIO = 91
 # los resultados, o sea DESPUÉS, que es justo lo que el conteo declarado
 # existe para impedir.
 N_INTENTOS_NUEVOS = 6
-N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 97
+N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 106 (2-sep-2026; era 97 con el registro en 91)
 # La banda conserva los cortes históricos para que las corridas se comparen
-# columna a columna: 82 gobernó la corrida invalidada, 86 era el registro
-# sin esta corrida, y **92 es el N declarado por la corrida ya sellada del
-# 2026-09-01 13:31** — se conserva para que su resumen siga siendo
-# reproducible aunque el registro haya crecido después.
-BANDA_N = (26, 44, 82, 86, 92, N_INTENTOS_51, 110)
+# columna a columna. 2026-09-02 (séptima corrida): los N históricos dejan de
+# ser enteros sueltos dentro de la tupla —el patrón que la acta §70 vio
+# romper en producción— y quedan PINCHADOS AL INSTANTE: cada uno lleva el
+# nombre de la corrida sellada que lo declaró ANTES de correr, y un test
+# (`tests/test_backtest.py::test_los_N_historicos_de_la_banda_reproducen_los_resumenes_sellados`)
+# lo contrasta contra `parametros_declarados.N_intentos` del `veredicto.json`
+# de esa corrida. Si alguien cambia el número, el artefacto sellado lo
+# desmiente; si alguien borra la corrida, el test lo nombra.
+N_DECLARADO_POR_CORRIDA = {
+    # gobernó la corrida invalidada por fuga (B-1/B-2), N del registro entonces
+    "20260901-061708-5.1-invalidada-por-fuga": 82,
+    # la corrida con el arnés corregido y el gatillo no cumplido; declaró 92
+    # antes de correr (registro 86 + 6 propios) y su resumen no se reescribe
+    "20260901-133154-5.1-arnes-corregido-gatillo-incumplido": 92,
+}
+# El registro de `GEMELO.relevo_asiatico` tal como estaba el 2026-09-01 al
+# mediodía, sin los 6 intentos de la corrida de las 13:31 (acta §67):
+N_REGISTRO_AL_20260901_MEDIODIA = 86
+BANDA_N = (26, 44,
+           N_DECLARADO_POR_CORRIDA["20260901-061708-5.1-invalidada-por-fuga"],
+           N_REGISTRO_AL_20260901_MEDIODIA,
+           N_DECLARADO_POR_CORRIDA["20260901-133154-5.1-arnes-corregido-gatillo-incumplido"],
+           N_INTENTOS_51, 110)
 
 # Un Sharpe ANUALIZADO sobre pocas decenas de días es un artefacto de
 # multiplicar por √252. Espejo de GEMELO/control_lineal.py:81 — abajo de

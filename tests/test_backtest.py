@@ -332,6 +332,27 @@ def test_el_N_del_veredicto_sale_del_registro_con_procedencia():
     assert v.N_INTENTOS_51 in v.BANDA_N
 
 
+def test_los_N_historicos_de_la_banda_reproducen_los_resumenes_sellados():
+    """Cada N histórico de `BANDA_N` está pinchado a la corrida sellada que lo
+    declaró: el `veredicto.json` de esa corrida tiene que decir el mismo N
+    en `parametros_declarados.N_intentos`. Un entero suelto en la tupla es
+    el patrón que rompió el 1-sep (acta §70); acá cada uno tiene testigo."""
+    import json
+    import os
+
+    from backtest import veredicto_51 as v
+    raiz = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "backtest", "resultados")
+    assert v.N_DECLARADO_POR_CORRIDA, "la banda perdió sus instantes"
+    for corrida, n in v.N_DECLARADO_POR_CORRIDA.items():
+        ruta = os.path.join(raiz, corrida, "veredicto.json")
+        assert os.path.exists(ruta), f"la corrida sellada {corrida} no está en el repo"
+        declarado = json.load(open(ruta, encoding="utf-8"))["parametros_declarados"]["N_intentos"]
+        assert declarado == n, (f"{corrida} declaró N={declarado} antes de correr y la "
+                                f"banda dice {n}: el número se movió sin su testigo")
+        assert n in v.BANDA_N
+
+
 def test_b2_la_guarda_vieja_NO_habria_visto_la_fuga():
     """La razón por la que hizo falta un gate nuevo: `validar_sin_futuro`
     mira el ÍNDICE, y un shift(-1) desplaza los VALORES sin tocarlo."""

@@ -699,7 +699,8 @@ def _bootstrap_dia(grupos: list, n_boot: int, alpha: float = ALFA) -> tuple:
     return punto, float(lo), float(hi)
 
 
-def _p_permutacion_dia(grupos: list, n_perm: int = N_PERM) -> float:
+def _p_permutacion_dia(grupos: list, n_perm: int = N_PERM,
+                       semilla: int = SEMILLA) -> float:
     """p bilateral por permutación de SIGNO a nivel de día (cluster
     randomization test). H0: la diferencia media de un día es simétrica
     alrededor de cero — o sea, el modelo no le gana a la baseline en
@@ -715,7 +716,11 @@ def _p_permutacion_dia(grupos: list, n_perm: int = N_PERM) -> float:
     # La semilla es la MISMA en todas las celdas, a propósito: el ruido de
     # Monte Carlo queda común a la matriz entera, así que la comparación
     # entre celdas no lo hereda como si fuera señal. Y reproduce.
-    rng = np.random.default_rng(SEMILLA)
+    # `semilla` es inyectable (2-sep, dictamen del adversario): dentro de un
+    # ESTUDIO de α o potencia, re-sembrar igual en cada réplica hace que
+    # todas compartan una sola matriz de signos y el estimador no converge
+    # con n_sim. Para las celdas de la matriz el default sigue siendo fijo.
+    rng = np.random.default_rng(semilla)
     signos = rng.choice(np.array([-1.0, 1.0]), size=(n_perm, len(S)))
     nulos = np.abs(signos @ S)
     return float((1 + int((nulos >= obs - 1e-12).sum())) / (n_perm + 1))
