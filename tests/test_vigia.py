@@ -274,10 +274,117 @@ def test_noticias_nombra_proceso_colgado(entorno, monkeypatch):
     assert "launchd no re-dispara" in detalle
 
 
-def test_noticias_sin_proceso_mantiene_mensaje_simple(entorno, monkeypatch):
+def test_noticias_sin_proceso_mantiene_mensaje_simple(entorno, monkeypatch, tmp_path):
     import costos
     monkeypatch.setattr(costos, "corridas_del_dia",
                         lambda origen=None, fecha=None: [])
     monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado", lambda: None)
+    # Sin archivo de log de noticias en absoluto: "no corrió" en su forma
+    # más simple, sin depender del log real de la máquina.
+    monkeypatch.setattr(mki_vigia, "RUTA_NOTICIAS_LOG",
+                        str(tmp_path / "noticias.log"))
     ok, detalle = mki_vigia.chequear_noticias()
     assert not ok and detalle == "noticias: el job NO corrió hoy"
+
+
+# ------------------------------------------------------------
+# 5.0.3 — "corrió y NO completó" vs "NO corrió hoy" (acta 70, 1-sep):
+# systemd mató mki-noticias.service por TimeoutStartSec después de que
+# el job guardara 223 titulares pero antes de escribir una sola línea
+# en el ledger de costos. El vigía decía "NO corrió hoy", que es falso.
+# ------------------------------------------------------------
+def _escribir_log_noticias(ruta: str, lineas: list) -> None:
+    with open(ruta, "w", encoding="utf-8") as f:
+        for linea in lineas:
+            f.write(linea + "\n")
+
+
+def test_noticias_corrio_y_no_completo_por_rastro_en_log(entorno, monkeypatch, tmp_path):
+    """El caso real del 1-sep: ledger vacío, pero el log de hoy prueba que
+    el job arrancó y completó la fase de descarga antes de que lo mataran."""
+    import costos
+    ruta_log = str(tmp_path / "noticias.log")
+    hoy = date.today().isoformat()
+    _escribir_log_noticias(ruta_log, [
+        f"[{hoy}T21:50:01.051476+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD",
+        f"[{hoy}T22:17:44.187317+00:00] titulares nuevos guardados: 223",
+    ])
+    monkeypatch.setattr(mki_vigia, "RUTA_NOTICIAS_LOG", ruta_log)
+    monkeypatch.setattr(costos, "corridas_del_dia",
+                        lambda origen=None, fecha=None: [])
+    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado", lambda: None)
+    monkeypatch.setattr(mki_vigia, "_estado_systemd_noticias", lambda: None)
+
+    ok, detalle = mki_vigia.chequear_noticias()
+
+    assert not ok
+    assert "corrió y NO completó" in detalle
+    assert "ledger" in detalle
+    # Contraprueba: el mensaje viejo NO debe aparecer cuando hay rastro.
+    assert "el job NO corrió hoy" not in detalle
+
+
+def test_noticias_corrio_y_no_completo_refuerzo_systemd_nombra_la_hora(
+        entorno, monkeypatch, tmp_path):
+    """Cuando hay evidencia de systemd (solo Linux) y dice Result=timeout,
+    el mensaje nombra la hora del kill — refuerzo opcional, no primario."""
+    import costos
+    ruta_log = str(tmp_path / "noticias.log")
+    hoy = date.today().isoformat()
+    _escribir_log_noticias(ruta_log, [
+        f"[{hoy}T22:17:44.187317+00:00] titulares nuevos guardados: 223",
+    ])
+    monkeypatch.setattr(mki_vigia, "RUTA_NOTICIAS_LOG", ruta_log)
+    monkeypatch.setattr(costos, "corridas_del_dia",
+                        lambda origen=None, fecha=None: [])
+    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado", lambda: None)
+    monkeypatch.setattr(mki_vigia, "_estado_systemd_noticias", lambda: {
+        "Result": "timeout",
+        "ExecMainStartTimestamp": "Tue 2026-09-01 17:50:00 -04",
+        "ExecMainExitTimestamp": "Tue 2026-09-01 18:20:00 -04",
+    })
+
+    ok, detalle = mki_vigia.chequear_noticias()
+
+    assert not ok
+    assert "corrió y NO completó" in detalle
+    assert "matado por timeout a las 18:20" in detalle
+
+
+def test_noticias_no_corrio_sin_rastro_alguno_en_log(entorno, monkeypatch, tmp_path):
+    """Sin ledger, sin proceso colgado y sin rastro de HOY en el log
+    (el log puede tener líneas de otros días): el mensaje sigue siendo
+    el "NO corrió hoy" original, sin falsos positivos."""
+    import costos
+    ruta_log = str(tmp_path / "noticias.log")
+    _escribir_log_noticias(ruta_log, [
+        "[2026-08-31T22:18:15.078492+00:00] resumen del día regenerado",
+    ])
+    monkeypatch.setattr(mki_vigia, "RUTA_NOTICIAS_LOG", ruta_log)
+    monkeypatch.setattr(costos, "corridas_del_dia",
+                        lambda origen=None, fecha=None: [])
+    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado", lambda: None)
+
+    ok, detalle = mki_vigia.chequear_noticias()
+
+    assert not ok and detalle == "noticias: el job NO corrió hoy"
+
+
+def test_hora_desde_timestamp_systemd():
+    assert mki_vigia._hora_desde_timestamp_systemd(
+        "Tue 2026-09-01 18:20:00 -04") == "18:20"
+    assert mki_vigia._hora_desde_timestamp_systemd(None) is None
+    assert mki_vigia._hora_desde_timestamp_systemd("basura") is None
+
+
+def test_estado_systemd_noticias_no_se_llama_en_tests_de_arriba(monkeypatch):
+    """La función real dispara systemctl — nunca la ejecuta la suite: acá
+    solo se prueba que ante un fallo (systemctl ausente) devuelve None sin
+    romper, no que systemctl exista en la máquina que corre los tests."""
+    import subprocess as sp
+
+    def fake_run(*a, **k):
+        raise FileNotFoundError("systemctl no existe (p.ej. macOS)")
+
+    monkeypatch.setattr(sp, "run", fake_run)
+    assert mki_vigia._estado_systemd_noticias() is None

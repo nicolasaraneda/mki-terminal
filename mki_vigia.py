@@ -41,6 +41,7 @@ from seguridad import enmascarar_secretos  # noqa: E402
 DIRECTORIO = os.path.dirname(os.path.abspath(__file__))
 RUTA_REPORTE_LOG = os.path.join(DIRECTORIO, "data", "reporte.log")
 RUTA_SNAPSHOT_LOG = os.path.join(DIRECTORIO, "data", "snapshot.log")
+RUTA_NOTICIAS_LOG = os.path.join(DIRECTORIO, "data", "noticias.log")
 RUTA_PENDIENTE = os.path.join(DIRECTORIO, "data", "vigia_pendiente.json")
 HORA_RECHEQUEO = "20:30"
 
@@ -94,6 +95,56 @@ def _proceso_noticias_colgado() -> str | None:
         return None
 
 
+def _rastro_noticias_hoy_en_log(hoy: str = None) -> bool:
+    """5.0.3 — evidencia PRIMARIA de solo lectura (no red, no systemd,
+    funciona igual en Linux y macOS): ¿hay en data/noticias.log una línea
+    de HOY que pruebe que el job arrancó y completó al menos la fase de
+    descarga ("titulares nuevos guardados")? Distingue "no corrió" de
+    "corrió y no completó" incluso cuando systemd mató el proceso antes
+    de que llegara a escribir una sola línea en el ledger de costos — el
+    caso del 1-sep (acta 70): 223 titulares guardados a las 18:17:44,
+    ninguna corrida en data/costos_ia.log ese día."""
+    if not os.path.exists(RUTA_NOTICIAS_LOG):
+        return False
+    hoy = hoy or date.today().isoformat()
+    with open(RUTA_NOTICIAS_LOG, encoding="utf-8", errors="replace") as f:
+        lineas = f.readlines()[-400:]
+    return any("titulares nuevos guardados" in linea and hoy in linea
+               for linea in lineas)
+
+
+def _estado_systemd_noticias() -> dict | None:
+    """Refuerzo OPCIONAL, solo Linux/systemd. macOS (launchd) no tiene
+    equivalente — por eso la evidencia primaria es SIEMPRE el log, nunca
+    esto. Nunca se ejecuta en los tests (inyectable via monkeypatch);
+    ante cualquier falla o ausencia de systemctl, devuelve None y el
+    mensaje se arma solo con el log."""
+    try:
+        r = subprocess.run(
+            ["systemctl", "--user", "show", "mki-noticias.service",
+             "-p", "Result", "-p", "ExecMainStartTimestamp",
+             "-p", "ExecMainExitTimestamp"],
+            capture_output=True, text=True, timeout=10)
+        if r.returncode != 0 or not r.stdout.strip():
+            return None
+        datos = {}
+        for linea in r.stdout.strip().splitlines():
+            if "=" in linea:
+                clave, valor = linea.split("=", 1)
+                datos[clave] = valor
+        return datos or None
+    except Exception:
+        return None
+
+
+def _hora_desde_timestamp_systemd(valor: str) -> str | None:
+    """'Tue 2026-09-01 18:20:00 -04' → '18:20'. None si no matchea."""
+    if not valor:
+        return None
+    m = re.search(r"\d{4}-\d{2}-\d{2} (\d{2}:\d{2}):\d{2}", valor)
+    return m.group(1) if m else None
+
+
 def chequear_noticias() -> tuple:
     corridas = costos.corridas_del_dia("noticias")
     if not corridas:
@@ -101,6 +152,14 @@ def chequear_noticias() -> tuple:
         if colgado:
             return False, (f"noticias: el job NO corrió hoy — {colgado}; "
                            "launchd no re-dispara mientras siga vivo")
+        if _rastro_noticias_hoy_en_log():
+            refuerzo = ""
+            estado = _estado_systemd_noticias()
+            if estado and estado.get("Result") == "timeout":
+                hora = _hora_desde_timestamp_systemd(estado.get("ExecMainExitTimestamp"))
+                refuerzo = f" — matado por timeout a las {hora}" if hora else " — matado por timeout"
+            return False, ("noticias: corrió y NO completó (rastro en el log, "
+                           "sin registro en el ledger de costos)" + refuerzo)
         return False, "noticias: el job NO corrió hoy"
     ultima = corridas[-1]
     resultado = ultima.get("resultado", "?")
