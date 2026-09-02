@@ -1,0 +1,424 @@
+{
+ "generado_en_utc": "2026-09-02T18:59:47.809708+00:00",
+ "etiqueta": "PROPUESTA — Frente E v2, octava corrida; reescrito tras el dictamen E (NO CONCLUYENTE sobre las cifras operativas)",
+ "parametros": {
+  "n_rep": 500,
+  "n_perm": 400,
+  "horizontes": [
+   35,
+   73,
+   125,
+   250,
+   475
+  ],
+  "semilla": 20260902,
+  "sigma_pred_sellada_pp": 4.305,
+  "sigma_calibrada_en_simulador_pp": 3.866,
+  "climatologia": {
+   "mu": 0.837,
+   "sd": 4.388
+  },
+  "generador": {
+   "b": 1.1562,
+   "c": 4.6875,
+   "delta_verdad_pp": 9.26
+  }
+ },
+ "efecto_verdadero_por_metrica_en_el_simulador": {
+  "DIR_pp": 9.264,
+  "MAE_pp": 0.4767,
+  "MAE_modelo_pp": 2.669,
+  "MAE_cero_pp": 3.146,
+  "CRPS_pp": 0.2767
+ },
+ "sellada": {
+  "ancla": "cadena LOCAL a CORTE_REGLA_FIRMADA (31-ago) CON la regla de dedup firmada: +9,3 pp — NO el +6,45 pp publicado (rama sin dedup); hay una tercera rama (+14,3 pp) en cola_decisiones.md §2a-ter",
+  "climatologia_y_sigma_pred": "ESTIMADAS EN MUESTRA sobre las mismas filas que puntúan (sesgo: la climatología ajustada en muestra favorece a la baseline; σ_pred sellada favorece al modelo sólo si está calibrada)",
+  "DIR": {
+   "punto": 0.0935,
+   "ic95": [
+    -0.0779,
+    0.2649
+   ],
+   "ic95_percentil_dia": [
+    -0.069,
+    0.2653
+   ],
+   "z": 1.11,
+   "dias": 35,
+   "dias_para_0_80_al_efecto_observado": 223,
+   "dias_para_0_80_ic95": [
+    28,
+    Infinity
+   ],
+   "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero",
+   "dias_para_0_80_al_efecto_alternativo": {
+    "efecto": 0.0645,
+    "dias": 470
+   }
+  },
+  "MAE": {
+   "punto": 0.4372,
+   "ic95": [
+    -0.0872,
+    0.9616
+   ],
+   "ic95_percentil_dia": [
+    -0.0479,
+    0.9611
+   ],
+   "z": 1.69,
+   "dias": 35,
+   "dias_para_0_80_al_efecto_observado": 96,
+   "dias_para_0_80_ic95": [
+    20,
+    Infinity
+   ],
+   "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero"
+  },
+  "CRPS": {
+   "punto": 0.2916,
+   "ic95": [
+    -0.0443,
+    0.6275
+   ],
+   "ic95_percentil_dia": [
+    -0.0102,
+    0.6334
+   ],
+   "z": 1.76,
+   "dias": 35,
+   "dias_para_0_80_al_efecto_observado": 88,
+   "dias_para_0_80_ic95": [
+    19,
+    Infinity
+   ],
+   "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero"
+  },
+  "mae_modelo_pp": 2.488,
+  "mae_cero_pp": 2.925,
+  "mae_constante_mu_pp": 2.893,
+  "fraccion_de_la_ganancia_mae_que_da_la_constante_mu": 0.073,
+  "nota_familia": "CRPS y MAE no son métricas independientes: con σ_pred ≈ sd_clim casi toda la ganancia de CRPS es la media; se reportan como UNA familia (magnitud), no como dos corroboraciones",
+  "R2_sin_15_23_jul": {
+   "DIR": {
+    "punto": 0.0248,
+    "ic95": [
+     -0.1508,
+     0.2003
+    ],
+    "ic95_percentil_dia": [
+     -0.1394,
+     0.194
+    ],
+    "z": 0.29,
+    "dias": 29,
+    "dias_para_0_80_al_efecto_observado": 2728,
+    "dias_para_0_80_ic95": [
+     42,
+     Infinity
+    ],
+    "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero"
+   },
+   "MAE": {
+    "punto": 0.3444,
+    "ic95": [
+     -0.2745,
+     0.9633
+    ],
+    "ic95_percentil_dia": [
+     -0.2401,
+     0.9653
+    ],
+    "z": 1.14,
+    "dias": 29,
+    "dias_para_0_80_al_efecto_observado": 175,
+    "dias_para_0_80_ic95": [
+     22,
+     Infinity
+    ],
+    "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero"
+   },
+   "CRPS": {
+    "punto": 0.2061,
+    "ic95": [
+     -0.1892,
+     0.6014
+    ],
+    "ic95_percentil_dia": [
+     -0.1504,
+     0.6052
+    ],
+    "z": 1.07,
+    "dias": 29,
+    "dias_para_0_80_al_efecto_observado": 200,
+    "dias_para_0_80_ic95": [
+     23,
+     Infinity
+    ],
+    "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero"
+   }
+  }
+ },
+ "simulador": {
+  "sigma_pred_sellada": [
+   {
+    "n_dias": 35,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.18,
+     "ic95": [
+      0.149,
+      0.216
+     ]
+    },
+    "MAE": {
+     "potencia": 0.586,
+     "ic95": [
+      0.542,
+      0.628
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.426,
+     "ic95": [
+      0.383,
+      0.47
+     ]
+    }
+   },
+   {
+    "n_dias": 73,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.312,
+     "ic95": [
+      0.273,
+      0.354
+     ]
+    },
+    "MAE": {
+     "potencia": 0.9,
+     "ic95": [
+      0.871,
+      0.923
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.76,
+     "ic95": [
+      0.721,
+      0.795
+     ]
+    }
+   },
+   {
+    "n_dias": 125,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.48,
+     "ic95": [
+      0.437,
+      0.524
+     ]
+    },
+    "MAE": {
+     "potencia": 0.986,
+     "ic95": [
+      0.971,
+      0.993
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.926,
+     "ic95": [
+      0.9,
+      0.946
+     ]
+    }
+   },
+   {
+    "n_dias": 250,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.81,
+     "ic95": [
+      0.773,
+      0.842
+     ]
+    },
+    "MAE": {
+     "potencia": 1.0,
+     "ic95": [
+      0.992,
+      1.0
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.998,
+     "ic95": [
+      0.989,
+      1.0
+     ]
+    }
+   },
+   {
+    "n_dias": 475,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.962,
+     "ic95": [
+      0.941,
+      0.976
+     ]
+    },
+    "MAE": {
+     "potencia": 1.0,
+     "ic95": [
+      0.992,
+      1.0
+     ]
+    },
+    "CRPS": {
+     "potencia": 1.0,
+     "ic95": [
+      0.992,
+      1.0
+     ]
+    }
+   }
+  ],
+  "sigma_calibrada": [
+   {
+    "n_dias": 73,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.312,
+     "ic95": [
+      0.273,
+      0.354
+     ]
+    },
+    "MAE": {
+     "potencia": 0.9,
+     "ic95": [
+      0.871,
+      0.923
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.832,
+     "ic95": [
+      0.797,
+      0.862
+     ]
+    }
+   },
+   {
+    "n_dias": 250,
+    "n_rep": 500,
+    "DIR": {
+     "potencia": 0.81,
+     "ic95": [
+      0.773,
+      0.842
+     ]
+    },
+    "MAE": {
+     "potencia": 1.0,
+     "ic95": [
+      0.992,
+      1.0
+     ]
+    },
+    "CRPS": {
+     "potencia": 1.0,
+     "ic95": [
+      0.992,
+      1.0
+     ]
+    }
+   }
+  ],
+  "banda_potencia_73_dias": {
+   "generador_9pp": {
+    "ganancia_mae_pp": 0.4767,
+    "DIR": {
+     "potencia": 0.312,
+     "ic95": [
+      0.273,
+      0.354
+     ]
+    },
+    "MAE": {
+     "potencia": 0.9,
+     "ic95": [
+      0.871,
+      0.923
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.76,
+     "ic95": [
+      0.721,
+      0.795
+     ]
+    }
+   },
+   "efecto_observado": {
+    "b": 1.1004,
+    "ganancia_mae_pp": 0.4372,
+    "DIR": {
+     "potencia": 0.294,
+     "ic95": [
+      0.256,
+      0.335
+     ]
+    },
+    "MAE": {
+     "potencia": 0.864,
+     "ic95": [
+      0.831,
+      0.891
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.66,
+     "ic95": [
+      0.617,
+      0.7
+     ]
+    }
+   },
+   "efecto_bajo_R2": {
+    "b": 0.9705,
+    "ganancia_mae_pp": 0.3444,
+    "DIR": {
+     "potencia": 0.21,
+     "ic95": [
+      0.177,
+      0.248
+     ]
+    },
+    "MAE": {
+     "potencia": 0.704,
+     "ic95": [
+      0.663,
+      0.742
+     ]
+    },
+    "CRPS": {
+     "potencia": 0.498,
+     "ic95": [
+      0.454,
+      0.542
+     ]
+    }
+   }
+  }
+ },
+ "intentos_dsr": {
+  "incremento": 2,
+  "regla": "DIR es el endpoint congelado (no cuenta); la magnitud |g|−|p−g| ya está en el tramo ESTIM (no se cuenta dos veces); cuentan CRPS y su variante sigma_calibrada"
+ }
+}

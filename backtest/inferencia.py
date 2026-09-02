@@ -111,7 +111,15 @@ def psr(sr: float, sr_ref: float, n: int,
     Por construcción vale exactamente 0.5 cuando SR == SR_ref, para
     cualquier n, skew y kurt: la incertidumbre no mueve el punto medio,
     solo la pendiente con que se sale de él.
+
+    PRECONDICIÓN (2-sep-2026): `sr` es el Sharpe POR PERÍODO — la unidad
+    de `var_sharpe`. Dos de tres llamadores del proyecto rompieron ese
+    contrato pasando el anualizado (z inflado por √252), así que el
+    contrato ahora se hace cumplir: un |Sharpe| por período mayor que
+    `SHARPE_PERIODO_MAXIMO` no ocurre en datos diarios reales (equivale a
+    un t de Student de 3·√n) y delata un anualizado.
     """
+    _exigir_por_periodo(sr, "psr")
     return Phi((sr - sr_ref) / se_sharpe(sr, n, skew, kurt))
 
 
@@ -159,6 +167,27 @@ def dsr(sr: float, n: int, skew: float, kurt: float,
 # ------------------------------------------------------------
 # Bootstrap circular de bloques (Politis & Romano 1994)
 # ------------------------------------------------------------
+PERIODOS_POR_ANIO = 252
+SHARPE_PERIODO_MAXIMO = 3.0   # por encima, casi seguro alguien pasó un Sharpe anualizado
+
+
+class ErrorUnidadSharpe(ValueError):
+    """El Sharpe que llegó a psr/dsr no está en la unidad por período."""
+
+
+def _exigir_por_periodo(sr: float, quien: str) -> None:
+    if sr == sr and abs(sr) > SHARPE_PERIODO_MAXIMO:
+        raise ErrorUnidadSharpe(
+            f"{quien}: |Sharpe| = {abs(sr):.3f} no es un Sharpe por período (máximo plausible "
+            f"{SHARPE_PERIODO_MAXIMO}); ¿se pasó el anualizado? Usar inferencia.sharpe(serie, anualizar=1).")
+
+
+def anualizar_sharpe(sr_periodo: float, periodos: int = PERIODOS_POR_ANIO) -> float:
+    """Sharpe por período → anualizado (sólo para REPORTAR: la inferencia
+    —psr, dsr, var_sharpe— trabaja siempre por período)."""
+    return sr_periodo * math.sqrt(periodos)
+
+
 def sharpe(serie, anualizar: int = 252) -> float:
     """Sharpe muestral de una serie de retornos (en las unidades en que
     venga: no se reescala nada). `anualizar=1` deja el Sharpe por período,

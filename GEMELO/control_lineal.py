@@ -71,13 +71,33 @@ SEMILLA_BOOTSTRAP = 20260826
 BLOQUE_BOOTSTRAP = 20
 ALPHA_BOOTSTRAP = 0.05
 
-# Un Sharpe ANUALIZADO sobre pocas decenas de días no es una estimación:
-# es un artefacto de multiplicar por √252. Por debajo de este umbral el
-# PSR y el DSR se reportan como NO INTERPRETABLES en vez de emitir un
-# 1.0000 que se leería como certeza — y que, peor, se leería como que V5
-# (DSR ≥ 0.95) está superado. Ver DECISIONES.md §26.3 sobre la saturación
-# de Phi: un DSR de 1.000 significa "más allá de lo que el doble
-# distingue", no "seguro".
+# MINIMO_DIAS_SHARPE — ORIGEN Y JUSTIFICACIÓN, reescritos el 2-sep-2026.
+#
+# Origen (declarado): el umbral se introdujo DESPUÉS de la corrida del
+# WS2b, al ver PSR/DSR = 1.0000 a 30 días. Es un umbral movido después de
+# ver un resultado; la dirección es conservadora (excluye, no incluye), y
+# se dice con esas palabras.
+#
+# Justificación original (DESMENTIDA): «un Sharpe anualizado sobre pocas
+# decenas de días satura Phi». Falso: la saturación era el DEFECTO DE
+# UNIDADES del PSR/DSR (se les pasaba el Sharpe anualizado con n = días; el
+# z quedaba inflado por √252 — Frente A de la octava corrida, A3). Con la
+# unidad correcta los mismos insumos del WS2b dan DSR 0.947–0.964 (N = 9),
+# y TRES de cuatro cruzan 0.95. Hoy este umbral es lo único que separa al
+# WS2b de un titular «V5 superado».
+#
+# Justificación vigente, desde cero: (1) con 30 días el error estándar de
+# un Sharpe por período es ~1/√30 ≈ 0.18, del orden del propio Sharpe
+# (0.33–0.37): un PSR de 0.96 sobre 30 días distingue una muestra, no una
+# habilidad; (2) la varianza V de N = 9 Sharpes a 30 días es ella misma un
+# estimador con 8 grados de libertad, y el DSR a N chico es de primer
+# orden sensible a V (calibracion_instrumento.md A3: tamaños 0.0006 /
+# 0.0068 / 0.0156 según cómo se estime V a N = 9); (3) los retornos de gap
+# NO son capturables (Frente C; «ficción económica» en control_lineal.md) y
+# esos 30 días son la ventana que R2 elimina. Ninguna de las tres razones
+# es «saturación». Si Nicolás prefiere retirar el umbral, la consecuencia
+# declarada es que el WS2b pasa a leerse como V5 superado por tres
+# configuraciones que R2 mata y que no se pueden operar.
 MINIMO_DIAS_SHARPE = 60
 
 # Ventana que sostiene casi toda la ventaja del campeón (§2.2). R2 del
@@ -265,8 +285,10 @@ def evaluar(df: pd.DataFrame, etiqueta: str) -> dict:
     b10 = int(((acierto == 0) & (base == 1)).sum())
     r = retornos_diarios(df)
     sr = inf.sharpe(r.to_numpy(), anualizar=252) if len(r) >= 2 else float("nan")
+    sr_p = inf.sharpe(r.to_numpy(), anualizar=1) if len(r) >= 2 else float("nan")   # unidad de la inferencia
     return {
         "config": etiqueta, "n": int(len(df)),
+        "sharpe_por_periodo": round(sr_p, 4) if sr_p == sr_p else None,
         "acierto_pct": round(100 * acierto.mean(), 1),
         "base_pct": round(100 * base.mean(), 1),
         "ventaja_pp": round(100 * (acierto.mean() - base.mean()), 1),
@@ -393,20 +415,29 @@ def inferencia_sharpe(resultados: dict, n_intentos: int) -> list:
     sharpes = [v["sharpe_ls_sin_costos"] for v in resultados.values()
                if v.get("sharpe_ls_sin_costos") is not None]
     V = float(np.var(sharpes, ddof=1)) if len(sharpes) >= 2 else 0.25
+    # 2-sep-2026: PSR/DSR se computan con el Sharpe POR PERÍODO (unidad de
+    # `var_sharpe`). El productor lo ENTREGA (`sharpe_por_periodo`); no se
+    # divide el anualizado a mano. Ver backtest/veredicto_51.py y
+    # calibracion_instrumento.md (A3).
+    sharpes_p = [v["sharpe_por_periodo"] for v in resultados.values()
+                 if v.get("sharpe_por_periodo") is not None]
+    V_p = float(np.var(sharpes_p, ddof=1)) if len(sharpes_p) >= 2 else 0.25 / inf.PERIODOS_POR_ANIO
     filas = []
     for nombre, v in resultados.items():
         sr, dias = v.get("sharpe_ls_sin_costos"), v.get("dias", 0)
-        if sr is None or dias < 2:
+        sr_p = v.get("sharpe_por_periodo")
+        if sr is None or sr_p is None or dias < 2:
             continue
         interpretable = dias >= MINIMO_DIAS_SHARPE
         filas.append({
             "config": nombre, "sharpe": sr, "dias": dias,
             "interpretable": interpretable,
-            "psr_vs_cero": (round(inf.psr(sr, 0.0, dias, 0.0, 3.0), 4)
+            "psr_vs_cero": (round(inf.psr(sr_p, 0.0, dias, 0.0, 3.0), 4)
                             if interpretable else "NO INTERPRETABLE"),
-            "sr0_deflacionado": round(inf.sr0_deflacionado(n_intentos, V), 4),
-            "dsr": (round(inf.dsr(sr, dias, 0.0, 3.0, n_intentos, V), 4)
+            "sr0_deflacionado": round(inf.anualizar_sharpe(inf.sr0_deflacionado(n_intentos, V_p)), 4),
+            "dsr": (round(inf.dsr(sr_p, dias, 0.0, 3.0, n_intentos, V_p), 4)
                     if interpretable else "NO INTERPRETABLE"),
+            "unidad_inferencia": "Sharpe por período (entregado por el productor)",
             "N_intentos": n_intentos, "V_intentos": round(V, 4),
         })
     return filas

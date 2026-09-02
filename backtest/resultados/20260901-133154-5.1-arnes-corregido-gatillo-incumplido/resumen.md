@@ -213,3 +213,18 @@ En este orden, y el primer entregable de cada punto es el **test**, no el arregl
 
 ---
 Herramienta de análisis — no constituye asesoría financiera. Criterios congelados en `backtest/DISEÑO.md` §8 y `GEMELO/DISEÑO.md` §6; ninguno fue modificado para esta corrida.
+
+---
+
+## ERRATA documentada (añadida el 2-sep-2026, octava corrida) — NO se recalculó nada
+
+**Las cifras de arriba se conservan exactamente como se generaron.** Los
+PSR/DSR de esta corrida se calcularon con el **Sharpe ANUALIZADO** pasado a
+`inferencia.psr`/`dsr`, cuya unidad es el Sharpe POR PERÍODO: el z estaba
+inflado por √252 (Frente A de la octava corrida, A3). **Los veredictos de
+este documento no cambian, pero por suerte y no por corrección:** los Sharpes
+de B0–B5 son NEGATIVOS (−5,4 a −8,0), así que el DSR es 0,0 en cualquier
+unidad, y `sr0` es invariante (V_p = V/252 ⇒ sr0_p = sr0/√252). V5 estaba
+mal calibrado en la dirección PERMISIVA para cualquier retador futuro con
+Sharpe positivo. Corregido en `backtest/veredicto_51.py` (el productor
+entrega el Sharpe por período); test en `tests/test_unidades_sharpe.py`.

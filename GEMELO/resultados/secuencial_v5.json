@@ -1,0 +1,304 @@
+{
+ "generado_en_utc": "2026-09-02T18:45:26.293884+00:00",
+ "etiqueta": "PROPUESTA — Frente F, octava corrida; pendiente de dictamen (lee los cuatro rechazos)",
+ "parametros": {
+  "alfa": 0.05,
+  "miradas_fechas": [
+   50,
+   100,
+   150,
+   200,
+   250
+  ],
+  "gasto": "Lan-DeMets O'Brien-Fleming, bilateral",
+  "gasto_acumulado_nominal": [
+   0.0,
+   0.0019,
+   0.0114,
+   0.0284,
+   0.05
+  ],
+  "n_rep_fronteras": 20000,
+  "n_rep_potencia": 4000,
+  "semilla": 20260902,
+  "icc_calibrado": 0.3925,
+  "generador_nulo": {
+   "b": 0.5156,
+   "c": 5.5312
+  }
+ },
+ "fronteras_z": [
+  Infinity,
+  3.147,
+  2.572,
+  2.273,
+  2.06
+ ],
+ "fronteras_obf_externa_armitage": [
+  4.562,
+  3.226,
+  2.634,
+  2.281,
+  2.04
+ ],
+ "nota_fronteras": "la mirada 1 tiene c = ∞ por RESOLUCIÓN, no por diseño: α₁ = 1,2e−5 sobre 20.000 réplicas son 0,2 cruces esperados → el plan tiene CUATRO miradas efectivas, no cinco; la frontera de la mirada 2 se apoya en ~38 cruces, así que los IC de tipo I y potencia son CONDICIONALES a una frontera con error de Monte Carlo no propagado; tres de las cuatro fronteras finitas quedan por DEBAJO de la referencia externa gaussiana con colas t(4)",
+ "estadistico": "z gaussiano sobre la suma de contribuciones diarias con varianza muestral: es un estadístico NUEVO, distinto de la permutación de signo por día que gobierna la ventana sellada y que el Frente A calibró; cuenta como intento",
+ "contribuciones_selladas": {
+  "fechas": 35,
+  "ac1": -0.1746,
+  "fraccion_contribucion_cero": 0.543
+ },
+ "tipo_I": {
+  "phi_0.0_AJUSTE_no_medicion_(mismas_trayectorias_que_las_fronteras)": {
+   "rechazo_total": 0.05,
+   "ic95": [
+    0.047,
+    0.053
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0019,
+    0.0095,
+    0.017,
+    0.0215
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0019,
+    0.0114,
+    0.0284,
+    0.05
+   ],
+   "n_esperado_fechas": 247.9
+  },
+  "phi_0.0_FUERA_DE_MUESTRA": {
+   "por_semilla": [
+    {
+     "semilla": 20261003,
+     "rechazo_total": 0.0505,
+     "ic95": [
+      0.046,
+      0.055
+     ],
+     "rechazo_por_mirada": [
+      0.0,
+      0.0023,
+      0.0091,
+      0.0182,
+      0.0209
+     ],
+     "acumulado_por_mirada": [
+      0.0,
+      0.0023,
+      0.0114,
+      0.0296,
+      0.0505
+     ],
+     "n_esperado_fechas": 247.8
+    },
+    {
+     "semilla": 20261104,
+     "rechazo_total": 0.0485,
+     "ic95": [
+      0.044,
+      0.053
+     ],
+     "rechazo_por_mirada": [
+      0.0,
+      0.0017,
+      0.0105,
+      0.0162,
+      0.0201
+     ],
+     "acumulado_por_mirada": [
+      0.0,
+      0.0017,
+      0.0122,
+      0.0284,
+      0.0485
+     ],
+     "n_esperado_fechas": 247.9
+    }
+   ],
+   "agrupado": 0.0495,
+   "ic95": [
+    0.047,
+    0.053
+   ],
+   "n": 20000
+  }
+ },
+ "potencia": {
+  "0.09": {
+   "b": 1.1562,
+   "c": 4.6875,
+   "rechazo_total": 0.7913,
+   "ic95": [
+    0.778,
+    0.804
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0935,
+    0.2607,
+    0.2597,
+    0.1772
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0935,
+    0.3543,
+    0.614,
+    0.7913
+   ],
+   "n_esperado_fechas": 196.9
+  },
+  "0.065": {
+   "b": 0.9688,
+   "c": 4.9688,
+   "rechazo_total": 0.4988,
+   "ic95": [
+    0.483,
+    0.514
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0325,
+    0.1225,
+    0.1765,
+    0.1673
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0325,
+    0.155,
+    0.3315,
+    0.4988
+   ],
+   "n_esperado_fechas": 224.1
+  },
+  "0.05": {
+   "b": 0.875,
+   "c": 5.1562,
+   "rechazo_total": 0.3297,
+   "ic95": [
+    0.315,
+    0.344
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0152,
+    0.0752,
+    0.1115,
+    0.1278
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0152,
+    0.0905,
+    0.202,
+    0.3297
+   ],
+   "n_esperado_fechas": 234.6
+  }
+ },
+ "sensibilidad_phi": {
+  "phi_0.0": {
+   "rechazo_total": 0.058,
+   "ic95": [
+    0.052,
+    0.064
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0025,
+    0.0098,
+    0.019,
+    0.0267
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0025,
+    0.0123,
+    0.0313,
+    0.058
+   ],
+   "n_esperado_fechas": 247.7,
+   "ac1_realizado_medio": -0.0024,
+   "fraccion_fechas_contribucion_cero": 0.536
+  },
+  "phi_0.1": {
+   "rechazo_total": 0.0602,
+   "ic95": [
+    0.054,
+    0.066
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0032,
+    0.0108,
+    0.02,
+    0.0262
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0032,
+    0.014,
+    0.034,
+    0.0602
+   ],
+   "n_esperado_fechas": 247.4,
+   "ac1_realizado_medio": -0.0009,
+   "fraccion_fechas_contribucion_cero": 0.536
+  },
+  "phi_0.2": {
+   "rechazo_total": 0.0597,
+   "ic95": [
+    0.054,
+    0.066
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.0032,
+    0.0118,
+    0.0195,
+    0.0252
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.0032,
+    0.015,
+    0.0345,
+    0.0597
+   ],
+   "n_esperado_fechas": 247.4,
+   "ac1_realizado_medio": 0.0011,
+   "fraccion_fechas_contribucion_cero": 0.536
+  },
+  "phi_0.3": {
+   "rechazo_total": 0.0563,
+   "ic95": [
+    0.051,
+    0.062
+   ],
+   "rechazo_por_mirada": [
+    0.0,
+    0.004,
+    0.0108,
+    0.0192,
+    0.0223
+   ],
+   "acumulado_por_mirada": [
+    0.0,
+    0.004,
+    0.0148,
+    0.034,
+    0.0563
+   ],
+   "n_esperado_fechas": 247.4,
+   "ac1_realizado_medio": 0.0033,
+   "fraccion_fechas_contribucion_cero": 0.535
+  }
+ },
+ "lectura_phi": "el AC1 realizado de las contribuciones NO sigue a φ (queda ≈ 0): el eje es inerte porque ~la mitad de las fechas contribuyen exactamente cero (modelo = baseline cuando el SOX sube). El control φ = 0 al mismo protocolo contiene a las filas φ > 0: la tabla es cuatro corridas de la misma nula, NO una medición de dependencia. El plan sigue SIN evidencia de que controla α bajo dependencia; la banda firmada [0,046, 0,079] queda intacta"
+}

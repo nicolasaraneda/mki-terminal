@@ -61,6 +61,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import math
 import numpy as np
 import pandas as pd
 
@@ -249,6 +250,18 @@ COLUMNAS_OBJETIVO = {
 # CANDIDATOS QUE NO SON EJES — y por qué, medido
 # ------------------------------------------------------------
 NO_EJES = (
+    ("método del IC de clúster de día",
+     "GEMELO/resultados/calibracion_instrumento.md A1 (Frente A v2, 2-sep-2026) "
+     "y dictamen_08/A.md; estimadores en bifurcaciones._bootstrap_dia (percentil) "
+     "y bifurcaciones._ic_t_cluster (t de clúster, gl = k−1)",
+     "GRADO DE LIBERTAD DECLARADO, NO MULTIPLICADO EN LA MATRIZ. El estimador "
+     "se eligió DESPUÉS de ver la cobertura con verdad conocida (k = 35 "
+     "clústeres, 10.000 réplicas, semilla por réplica): percentil 0,931 / 0,933 "
+     "(IC excluye 0,95 en las dos celdas; el adversario midió 0,927), básico "
+     "0,932 / 0,933, **t de clúster 0,949 / 0,951**, iid de filas 0,689. "
+     "Percentil-t 0,9335 (medido por el adversario, no arregla); BCa no probado. "
+     "Todo «IC de clúster de día» publicado antes del 2-sep es un nominal 95% con "
+     "cobertura real ~0,93. No suma al N del DSR: no selecciona modelo."),
     ("regla de deduplicación",
      "La firma de Nicolás del 1-sep-2026 (acta en DECISIONES.md); el "
      "forense en GEMELO/resultados/dedup_opciones.md; la implementación "
@@ -677,7 +690,47 @@ def mde_permutacion_dia(grupos: list, n_perm: int = N_PERM,
     return 100.0 * hi
 
 
-def _bootstrap_dia(grupos: list, n_boot: int, alpha: float = ALFA) -> tuple:
+def _t_ppf(q: float, gl: int) -> float:
+    """Cuantil de la t de Student sin scipy: CDF por integración numérica
+    de la densidad (regla del trapecio, 20.001 nodos) y bisección. Exacto
+    a ~1e-6 para gl ≥ 2 (t_{34;0,975} = 2,0322)."""
+    from math import lgamma, log, pi
+    lc = lgamma((gl + 1) / 2) - lgamma(gl / 2) - 0.5 * log(gl * pi)
+
+    def cdf(x):
+        t = np.linspace(0.0, x, 20001)
+        pdf = np.exp(lc - (gl + 1) / 2 * np.log1p(t * t / gl))
+        return 0.5 + float(np.trapezoid(pdf, t))
+    lo, hi = 0.0, 60.0
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if cdf(mid) < q:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
+def _ic_t_cluster(grupos: list, alpha: float = ALFA) -> tuple:
+    """IC de la media global (razón de sumas) por t DE CLÚSTER linealizada
+    con gl = k − 1: SE² = k/(k−1) · Σ(S_i − R·C_i)² / (ΣC)². Es el estimador
+    que el Frente A de la octava corrida midió con cobertura 0,945–0,947
+    donde el percentil de día cubre 0,927 (k = 35 clústeres): el defecto
+    del percentil con pocos clústeres, no del enfoque de clúster."""
+    k = len(grupos)
+    S = np.array([g.sum() for g in grupos], dtype=float)
+    C = np.array([len(g) for g in grupos], dtype=float)
+    R = float(S.sum() / C.sum())
+    if k < 3:
+        return R, float("nan"), float("nan")
+    u = S - R * C
+    se = math.sqrt(k / (k - 1) * float((u * u).sum())) / C.sum()
+    t = _t_ppf(1 - alpha / 2, k - 1)
+    return R, R - t * se, R + t * se
+
+
+def _bootstrap_dia(grupos: list, n_boot: int, alpha: float = ALFA,
+                   semilla: int = SEMILLA) -> tuple:
     """Bootstrap de CLÚSTERES DE DÍA: remuestrea días enteros con
     reemplazo y devuelve el IC de la media global como razón de sumas
     —que es lo correcto cuando los clústeres tienen tamaños distintos—.
@@ -692,7 +745,12 @@ def _bootstrap_dia(grupos: list, n_boot: int, alpha: float = ALFA) -> tuple:
     punto = float(sumas.sum() / cuentas.sum())
     if k < 2:
         return punto, float("nan"), float("nan")
-    rng = np.random.default_rng(SEMILLA)
+    # `semilla` inyectable (2-sep, dictamen del adversario sobre el Frente A):
+    # dentro de un ESTUDIO de cobertura, re-sembrar igual en cada réplica
+    # hace que todas compartan una sola matriz `idx` y la Wilson de la
+    # cobertura queda condicionada a un solo sorteo. Para las celdas de la
+    # matriz el default sigue siendo fijo y reproduce lo publicado.
+    rng = np.random.default_rng(semilla)
     idx = rng.integers(0, k, size=(n_boot, k))
     reps = sumas[idx].sum(axis=1) / cuentas[idx].sum(axis=1)
     lo, hi = np.quantile(reps, [alpha / 2, 1 - alpha / 2])

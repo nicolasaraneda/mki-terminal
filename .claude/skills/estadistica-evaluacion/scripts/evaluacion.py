@@ -354,7 +354,7 @@ def cobertura(y, lo, hi) -> float:
 def ancho_relativo(lo, hi, error_abs) -> float:
     """Ancho medio del intervalo dividido por el MAE.
 
-    El campeon marca 1.77: intervalos 77% mas anchos de lo que su propio error
+    El campeon marca 1.84 (README, n=248): intervalos 84% mas anchos de lo que su propio error
     justifica. Un intervalo demasiado ancho no es prudencia, es no informar.
     """
     ancho = float(np.mean(np.asarray(hi) - np.asarray(lo)))
@@ -476,9 +476,9 @@ def _self_test() -> None:
     assert abs(c_mu - c_an) < 0.01
     print("   la version muestral reproduce la analitica  OK")
 
-    anchos = rng.normal(mu[:, None], 1.77 * sg[:, None], size=(300, 5000))
+    anchos = rng.normal(mu[:, None], 1.84 * sg[:, None], size=(300, 5000))
     c_ancho = crps_muestral(y, anchos).mean()
-    print(f"   CRPS con intervalos 1.77x mas anchos = {c_ancho:.4f}  (peor)")
+    print(f"   CRPS con intervalos 1.84x mas anchos = {c_ancho:.4f}  (peor)")
     assert c_ancho > c_mu
 
     # 7. Cobertura y ancho relativo
@@ -488,7 +488,7 @@ def _self_test() -> None:
     ar = ancho_relativo(lo80, hi80, y - mu)
     print(f"\n7. Cobertura nominal 80%  ->  empirica {cob:.1%}   "
           f"V3 exige [76%, 84%]: {'PASA' if 0.76 <= cob <= 0.84 else 'NO PASA'}")
-    print(f"   ancho relativo = {ar:.2f}  (el campeon marca 1.77)")
+    print(f"   ancho relativo = {ar:.2f}  (el campeon marca 1.84)")
 
     # 8. Walk-forward: sin solape, con embargo respetado
     splits = walk_forward_purgado(1000, n_splits=5, embargo=5, purge=1)

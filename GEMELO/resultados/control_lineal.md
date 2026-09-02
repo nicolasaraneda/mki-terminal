@@ -143,3 +143,38 @@ es una cota optimista. La densidad con colas (Student-t) es el Nivel
 ---
 Herramienta de análisis — no constituye asesoría financiera.
 Diseño congelado en GEMELO/DISEÑO.md. **No es el veredicto de la 5.1.**
+
+---
+
+## ERRATA documentada (añadida el 2-sep-2026, octava corrida) — NO se recalculó nada
+
+**Las cifras de arriba se conservan exactamente como se generaron.** La
+sección «PSR y DSR» atribuye la saturación en 1.0000 a «un Sharpe anualizado
+sobre una muestra diminuta». **Esa explicación es falsa.** La causa era el
+**defecto de unidades** del PSR/DSR: `inferencia.var_sharpe` trabaja con el
+Sharpe POR PERÍODO y los llamadores le pasaban el ANUALIZADO con n = días, de
+modo que el z quedaba inflado por √252 (Frente A de la octava corrida, A3:
+bajo la nula el DSR superaba 0,95 en el 26–29% de las réplicas; con la unidad
+correcta, 0,1%). Corregido en `GEMELO/control_lineal.inferencia_sharpe` y
+`backtest/veredicto_51.py`, con `tests/test_unidades_sharpe.py`.
+
+**Con la unidad correcta y los mismos insumos publicados** (V = 0,0641
+anualizada, N = 9, 30–31 días; recomputados el 2-sep con `backtest.inferencia`):
+
+| config | Sharpe anual | días | Sharpe por período | PSR | DSR (N = 9) | DSR (N = 106) |
+|---|---|---|---|---|---|---|
+| C1 | 5,73 | 30 | 0,361 | 0,9702 | **0,9605** | 0,9527 |
+| C2 | 5,29 | 30 | 0,3332 | 0,9597 | 0,9473 | 0,9374 |
+| C3 | 5,86 | 30 | 0,3691 | 0,9728 | **0,9638** | 0,9565 |
+| CAMPEÓN | 5,491 | 31 | 0,3459 | 0,9671 | **0,9565** | 0,9478 |
+
+No saturan: valen 0,94–0,96 y **tres de cuatro cruzan la vara V5 de 0,95**.
+**Por qué igual NO son un V5 superado** —y es un fundamento distinto del que
+decía este documento—: (1) el error estándar de un Sharpe por período a 30
+días es ~0,18, del orden del propio Sharpe; (2) V se estima con 8 grados de
+libertad y el DSR a N = 9 es de primer orden sensible a cómo se estime V;
+(3) los retornos de gap no son capturables («ficción económica», arriba) y
+esos 30 días son la ventana que R2 elimina. `MINIMO_DIAS_SHARPE = 60` sigue
+vigente con esa justificación nueva y con su origen declarado (umbral
+introducido después de ver el 1,0000): es hoy lo único que separa a estas
+tres configuraciones de un titular «V5 superado», y se dice con esas palabras.

@@ -312,12 +312,15 @@ def informe(r: dict) -> str:
           _tabla(r["r2_por_configuracion"]),
           "## PSR y DSR", "",
           f"**Aviso que manda sobre la tabla:** con menos de "
-          f"{cl.MINIMO_DIAS_SHARPE} días, un Sharpe ANUALIZADO no es una "
-          "estimación sino un artefacto de multiplicar por √252, y el PSR y "
-          "el DSR **saturan en 1.0000**. Un DSR de 1.000 NO significa que V5 "
-          "(DSR ≥ 0.95) esté superado: significa que el instrumento no aplica "
-          "a esta muestra. Por eso se reportan como NO INTERPRETABLE en vez de "
-          "emitir el número.", "",
+          f"{cl.MINIMO_DIAS_SHARPE} días el PSR y el DSR se reportan como NO "
+          "INTERPRETABLE. (Errata 2-sep-2026: la versión anterior de este "
+          "aviso atribuía la «saturación en 1.0000» a anualizar un Sharpe "
+          "sobre pocos días; era el defecto de unidades del PSR/DSR, corregido "
+          "en `inferencia_sharpe`. Con la unidad correcta los valores son "
+          "0.94–0.96, no 1.0000; la razón para no leerlos como V5 es la del "
+          "comentario de `MINIMO_DIAS_SHARPE`: error estándar del orden del "
+          "propio Sharpe, V estimada con 8 grados de libertad y retornos no "
+          "capturables que R2 elimina.)", "",
           _tabla(r["inferencia_sharpe"]),
           "**`V_intentos` está SUBESTIMADA y por tanto el DSR es una cota",
           "superior optimista.** Se estima con la varianza de los Sharpe",

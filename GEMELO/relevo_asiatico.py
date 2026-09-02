@@ -186,6 +186,32 @@ REGISTRO_INTENTOS = (
                  "ventana",
      "GEMELO/SECUENCIAL/estimandos.py:CLAVES; "
      "GEMELO/resultados/propuestas_cde.md §E"),
+    # ---- octava corrida (2-sep-2026). CONVENCIÓN, declarada porque los dictámenes
+    # exigieron una sola y las dos que convivían no lo eran: los frentes que
+    # evalúan hipótesis o predictores sobre retornos REALES cuentan un intento
+    # por intervalo publicado en su artefacto (contado por máquina, errando
+    # hacia arriba); los frentes de instrumento/simulación (sin desenlace real)
+    # cuentan configuraciones y estadísticos candidatos nuevos. Cola §28.
+    (66, "DEC-B", "Frente B (decaimiento como teoría): 54 intervalos publicados en decaimiento_feriados.json "
+                  "(contados por contar_intervalos) + 12 comparaciones medidas de B2; el 17 declarado a mano se retiró",
+     "GEMELO/decaimiento_feriados.py:contar_intervalos; GEMELO/resultados/dictamen_08/B.md"),
+    (107, "NOCAP-C", "Frente C (no capturabilidad): 107 intervalos publicados en no_capturabilidad.json "
+                     "(ajuste 52 + prueba 51, incluidas la tabla por exchange, los costos y la robustez que el dictamen exigió); "
+                     "el 14 declarado a mano se retiró",
+     "GEMELO/no_capturabilidad.py:contar_intervalos; GEMELO/resultados/dictamen_08/C.md"),
+    (9, "TRANSV-D", "Frente D (predicción transversal): 9 intervalos de ρ̄ publicados en transversal.json "
+                    "(sellada, R2, ajuste, prueba, campeón contrafactual, sin excluir_cero, por signo del SOX)",
+     "GEMELO/transversal.py; GEMELO/resultados/dictamen_08/D.md"),
+    (2, "POT-E", "Frente E (potencia por métrica): CRPS y su variante sigma_calibrada; la dirección es el endpoint "
+                 "congelado y el MAE ya está en ESTIM (no se cuentan dos veces)",
+     "GEMELO/simulador/potencia_por_metrica.py; GEMELO/resultados/dictamen_08/E.md"),
+    (2, "SEC-F", "Frente F (plan secuencial v5): el diseño y su estadístico z gaussiano sobre sumas diarias, "
+                 "candidato principal NUEVO distinto de la permutación por día (precedente TRAY); quinto rechazo",
+     "GEMELO/simulador/secuencial_v5.py; GEMELO/resultados/dictamen_08/F.md"),
+    # Frente A (instrumento con verdad conocida): 0 intentos de selección de
+    # modelo —no lleva tupla porque el registro no admite n = 0 (test)—; la
+    # elección del estimador de IC tras ver la cobertura es un eje declarado
+    # en bifurcaciones.NO_EJES, no un intento (dictamen_08/A.md).
 )
 
 # EL número vigente. Se calcula, no se escribe.

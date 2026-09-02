@@ -20,6 +20,7 @@
 # ============================================================
 
 import json
+import math
 import os
 import sys
 from datetime import date
@@ -84,7 +85,12 @@ FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
 #     vuelta por esto.
 # 2026-09-02 (séptima corrida): 91 -> 100 con los tramos TRAY (4) y ESTIM
 # (5) del registro. Misma mecánica: el test obliga a acompañar al registro.
-N_INTENTOS_PREVIO = 100
+# 2026-09-02 (octava corrida, cierre): 100 -> 286 con los tramos DEC-B (66),
+# NOCAP-C (107), TRANSV-D (9), POT-E (2) y SEC-F (2) del
+# registro, con la convención declarada allí (por intervalo publicado en los
+# frentes empíricos). El salto es grande a propósito: bajar N es lo único que
+# el DSR no perdona.
+N_INTENTOS_PREVIO = 286
 # Esta corrida vuelve a mirar las SEIS baselines sobre la MISMA ventana con
 # el arnés CORREGIDO. Se podría argumentar que sólo B4 y B5 cambian de
 # cifra —el arreglo de B-1 toca las features de noticias y el de B-2 no
@@ -94,7 +100,7 @@ N_INTENTOS_PREVIO = 100
 # los resultados, o sea DESPUÉS, que es justo lo que el conteo declarado
 # existe para impedir.
 N_INTENTOS_NUEVOS = 6
-N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 106 (2-sep-2026; era 97 con el registro en 91)
+N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 292 (2-sep-2026, cierre de la octava; era 106 con el registro en 100)
 # La banda conserva los cortes históricos para que las corridas se comparen
 # columna a columna. 2026-09-02 (séptima corrida): los N históricos dejan de
 # ser enteros sueltos dentro de la tupla —el patrón que la acta §70 vio
@@ -120,9 +126,13 @@ BANDA_N = (26, 44,
            N_DECLARADO_POR_CORRIDA["20260901-133154-5.1-arnes-corregido-gatillo-incumplido"],
            N_INTENTOS_51, 110)
 
-# Un Sharpe ANUALIZADO sobre pocas decenas de días es un artefacto de
-# multiplicar por √252. Espejo de GEMELO/control_lineal.py:81 — abajo de
-# esto, PSR y DSR se reportan NO INTERPRETABLE, jamás el número.
+# Espejo de GEMELO/control_lineal.MINIMO_DIAS_SHARPE, cuyo comentario lleva
+# el origen (post-hoc, tras ver el 1,0000 del WS2b) y la justificación
+# vigente reescrita el 2-sep-2026: la «saturación por anualizar» era el
+# defecto de unidades del PSR/DSR, no una propiedad del Sharpe. Abajo de
+# esto, PSR y DSR se reportan NO INTERPRETABLE porque el error estándar
+# del Sharpe por período (~1/√n) es del orden del propio Sharpe y V se
+# estima con pocos grados de libertad — no porque «saturen».
 MINIMO_DIAS_SHARPE = 60
 
 # GEMELO/DISEÑO.md §6.2 R2: la ventana que sostiene casi toda la ventaja
@@ -357,19 +367,35 @@ def evaluar(reporte: dict, dfs: dict) -> dict:
     }
 
     # ---------- V5: Deflated Sharpe con el N declarado ----------
-    sharpes, dias_por_b, momentos = {}, {}, {}
+    sharpes, sharpes_p, dias_por_b, momentos = {}, {}, {}, {}
     for b in bl_ord:
         s = _series_ls(dfs[b], 25) / 100.0
         s = s.dropna()
         dias_por_b[b] = int(len(s))
         sharpes[b] = (inferencia.sharpe(s.to_numpy(), anualizar=252)
                       if len(s) >= 2 else float("nan"))
+        sharpes_p[b] = (inferencia.sharpe(s.to_numpy(), anualizar=1)       # la unidad de la inferencia
+                        if len(s) >= 2 else float("nan"))
         momentos[b] = ev.momentos(s.to_numpy()) if len(s) >= 4 else (0.0, 3.0)
     validos = [v for v in sharpes.values() if v == v]
+    # 2-sep-2026 (octava corrida, Frente A): PSR y DSR trabajan en la unidad
+    # de `var_sharpe`, que es el Sharpe POR PERÍODO (inferencia.py, docstring
+    # de `sharpe`). Hasta hoy se les pasaba el Sharpe ANUALIZADO con n = días:
+    # el z quedaba inflado por √252 y, bajo la nula, el DSR superaba 0,95 en
+    # el 26–29% de las réplicas (calibracion_instrumento.md, A3). La
+    # «saturación en 1,0000 a pocos días» era este defecto, no la
+    # anualización. El Sharpe anualizado se sigue REPORTANDO; la inferencia
+    # usa el de período y una V en la misma unidad. El productor ENTREGA el
+    # Sharpe por período (`anualizar=1`): no se divide el anualizado a mano
+    # (dictamen del adversario, 2-sep: tres `1/√252` repetidos era un
+    # contrato sin dueño). Test: tests/test_unidades_sharpe.py.
+    validos_p = [v for v in sharpes_p.values() if v == v]
     V = float(np.var(validos, ddof=1)) if len(validos) >= 2 else 0.25
+    V_p = float(np.var(validos_p, ddof=1)) if len(validos_p) >= 2 else 0.25 / inferencia.PERIODOS_POR_ANIO
     v5 = {}
     for b in bl_ord:
         sr, n = sharpes[b], dias_por_b[b]
+        sr_p = sharpes_p[b]
         if sr != sr:
             v5[b] = {"estado": "Sharpe indefinido"}
             continue
@@ -381,18 +407,19 @@ def evaluar(reporte: dict, dfs: dict) -> dict:
         sk, ku = momentos[b]
         fila = {"sharpe_ls_25pb": round(sr, 3), "dias": n,
                 "skew": round(sk, 3), "kurtosis": round(ku, 3),
-                "V_intentos": round(V, 4),
-                "psr_vs_cero": round(inferencia.psr(sr, 0.0, n, sk, ku), 4),
+                "V_intentos": round(V, 4), "V_intentos_periodo": round(V_p, 6),
+                "unidad_inferencia": "Sharpe por período (anualizado / sqrt(252))",
+                "psr_vs_cero": round(inferencia.psr(sr_p, 0.0, n, sk, ku), 4),
                 "psr_vs_cero_momentos_normales":
-                    round(inferencia.psr(sr, 0.0, n, 0.0, 3.0), 4),
+                    round(inferencia.psr(sr_p, 0.0, n, 0.0, 3.0), 4),
                 "dsr_por_N": {}}
         for N in BANDA_N:
-            sr0 = inferencia.sr0_deflacionado(N, V)
+            sr0_p = inferencia.sr0_deflacionado(N, V_p)
             fila["dsr_por_N"][N] = {
-                "sr0": round(sr0, 4),
-                "dsr": round(inferencia.dsr(sr, n, sk, ku, N, V), 4),
+                "sr0": round(inferencia.anualizar_sharpe(sr0_p), 4),   # se reporta anualizado
+                "dsr": round(inferencia.dsr(sr_p, n, sk, ku, N, V_p), 4),
                 "dsr_momentos_normales":
-                    round(inferencia.dsr(sr, n, 0.0, 3.0, N, V), 4)}
+                    round(inferencia.dsr(sr_p, n, 0.0, 3.0, N, V_p), 4)}
         v5[b] = fila
     pasan_v5 = [b for b, d in v5.items()
                 if isinstance(d.get("dsr_por_N"), dict)
@@ -894,8 +921,9 @@ def _md(salida: dict, reporte: dict) -> str:
                    f"{MINIMO_DIAS_SHARPE}: el DSR **es interpretable**."
                    if d_min >= MINIMO_DIAS_SHARPE else
                    f"Con {d_min} días de retornos —por debajo del mínimo de "
-                   f"{MINIMO_DIAS_SHARPE}— el Sharpe anualizado es un "
-                   f"artefacto y PSR/DSR se reportan **NO INTERPRETABLE**."),
+                   f"{MINIMO_DIAS_SHARPE}— PSR/DSR se reportan **NO INTERPRETABLE**: "
+                   f"el error estándar del Sharpe por período es del orden del propio "
+                   f"Sharpe (errata 2-sep-2026: no es «saturación por anualizar»)."),
               "", f"Sharpe long-short a 25 pb observado: de "
               f"{min(sharpes_vistos)} a {max(sharpes_vistos)}.",
               "", f"El conteo de intentos se declaró en **N = {N}** ANTES de "
