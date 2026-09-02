@@ -2,49 +2,50 @@
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es
 historia (`DECISIONES.md`) ni cifras publicadas (`README.md`).
-**Actualizado:** 2-sep-2026 (séptima corrida) · verificar con `orientador`
+**Actualizado:** 2-sep-2026 (octava corrida) · verificar con `orientador`
 
 ## Producción
 - **Titular: este PC (WSL), en `main`**, 6 timers, emite; el modo se le pregunta
   a `modo.py`. Modelo 4.6.0 congelado. **Último sello: 2026-09-01.**
-- `mki-noticias` murió el 1-sep por `TimeoutStartSec=1800`: **es O(n²) sobre
-  toda `noticias.db` y crece cada día** (`parche_timeout_noticias.md`); parche a
-  2700 s preparado, **no aplicado** (timers = Nicolás); la solución real toca
-  `noticias.py`. El vigía ya distingue «no corrió» de «corrió y no completó».
+- `mki-noticias` es O(n²) (`parche_timeout_noticias.md`); parche no aplicado. `.env` en 644.
 
-## Las cuatro reglas de la casa
+## Las cuatro reglas de la casa, ahora ejecutables
 1. Una verificación con el mismo mecanismo que produjo la cifra no es verificación.
 2. Una retractación en prosa no es retractación: la corrección va al ejecutable.
 3. Ningún estimador puntual sin intervalo, y el intervalo se computa.
 4. Un número retirado que sigue ofrecido en el código vuelve a circular.
+`cifras.py` es el árbitro (doce bloques, cifras retiradas); `tests/test_cifras_arbitro.py`.
 
 ## Lo que sigue en pie
-- **La ventana sellada no alcanza para juzgar nada:** +9,7 pp, IC95 de día
-  [−7,2, +26,5], n efectivo ~67–69, un solo régimen. Cruzar α no es evidencia.
-- El gap existe (8 años reconstruidos) y **no es capturable** (−40,7% sin costos).
-- Gatillo 5.1: se espera al **25-oct**. Ese día habrá ~73 días sellados:
-  **MDE al 80% de 16,6 pp [11,0, 20,3], potencia 0,36 frente a 9 pp** (`horizonte_veredicto.md`).
+- **La ventana sellada no alcanza para juzgar nada** y ahora se sabe por qué:
+  **19 de 35 fechas contribuyen exactamente cero** al estadístico direccional
+  (campeón = «siempre al alza» cuando el SOX sube); IC95 de día [−7,2, +26,5];
+  «0 de 192» es no informativo (la nula lo produce el 75 %).
+- El gap existe y **no es capturable ni al derecho ni al revés, y eso replica
+  fuera de muestra** (2024–jun-2026: sesión −2,7 [−5,5, −0,02] pp; contraria
+  muerta a 5,7 pb por lado). No es asimetría de magnitud ni sobrerreacción.
+- **Δ(h) no es una ley del margen** (Hong Kong e India la refutan; la tasa base
+  manda). Un orden de β sin el motor ordena dentro del día (0,24 [0,21, 0,28]);
+  **el del campeón no alcanza la vara (0,18)** y en la sellada no sobrevive a R2.
+- Gatillo 5.1: se espera al **25-oct**. **Las cifras de potencia de `horizonte.md`
+  son optimistas (+2,7 pp)** y el efecto del que dependen está indeterminado por
+  un factor ~5 según la rama (+6,45 / +9,66 / +14,3 pp): **decidir la rama es lo
+  más urgente** (`cola` §2a-ter, `espera_firma` §22).
 
-## Lo nuevo de la séptima corrida (`GEMELO/resultados/bitacora_07.md`)
-- **Fuente:** Yahoo no cambió un retorno en 8 años × 27 tickers (censo), pero sirve
-  el mismo query en estados distintos: retiró el 28-ago y **cuatro noches de agosto
-  sirvió el `^SOX` sin la barra del 31-jul** (hipótesis M6). El sello tiene «emitido
-  antes» y no «reproducible después». Las 16 filas de signo contrario **ya están
-  verificadas (15) dentro del track record vivo**; el README no se mueve (ancla).
-- **Copia de insumos** diseñada y con arnés probado, no activada (`GEMELO/INSUMOS/`).
-- **Medible en principio, no en meses:** ~2 obs. efectivas/día; 9 pp → jul-2027 [dic-2026,
-  feb-2028], 6,5 pp → jul-2028, 5 pp → dic-2029 (IC en `horizonte.md`). Ciego a «¿persiste?» con un régimen.
-- Propuestas C/D/E juzgadas (`propuestas_cde.md`, dictamen en `dictamen_07/`):
-  entran C-1/C-2/C-3, D-1 como referencia, E-1 condicionada; **rechazadas E-2 y
-  el α 0,083**. **R2 dispara sobre el ancla del 31-ago.** Nada entró a cifra
-  publicada ni a criterio congelado. Registro de intentos 91 → 100.
+## Lo nuevo de la octava corrida (`GEMELO/resultados/bitacora_08.md`, dictámenes en `dictamen_08/`)
+- **Instrumento calibrado con verdad conocida:** el percentil de día sub-cubre
+  (~0,93), la **t de clúster (gl = k−1) cubre 0,95**: PROPUESTA de estimador, firma;
+  el iid de filas cubre 0,69. **Defecto de unidades del PSR/DSR** corregido con
+  guarda (`ErrorUnidadSharpe`): el WS2b daba 0,95–0,96, no 1,0000, y sólo
+  `MINIMO_DIAS_SHARPE` lo separa de «V5 superado». Riesgo declarado: con
+  dependencia entre días (ρ 0,2) el tamaño de la permutación sube a 0,061.
+- **Seis dictámenes adversarios** (cinco NO SOSTIENE, uno NO CONCLUYENTE sobre las
+  redacciones v1), todos aplicados al ejecutable y re-corridos. v5: **quinto rechazo**.
+- **Registro de intentos 100 → 286** (5.1: 292) con la convención de `cola` §28.
+- Propuestas para firma: sello verificable por un tercero (H1), pre-registro del
+  RTL con criterio de muerte (H2), **V1-bis** que se agrega (I), frase de potencia
+  en dos versiones (§22, no lista), recompute de la ventana larga (§24).
+  Nada entró a cifra publicada ni a criterio congelado. Nada pusheado.
 
-## Deuda con modo de falla activo
-`snapshot.py:140` sella `sesion_objetivo` con el reloj de pared: 25 filas, sigue.
-
-## Esperando decisión
-`GEMELO/resultados/espera_firma.md` (primero: el parche `:140` + la copia de
-insumos en un solo bump; cuál es el campeón cuando sello y fuente discrepan).
-
-## Siguiente paso
-`git push origin main` (lo hace Nicolás, tras revisar el diff).
+Modo de emisión y timers: Nicolás. Hook: motor.py intocable, sellos jamás reescritos,
+sin push, sin pull. Antes de cerrar: `guardian-constitucion`. Cifras: `cifras.py`.

@@ -16,7 +16,7 @@ que un documento de treinta páginas que no bloquea nada.
 | | |
 |---|---|
 | **Abrió** | **Cuál es el campeón cuando sello y fuente discrepan, y la copia congelada de insumos** (§17). Yahoo no reescribe retornos pero sirve estados distintos; el sello tiene «emitido antes» y no «reproducible después». Arnés listo, no activado. |
-| **Abrió** | **La frase de potencia del 5.1 antes del 25-oct** (§18): potencia 0,36 [0,34, 0,37] frente a 9 pp; MDE 16,6 pp [11,0, 20,3]. **Y R2 dispara sobre el ancla del 31-ago.** |
+| **Abrió** | **La frase de potencia del 5.1 antes del 25-oct** (§18): potencia 0,36 [0,34, 0,37] *(retirada 15:20 del 2-sep: vigente 0,31 [0,27, 0,35])* frente a 9 pp; MDE 16,6 pp [11,0, 20,3]. **Y R2 dispara sobre el ancla del 31-ago.** |
 | **Midió** | **El instrumento no es subpotente estructuralmente pero responde en años**: 9 pp → ~248 días [109, 370] (jul-2027); 6,5 → ~475; 5 → ~800. Ciego a «¿persiste?» con un régimen. |
 | **Propuso, con dictamen** | C-1/C-2/C-3 (§19: entran), D-1 (§20: entra como referencia, no como cota), E-1 (§21: entra condicionada), **E-2 rechazada**, y la adenda «4×» de la tesis **retirada**. |
 | **Cerró** | El 92 suelto de `BANDA_N`: pinchado a su corrida sellada, con test contra el `veredicto.json`. Registro de intentos 91 → 100 (tramos TRAY y ESTIM). |
@@ -906,7 +906,7 @@ mismo bump que el §1-bis.
 
 ## 18. La frase de potencia del 5.1, y R2 sobre el ancla (NUEVA)
 
-Ver `espera_firma.md` §17. Potencia 0,36 [0,34, 0,37] frente a 9 pp con ~73
+Ver `espera_firma.md` §17. Potencia 0,36 [0,34, 0,37] *(retirada el 2-sep 15:20: era de `horizonte.md`, medido optimista; vigente 0,31 [0,27, 0,35] del simulador, §27)* frente a 9 pp con ~73
 días; MDE 16,6 pp [11,0, 20,3]. R2 dispara sobre el ancla del 31-ago (+2,5
 pp, IC de día [−13,6, +19,2], contiene el cero). Decidir ahora si la frase
 va al generador del resumen o a `DECISIONES.md`; recomendación: lo segundo.
@@ -920,3 +920,108 @@ referencia (α del plan [0,031, 0,065]; banda firmada intacta), E-1 contra
 el control lineal. Lo que no entra: E-2 (pendiente por hora con IC) y la
 adenda «4×» de `tesis.md`. Los intentos ya están registrados (91 → 100).
 
+
+---
+
+# Lo que agregó la octava corrida (2-sep-2026)
+
+Tres propuestas con expediente propio en `GEMELO/propuestas/`, ninguna
+construida, ninguna con cifra publicada movida. Dictámenes por frente en
+`GEMELO/resultados/dictamen_08/`.
+
+## 23. Un sello verificable por un tercero (H1) — `GEMELO/propuestas/H1_sello_verificable.md`
+
+**Qué decidir, en una frase:** si el sistema gana una **segunda salida de
+red** (hoy la única es `alertas.enviar_mensaje()`) para anclar cada noche,
+fuera de la máquina, el SHA-256 del CSV sellado del día — OpenTimestamps
+(recomendado: sin autoridad en la que confiar) o una TSA RFC 3161 — y si
+se activa además la copia de insumos ya diseñada (`GEMELO/INSUMOS/`) para
+que un tercero pueda RECOMPUTAR desde lo que el motor vio.
+
+**Por qué está acá:** hoy «emitido antes» lo prueba el reloj de esta
+máquina y el push manual después de las 20:30, cuando Seúl ya abrió: ante
+un tercero, el sello asiático no es verificable. Y la séptima corrida mostró
+que la fuente sirve el mismo query en estados distintos (M6): «emitido
+antes» no implica «reproducible después».
+
+**Qué se bloquea:** nada. **Costo:** ~1 KB/día y 0 USD el anclaje; 9 o 53
+MB/año medidos la copia de insumos. **Riesgo:** una salida de red más es
+una superficie más; el diseño la subordina a `modo.py`, al timeout global y
+a `enmascarar_secretos()`. Es un séptimo timer: **timers = Nicolás**.
+Nada antes del 25-oct.
+
+## 24. Pre-registro del pipeline RTL con criterio de muerte (H2) — `GEMELO/propuestas/H2_preregistro_fpga.md`
+
+**Qué decidir, en una frase:** si el ramo se pre-registra con UNA pregunta
+(¿el RTL reproduce el 4.6.0 sobre vectores CONGELADOS con error acotado y
+latencia en ciclos?), vectores fijados por fecha y sha256 (cierra el pasivo
+181/189 de `referencia.py`), y cuatro condiciones de muerte (plazo de 90
+días desde Vivado, contaminación de cifras de MKI, alcance, vara compartida
+de la §12). **Corrección que trae:** el «round trip de 8,79 ms» del encargo
+NO es una medición de la FPGA — es un `connect()` TCP a 1.1.1.1:443
+(`piso_de_latencia.md`); va con esa procedencia, no fusionado con las
+cifras RTL. Recomendación: el ramo **aparte** del repo, con este
+pre-registro como único puente.
+
+## 25. Enmienda a V1: V1-bis, que se AGREGA (I) — `GEMELO/propuestas/I_enmienda_V1.md`
+
+**Qué decidir, en una frase:** si al criterio congelado V1 (McNemar de
+filas p < 0,05) se le AGREGA, con fecha, un V1-bis con la unidad correcta
+—p de permutación de signo por día e IC95 de día, en la celda de análisis
+pre-registrada— que sólo puede endurecer (DEFF > 1), no reinterpreta el
+pasado, no mueve el gatillo y es la misma unidad del plan secuencial. La
+evidencia: n efectivo ~67–69 donde el README cuenta 248; IC de día de la
+ventaja [−7,2, +26,5] (contiene el cero); el Frente A midió el IC iid de filas cubriendo 0,70
+donde promete 0,95. **Consecuencia declarada antes de saber si conviene:**
+V1-bis hace más lejano cualquier relevo. Alternativa si no se endurece:
+IC de día obligatorio al lado de cada V1. Dictamen previo del adversario.
+
+## 26. Bloque del bootstrap: 10 fechas (`backtest/DISEÑO.md` §8.5) o 20 (`.claude/rules/backtest.md`)
+
+**Qué decidir, en una frase:** cuál de los dos números es la regla. El
+diseño congelado del backtest dice 10 días; la regla por área dice 20; el
+Frente C usó 10 y el adversario mostró que dos de sus cifras (ventaja de
+sesión, pendiente sesión~gap) **cambian de lado del cero según el bloque**
+(barrido 1/5/10/20/40/60 publicado en `no_capturabilidad.md`). Mientras no
+se decida, todo IC de bloques publica el barrido. No es una decisión de
+cifra: es una decisión de instrumento, y toca el diseño congelado, así que
+es tuya.
+
+## 27. Plan secuencial v5: QUINTO rechazo (Frente F, dictamen en `dictamen_08/F.md`)
+
+**Qué decidir, en una frase:** nada todavía — el v5 vuelve a la cola, no a
+la firma. Reproduce, responde los rechazos #3 y #4, reformula el #2 y
+**reintroduce el #1**: sus fronteras salen de 20.000 trayectorias nulas y
+su «tipo I 0,050» se midió sobre ESAS MISMAS trayectorias (es la
+definición del ajuste, no una medición; fuera de muestra el α es
+~0,051 [0,050, 0,053]). La tabla de sensibilidad a φ no medía dependencia:
+el AC1 realizado de las contribuciones es ≈ 0 para todo φ, porque **más de
+la mitad de las fechas contribuyen exactamente cero** (el campeón y «siempre
+al alza» coinciden cuando el SOX sube: 19 de 35 fechas selladas). La frase
+de la bitácora «absorbe la autocorrelación mucho mejor que el plan anterior»
+se retracta; **la banda firmada [0,046, 0,079] queda intacta**. La
+referencia externa (O'Brien-Fleming por Armitage) se repone en el artefacto.
+Lo publicable hoy, sin firma: el hallazgo de las fechas que contribuyen
+cero, que explica por qué la dirección necesita ~250 días y la magnitud
+~100.
+
+**Y una nota sobre el §18:** cita «potencia 0,36 [0,34, 0,37]» de
+`horizonte.md`, instrumento que el dictamen A midió optimista; con el
+simulador calibrado es 0,31 [0,27, 0,35].
+
+## 28. La convención del conteo de intentos — dos convivían, se declaró una (y es tuya confirmarla)
+
+**Qué decidir, en una frase:** si el registro `REGISTRO_INTENTOS` cuenta,
+para los frentes que evalúan hipótesis sobre retornos reales, **un intento
+por intervalo publicado** (contado por máquina, errando hacia arriba: B 66,
+C 107, D 9), y para los de instrumento/simulación, **configuraciones y
+estadísticos candidatos nuevos** (A 0, E 2, F 2). Con eso N pasó de 100 a
+**286** (5.1: 292). Los dictámenes de C y D exigieron una sola convención
+para toda la corrida; el de E defendió la de configuraciones (ESTIM); el de
+A dijo que un instrumento no selecciona modelo. Las dos son defendibles; la
+mezcla está escrita en el propio registro y este ítem existe para que no
+sea una decisión de un agente. **Consecuencia declarada:** con N = 286 el
+tamaño teórico de la regla V5 baja aún más (m_N ≈ 2,9 sd) — ningún
+retador con Sharpe positivo pasa V5 en este siglo con esta convención, y
+eso es lo que un conteo honesto hace cuando se han probado casi trescientas
+cosas.

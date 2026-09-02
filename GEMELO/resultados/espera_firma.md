@@ -871,8 +871,8 @@ descarga como parámetro sellado.
 # 17. La frase de potencia del veredicto 5.1, escrita antes del 25-oct
 
 **Qué hay que decidir:** si el resumen del veredicto 5.1 dice, por
-construcción, que su potencia frente al efecto relevante (9 pp) es **0,34
-[0,31, 0,37]** con ~73 días sellados (MDE al 80%: 16,6 pp [11,0, 20,3]), o
+construcción, que su potencia frente al efecto relevante (9 pp) es **0,36
+[0,34, 0,37]** *(errata 2-sep 11:55: decía 0,34 [0,31, 0,37], la cifra de 1.000 simulaciones; la de 3.000 es la que cita su expediente. **Segunda errata, 15:20: ese 0,36 es de `horizonte.md`, instrumento que el dictamen A midió optimista; la cifra vigente es 0,31 [0,27, 0,35] del simulador calibrado — ver §22–23**)* con ~73 días sellados (MDE al 80%: 16,6 pp [11,0, 20,3]), o
 si eso se escribe en `DECISIONES.md` antes del 25-oct sin tocar el arnés.
 
 **Por qué es tuya:** tocar `veredicto_51.py` es tocar el arnés del 5.1, y
@@ -939,3 +939,104 @@ en un bump. Es una decisión de programa. **Sin recomendación de la corrida
 más allá de la suya**, salvo una: la cola de firmas crece más rápido de lo
 que se vacía, y él lo dijo primero.
 
+
+---
+
+# Lo que agregó la octava corrida (2-sep-2026)
+
+Todo PROPUESTA; los dictámenes del `estadistico-adversario` por frente
+están en `GEMELO/resultados/dictamen_08/`. Nada de esto movió una cifra
+publicada. Lo que ya tenía tu firma pendiente (snapshot.py:140, el campeón
+cuando sello y fuente discrepan, el timeout O(n²) de noticias, `.env` en
+644) sigue arriba, tal cual.
+
+## 22. La frase de potencia del 5.1, en dos versiones — elegí una (Frente E)
+
+Medido en `GEMELO/simulador/potencia_por_metrica.{json,md}` (500 réplicas
+por celda, semilla sellada; σ_pred de los intervalos sellados 4,3 pp).
+Tres métricas, la misma ventana: **dirección** (acierto del signo del gap
+contra «siempre al alza», permutación de signo por día), **MAE** (error
+del gap contra el de la predicción cero) y **CRPS** (densidad predictiva
+contra la climatología). Sobre las 35 fechas selladas de la calibración,
+el z de cada una: dirección 1,1, MAE 1,7, CRPS 1,78.
+
+**Versión «dirección» (la del diseño congelado, V1):**
+
+> Con ~73 días sellados el 25-oct, la potencia para detectar una ventaja
+> direccional verdadera de 9 pp es **0,31 [0,27, 0,35]**; de 6,5 pp,
+> **0,19 [0,16, 0,23]**. Al efecto observado hacen falta **~229 días** para
+> llegar a 0,80. El veredicto del 25-oct sobre la dirección será, con alta
+> probabilidad, «no distinguible de cero» aunque la ventaja exista.
+
+**Versión «magnitud» (contraste del campeón contra predecir cero y contra la climatología — NO es V4 ni V2, que comparan RETADOR contra campeón; lo que la muestra sí hace medible):**
+
+> Con ~73 días sellados el 25-oct, la potencia para detectar que el modelo
+> reduce el MAE del gap frente a la predicción cero es **0,90 [0,87,
+> 0,92]**, y para el CRPS frente a la climatología **0,76 [0,72, 0,80]**.
+> Al efecto observado, 0,80 se alcanza en **~95 días (MAE) / ~87 (CRPS)**.
+> El 25-oct la magnitud SÍ puede hablar; la dirección no.
+
+**Por qué las dos y no una:** la dirección es la pregunta que el diseño
+hizo (V1) y la que el track record publica; la magnitud es la que la
+muestra puede responder. Publicar sólo la segunda sería cambiar la pregunta
+después de ver que la primera no tiene potencia; publicar sólo la primera
+es callar que hay algo medible. La recomendación es publicar **las dos, en
+ese orden**, con la palabra «potencia» y sin la palabra prohibida.
+
+**Salvedad que manda (dictamen A, 2-sep):** el instrumento de potencia de
+`horizonte.md` inyecta el efecto de forma homogénea y el adversario lo
+midió **optimista** frente al simulador calibrado (diferencia media
++2,7 pp de potencia [1,9, 3,6] sobre 12 celdas). Las cifras de arriba son
+del simulador, no de `horizonte.md`; la comparación pareada de la v2 de
+`calibracion_instrumento.md` es la que fija cuánto.
+
+Intentos del DSR de este frente: **3** (una métrica, un intento).
+
+## 23. Tres propuestas con expediente (H1, H2, I) — `cola_decisiones.md` §23–25
+
+Sello verificable por un tercero (segunda salida de red + copia de
+insumos), pre-registro del RTL con criterio de muerte (y la corrección de
+que 8,79 ms es un TCP a 1.1.1.1, no la FPGA), y V1-bis como ADICIÓN
+fechada al criterio congelado. Las tres son tuyas; ninguna se construyó.
+
+**Errata del §22 (2-sep, 14:50, dictamen E — NO CONCLUYENTE sobre las cifras
+operativas):** (a) los «días para 0,80» van con intervalo o no van: el
+extremo superior es **∞** en las tres métricas porque el IC del efecto
+contiene el cero; (b) los 229 días son al +9,3 pp del ancla deduplicada, no
+al +6,45 pp publicado (a ese efecto son ~480) ni a la rama +14,3 pp de
+`cola_decisiones.md` §2a-ter (~100): **el mismo número vive entre ~100 y
+~480 según una decisión que sigue en la cola** — ésa es la urgencia, no E;
+(c) el 0,90 de MAE a 73 días es la potencia al efecto del GENERADOR; al
+observado y bajo R2 es menor (banda en `potencia_por_metrica.md` v2);
+**bajo R2 la magnitud tampoco habla el 25-oct**; (d) el 0,19 [0,16, 0,23]
+viene de `calibracion_instrumento.json` A4/0.065, no de
+`potencia_por_metrica.json`; (e) CRPS y MAE son UNA familia (98% de la
+ganancia de CRPS es la media), y «predecir cero» no es la baseline pareada
+(computado en la v2: la constante μ recupera el **7,3 %** de la ganancia de
+MAE —el dictamen leyó el complemento, 0,405 es lo que el modelo gana SOBRE la
+constante—); (f) intentos de E: **2**, no
+3 (DIR es el endpoint congelado; el MAE ya está en el tramo ESTIM).
+**§17 arriba y `cola_decisiones.md` §18 citan «potencia 0,36 [0,34, 0,37]»
+de `horizonte.md`, instrumento medido OPTIMISTA (+2,7 pp [1,8, 3,6],
+dictamen A): con el simulador es 0,31 [0,27, 0,35].** La frase de dos
+versiones no está lista para firma hasta que la rama del efecto se decida.
+
+## 24. La ventana larga publicada (n = 14.618) está calculada sobre gaps con un defecto conocido — recompute para firma
+
+El generador de gaps v1 omitía toda sesión posterior a un feriado LOCAL
+(Tokio 4 de 101, Seúl 1 de 78, Taipéi 2 de 64, Fráncfort 2 de 31 sesiones
+post-feriado presentes en v1; v2 las tiene todas). **Tamaño medido con la
+señal cruda (dictamen B):** +670 filas (4,5 %) y las ventajas por bolsa se
+mueven **−0,32 / +0,09 / +0,09 / +0,38 pp** (Tokio / Seúl / Taipéi /
+Fráncfort), total −0,01 pp. **La n de la portada se mueve; las ventajas casi
+no.** Recomputar con el modelo reconstruido mueve los doce bloques
+(`cifras.py` los enumera) y lleva tu firma; hasta entonces el README publica
+un n calculado sobre un defecto conocido desde hoy, y `cifras.Larga` lo
+lleva escrito en su procedencia.
+
+**Cifras v2 de `potencia_por_metrica.md` (15:02):** z por t de clúster
+DIR 1,11 / MAE 1,69 / CRPS 1,76; días para 0,80 al efecto observado **223
+[28, ∞) / 96 [20, ∞) / 88 [19, ∞)**; DIR al +6,45 pp publicado: 470; bajo R2:
+2.728 / 175 / 200, todos [·, ∞). Potencia de MAE a 73 días: **0,90
+(generador) / 0,86 (efecto observado) / 0,70 (bajo R2)**; CRPS 0,76 / 0,66 /
+0,50; DIR 0,31 / 0,29 / 0,21. La frase del §22 se lee con esa banda o no se lee.

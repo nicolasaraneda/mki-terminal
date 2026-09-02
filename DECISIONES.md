@@ -7242,3 +7242,329 @@ Todo lo de esta acta vive en `GEMELO/resultados/` y en los ejecutables que
 esos documentos citan: revertir es borrar esos archivos y los tests que
 los acompañan, sin efecto sobre `senales.db` ni sobre ningún módulo de
 producción.
+
+## 75. Octava corrida: el instrumento calibrado contra un patrón conocido, seis dictámenes que no sostienen las redacciones, y el registro de intentos 100 → 286
+
+**Fecha:** 2-sep-2026, octava corrida autónoma. **Evidencia:**
+`GEMELO/resultados/bitacora_08.md` (hitos 11:31–14:57);
+`GEMELO/resultados/dictamen_08/{A,B,C,D,E,F}.md`;
+`GEMELO/resultados/calibracion_instrumento.md`,
+`decaimiento_teoria.md`, `decaimiento_feriados.{md,json}`,
+`decaimiento_prediccion.json`, `no_capturabilidad.md`, `transversal.md`,
+`potencia_por_metrica.md`, `secuencial_v5.md`; `cifras.py`,
+`GEMELO/cifras_retiradas.md`, `tests/test_cifras_arbitro.py`;
+`GEMELO/propuestas/{H1_sello_verificable,H2_preregistro_fpga,I_enmienda_V1}.md`;
+`GEMELO/preregistro/{frente_A,frente_B,frente_C,frente_D,secuencial_v5}.md`;
+`GEMELO/relevo_asiatico.py` (`REGISTRO_INTENTOS`,
+`N_INTENTOS_ACUMULADO`); `backtest/veredicto_51.py`
+(`N_INTENTOS_PREVIO`, `N_INTENTOS_51`); `backtest/inferencia.py`
+(`ErrorUnidadSharpe`); `tests/test_unidades_sharpe.py`;
+`GEMELO/control_lineal.py`:74-98; `GEMELO/resultados/ventana_larga.md`:203-234;
+`GEMELO/experimento.py`:314-318; `GEMELO/resultados/cola_decisiones.md` §23-28;
+`GEMELO/resultados/espera_firma.md` §22-24;
+`GEMELO/resultados/estado_epistemico.md`; `ESTADO.md`.
+
+**Qué se decidió.** Cerrar la octava corrida con seis frentes empíricos
+puestos ante el `estadistico-adversario`, aplicar TODAS las correcciones
+que sus dictámenes exigieron al ejecutable antes que a cualquier texto, y
+dejar cinco propuestas en `cola_decisiones.md`/`espera_firma.md` esperando
+la firma de Nicolás. No se ejecutó la 5.1, no se tocó el gatillo del
+25-oct, no se movió una sola cifra publicada del README, y nada se pusheó.
+
+**Por qué, con las cifras que lo sostienen.**
+
+**(1) El defecto de unidades del PSR/DSR era real.** `backtest/veredicto_51.py`
+(líneas 365 y 385-395) y `GEMELO/control_lineal.py`:405-408 le pasaban a
+`inferencia.psr`/`dsr` el Sharpe **anualizado** (`Sharpe·√252`) con n =
+días, cuando `var_sharpe` trabaja por período (`inferencia.py`:162-165):
+el z quedaba inflado por √252. Medido por simulación bajo la nula
+(`calibracion_instrumento.md` A3, `dictamen_08/A.md` punto 4): con el
+anualizado el DSR superaba 0,95 en el **26-29% de las réplicas** contra un
+tamaño teórico de **0,00143-0,00163** (N entre 9 y 106); con el Sharpe por
+período la tasa cae a **0,0005-0,0013**. Corregido en el ejecutable el
+mismo día: `backtest/inferencia.py` gana la guarda `ErrorUnidadSharpe`
+(rechaza un `|Sharpe|` por período > 3 en vez de inflar el z:
+`tests/test_unidades_sharpe.py::test_psr_y_dsr_rechazan_un_sharpe_anualizado`),
+y `tests/test_unidades_sharpe.py::test_ningun_llamador_del_repo_pasa_algo_fuera_de_la_lista_blanca`
+recorre el repositorio entero por AST con una lista blanca de expresiones
+permitidas como primer argumento de `psr`/`dsr` (antes había dos rutas
+verificadas a mano; `GEMELO/simulador/calibracion.py` era un tercer
+llamador invisible que el dictamen encontró). Ningún veredicto sellado se
+da vuelta: los Sharpes del 5.1 son negativos, DSR 0 de todas formas. Pero
+**el WS2b (`control_lineal.py`) con la unidad correcta da DSR
+C1 0,9605, C2 0,9473, C3 0,9638, campeón 0,9565 (N = 9)**
+(`GEMELO/resultados/ventana_larga.md`:220-223) — **tres de cuatro cruzan
+0,95**, y lo único que hoy los separa de un titular «V5 superado» es
+`MINIMO_DIAS_SHARPE = 60` (`backtest/veredicto_51.py`:132), cuya
+justificación original («un Sharpe anualizado sobre pocos días satura
+Phi») queda **desmentida por escrito** en `GEMELO/control_lineal.py`:74-98
+y re-justificada desde cero, con su origen post-hoc declarado en el propio
+comentario: el umbral se introdujo DESPUÉS de ver el 1,0000 del WS2b, y la
+razón nueva es (a) el error estándar de un Sharpe por período a 30 días
+(~0,18) es del orden del propio Sharpe, (b) V se estima con 8 grados de
+libertad y el DSR a N = 9 es de primer orden sensible a esa estimación
+(`calibracion_instrumento.md` A3: 0,0006/0,0068/0,0156 según cómo se mida
+V a N = 9), (c) los retornos de gap no son capturables (Frente C de esta
+misma corrida) y esos 30 días son la ventana que R2 elimina. Erratas
+fechadas, sin recalcular nada más, en `GEMELO/control_lineal.md`:152-179,
+`GEMELO/resultados/ventana_larga.md`:203-234, `GEMELO/experimento.py`:314-318
+y en el `resumen.md` de la corrida
+`20260901-133154-5.1-arnes-corregido-gatillo-incumplido`: los artefactos
+sellados no se reescriben.
+
+**(2) El instrumento, contra un patrón conocido.** El Frente A construyó
+un simulador (`GEMELO/simulador/proceso.py`) con la verdad medida a
+200.000 días, calibrado contra el sello (ancla 31-ago, n = 246, 35 días:
+ICC 0,3925, DEFF 3,5595). Con 10.000 réplicas y semilla por réplica
+(`calibracion_instrumento.md` A1): el estimador **percentil de día
+sub-cubre, 0,9308 [0,926, 0,936]** bajo δ = −0,135 pp y **0,9325 [0,927,
+0,937]** bajo δ = 8,967 pp; la **t de clúster con gl = k−1 corrige, 0,9491
+/ 0,9508**; el estimador **iid de filas cubre 0,6885/0,6879**, es decir
+inservible. El **criterio congelado de refutación** («cobertura < 93% con
+IC que excluya 95%») **no se cumplió literalmente en esta semilla** (0,931
+y 0,933 quedan 0,1-0,3 pp sobre 0,93, aunque el IC sí excluye 0,95) y **sí
+se cumplió en la medición del adversario** (0,9271/0,9275, con otro flujo
+de réplicas: `dictamen_08/A.md` punto 2): un criterio que decide al tercer
+decimal según la semilla se declaró **en el filo**, y se publicó así,
+computado, no afirmado (`calibracion_instrumento.md` A1). Riesgo declarado
+y no resuelto: con **AR(1) entre días** (ρ = 0,2, compatible con el AC1
+real de −0,13 ± 0,17) el tamaño de la permutación de día sube a **0,0613
+[0,053, 0,070]**, y a ρ = 0,4 a **0,1037 [0,093, 0,115]** (A5) — el
+simulador publicado no podía detectar este modo de fallo porque asumía
+que no existía. `horizonte.md` resultó **optimista**: comparación pareada
+en 12 celdas, simulador por debajo en las 12, McNemar exacto p = 0,000488,
+diferencia media **+2,67 pp [1,84, 3,55]** (A4). El método de construcción
+del intervalo (percentil vs t de clúster, elegido DESPUÉS de ver la
+cobertura) queda declarado como eje en `bifurcaciones.NO_EJES`, no
+resuelto por este acta.
+
+**(3) Por frente, qué sostiene y qué se retiró.**
+
+- **Frente B (decaimiento como teoría), `dictamen_08/B.md`:** el aritmético
+  reproducía, la interpretación no. C1 (NY cerrada en Tokio) mide **100%/0%
+  de confusión estructural**: `n_ny = 0` significa que la sesión local
+  anterior ya negoció con ese mismo insumo, no que pasó más tiempo; el
+  control de |SOX| de la v1 estaba mal especificado (truncaba sólo el
+  grupo normal). Reescrito con estandarización por 4 estratos: ajuste
+  **−31,0 [−49,7, −12,0]** (la v1 decía «se reduce a la mitad»: se agranda).
+  Con bloques de 20 días la prueba de Tokio pasa de excluir el cero a
+  **[−30,1, +1,6]** (contiene el cero). Además el `auditor-lookahead`
+  encontró un defecto real de datos: `GEMELO/datos.descargar_gaps` perdía
+  toda sesión posterior a un feriado LOCAL (Tokio 4 de 101 sesiones
+  presentes contra 54 del calendario); corregido, gaps regenerados
+  (+670 filas, 4,5%, 0 filas viejas distintas), enmienda fechada, y el
+  recompute de la ventana larga publicada (n = 14.618) queda para firma
+  con su tamaño medido: por bolsa **−0,32 / +0,09 / +0,09 / +0,38 pp**
+  (Tokio/Seúl/Taipéi/Fráncfort). C2/C3 no distinguen disipación de
+  absorción en ninguna ventana (los IC contienen 0 y ±5 pp) y la potencia
+  calculada no lo arregla: el semiancho no baja de ~±5 pp ni multiplicando
+  las fechas ×23. Δ(h) = a·exp(−h/τ) **no es una ley del margen**: predicho
+  antes de descargar, Hong Kong (predicho 14,0 [11,4, 16,0], medido 4,1
+  [1,0, 7,4] / 3,1 [−1,5, 7,9]) e India (predicho 8,6 [5,3, 11,6], medido
+  −13,2 [−16,9, −9,6] / −8,8 [−13,3, −4,6]) son incompatibles con la curva
+  y **refutan cualquier curva monótona decreciente**, no sólo la
+  exponencial; lo que mejor predice Δ por exchange es la **tasa base**, no
+  h ni la exposición al SOX.
+- **Frente C (no capturabilidad), `dictamen_08/C.md`:** H1 **verificado y
+  robusto**: ventaja del gap **+15,6 [12,3, 18,9] pp** en la prueba
+  (2024-2026, 643 fechas), ventaja de la sesión **−2,7 [−5,5, −0,02]**,
+  cartera direccional **−0,114 [−0,208, −0,026] pp/día**; aguanta dejar-un-año-fuera,
+  dejar-un-ticker-fuera y el barrido de bloque 1 a 60. H2 (asimetría de
+  magnitud) **refutada en su premisa**: los aciertos pierden MÁS que los
+  errores (q|acierto −0,12, q|error −0,10), no menos; la razón contiene el
+  1 y el 1,5. H3 (sobrerreacción) no se sostiene tal como estaba escrita:
+  todo el IC del ajuste queda bajo el umbral de relevancia y la pendiente
+  sesión~gap es indistinguible del error de medición (identidad
+  sesión ≡ total − gap). La afirmación «estructural» pasa a **«consistente
+  con», no «es»**: no está medida como horario, y la contraria (shortear el
+  signo del SOX) rinde +0,114 pp/día bruto pero muere a un punto muerto de
+  **5,7 pb por lado** con DSR 0,41 a N = 100. R2 se **activa** en la
+  ventana sellada: éste es el primer frente de la corrida cuya ventaja NO
+  cabalga la ventana afortunada de julio.
+- **Frente D (predicción transversal), `dictamen_08/D.md`:** un proxy sin
+  el motor (OLS gap~SOX(t-1)) **ordena** dentro del día: nula de etiquetas
+  de β entre tickers (la principal, no la within-day) da ρ̄ = 0,2403
+  [0,2062, 0,2756], p = 0,0025, simétrico en el signo del SOX; el orden es
+  un vector fijo de 8 β más un bit por día (identidad verificada exacta).
+  El **campeón NO alcanza la vara pre-registrada** (ρ̄ = 0,1795 [0,146,
+  0,213] contra 0,20); proxy − campeón = +0,0608 [0,025, 0,096]. En la
+  ventana sellada (35 fechas) R2 **se activa**: sin el bloque 15-23 jul,
+  ρ̄ cae a 0,1899 [−0,039, 0,419] y el IC cruza el cero.
+- **Frente E (potencia por métrica), `dictamen_08/E.md`:** **NO
+  CONCLUYENTE** sobre las cifras operativas (el mecanismo, que la
+  dirección tira información y la magnitud rinde más por día sellado, se
+  sostiene). «Días para 0,80» va con intervalo o no va: es **[28, ∞) /
+  [20, ∞) / [18, ∞)** (dirección/MAE/CRPS) porque los tres IC del efecto
+  sellado contienen el cero. Tres ramas del efecto conviven sin decidir:
+  +6,45 pp (README, sin deduplicar), +9,66 pp (regla firmada) y +14,3 pp
+  (`cola_decisiones.md` §2a-ter): el mismo «días para 0,80» vive entre
+  ~100 y ~480 según cuál se use. El artefacto v2 (`potencia_por_metrica.md`,
+  generado 18:59Z, sección «Correcciones tras el dictamen E») da: z por t de
+  clúster 1,11 / 1,69 / 1,76; días para 0,80 **223 [28, ∞) / 96 [20, ∞) / 88
+  [19, ∞)**; DIR al +6,45 pp publicado 470; bajo R2 2.728 / 175 / 200; banda
+  de potencia de MAE a 73 días **0,90 (generador) / 0,86 (observado) / 0,70
+  (bajo R2)**. Errata del dictamen E, computada en la v2: la constante μ
+  recupera el 7,3 % de la ganancia de MAE, no el 93 % (el 0,405 del dictamen
+  es lo que el modelo gana SOBRE la constante). (Esta frase reemplaza, antes
+  del commit, una versión del acta que decía que la v2 estaba en curso.)
+- **Frente F (plan secuencial v5), `dictamen_08/F.md`:** **quinto rechazo**.
+  El «tipo I 0,050 [0,047, 0,053]» a φ = 0 se midió sobre las MISMAS
+  20.000 trayectorias con las que se ajustaron las fronteras: no es una
+  medición, es la definición del ajuste; fuera de muestra (7 semillas,
+  84.000 réplicas) da α = 0,0514 [0,0500, 0,0530]. La sensibilidad a φ no
+  medía dependencia: el AC1 realizado de las contribuciones queda ≈ 0 para
+  todo φ ∈ [0, 0,6] porque el campeón y «siempre al alza» coinciden por
+  construcción cuando el SOX sube — el tipo I fuera de muestra a la
+  autocorrelación era el ajuste, no una medición, y la frase de la
+  bitácora de las 12:17 («absorbe la autocorrelación mucho mejor que el
+  plan anterior») se retracta; **la banda firmada [0,046, 0,079] queda
+  intacta**. Publicable sin firma: **19 de 35 fechas selladas contribuyen
+  exactamente cero** al estadístico direccional (54% en la simulación),
+  lo que explica por qué la dirección necesita ~250 días y la magnitud
+  ~100.
+
+**(4) Los candados con rastro.** Los candados viven en
+`GEMELO/no_capturabilidad.py` (C) y `GEMELO/decaimiento_feriados.py` (B);
+`GEMELO/transversal.py` (D) NO tiene candado. C se abrió a las 14:15 con
+candado y se re-corrió UNA vez con `--enmienda` tras el dictamen (ninguna
+hipótesis cambió; `excluir_cero` a los dos lados, McNemar, costos,
+robustez); B se había abierto a las 12:24 sin candado e INCLUYENDO las
+fechas selladas sin embargo —lo que su entregable declaraba y su código no
+hacía—, y se re-abrió UNA vez, declarada, con el candado nuevo (sha256 del
+módulo, del pre-registro y de los testigos) y `--enmienda` con razón — con una salvedad que el guardián marcó: el
+candado de B nació en esa re-apertura, así que su enmienda lleva fecha y
+razón pero NO un `sha256_anterior` (no había candado previo que lo capturara);
+la de C sí lo lleva. D
+abrió su prueba dos veces por un defecto de datos (12:11 sobre gaps v1,
+12:14 sobre v2) y una tercera tras el dictamen, sin candado: las tres
+aperturas están declaradas en el propio artefacto y en el pre-registro
+(`GEMELO/preregistro/frente_C.md` Enmiendas 1 y 2, `frente_B.md` Enmienda 3,
+`frente_D.md` Enmienda 3 —la segunda enmienda post-dictamen estaba numerada
+2 dos veces y se renumeró—) y en el dictamen (D: «V7 NO PASA: la prueba larga
+se abrió dos veces», `dictamen_08/D.md`).
+Una enmienda con rastro no es una reapertura limpia: es la única forma en
+que una corrección de datos o de fuga puede tocar una prueba ya abierta
+sin que sea el analista decidiendo después de ver el resultado — y por
+eso el candado, la fecha y el sha256 quedan escritos, no la ausencia de
+reapertura.
+
+**(5) La convención de conteo de intentos, y el salto 100 → 286.**
+`GEMELO/resultados/cola_decisiones.md` §28 declaró la convención que
+esta corrida usó: para los frentes que evalúan hipótesis sobre retornos
+reales (B, C, D), **un intento por intervalo publicado, contado por
+máquina** (la casa yerra hacia arriba); para los de instrumento/simulación
+(A, E, F), **configuraciones y estadísticos candidatos nuevos**. Con eso:
+`REGISTRO_INTENTOS` (`GEMELO/relevo_asiatico.py`:90-215) suma cinco tramos
+nuevos a los 100 previos: **DEC-B 66** (54 intervalos de `decaimiento_feriados.json`
++ 12 comparaciones de B2; el «17» declarado a mano de la bitácora se
+retiró), **NOCAP-C 107** (52 en ajuste + 51 en prueba; el «14» se retiró),
+**TRANSV-D 9**, **POT-E 2**, **SEC-F 2**; A vale 0 (un instrumento no
+selecciona modelo) y no lleva tupla porque el registro no admite ceros.
+`N_INTENTOS_ACUMULADO` pasa de **100 a 286**; `backtest.veredicto_51.N_INTENTOS_51`
+de **106 a 292** (`N_INTENTOS_PREVIO = 286` + `N_INTENTOS_NUEVOS = 6`).
+Las dos convenciones (por intervalo vs por configuración) conviven en la
+misma bitácora y son las dos defendibles; cuál rige de forma permanente
+queda para Nicolás (`cola_decisiones.md` §28). Consecuencia declarada: con
+N = 286 el tamaño teórico de «DSR ≥ 0,95» baja aún más (m_N ≈ 2,9 sd) —
+ningún retador con Sharpe positivo pasa V5 en este siglo con esta
+convención.
+
+**(6) Dos erratas de la propia bitácora de esta corrida, corregidas en su
+sitio con nota, sin commit previo de esos textos** (la frontera de la
+errata es el commit; nada de lo de abajo estaba publicado antes de
+corregirse): el hito de las 12:09 decía que el 25-oct la dirección tendría
+potencia **0,36**; ese número es de `horizonte.md` (medido optimista por
+el propio Frente A) y con el simulador calibrado es **0,31 [0,27, 0,35]**
+(`dictamen_08/E.md`). El mismo hito escribía «la magnitud alcanza el 80%
+en ~60 días; la dirección en ~250»: esos números **no existen en ningún
+artefacto** — el artefacto dice 95 y 229, y con intervalo [20, ∞) y
+[28, ∞) (`potencia_por_metrica.md`, corregido en el dictamen E). El hito de
+las 12:14 citaba «0,240 [0,201, 0,273]» para el Frente D: el punto es de
+la corrida v2 (637 fechas) pero el intervalo era el de la v1 (626 fechas);
+el vigente es **[0,2062, 0,2756]** (`dictamen_08/D.md`, corregido en
+`transversal.md`). Y «Seúl −6,7 pp» en el hito de las 14:15 mezclaba
+unidades: no es una pérdida de la cartera, es un déficit de acierto de
+la sesión (la pérdida real de Seúl es −0,20 pp/día); corregido en
+`no_capturabilidad.md`.
+
+**(7) La contradicción que los dictámenes de E y F destaparon, y que no
+es de ninguno de los dos.** El README publica **+6,45 pp** (rama SIN
+deduplicar); la regla de deduplicación **firmada** el 1-sep da **+9,66 pp**
+sobre la misma ventana; y `cola_decisiones.md` §2a-ter trae una tercera
+rama, **+14,3 pp**. Toda cifra que dependa del tamaño del efecto (días
+para 0,80, MDE, n esperado) queda indeterminada por un factor ~5 hasta
+que Nicolás decida cuál rama es la vigente. Los dos dictámenes coinciden
+en que esto es **más urgente que sus propios hallazgos** (E y F);
+`espera_firma.md` §22-23 lo hereda como bloqueo de la frase de potencia
+del 5.1.
+
+**(8) Lo que se propone para firma, y lo que NO se hizo.** Cinco
+propuestas quedaron en `cola_decisiones.md`/`espera_firma.md`, ninguna
+construida ni activada: **H1** (`GEMELO/propuestas/H1_sello_verificable.md`,
+`cola` §23), un sello anclado fuera de la máquina (OpenTimestamps o RFC
+3161) para que «emitido antes» sea verificable por un tercero para las
+bolsas asiáticas, hoy sólo verificable ante uno mismo hasta el push
+manual de después de las 20:30; **H2** (`H2_preregistro_fpga.md`, `cola`
+§24), un pre-registro del ramo de FPGA con una pregunta, vectores
+congelados por sha256 y cuatro criterios de muerte, y la corrección de
+que el «8,79 ms» del encargo es un `connect()` TCP contra 1.1.1.1:443
+(`GEMELO/MICRO/piso_de_latencia.md`), no una medición de la placa; **I**
+(`I_enmienda_V1.md`, `cola` §25), V1-bis que se AGREGA con fecha al
+criterio congelado V1 (la unidad correcta: permutación de signo por día,
+IC de día), sin reinterpretar el pasado ni mover el gatillo; **§22-23**
+de `espera_firma.md`, la frase de potencia del 5.1 en dos versiones,
+bloqueada por (7); **§24**, el recompute de la ventana larga con su
+tamaño ya medido en (3). Lo que NO se hizo: no se ejecutó la 5.1, no se
+tocó el gatillo (25-oct, N≥150 vivo o cambio de régimen o 3 meses), no se
+tocó `motor.py`, `senales.py`, `snapshot.py`, `universo.py`, `.env` ni
+ningún timer, no se tocó el README, nada se pusheó, y nada pesado ni
+ninguna descarga corrió en la ventana 17:50-20:30.
+
+**(9) La cláusula del encargo aplicada dos veces.** El encargo
+(`encargo_corrida_08.md`) trae la cláusula «si una instrucción del
+encargo es ella misma el defecto, no se ejecuta; se anota con la razón y
+se sigue» (`bitacora_08.md`:23-25), y esta corrida la usó dos veces: (a)
+la instrucción «el hook se extiende» choca con que `guardia-reglas.py` se
+protege a sí mismo y a `settings.json` (sólo Nicolás los edita); la
+extensión quedó escrita como propuesta NO instalada
+(`GEMELO/propuestas/guardia-cifras-retiradas.py`) con la instrucción de
+instalación como segundo comando en el mismo matcher, no ejecutada
+(`bitacora_08.md`:275-281); (b) el encargo citaba «el conteo de intentos
+del DSR (hoy en 86 según las actas)»: la máquina decía **100**
+(`REGISTRO_INTENTOS`, 23 tramos entonces) y el veredicto 5.1 declaraba
+**106**; el 86 fue el registro del 1-sep al mediodía (`N_REGISTRO_AL_20260901_MEDIODIA`
+en `backtest/veredicto_51.py`:122, acta §67), subió a 91 esa tarde y a
+100 la noche del acta §72. La corrida partió de 100, la cifra de la
+máquina, no la del encargo (`bitacora_08.md`:32-38).
+
+**Qué se descartó y por qué.** Publicar cualquier cifra de los seis
+frentes como afirmación del proyecto en vez de PROPUESTA: la regla de la
+casa de esta corrida (`bitacora_08.md`:15) es que nada entra a cifra
+publicada, criterio congelado ni documento de resultados sin dictamen del
+`estadistico-adversario`, y los seis dictámenes llegaron con bloqueos
+aplicados al ejecutable ANTES que a cualquier texto. Se descartó también
+tratar «estructural» (Frente C) o «Δ(h) es una ley» (Frente B) como
+demostradas: la evidencia sostiene la parte negativa (no capturable, no
+es ley del margen) con firmeza y dejó la parte causal («por qué») como
+«consistente con», no «es».
+
+**Qué queda abierto.** La rama del efecto (+6,45 / +9,66 / +14,3 pp) que
+decide todas las cifras de potencia derivadas; la convención de conteo de
+intentos (por intervalo vs por configuración) para las corridas futuras;
+el bloque del bootstrap (10 días en `backtest/DISEÑO.md` §8.5 contra 20
+en `.claude/rules/backtest.md`, `cola_decisiones.md` §26); si V1-bis se
+adopta; si el sello gana una segunda salida de red; si el ramo de FPGA se
+pre-registra y se muda fuera del repo; el recompute de la ventana larga
+publicada; y la corrida v2 de `potencia_por_metrica.py`, que seguía en
+curso al cerrar esta acta.
+
+**Cómo se revierte.** `ErrorUnidadSharpe` y `tests/test_unidades_sharpe.py`
+son la única corrección que toca código de producción del `GEMELO` (no de
+`motor.py`, `senales.py` ni el camino del sello); revertir es borrar la
+guarda y el test, y los dos llamadores vuelven a pasar el Sharpe
+anualizado tal como estaban el 1-sep. Todo lo demás —simuladores, frentes
+B a F, propuestas H1/H2/I, el registro de intentos— vive en `GEMELO/` y en
+`cola_decisiones.md`/`espera_firma.md`: revertir es borrar esos archivos y
+las cinco tuplas nuevas de `REGISTRO_INTENTOS`, sin efecto sobre
+`senales.db`, sobre ningún módulo de producción ni sobre ninguna cifra
+sellada.
