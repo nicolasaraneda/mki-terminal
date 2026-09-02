@@ -1,0 +1,453 @@
+{
+ "generado_en_utc": "2026-09-02T13:37:57.423791+00:00",
+ "ancla": {
+  "hasta_sello": "2026-08-31",
+  "convencion": "excluir_cero",
+  "n": 246,
+  "dias": 35,
+  "primera": "2026-07-05",
+  "ultima": "2026-08-27",
+  "dias_habiles_en_ventana": 39,
+  "cadencia_sellos_por_dia_habil": 0.897,
+  "ventaja_pp": 9.35,
+  "ic95_dia_pp": [
+   -7.2,
+   26.32
+  ],
+  "se_dia_pp": 8.55,
+  "duelo": {
+   "n": 246,
+   "modelo_aciertos": 165,
+   "modelo_pct": 67.1,
+   "modelo_wilson": [
+    61.0,
+    72.6
+   ],
+   "base_aciertos": 142,
+   "base_pct": 57.7,
+   "base_wilson": [
+    51.5,
+    63.7
+   ],
+   "ventaja_pp": 9.3,
+   "mcnemar_b01": 72,
+   "mcnemar_b10": 49,
+   "mcnemar_p": 0.0455
+  },
+  "icc_deff": {
+   "clusters": 35,
+   "n": 246,
+   "tam_medio": 7.0286,
+   "tam_kish": 7.5203,
+   "icc": 0.3925,
+   "deff": 3.5595,
+   "n_efectivo": 69.1106
+  },
+  "info_efectiva_por_dia": 1.97,
+  "regimenes_en_ventana": [
+   "Alcista · vol alta"
+  ],
+  "ic95_se_dia_pp": [
+   5.67,
+   10.45
+  ]
+ },
+ "parametros": {
+  "alfa": 0.05,
+  "potencia": 0.8,
+  "semilla": 20260902,
+  "n_sim": 3000,
+  "n_perm": 800,
+  "deltas_pp": [
+   5.0,
+   6.5,
+   9.0,
+   12.0
+  ],
+  "horizontes_dias": [
+   35,
+   73,
+   125,
+   250,
+   500,
+   750,
+   1000
+  ]
+ },
+ "analitica": [
+  {
+   "delta_pp": 5.0,
+   "dias_sellados": 803,
+   "ic95_dias_sellados": [
+    354,
+    1199
+   ],
+   "anios_de_sellado": 3.55,
+   "fecha_estimada": "2029-12-07",
+   "ic95_fecha": [
+    "2028-01-06",
+    "2031-08-18"
+   ],
+   "potencia_hoy": 0.09
+  },
+  {
+   "delta_pp": 6.5,
+   "dias_sellados": 475,
+   "ic95_dias_sellados": [
+    209,
+    709
+   ],
+   "anios_de_sellado": 2.1,
+   "fecha_estimada": "2028-07-14",
+   "ic95_fecha": [
+    "2027-05-26",
+    "2029-07-13"
+   ],
+   "potencia_hoy": 0.118
+  },
+  {
+   "delta_pp": 9.0,
+   "dias_sellados": 248,
+   "ic95_dias_sellados": [
+    109,
+    370
+   ],
+   "anios_de_sellado": 1.1,
+   "fecha_estimada": "2027-07-26",
+   "ic95_fecha": [
+    "2026-12-22",
+    "2028-02-01"
+   ],
+   "potencia_hoy": 0.183
+  },
+  {
+   "delta_pp": 12.0,
+   "dias_sellados": 139,
+   "ic95_dias_sellados": [
+    61,
+    208
+   ],
+   "anios_de_sellado": 0.62,
+   "fecha_estimada": "2027-02-05",
+   "ic95_fecha": [
+    "2026-10-07",
+    "2027-05-25"
+   ],
+   "potencia_hoy": 0.289
+  }
+ ],
+ "mde_por_horizonte": [
+  {
+   "dias": 35,
+   "fecha_estimada": "2026-08-27",
+   "mde80_pp": 24.0,
+   "ic95_mde80_pp": [
+    15.9,
+    29.3
+   ],
+   "mde50_pp": 16.8
+  },
+  {
+   "dias": 73,
+   "fecha_estimada": "2026-10-26",
+   "mde80_pp": 16.6,
+   "ic95_mde80_pp": [
+    11.0,
+    20.3
+   ],
+   "mde50_pp": 11.6
+  },
+  {
+   "dias": 125,
+   "fecha_estimada": "2027-01-14",
+   "mde80_pp": 12.7,
+   "ic95_mde80_pp": [
+    8.4,
+    15.5
+   ],
+   "mde50_pp": 8.9
+  },
+  {
+   "dias": 250,
+   "fecha_estimada": "2027-07-29",
+   "mde80_pp": 9.0,
+   "ic95_mde80_pp": [
+    5.9,
+    10.9
+   ],
+   "mde50_pp": 6.3
+  },
+  {
+   "dias": 500,
+   "fecha_estimada": "2028-08-22",
+   "mde80_pp": 6.3,
+   "ic95_mde80_pp": [
+    4.2,
+    7.7
+   ],
+   "mde50_pp": 4.4
+  },
+  {
+   "dias": 750,
+   "fecha_estimada": "2029-09-17",
+   "mde80_pp": 5.2,
+   "ic95_mde80_pp": [
+    3.4,
+    6.3
+   ],
+   "mde50_pp": 3.6
+  },
+  {
+   "dias": 1000,
+   "fecha_estimada": "2030-10-10",
+   "mde80_pp": 4.5,
+   "ic95_mde80_pp": [
+    3.0,
+    5.5
+   ],
+   "mde50_pp": 3.1
+  }
+ ],
+ "simulacion": [
+  {
+   "dias": 35,
+   "alfa_empirico": 0.05533333333333333,
+   "alfa_ic95": [
+    0.048,
+    0.064
+   ],
+   "potencia_5.0pp": 0.08966666666666667,
+   "potencia_5.0pp_ic95": [
+    0.08,
+    0.1
+   ],
+   "potencia_6.5pp": 0.11366666666666667,
+   "potencia_6.5pp_ic95": [
+    0.103,
+    0.126
+   ],
+   "potencia_9.0pp": 0.16733333333333333,
+   "potencia_9.0pp_ic95": [
+    0.154,
+    0.181
+   ],
+   "potencia_12.0pp": 0.2853333333333333,
+   "potencia_12.0pp_ic95": [
+    0.269,
+    0.302
+   ]
+  },
+  {
+   "dias": 73,
+   "alfa_empirico": 0.04833333333333333,
+   "alfa_ic95": [
+    0.041,
+    0.057
+   ],
+   "potencia_5.0pp": 0.14133333333333334,
+   "potencia_5.0pp_ic95": [
+    0.129,
+    0.154
+   ],
+   "potencia_6.5pp": 0.208,
+   "potencia_6.5pp_ic95": [
+    0.194,
+    0.223
+   ],
+   "potencia_9.0pp": 0.355,
+   "potencia_9.0pp_ic95": [
+    0.338,
+    0.372
+   ],
+   "potencia_12.0pp": 0.5493333333333333,
+   "potencia_12.0pp_ic95": [
+    0.531,
+    0.567
+   ]
+  },
+  {
+   "dias": 125,
+   "alfa_empirico": 0.053,
+   "alfa_ic95": [
+    0.046,
+    0.062
+   ],
+   "potencia_5.0pp": 0.20133333333333334,
+   "potencia_5.0pp_ic95": [
+    0.187,
+    0.216
+   ],
+   "potencia_6.5pp": 0.30233333333333334,
+   "potencia_6.5pp_ic95": [
+    0.286,
+    0.319
+   ],
+   "potencia_9.0pp": 0.5296666666666666,
+   "potencia_9.0pp_ic95": [
+    0.512,
+    0.547
+   ],
+   "potencia_12.0pp": 0.7756666666666666,
+   "potencia_12.0pp_ic95": [
+    0.76,
+    0.79
+   ]
+  },
+  {
+   "dias": 250,
+   "alfa_empirico": 0.049666666666666665,
+   "alfa_ic95": [
+    0.042,
+    0.058
+   ],
+   "potencia_5.0pp": 0.36433333333333334,
+   "potencia_5.0pp_ic95": [
+    0.347,
+    0.382
+   ],
+   "potencia_6.5pp": 0.5483333333333333,
+   "potencia_6.5pp_ic95": [
+    0.53,
+    0.566
+   ],
+   "potencia_9.0pp": 0.8196666666666667,
+   "potencia_9.0pp_ic95": [
+    0.806,
+    0.833
+   ],
+   "potencia_12.0pp": 0.972,
+   "potencia_12.0pp_ic95": [
+    0.965,
+    0.977
+   ]
+  },
+  {
+   "dias": 500,
+   "alfa_empirico": 0.04533333333333334,
+   "alfa_ic95": [
+    0.038,
+    0.053
+   ],
+   "potencia_5.0pp": 0.623,
+   "potencia_5.0pp_ic95": [
+    0.606,
+    0.64
+   ],
+   "potencia_6.5pp": 0.831,
+   "potencia_6.5pp_ic95": [
+    0.817,
+    0.844
+   ],
+   "potencia_9.0pp": 0.9853333333333333,
+   "potencia_9.0pp_ic95": [
+    0.98,
+    0.989
+   ],
+   "potencia_12.0pp": 1.0,
+   "potencia_12.0pp_ic95": [
+    0.999,
+    1.0
+   ]
+  },
+  {
+   "dias": 750,
+   "alfa_empirico": 0.05266666666666667,
+   "alfa_ic95": [
+    0.045,
+    0.061
+   ],
+   "potencia_5.0pp": 0.7913333333333333,
+   "potencia_5.0pp_ic95": [
+    0.776,
+    0.805
+   ],
+   "potencia_6.5pp": 0.9523333333333334,
+   "potencia_6.5pp_ic95": [
+    0.944,
+    0.959
+   ],
+   "potencia_9.0pp": 0.9993333333333333,
+   "potencia_9.0pp_ic95": [
+    0.998,
+    1.0
+   ],
+   "potencia_12.0pp": 1.0,
+   "potencia_12.0pp_ic95": [
+    0.999,
+    1.0
+   ]
+  },
+  {
+   "dias": 1000,
+   "alfa_empirico": 0.052,
+   "alfa_ic95": [
+    0.045,
+    0.061
+   ],
+   "potencia_5.0pp": 0.8926666666666667,
+   "potencia_5.0pp_ic95": [
+    0.881,
+    0.903
+   ],
+   "potencia_6.5pp": 0.9886666666666667,
+   "potencia_6.5pp_ic95": [
+    0.984,
+    0.992
+   ],
+   "potencia_9.0pp": 1.0,
+   "potencia_9.0pp_ic95": [
+    0.999,
+    1.0
+   ],
+   "potencia_12.0pp": 1.0,
+   "potencia_12.0pp_ic95": [
+    0.999,
+    1.0
+   ]
+  }
+ ],
+ "cadencia": {
+  "sellos_por_dia_habil": 0.897,
+  "wilson95": [
+   0.764,
+   0.959
+  ],
+  "fecha_9pp_con_cadencia_alta": "2027-07-05",
+  "fecha_9pp_con_cadencia_baja": "2027-09-21",
+  "gasto_alfa_secuencial_factor": 1.0241,
+  "dias_9pp_con_gasto_secuencial": 254
+ },
+ "R2_excluyendo_15_23_jul": {
+  "n": 202,
+  "ventaja_pp": 2.5,
+  "mcnemar_filas_p": 0.675,
+  "b": 48,
+  "c": 43,
+  "ic95_dia_pp": [
+   -13.64,
+   19.23
+  ],
+  "permutacion_dia_p": 0.8248,
+  "lectura": "R2 DISPARA sobre este ancla: sin el bloque 1 la ventaja no se distingue de cero por ninguna ruta"
+ },
+ "mitades": {
+  "primera_mitad": {
+   "dias": 17,
+   "filas": 120,
+   "ventaja_pp": 19.17,
+   "ic95_pp": [
+    -3.51,
+    44.07
+   ]
+  },
+  "segunda_mitad": {
+   "dias": 18,
+   "filas": 126,
+   "ventaja_pp": 0.0,
+   "ic95_pp": [
+    -21.57,
+    20.47
+   ]
+  }
+ }
+}

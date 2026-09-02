@@ -9,7 +9,19 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 1-sep-2026, segunda tanda de la quinta corrida.
+**Actualizada:** 2-sep-2026, séptima corrida.
+
+## Qué movió la séptima corrida (2-sep)
+
+| | |
+|---|---|
+| **Abrió** | **Cuál es el campeón cuando sello y fuente discrepan, y la copia congelada de insumos** (§17). Yahoo no reescribe retornos pero sirve estados distintos; el sello tiene «emitido antes» y no «reproducible después». Arnés listo, no activado. |
+| **Abrió** | **La frase de potencia del 5.1 antes del 25-oct** (§18): potencia 0,36 [0,34, 0,37] frente a 9 pp; MDE 16,6 pp [11,0, 20,3]. **Y R2 dispara sobre el ancla del 31-ago.** |
+| **Midió** | **El instrumento no es subpotente estructuralmente pero responde en años**: 9 pp → ~248 días [109, 370] (jul-2027); 6,5 → ~475; 5 → ~800. Ciego a «¿persiste?» con un régimen. |
+| **Propuso, con dictamen** | C-1/C-2/C-3 (§19: entran), D-1 (§20: entra como referencia, no como cota), E-1 (§21: entra condicionada), **E-2 rechazada**, y la adenda «4×» de la tesis **retirada**. |
+| **Cerró** | El 92 suelto de `BANDA_N`: pinchado a su corrida sellada, con test contra el `veredicto.json`. Registro de intentos 91 → 100 (tramos TRAY y ESTIM). |
+| **Cerró** | El forense de las 15 huérfanas no estaba pendiente (sexta corrida). |
+| **No cerró** | El vigía «NO corrió» vs «corrió y no completó» y el timeout de `mki-noticias`: ver la bitácora 07, sección de la Fase 4. |
 
 ## Qué movió la quinta corrida, segunda tanda (1-sep)
 
@@ -867,3 +879,44 @@ El segundo movimiento del switch (apagar los timers del Mac, quitar
 establecido en la skill `switch-titular`, que es su propio expediente
 completo. Si Nicolás quiere verlo priorizado junto con el resto, decirlo y
 se agrega.
+
+---
+
+## 17. Cuál es el campeón cuando sello y fuente discrepan — y la copia de insumos (NUEVA, séptima corrida)
+
+**Qué decidir, en una frase:** (a) si para la ventana sellada el campeón
+son las filas selladas —y el backtest las lee en vez de recomputarlas— o su
+reconstrucción desde la fuente de hoy; (b) si se activa la copia cruda de
+insumos al sellar (`GEMELO/INSUMOS/`, probada, no activada), que toca
+`snapshot.py` con corte de método y va con el bump del parche `:140`.
+
+**Expediente:** `GEMELO/resultados/fuente_canonica.md` (medición M1–M6,
+candidatas C1–C5, diseño), `fuente_canonica_medicion.md`, `testigos_fuente/`
+(las cuatro cachés preservadas), `GEMELO/INSUMOS/insumos.py` +
+`tests/test_insumos.py`. Dictamen: verificado con correcciones aplicadas.
+
+**Qué se bloquea:** el veredicto 5.1 sobre la ventana sellada depende hoy
+de qué sirva Yahoo ese día (16 signos, 32 magnitudes).
+
+**Costo de postergarla un mes:** cada sello que pasa sin copia es una noche
+más que sólo se podrá inferir (como M6) y nunca leer.
+
+**Recomendación, marcada como tal:** (a) las filas selladas; (b) sí, en el
+mismo bump que el §1-bis.
+
+## 18. La frase de potencia del 5.1, y R2 sobre el ancla (NUEVA)
+
+Ver `espera_firma.md` §17. Potencia 0,36 [0,34, 0,37] frente a 9 pp con ~73
+días; MDE 16,6 pp [11,0, 20,3]. R2 dispara sobre el ancla del 31-ago (+2,5
+pp, IC de día [−13,6, +19,2], contiene el cero). Decidir ahora si la frase
+va al generador del resumen o a `DECISIONES.md`; recomendación: lo segundo.
+
+## 19–21. Las propuestas C, D y E con dictamen (NUEVAS)
+
+Ver `espera_firma.md` §18–§20 y `propuestas_cde.md` con el dictamen íntegro
+en `dictamen_07/`. Lo que entra: C-1 sin condición, C-2 con cinco
+declaraciones, C-3 con el motivo «α real ≈ 0,31», D-1 como medición de
+referencia (α del plan [0,031, 0,065]; banda firmada intacta), E-1 contra
+el control lineal. Lo que no entra: E-2 (pendiente por hora con IC) y la
+adenda «4×» de `tesis.md`. Los intentos ya están registrados (91 → 100).
+

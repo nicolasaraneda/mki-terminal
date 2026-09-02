@@ -1,0 +1,147 @@
+{
+ "generado_en_utc": "2026-09-02T06:59:53.481665+00:00",
+ "etiqueta": "PROPUESTA — sin dictamen del estadistico-adversario no entra a DISEÑO.md ni a resultados",
+ "salida1_prior_ventana_larga": {
+  "fuente": "backtest/resultados/20260901-133154-5.1-arnes-corregido-gatillo-incumplido/predicciones_B2.csv",
+  "fechas": 518,
+  "desde": "2024-09-02",
+  "hasta": "2026-08-28",
+  "ac_1_a_5": [
+   -0.042,
+   -0.02,
+   0.012,
+   -0.018,
+   0.051
+  ],
+  "ac1": -0.042,
+  "ee_1_sobre_raiz_m": 0.044,
+  "ic95_bootstrap_bloques": [
+   -0.122,
+   0.041
+  ],
+  "bloque_boot": 20,
+  "por_anio": {
+   "2024": {
+    "fechas": 87,
+    "ac1": -0.014,
+    "ee": 0.107
+   },
+   "2025": {
+    "fechas": 260,
+    "ac1": -0.08,
+    "ee": 0.062
+   },
+   "2026": {
+    "fechas": 171,
+    "ac1": -0.007,
+    "ee": 0.076
+   }
+  },
+  "ventana_sellada": {
+   "fechas": 37,
+   "ac1": -0.176,
+   "ee": 0.164
+  },
+  "reconstruida_en_el_tramo_sellado": {
+   "desde": "2026-07-05",
+   "fechas": 40,
+   "ac1": -0.18,
+   "ee": 0.158
+  },
+  "max_abs_ac_1_a_5": 0.051,
+  "advertencias": [
+   "ventana reconstruida (B2 = motor de producción sobre Yahoo del 1-sep), no sellada",
+   "deduplicada por (ticker, sesion_objetivo) para neutralizar B-3",
+   "incluye el 28-ago reconstruido con signo contrario (1 fecha)",
+   "una sola descarga congelada: ciega por construcción a la intermitencia de la fuente (M6 del Frente A)",
+   "es una MEDICIÓN DE REFERENCIA con su IC, no una cota: el extremo de un IC no es una certeza"
+  ]
+ },
+ "salida2_disenos_robustos": {
+  "n_rep": 20000,
+  "fechas_por_mirada": [
+   51,
+   102,
+   152,
+   203
+  ],
+  "umbrales_obf": [
+   4.048,
+   2.862,
+   2.337,
+   2.024
+  ],
+  "drift_por_fecha_sd": 0.18,
+  "alfa_por_phi": {
+   "0.0": {
+    "DIA": 0.0506,
+    "BLQ10": 0.0889,
+    "BLQ20": 0.1231,
+    "HAC5": 0.0635,
+    "HAC10": 0.0795
+   },
+   "0.1": {
+    "DIA": 0.0804,
+    "BLQ10": 0.0926,
+    "BLQ20": 0.1245,
+    "HAC5": 0.0689,
+    "HAC10": 0.0837
+   },
+   "0.2": {
+    "DIA": 0.1193,
+    "BLQ10": 0.0957,
+    "BLQ20": 0.127,
+    "HAC5": 0.0756,
+    "HAC10": 0.0883
+   },
+   "0.3": {
+    "DIA": 0.1708,
+    "BLQ10": 0.1004,
+    "BLQ20": 0.129,
+    "HAC5": 0.084,
+    "HAC10": 0.0935
+   }
+  },
+  "potencia_por_phi": {
+   "0.0": {
+    "DIA": 0.7199,
+    "BLQ10": 0.7269,
+    "BLQ20": 0.7389,
+    "HAC5": 0.7367,
+    "HAC10": 0.7491
+   },
+   "0.2": {
+    "DIA": 0.695,
+    "BLQ10": 0.5894,
+    "BLQ20": 0.6035,
+    "HAC5": 0.6011,
+    "HAC10": 0.6109
+   }
+  },
+  "wilson_pm": 0.003
+ },
+ "alfa_plan_bajo_la_referencia": {
+  "por_ac1": {
+   "-0.042": [
+    0.039,
+    0.0314,
+    0.0484
+   ],
+   "0.041": [
+    0.0545,
+    0.0454,
+    0.0653
+   ],
+   "0.0": [
+    0.047,
+    0.0386,
+    0.0572
+   ]
+  },
+  "rango_honesto": [
+   0.031,
+   0.065
+  ],
+  "nota": "DGP del simulador del diseño: d_j discretizado (np.round(d·7/2)); el de Salida 2: normal continuo. Dos DGP."
+ }
+}

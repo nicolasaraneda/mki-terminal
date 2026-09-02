@@ -1,6 +1,8 @@
 # Lo que espera tu firma
 
-**Quince ítems. Ninguno lo puede decidir un agente.** Cada uno trae qué hay
+**Veinte ítems (quince de la sexta corrida, cinco nuevos de la séptima —
+§16 a §20, abajo del todo, pero el §16 va pegado al §1). Ninguno lo puede
+decidir un agente.** Cada uno trae qué hay
 que decidir en una frase, qué desbloquea, cuánto cuesta decidirlo, y las
 opciones con su consecuencia. Donde hay recomendación, va marcada como tal;
 donde no la hay, también se dice, y por qué.
@@ -20,7 +22,9 @@ Leer todo y firmar todo: **~3 h 30**. Pero no hace falta.
 | **2** | **La cuenta AMD** | Es lo único que separa al proyecto de tener **Fmax, utilización de slices, cierre de temporización y bitstream** — o sea todos los hitos en silicio del ramo. Y ahora tiene **dos relojes**: el del ramo, que este documento sigue sin conocer, y uno nuevo de AMD (§2). | **20 min** |
 | **3** | **Las 15 filas + publicar el README** | Van juntos y no son separables: publicar +9,7 pp sabiendo que hay una rama declarada de +14,3 pp sin resolver es peor que no publicar ninguna de las dos. | **20 min** |
 
-**Los tres suman 45 minutos.** El cuarto y el quinto —la réplica y el MDE—
+**Los tres suman 45 minutos.** *(Séptima corrida: el §16 —la copia
+congelada de insumos— va en el mismo movimiento que el §1: dos cortes de
+método, un solo bump. Sumale 10 minutos.)* El cuarto y el quinto —la réplica y el MDE—
 tienen relojes propios que conviene mirar aunque no los firmes hoy: la
 réplica es la única cuyo costo de postergarla **ya se materializó una vez**
 (el SSD que se llevó cuatro commits), y el MDE cuesta **cero hasta octubre e
@@ -41,9 +45,11 @@ falta ningún aparato. Por la ruta de clúster, **0 de 192** formas legítimas
 de medir la misma ventana dan p < 0,05 (por la ruta que supone filas
 independientes, 59).
 
-**El conteo de intentos vigente, al 1-sep-2026, es 91** (el registro, hoy de
-25 tramos con procedencia) **o 97** (el que declara en disco la corrida del
-backtest, que suma 6 propios). **No es 25.** El README todavía dice 25 — ver
+**El conteo de intentos vigente es 100** (el registro, al 2-sep-2026, 23
+tramos con procedencia: los 91 del 1-sep más los 9 de la séptima corrida,
+registrados a posteriori por exigencia del adversario — ver §20) **o 106** (el
+que declarará la próxima corrida del backtest, que suma 6 propios). **No es
+25.** El README todavía dice 25 — ver
 §7, y ver ahí también la prueba de que ese número no está quieto: la corrida
 de la ventana condicional partió de 25 y publicó "N acumulado 25 → 33", y el
 propio registro subió de 86 a 91 **mientras esta página esperaba firma**.
@@ -810,3 +816,126 @@ aplicada**, con `keep="last"` **prohibida** · **α = 0,05 nominal**, banda
 modelos · las dos afirmaciones de `RTL.md`, corregidas en su sitio con errata
 fechada · **PIT cerrada** con recomendación de no gastar (falta sólo aceptarla,
 §15).
+
+---
+
+# Lo que agregó la séptima corrida (2-sep-2026)
+
+Cinco ítems nuevos. Todos con expediente, ninguno con cifra publicada
+movida. **Y una operación de un minuto que no es ítem:** `.env` está en
+modo 644 (legible por todo el sistema); debería ser 600. Lo anotó el
+guardián, lo verifiqué (`stat -c %a .env`), no lo toqué: es tuyo. El dictamen del `estadistico-adversario` sobre la noche entera está
+en `GEMELO/resultados/dictamen_07/DICTAMEN.md`; las propuestas que rechazó
+no aparecen acá.
+
+# 16. Cuál es el campeón cuando el sello y la fuente discrepan — y la copia de insumos
+
+**Qué hay que decidir:** dos cosas atadas. **(a)** Para la ventana sellada,
+¿el campeón son las filas selladas (y el backtest las LEE en vez de
+recomputarlas), o su reconstrucción desde el Yahoo de hoy? **(b)** ¿Se
+construye la copia cruda de insumos al sellar (`GEMELO/INSUMOS/`, arnés
+probado y no activado), que toca `snapshot.py` con corte de método?
+
+**Qué desbloquea:** un veredicto 5.1 que no dependa de qué sirva Yahoo la
+mañana del 25-oct, y un sello con la propiedad que hoy no tiene:
+«reproducible después».
+
+**Costo de decidirlo: 15 minutos.** Expediente:
+`GEMELO/resultados/fuente_canonica.md` §4–§6.
+
+**La evidencia, medida esta noche:** Yahoo no cambió un retorno en 8 años ×
+27 tickers, pero sirve el mismo query en estados distintos (retiró el
+28-ago; cuatro noches de agosto sirvió el `^SOX` sin la barra del 31-jul —
+hipótesis M6, única barra de 130, residuo 4–8× el piso). Las 16 filas de
+signo contrario ya están verificadas (15) en el track record vivo. Bajo
+«Yahoo de hoy» el acierto vivo pasa de 64,86% [59,1, 70,2] a 64,49% [58,7,
+69,9]: **b = 8, c = 7, p = 1,00 — la cifra no está en juego; la
+reproducibilidad sí.**
+
+| Opción (a) | Consecuencia |
+|---|---|
+| **Las filas selladas son el campeón; B2 las lee** *(recomendada)* | El 5.1 sobre lo sellado deja de depender de la fuente. Cambia `backtest/baselines.py`, no el sello. |
+| La reconstrucción manda | 16 signos y 32 magnitudes cambian con el estado de la fuente, y pueden volver a cambiar. |
+| No declarar | Dos objetos, ninguno manda: el statu quo que produjo el bloqueo. |
+
+| Opción (b) | Consecuencia |
+|---|---|
+| **Sí, en el mismo bump que el parche de `snapshot.py:140`** *(recomendada)* | Una llamada protegida (nunca rompe el sello) + columna aditiva `insumos_sha256`; ~9 MB/año medidos (130 barras consumidas) o ~53 (panel de 3 años). |
+| Sí, aparte | Dos cortes de método, dos bumps. |
+| No | El sello sigue guardando derivados a dos decimales; M6 seguirá siendo inferencia. |
+
+**Micro-decisión pegada, sin recomendación:** si la ventana larga se declara
+dependiente de la fuente y cada corrida publica fecha y sha256 de su
+descarga como parámetro sellado.
+
+# 17. La frase de potencia del veredicto 5.1, escrita antes del 25-oct
+
+**Qué hay que decidir:** si el resumen del veredicto 5.1 dice, por
+construcción, que su potencia frente al efecto relevante (9 pp) es **0,34
+[0,31, 0,37]** con ~73 días sellados (MDE al 80%: 16,6 pp [11,0, 20,3]), o
+si eso se escribe en `DECISIONES.md` antes del 25-oct sin tocar el arnés.
+
+**Por qué es tuya:** tocar `veredicto_51.py` es tocar el arnés del 5.1, y
+el propio expediente S-1 dice que moverlo la víspera es moverlo después de
+ver el diseño. Hay que decidirlo ahora, no en octubre. Expediente:
+`GEMELO/resultados/horizonte_veredicto.md`.
+
+| Opción | Consecuencia |
+|---|---|
+| (a) La frase va al generador del resumen ahora, con acta | Un NO PASA del 25-oct nace con su potencia al lado. |
+| **(b) No tocar el arnés; escribirla en `DECISIONES.md` antes del 25-oct** *(recomendada)* | Igual de honesto, sin mover el arnés. |
+| (c) Nada | Un NO PASA se leerá como refutación. |
+
+**Y lo que el dictamen agregó, y no es cómodo:** **R2 —el criterio de
+rechazo congelado— dispara sobre el ancla del 31-ago**: sin el bloque
+15–23 jul la ventaja queda en +2,5 pp, IC de día [−13,6, +19,2] (contiene
+el cero), permutación p = 0,82. Está escrito; no lleva firma; conviene
+saberlo antes de octubre.
+
+# 18. Tres propuestas del Frente C sobre el estadístico principal — con dictamen
+
+Las tres pasaron por el adversario. **Lo que se firma es si se adoptan.**
+
+| | Propuesta | Dictamen | Qué haría falta |
+|---|---|---|---|
+| **C-1** | Ratificar el IC de clúster de día como principal y **no publicar decisiones binarias sobre la ventana sellada hasta que un MDE firmado las habilite** | **ENTRA sin condición** | una línea en `GEMELO/DISEÑO.md` |
+| **C-2** | Agregar el proceso de apuestas anytime-valid (Waudby-Smith & Ramdas) como secundario: válido a cualquier instante de parada y bajo la autocorrelación que el Frente D no acota | ENTRA con cinco declaraciones (estimando distinto del ICD, σ̂² conservador, una cola, parámetros declarados antes, intento registrado — ya está) | un párrafo en `DISEÑO.md`; hoy K = 3,0 contra 20 |
+| **C-3** | Que el **p** del McNemar de filas deje de ofrecerse por defecto en `duelo()`, `comparar_pareado()` y `control_lineal` — porque **su tamaño real es ≈ 0,31, no 0,05**, bajo el agrupamiento de día (DEFF 3,77) | ENTRA con el motivo cambiado | ~30 líneas en tres archivos; `b` y `c` siguen; el p se sigue calculando para la §2.8 congelada |
+
+**Recomendación, marcada como tal:** las tres. Ninguna mueve una cifra.
+
+# 19. El Frente D: la referencia de autocorrelación, y que no hay diseño robusto
+
+**Qué hay que decidir:** si `GEMELO/SECUENCIAL/DISEÑO.md` cita, **como
+medición de referencia y no como cota**, la autocorrelación de d_j sobre la
+reconstrucción de dos años: AC1 −0,042, IC95 [−0,122, +0,041] (contiene el cero); en el tramo
+solapado con la sellada, −0,180 ± 0,158 contra −0,176 ± 0,164; ciega a la
+intermitencia de la fuente; y el α del plan bajo esa referencia en
+**[0,031, 0,065]** contando el error de Monte Carlo. **La banda firmada
+[0,046, 0,079] no se toca y no se re-discute.**
+
+**Y el resultado negativo, verificado:** a 51–203 fechas **no existe
+estadístico que entregue α = 0,05 plano bajo autocorrelación desconocida**
+(bloques como unidad inflan por grados de libertad; Newey-West aplana pero
+parte sesgado). Declarar la banda era la respuesta correcta.
+
+**Sin recomendación entre citar o no:** es una línea de contexto en un
+pre-registro que sigue sin congelar (§5 de la lista original).
+
+# 20. El Frente E: un endpoint secundario, y una recomendación de programa
+
+**(a)** Si se pre-registra la **pendiente de calibración** (magnitud
+predicha → realizada; sellada 1,42 [0,65, 2,19], contiene 1) como endpoint
+**secundario**, **contra la pendiente del control lineal y no contra 0**,
+con «hay relación» y «está calibrado» como hipótesis separadas. Dictamen:
+entra sólo así. El decaimiento como pendiente por hora fue **rechazado** (4
+bolsas, 2 valores de margen: p mínimo alcanzable 1/13).
+
+**(b)** La recomendación del `director-programa` (`GEMELO/resultados/tesis.md`):
+**abandonar la captura de forma explícita; MKI como instrumento de
+medición**; camino 1b (medir la pendiente entre bolsas) condicionado a una
+medición que sigue sin hacerse; seguir sellando; los dos cortes de método
+en un bump. Es una decisión de programa. **Sin recomendación de la corrida
+más allá de la suya**, salvo una: la cola de firmas crece más rápido de lo
+que se vacía, y él lo dijo primero.
+

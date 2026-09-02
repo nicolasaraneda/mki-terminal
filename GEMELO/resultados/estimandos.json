@@ -1,0 +1,203 @@
+{
+ "generado_en_utc": "2026-09-02T06:18:23.541115+00:00",
+ "etiqueta": "PROPUESTA — ningún estimando reemplaza al endpoint congelado sin firma y sin dictamen",
+ "parametros": {
+  "n_boot": 4000,
+  "semilla": 20260902,
+  "z_potencia_0_80": 2.8016,
+  "horas_hasta_apertura": {
+   "XTKS": 1.75,
+   "XKRX": 1.75,
+   "XTAI": 2.75,
+   "XETR": 8.75
+  }
+ },
+ "sellada": {
+  "etiqueta": "ventana sellada viva hasta 2026-08-31",
+  "filas": 261,
+  "dias": 37,
+  "E0_direccion_pp": {
+   "punto": 11.877394636015326,
+   "ic95": [
+    -4.417930022673721,
+    28.000000000000004
+   ],
+   "se": 8.41645546051868,
+   "z": 1.4112110129652322,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 146
+  },
+  "E1_magnitud_pp": {
+   "punto": 0.4563770114942529,
+   "ic95": [
+    -0.013840577368296716,
+    0.9405299724095646
+   ],
+   "se": 0.24326765399389386,
+   "z": 1.8760283334080585,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 83
+  },
+  "E2_gap_capturado_pp": {
+   "punto": 1.101967049808429,
+   "ic95": [
+    -0.025882009061114156,
+    2.3544386390069336
+   ],
+   "se": 0.606008922868315,
+   "z": 1.8184007004264608,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 88
+  },
+  "E3_pendiente_calibracion": {
+   "punto": 1.420713744311846,
+   "ic95": [
+    0.6482972657665245,
+    2.1928488900266396
+   ],
+   "se": 0.412985892469315,
+   "z": 3.440102362376472,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 25
+  },
+  "E4_pendiente_decaimiento_pp_por_hora": {
+   "punto": -0.02918027098219249,
+   "ic95": [
+    -4.25558173783652,
+    3.7858122129983003
+   ],
+   "se": 2.030863278779804,
+   "z": -0.01436840740934799,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 1406670
+  },
+  "contraste_asia_menos_xetr_pp": {
+   "punto": 0.518331226295829,
+   "ic95": [
+    -26.022307261673525,
+    29.544949107322342
+   ],
+   "se": 14.264537232599354,
+   "z": 0.03633705165781786,
+   "dias": 37,
+   "dias_para_potencia_0_80_al_efecto_observado": 219943
+  },
+  "por_bolsa": {
+   "XETR": {
+    "filas": 35,
+    "h": 8.75,
+    "E0_pp": 11.43
+   },
+   "XKRX": {
+    "filas": 64,
+    "h": 1.75,
+    "E0_pp": 6.25
+   },
+   "XTAI": {
+    "filas": 28,
+    "h": 2.75,
+    "E0_pp": 14.29
+   },
+   "XTKS": {
+    "filas": 134,
+    "h": 1.75,
+    "E0_pp": 14.18
+   }
+  },
+  "_n_asia": 226
+ },
+ "larga": {
+  "etiqueta": "ventana larga reconstruida (B2, sep-2024 → ago-2026)",
+  "filas": 3865,
+  "dias": 518,
+  "E0_direccion_pp": {
+   "punto": 13.402328589909443,
+   "ic95": [
+    9.775598976647185,
+    17.01965553140924
+   ],
+   "se": 1.8235786938905332,
+   "z": 7.349465441119025,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 75
+  },
+  "E1_magnitud_pp": {
+   "punto": 0.30585357312241485,
+   "ic95": [
+    0.22198892911749335,
+    0.39595658619342017
+   ],
+   "se": 0.04385626367175207,
+   "z": 6.973999778266927,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 84
+  },
+  "E2_gap_capturado_pp": {
+   "punto": 0.8035693087830729,
+   "ic95": [
+    0.5845172287886384,
+    1.0379163278620827
+   ],
+   "se": 0.11300481897174464,
+   "z": 7.110929570038909,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 80
+  },
+  "E3_pendiente_calibracion": {
+   "punto": 0.9869659163573477,
+   "ic95": [
+    0.8228576943737818,
+    1.1618132849482181
+   ],
+   "se": 0.08753269900977637,
+   "z": 11.275396823387284,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 32
+  },
+  "E4_pendiente_decaimiento_pp_por_hora": {
+   "punto": -1.60786045341005,
+   "ic95": [
+    -2.4522196027986953,
+    -0.7725868844899245
+   ],
+   "se": 0.42527954629326903,
+   "z": -3.780714279405489,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 284
+  },
+  "contraste_asia_menos_xetr_pp": {
+   "punto": 10.836468399596471,
+   "ic95": [
+    5.024696815706705,
+    16.685450983363914
+   ],
+   "se": 2.941860357450567,
+   "z": 3.683542752854325,
+   "dias": 518,
+   "dias_para_potencia_0_80_al_efecto_observado": 300
+  },
+  "por_bolsa": {
+   "XETR": {
+    "filas": 503,
+    "h": 8.75,
+    "E0_pp": 3.98
+   },
+   "XKRX": {
+    "filas": 960,
+    "h": 1.75,
+    "E0_pp": 17.6
+   },
+   "XTAI": {
+    "filas": 468,
+    "h": 2.75,
+    "E0_pp": 12.18
+   },
+   "XTKS": {
+    "filas": 1934,
+    "h": 1.75,
+    "E0_pp": 14.06
+   }
+  },
+  "_n_asia": 3362
+ }
+}
