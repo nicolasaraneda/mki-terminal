@@ -1,0 +1,2250 @@
+{
+ "generado_en_utc": "2026-09-02T18:35:43.484814+00:00",
+ "etiqueta": "PROPUESTA — Frente C, octava corrida; pendiente de dictamen",
+ "parametros": {
+  "n_boot": 4000,
+  "bloque_fechas": 10,
+  "semilla": 20260902,
+  "ajuste": [
+   "2018-09-01",
+   "2023-12-31"
+  ],
+  "prueba": [
+   "2024-01-01",
+   "2026-08-25"
+  ],
+  "ultima_barra_completa": "2026-08-25",
+  "captura_cierres_utc": "2026-08-26T04:23:39Z",
+  "embargo": 5,
+  "sellada_excluida": [
+   "2026-07-06",
+   "2026-09-02"
+  ],
+  "sellada_derivada_de": "data/backups/senales_senales_ticker.csv",
+  "prueba_abierta": true,
+  "betas_ajuste": {
+   "000660.KS": 0.4368,
+   "005930.KS": 0.3006,
+   "2330.TW": 0.3869,
+   "3436.T": 0.5293,
+   "4063.T": 0.3657,
+   "6857.T": 0.5964,
+   "8035.T": 0.5499,
+   "IFX.DE": 0.1534
+  },
+  "mitad_del_ajuste": "2021-05-11",
+  "betas_primera_mitad": {
+   "000660.KS": 0.4238,
+   "005930.KS": 0.3256,
+   "2330.TW": 0.3554,
+   "3436.T": 0.5736,
+   "4063.T": 0.385,
+   "6857.T": 0.5539,
+   "8035.T": 0.5002,
+   "IFX.DE": 0.1174
+  },
+  "fuentes": [
+   "GEMELO/resultados/testigos_fuente/gaps_v2_propio_indice.csv.gz",
+   "GEMELO/resultados/testigos_fuente/cierres_03fdca36d64efb0d.csv.gz",
+   "GEMELO/resultados/testigos_fuente/cierres_353cacd57dc25f6a.csv.gz"
+  ],
+  "cortes_tercil_s_congelados_en_ajuste": [
+   -0.3581,
+   0.4241
+  ],
+  "candado": {
+   "sha256": "7557285791c075d94eac2c7c5c031b1ad55d0d80cdde333e19d7b599fba4c11d",
+   "abierta_en_utc": "2026-09-02T18:15:12.446392+00:00",
+   "archivos": [
+    "GEMELO/no_capturabilidad.py",
+    "GEMELO/preregistro/frente_C.md"
+   ],
+   "enmiendas": [
+    {
+     "en_utc": "2026-09-02T18:36:00.516332+00:00",
+     "sha256_anterior": "657f6564d93982f7a8f02910f1a0de265937818eb4a1753d2717a6dff9c2ff5e",
+     "sha256_nuevo": "7557285791c075d94eac2c7c5c031b1ad55d0d80cdde333e19d7b599fba4c11d",
+     "razon": "dictamen C 2-sep (dictamen_08/C.md): excluir_cero en los dos lados, McNemar, intervalos para los puntos desnudos, nulo declarado por IC, veredictos H2/H3 reescritos, costos y contraria, robustez, barrido de bloque, candado con datos; ninguna hipótesis cambia, cada estadístico nuevo es un intento"
+    }
+   ],
+   "datos": {
+    "GEMELO/resultados/testigos_fuente/gaps_v2_propio_indice.csv.gz": "485266d452e2e02f586acaa4d734ccea83914162c8c0995fe3c89767fe8b5fe3",
+    "GEMELO/resultados/testigos_fuente/cierres_03fdca36d64efb0d.csv.gz": "2778eadc9862af6e8913463384727c3488c516e3b92008b3c7e33027f897c301",
+    "GEMELO/resultados/testigos_fuente/cierres_353cacd57dc25f6a.csv.gz": "d828c0ca0a2b37ed51352a6e61b7e603e1cc63b8db048b4d4b5ef48b73ff9217"
+   }
+  },
+  "prueba_efectiva": [
+   "2024-01-08",
+   "2026-06-26"
+  ]
+ },
+ "ajuste": {
+  "etiqueta": "ajuste",
+  "filas": 10146,
+  "fechas": 1381,
+  "H1": {
+   "ventaja_direccional_gap_pp": {
+    "punto": 17.396,
+    "ic95": [
+     14.9115,
+     19.9096
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   },
+   "mcnemar_gap": {
+    "n": 10146,
+    "modelo_pct": 71.41,
+    "base_pct": 54.01,
+    "wilson_modelo_filas": [
+     70.5,
+     72.3
+    ],
+    "b": 3271,
+    "c": 1506,
+    "mcnemar_p": 1.113120707246663e-143,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "ventaja_direccional_sesion_pp": {
+    "punto": -1.508,
+    "ic95": [
+     -3.4973,
+     0.4175
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   },
+   "mcnemar_sesion": {
+    "n": 10146,
+    "modelo_pct": 47.86,
+    "base_pct": 49.37,
+    "wilson_modelo_filas": [
+     46.9,
+     48.8
+    ],
+    "b": 2312,
+    "c": 2465,
+    "mcnemar_p": 0.02786325789466922,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "retorno_medio_cartera_sesion_pp": {
+    "punto": -0.0845,
+    "ic95": [
+     -0.1418,
+     -0.0302
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   },
+   "retorno_medio_si_el_gap_fuera_operable_pp": {
+    "punto": 0.731,
+    "ic95": [
+     0.6687,
+     0.7999
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146,
+    "rotulo": "NO EJECUTABLE: exige comprar al cierre local ANTES de que exista el cierre de NY; su Sharpe/DSR saturan y no son un aprobado"
+   },
+   "retorno_medio_siempre_largo_sesion_pp": {
+    "punto": 0.0029,
+    "ic95": [
+     -0.0516,
+     0.0578
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   },
+   "fraccion_aciertos_gap": {
+    "punto": 0.7141,
+    "ic95": [
+     0.6977,
+     0.7299
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   }
+  },
+  "H2": {
+   "q_medio_dado_acierto_pp": {
+    "punto": -0.0936,
+    "ic95": [
+     -0.1564,
+     -0.0338
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1342,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 7245
+   },
+   "q_medio_dado_error_pp": {
+    "punto": -0.062,
+    "ic95": [
+     -0.1408,
+     0.0138
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 978,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 2901
+   },
+   "diferencia_acierto_menos_error_pp": {
+    "punto": -0.0316,
+    "ic95": [
+     -0.1174,
+     0.0504
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   },
+   "contribucion_aciertos_pp_ic": {
+    "punto": -0.0668,
+    "ic95": [
+     -0.1132,
+     -0.0248
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "contribucion_errores_pp_ic": {
+    "punto": -0.0177,
+    "ic95": [
+     -0.0416,
+     0.0054
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "veredicto": "REFUTADA EN SU PREMISA: los aciertos pierden más que los errores (signo contrario al postulado); la diferencia no se distingue de cero. El criterio original aplicado literalmente habría dado un FALSO POSITIVO por aritmética de signos.",
+   "signo_q_acierto": "−",
+   "signo_q_error": "−",
+   "razon_aplicable": false,
+   "fraccion_aciertos": 0.7141,
+   "contribucion_aciertos_pp": -0.0668,
+   "contribucion_errores_pp": -0.0177,
+   "razon_magnitud_error_sobre_acierto": {
+    "punto": 0.662,
+    "ic95": [
+     0.0516,
+     1.8988
+    ],
+    "nulo": 1.0,
+    "contiene_nulo": true,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 1.5,
+    "ic_contiene_umbral": true,
+    "todo_el_ic_bajo_el_umbral": false,
+    "filas": 10146
+   }
+  },
+  "H3": {
+   "pendiente_sesion_sobre_sorpresa_beta": {
+    "punto": -0.031,
+    "ic95": [
+     -0.0753,
+     0.0113
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 0.1,
+    "ic_contiene_umbral": false,
+    "todo_el_ic_bajo_el_umbral": true,
+    "filas": 10146
+   },
+   "beta_de_la_sorpresa": "in-sample (descriptiva)",
+   "pendiente_sesion_sobre_gap": {
+    "punto": -0.0721,
+    "ic95": [
+     -0.1081,
+     -0.0374
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 0.1,
+    "ic_contiene_umbral": true,
+    "todo_el_ic_bajo_el_umbral": false,
+    "filas": 10146
+   },
+   "advertencia_pendiente_gap": "sesión ≡ total − gap por identidad exacta (sin Open independiente): la pendiente sesión~gap es indistinguible de la atenuación −Var(ε)/Var(g) por error de medición del gap (testigos de dos añadas: gaps del 2-sep, cierres del 26-ago)",
+   "sesion_media_por_tercil_de_sorpresa_pp": {
+    "bajo": {
+     "punto": 0.0355,
+     "ic95": [
+      -0.0544,
+      0.1222
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1093,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 3382
+    },
+    "medio": {
+     "punto": -0.0196,
+     "ic95": [
+      -0.0898,
+      0.0488
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1222,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 3382
+    },
+    "alto": {
+     "punto": -0.0072,
+     "ic95": [
+      -0.0827,
+      0.0679
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1110,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 3382
+    }
+   },
+   "pendiente_sesion_sobre_sorpresa_beta_primera_mitad": {
+    "punto": -0.0321,
+    "ic95": [
+     -0.0761,
+     0.0098
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 0.1,
+    "ic_contiene_umbral": false,
+    "todo_el_ic_bajo_el_umbral": true,
+    "filas": 10146
+   },
+   "diferencia_tercil_alto_menos_bajo_pp": {
+    "punto": -0.0427,
+    "ic95": [
+     -0.1469,
+     0.0583
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 1381,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "veredicto": "No se detecta relación de la sesión con la sorpresa respecto de β (IC contiene el cero). Sobre el gap crudo la pendiente es negativa pero confundida con error de medición y su irrelevancia (|pendiente| < 0,1) sólo se establece donde TODO el IC queda bajo 0,1."
+  },
+  "cortes_tercil_s": [
+   -0.3581,
+   0.4241
+  ],
+  "sensibilidad_bloque": {
+   "1": {
+    "ventaja_sesion_pp": [
+     -3.4925,
+     0.5237
+    ],
+    "q_medio_pp": [
+     -0.1413,
+     -0.0296
+    ],
+    "pendiente_sesion_gap": [
+     -0.1175,
+     -0.0278
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0986,
+     0.0362
+    ]
+   },
+   "5": {
+    "ventaja_sesion_pp": [
+     -3.4296,
+     0.412
+    ],
+    "q_medio_pp": [
+     -0.1396,
+     -0.0295
+    ],
+    "pendiente_sesion_gap": [
+     -0.1135,
+     -0.0299
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0785,
+     0.0164
+    ]
+   },
+   "10": {
+    "ventaja_sesion_pp": [
+     -3.4973,
+     0.4175
+    ],
+    "q_medio_pp": [
+     -0.1418,
+     -0.0302
+    ],
+    "pendiente_sesion_gap": [
+     -0.1081,
+     -0.0374
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0753,
+     0.0113
+    ]
+   },
+   "20": {
+    "ventaja_sesion_pp": [
+     -3.4271,
+     0.4433
+    ],
+    "q_medio_pp": [
+     -0.1391,
+     -0.0329
+    ],
+    "pendiente_sesion_gap": [
+     -0.1031,
+     -0.0406
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0699,
+     0.0069
+    ]
+   },
+   "40": {
+    "ventaja_sesion_pp": [
+     -3.2951,
+     0.1958
+    ],
+    "q_medio_pp": [
+     -0.1354,
+     -0.0373
+    ],
+    "pendiente_sesion_gap": [
+     -0.1017,
+     -0.0417
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0714,
+     0.0043
+    ]
+   },
+   "60": {
+    "ventaja_sesion_pp": [
+     -3.2163,
+     0.128
+    ],
+    "q_medio_pp": [
+     -0.1362,
+     -0.0347
+    ],
+    "pendiente_sesion_gap": [
+     -0.0986,
+     -0.0439
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0721,
+     0.0028
+    ]
+   }
+  },
+  "costos": {
+   "0pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.0845,
+     "ic95": [
+      -0.1391,
+      -0.0329
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    },
+    "contraria_pp_dia": {
+     "punto": 0.0845,
+     "ic95": [
+      0.0329,
+      0.1391
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    }
+   },
+   "5pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.1845,
+     "ic95": [
+      -0.2391,
+      -0.1329
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    },
+    "contraria_pp_dia": {
+     "punto": -0.0155,
+     "ic95": [
+      -0.0671,
+      0.0391
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    }
+   },
+   "10pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.2845,
+     "ic95": [
+      -0.3391,
+      -0.2329
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    },
+    "contraria_pp_dia": {
+     "punto": -0.1155,
+     "ic95": [
+      -0.1671,
+      -0.0609
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    }
+   },
+   "25pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.5845,
+     "ic95": [
+      -0.6391,
+      -0.5329
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    },
+    "contraria_pp_dia": {
+     "punto": -0.4155,
+     "ic95": [
+      -0.4671,
+      -0.3609
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1381,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 10146
+    }
+   },
+   "punto_muerto_contraria_pb_por_lado": 4.23,
+   "contraria_sharpe_por_periodo": 0.0714,
+   "contraria_dsr": {
+    "14": 0.82,
+    "29": 0.724,
+    "100": 0.549,
+    "160": 0.485
+   },
+   "nota": "V = 1/T (teórica); N incluye el registro de la máquina; 25 pb por lado = la vara de la casa"
+  },
+  "robustez": {
+   "sin_anio": {
+    "2018": {
+     "q_medio_pp": [
+      -0.1385,
+      -0.0307
+     ],
+     "ventaja_gap_pp": [
+      14.2313,
+      19.7858
+     ]
+    },
+    "2019": {
+     "q_medio_pp": [
+      -0.1589,
+      -0.0413
+     ],
+     "ventaja_gap_pp": [
+      15.6937,
+      21.6625
+     ]
+    },
+    "2020": {
+     "q_medio_pp": [
+      -0.1352,
+      -0.0255
+     ],
+     "ventaja_gap_pp": [
+      15.4266,
+      21.2216
+     ]
+    },
+    "2021": {
+     "q_medio_pp": [
+      -0.1318,
+      -0.0241
+     ],
+     "ventaja_gap_pp": [
+      14.7147,
+      20.7351
+     ]
+    },
+    "2022": {
+     "q_medio_pp": [
+      -0.1391,
+      -0.0174
+     ],
+     "ventaja_gap_pp": [
+      12.5074,
+      18.0922
+     ]
+    },
+    "2023": {
+     "q_medio_pp": [
+      -0.1555,
+      -0.0311
+     ],
+     "ventaja_gap_pp": [
+      14.4328,
+      20.7463
+     ]
+    }
+   },
+   "sin_ticker": {
+    "000660.KS": [
+     -0.122,
+     -0.0203
+    ],
+    "005930.KS": [
+     -0.139,
+     -0.0291
+    ],
+    "2330.TW": [
+     -0.1499,
+     -0.0379
+    ],
+    "3436.T": [
+     -0.1325,
+     -0.0312
+    ],
+    "4063.T": [
+     -0.1486,
+     -0.0405
+    ],
+    "6857.T": [
+     -0.1343,
+     -0.03
+    ],
+    "8035.T": [
+     -0.1329,
+     -0.0286
+    ],
+    "IFX.DE": [
+     -0.1564,
+     -0.0404
+    ]
+   },
+   "por_ticker": {
+    "000660.KS": {
+     "punto": -0.1937,
+     "ic95": [
+      -0.2996,
+      -0.0926
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1234,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1234
+    },
+    "005930.KS": {
+     "punto": -0.1,
+     "ic95": [
+      -0.1689,
+      -0.0333
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1234,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1234
+    },
+    "2330.TW": {
+     "punto": -0.0292,
+     "ic95": [
+      -0.0944,
+      0.0375
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1225,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1225
+    },
+    "3436.T": {
+     "punto": -0.1111,
+     "ic95": [
+      -0.2065,
+      -0.0193
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1269,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1269
+    },
+    "4063.T": {
+     "punto": -0.0202,
+     "ic95": [
+      -0.0999,
+      0.0543
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1286,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1286
+    },
+    "6857.T": {
+     "punto": -0.104,
+     "ic95": [
+      -0.1944,
+      -0.0137
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1268,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1268
+    },
+    "8035.T": {
+     "punto": -0.1168,
+     "ic95": [
+      -0.2065,
+      -0.0298
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1287,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1287
+    },
+    "IFX.DE": {
+     "punto": -0.0077,
+     "ic95": [
+      -0.1236,
+      0.1043
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1343,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 1343
+    }
+   },
+   "winsorizado_0_5pct_q_medio_pp": {
+    "punto": -0.086,
+    "ic95": [
+     -0.1409,
+     -0.035
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1381,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 10146
+   }
+  },
+  "por_exchange": {
+   "XETR": {
+    "filas": 1343,
+    "tickers": [
+     "IFX.DE"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 3.8719,
+     "ic95": [
+      0.2978,
+      7.3734
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1343,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1343
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": 0.4468,
+     "ic95": [
+      -3.4252,
+      4.3931
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1343,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1343
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.0077,
+     "ic95": [
+      -0.1222,
+      0.1033
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1343,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1343
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0839,
+     "ic95": [
+      -0.1741,
+      -0.0017
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1343,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1343
+    }
+   },
+   "XKRX": {
+    "filas": 2468,
+    "tickers": [
+     "000660.KS",
+     "005930.KS"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 16.41,
+     "ic95": [
+      13.0026,
+      19.8797
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1292,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2468
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": -1.4992,
+     "ic95": [
+      -4.564,
+      1.454
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1292,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2468
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.1468,
+     "ic95": [
+      -0.2328,
+      -0.0689
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1292,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2468
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0256,
+     "ic95": [
+      -0.1028,
+      0.0576
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1292,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2468
+    }
+   },
+   "XTAI": {
+    "filas": 1225,
+    "tickers": [
+     "2330.TW"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 16.1633,
+     "ic95": [
+      12.4061,
+      20.2449
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1225,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1225
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": 4.0816,
+     "ic95": [
+      0.2449,
+      7.9184
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1225,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1225
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.0292,
+     "ic95": [
+      -0.0913,
+      0.0348
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1225,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1225
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0344,
+     "ic95": [
+      -0.1161,
+      0.0519
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1225,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1225
+    }
+   },
+   "XTKS": {
+    "filas": 5110,
+    "tickers": [
+     "3436.T",
+     "4063.T",
+     "6857.T",
+     "8035.T"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 21.7221,
+     "ic95": [
+      18.9144,
+      24.5844
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1295,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 5110
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": -3.3659,
+     "ic95": [
+      -6.1572,
+      -0.7426
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1295,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 5110
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.0879,
+     "ic95": [
+      -0.1633,
+      -0.0149
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 1295,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 5110
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0143,
+     "ic95": [
+      -0.0736,
+      0.0481
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 1295,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 5110
+    }
+   }
+  }
+ },
+ "prueba": {
+  "etiqueta": "prueba",
+  "filas": 4715,
+  "fechas": 643,
+  "H1": {
+   "ventaja_direccional_gap_pp": {
+    "punto": 15.5885,
+    "ic95": [
+     12.2853,
+     18.9333
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   },
+   "mcnemar_gap": {
+    "n": 4715,
+    "modelo_pct": 71.16,
+    "base_pct": 55.57,
+    "wilson_modelo_filas": [
+     69.8,
+     72.4
+    ],
+    "b": 1369,
+    "c": 634,
+    "mcnemar_p": 1.8984787050194342e-60,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "ventaja_direccional_sesion_pp": {
+    "punto": -2.7359,
+    "ic95": [
+     -5.5051,
+     -0.0212
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   },
+   "mcnemar_sesion": {
+    "n": 4715,
+    "modelo_pct": 47.38,
+    "base_pct": 50.12,
+    "wilson_modelo_filas": [
+     46.0,
+     48.8
+    ],
+    "b": 937,
+    "c": 1066,
+    "mcnemar_p": 0.004236105541895307,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "retorno_medio_cartera_sesion_pp": {
+    "punto": -0.1139,
+    "ic95": [
+     -0.2081,
+     -0.026
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   },
+   "retorno_medio_si_el_gap_fuera_operable_pp": {
+    "punto": 1.0273,
+    "ic95": [
+     0.8584,
+     1.2177
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715,
+    "rotulo": "NO EJECUTABLE: exige comprar al cierre local ANTES de que exista el cierre de NY; su Sharpe/DSR saturan y no son un aprobado"
+   },
+   "retorno_medio_siempre_largo_sesion_pp": {
+    "punto": 0.0914,
+    "ic95": [
+     0.0056,
+     0.1789
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   },
+   "fraccion_aciertos_gap": {
+    "punto": 0.7116,
+    "ic95": [
+     0.6868,
+     0.7354
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   }
+  },
+  "H2": {
+   "q_medio_dado_acierto_pp": {
+    "punto": -0.119,
+    "ic95": [
+     -0.2177,
+     -0.0283
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 620,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 3355
+   },
+   "q_medio_dado_error_pp": {
+    "punto": -0.1015,
+    "ic95": [
+     -0.2452,
+     0.0385
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 471,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 1360
+   },
+   "diferencia_acierto_menos_error_pp": {
+    "punto": -0.0175,
+    "ic95": [
+     -0.1517,
+     0.1309
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   },
+   "contribucion_aciertos_pp_ic": {
+    "punto": -0.0847,
+    "ic95": [
+     -0.1519,
+     -0.0201
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "contribucion_errores_pp_ic": {
+    "punto": -0.0293,
+    "ic95": [
+     -0.0739,
+     0.0113
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "veredicto": "REFUTADA EN SU PREMISA: los aciertos pierden más que los errores (signo contrario al postulado); la diferencia no se distingue de cero. El criterio original aplicado literalmente habría dado un FALSO POSITIVO por aritmética de signos.",
+   "signo_q_acierto": "−",
+   "signo_q_error": "−",
+   "razon_aplicable": false,
+   "fraccion_aciertos": 0.7116,
+   "contribucion_aciertos_pp": -0.0847,
+   "contribucion_errores_pp": -0.0293,
+   "razon_magnitud_error_sobre_acierto": {
+    "punto": 0.8528,
+    "ic95": [
+     0.0542,
+     3.5157
+    ],
+    "nulo": 1.0,
+    "contiene_nulo": true,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 1.5,
+    "ic_contiene_umbral": true,
+    "todo_el_ic_bajo_el_umbral": false,
+    "filas": 4715
+   }
+  },
+  "H3": {
+   "pendiente_sesion_sobre_sorpresa_beta": {
+    "punto": -0.03,
+    "ic95": [
+     -0.0909,
+     0.0277
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 0.1,
+    "ic_contiene_umbral": false,
+    "todo_el_ic_bajo_el_umbral": true,
+    "filas": 4715
+   },
+   "beta_de_la_sorpresa": "congelada del ajuste",
+   "pendiente_sesion_sobre_gap": {
+    "punto": -0.0465,
+    "ic95": [
+     -0.0911,
+     -0.0004
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0,
+    "umbral_relevancia": 0.1,
+    "ic_contiene_umbral": false,
+    "todo_el_ic_bajo_el_umbral": true,
+    "filas": 4715
+   },
+   "advertencia_pendiente_gap": "sesión ≡ total − gap por identidad exacta (sin Open independiente): la pendiente sesión~gap es indistinguible de la atenuación −Var(ε)/Var(g) por error de medición del gap (testigos de dos añadas: gaps del 2-sep, cierres del 26-ago)",
+   "sesion_media_por_tercil_de_sorpresa_pp": {
+    "bajo": {
+     "punto": 0.0946,
+     "ic95": [
+      -0.0362,
+      0.2245
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 529,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1727
+    },
+    "medio": {
+     "punto": 0.0638,
+     "ic95": [
+      -0.0639,
+      0.1993
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 528,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1161
+    },
+    "alto": {
+     "punto": 0.1059,
+     "ic95": [
+      -0.0144,
+      0.2399
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 547,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1827
+    }
+   },
+   "diferencia_tercil_alto_menos_bajo_pp": {
+    "punto": 0.0113,
+    "ic95": [
+     -0.1442,
+     0.1699
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": true,
+    "contiene_cero": true,
+    "fechas": 643,
+    "bloque": 10,
+    "replicas_no_finitas": 0
+   },
+   "veredicto": "No se detecta relación de la sesión con la sorpresa respecto de β (IC contiene el cero). Sobre el gap crudo la pendiente es negativa pero confundida con error de medición y su irrelevancia (|pendiente| < 0,1) sólo se establece donde TODO el IC queda bajo 0,1."
+  },
+  "cortes_tercil_s": [
+   -0.3581,
+   0.4241
+  ],
+  "sensibilidad_bloque": {
+   "1": {
+    "ventaja_sesion_pp": [
+     -5.447,
+     -0.1705
+    ],
+    "q_medio_pp": [
+     -0.2122,
+     -0.0167
+    ],
+    "pendiente_sesion_gap": [
+     -0.103,
+     0.0101
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.1001,
+     0.0398
+    ]
+   },
+   "5": {
+    "ventaja_sesion_pp": [
+     -5.3262,
+     0.022
+    ],
+    "q_medio_pp": [
+     -0.2028,
+     -0.0195
+    ],
+    "pendiente_sesion_gap": [
+     -0.0994,
+     0.0094
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0951,
+     0.0379
+    ]
+   },
+   "10": {
+    "ventaja_sesion_pp": [
+     -5.5051,
+     -0.0212
+    ],
+    "q_medio_pp": [
+     -0.2081,
+     -0.026
+    ],
+    "pendiente_sesion_gap": [
+     -0.0911,
+     -0.0004
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0909,
+     0.0277
+    ]
+   },
+   "20": {
+    "ventaja_sesion_pp": [
+     -5.5929,
+     0.0419
+    ],
+    "q_medio_pp": [
+     -0.1989,
+     -0.0315
+    ],
+    "pendiente_sesion_gap": [
+     -0.0853,
+     -0.0071
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0863,
+     0.025
+    ]
+   },
+   "40": {
+    "ventaja_sesion_pp": [
+     -5.7012,
+     0.2321
+    ],
+    "q_medio_pp": [
+     -0.1909,
+     -0.0391
+    ],
+    "pendiente_sesion_gap": [
+     -0.0835,
+     -0.009
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0877,
+     0.0245
+    ]
+   },
+   "60": {
+    "ventaja_sesion_pp": [
+     -5.9592,
+     0.4266
+    ],
+    "q_medio_pp": [
+     -0.1885,
+     -0.0352
+    ],
+    "pendiente_sesion_gap": [
+     -0.0832,
+     -0.0109
+    ],
+    "pendiente_sesion_sorpresa": [
+     -0.0862,
+     0.023
+    ]
+   }
+  },
+  "costos": {
+   "0pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.1139,
+     "ic95": [
+      -0.1989,
+      -0.0315
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    },
+    "contraria_pp_dia": {
+     "punto": 0.1139,
+     "ic95": [
+      0.0315,
+      0.1989
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    }
+   },
+   "5pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.2139,
+     "ic95": [
+      -0.2989,
+      -0.1315
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    },
+    "contraria_pp_dia": {
+     "punto": 0.0139,
+     "ic95": [
+      -0.0685,
+      0.0989
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    }
+   },
+   "10pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.3139,
+     "ic95": [
+      -0.3989,
+      -0.2315
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    },
+    "contraria_pp_dia": {
+     "punto": -0.0861,
+     "ic95": [
+      -0.1685,
+      -0.0011
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    }
+   },
+   "25pb_por_lado": {
+    "direccional_pp_dia": {
+     "punto": -0.6139,
+     "ic95": [
+      -0.6989,
+      -0.5315
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    },
+    "contraria_pp_dia": {
+     "punto": -0.3861,
+     "ic95": [
+      -0.4685,
+      -0.3011
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 643,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 4715
+    }
+   },
+   "punto_muerto_contraria_pb_por_lado": 5.7,
+   "contraria_sharpe_por_periodo": 0.0906,
+   "contraria_dsr": {
+    "14": 0.712,
+    "29": 0.594,
+    "100": 0.408,
+    "160": 0.347
+   },
+   "nota": "V = 1/T (teórica); N incluye el registro de la máquina; 25 pb por lado = la vara de la casa"
+  },
+  "robustez": {
+   "sin_anio": {
+    "2024": {
+     "q_medio_pp": [
+      -0.2296,
+      -0.0124
+     ],
+     "ventaja_gap_pp": [
+      10.1677,
+      18.4487
+     ]
+    },
+    "2025": {
+     "q_medio_pp": [
+      -0.2627,
+      -0.0234
+     ],
+     "ventaja_gap_pp": [
+      14.0301,
+      22.5727
+     ]
+    },
+    "2026": {
+     "q_medio_pp": [
+      -0.1728,
+      -0.0079
+     ],
+     "ventaja_gap_pp": [
+      10.9722,
+      18.1384
+     ]
+    }
+   },
+   "sin_ticker": {
+    "000660.KS": [
+     -0.1919,
+     -0.0283
+    ],
+    "005930.KS": [
+     -0.1829,
+     -0.0133
+    ],
+    "2330.TW": [
+     -0.2175,
+     -0.0373
+    ],
+    "3436.T": [
+     -0.2032,
+     -0.0332
+    ],
+    "4063.T": [
+     -0.2224,
+     -0.0415
+    ],
+    "6857.T": [
+     -0.1778,
+     -0.0153
+    ],
+    "8035.T": [
+     -0.1881,
+     -0.0224
+    ],
+    "IFX.DE": [
+     -0.2248,
+     -0.0389
+    ]
+   },
+   "por_ticker": {
+    "000660.KS": {
+     "punto": -0.1409,
+     "ic95": [
+      -0.3515,
+      0.0612
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 585,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 585
+    },
+    "005930.KS": {
+     "punto": -0.2267,
+     "ic95": [
+      -0.3824,
+      -0.0842
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 571,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 571
+    },
+    "2330.TW": {
+     "punto": -0.015,
+     "ic95": [
+      -0.1092,
+      0.0728
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 543,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 543
+    },
+    "3436.T": {
+     "punto": -0.0989,
+     "ic95": [
+      -0.291,
+      0.0921
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 599,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 599
+    },
+    "4063.T": {
+     "punto": -0.0013,
+     "ic95": [
+      -0.113,
+      0.1022
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 596,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 596
+    },
+    "6857.T": {
+     "punto": -0.2355,
+     "ic95": [
+      -0.4402,
+      -0.0487
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 599,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 599
+    },
+    "8035.T": {
+     "punto": -0.185,
+     "ic95": [
+      -0.3489,
+      -0.0188
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 600,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 600
+    },
+    "IFX.DE": {
+     "punto": -0.0081,
+     "ic95": [
+      -0.1794,
+      0.1619
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 622,
+     "bloque": 20,
+     "replicas_no_finitas": 0,
+     "filas": 622
+    }
+   },
+   "winsorizado_0_5pct_q_medio_pp": {
+    "punto": -0.1109,
+    "ic95": [
+     -0.1919,
+     -0.0302
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 643,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 4715
+   }
+  },
+  "por_exchange": {
+   "XETR": {
+    "filas": 622,
+    "tickers": [
+     "IFX.DE"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 6.2701,
+     "ic95": [
+      1.4469,
+      10.9365
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 622,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 622
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": 0.8039,
+     "ic95": [
+      -4.3408,
+      6.2701
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 622,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 622
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.0081,
+     "ic95": [
+      -0.1912,
+      0.1761
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 622,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 622
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.1748,
+     "ic95": [
+      -0.3663,
+      0.0699
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 622,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 622
+    }
+   },
+   "XKRX": {
+    "filas": 1156,
+    "tickers": [
+     "000660.KS",
+     "005930.KS"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 16.955,
+     "ic95": [
+      12.4352,
+      21.5029
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 596,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1156
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": -5.8824,
+     "ic95": [
+      -10.6716,
+      -1.3793
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 596,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1156
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.1833,
+     "ic95": [
+      -0.356,
+      -0.03
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 596,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1156
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": 0.0129,
+     "ic95": [
+      -0.0521,
+      0.0748
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 596,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 1156
+    }
+   },
+   "XTAI": {
+    "filas": 543,
+    "tickers": [
+     "2330.TW"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 16.0221,
+     "ic95": [
+      10.4972,
+      21.3628
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 543,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 543
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": -1.6575,
+     "ic95": [
+      -6.814,
+      3.4991
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 543,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 543
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.015,
+     "ic95": [
+      -0.1082,
+      0.0716
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 543,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 543
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0019,
+     "ic95": [
+      -0.0836,
+      0.0892
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 543,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 543
+    }
+   },
+   "XTKS": {
+    "filas": 2394,
+    "tickers": [
+     "3436.T",
+     "4063.T",
+     "6857.T",
+     "8035.T"
+    ],
+    "ventaja_direccional_gap_pp": {
+     "punto": 17.2515,
+     "ic95": [
+      13.3442,
+      21.0834
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 603,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2394
+    },
+    "ventaja_direccional_sesion_pp": {
+     "punto": -2.381,
+     "ic95": [
+      -6.028,
+      1.298
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 603,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2394
+    },
+    "retorno_medio_cartera_sesion_pp": {
+     "punto": -0.1304,
+     "ic95": [
+      -0.25,
+      -0.0147
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": false,
+     "contiene_cero": false,
+     "fechas": 603,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2394
+    },
+    "pendiente_sesion_sobre_sorpresa_beta": {
+     "punto": -0.0272,
+     "ic95": [
+      -0.0947,
+      0.0502
+     ],
+     "nulo": 0.0,
+     "contiene_nulo": true,
+     "contiene_cero": true,
+     "fechas": 603,
+     "bloque": 10,
+     "replicas_no_finitas": 0,
+     "filas": 2394
+    }
+   }
+  }
+ },
+ "colision_procedencia": {
+  "nota": "signo crudo del SOX sobre toda la ventana reconstruida (incluye fechas selladas, reconstruidas desde testigos, no desde senales.db) — NO es la cifra canónica del README (modelo 4.6.0, n = 14.618)",
+  "ventana": [
+   "2018-09-06",
+   "2026-08-25"
+  ],
+  "filas": 15198,
+  "por_exchange": {
+   "XETR": {
+    "punto": 4.7264,
+    "ic95": [
+     1.8905,
+     7.5622
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 2010,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 2010,
+    "n": 2010,
+    "modelo_pct": 59.4,
+    "base_pct": 54.68,
+    "wilson_modelo_filas": [
+     57.2,
+     61.5
+    ],
+    "b": 509,
+    "c": 414,
+    "mcnemar_p": 0.0019744574694399086,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "XKRX": {
+    "punto": 16.6352,
+    "ic95": [
+     13.7148,
+     19.4145
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1932,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 3709,
+    "n": 3709,
+    "modelo_pct": 72.09,
+    "base_pct": 55.46,
+    "wilson_modelo_filas": [
+     70.6,
+     73.5
+    ],
+    "b": 1167,
+    "c": 550,
+    "mcnemar_p": 5.475040376740103e-50,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "XTAI": {
+    "punto": 16.0951,
+    "ic95": [
+     12.8872,
+     19.3031
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1808,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 1808,
+    "n": 1808,
+    "modelo_pct": 71.68,
+    "base_pct": 55.59,
+    "wilson_modelo_filas": [
+     69.6,
+     73.7
+    ],
+    "b": 560,
+    "c": 269,
+    "mcnemar_p": 7.338181199044576e-24,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   },
+   "XTKS": {
+    "punto": 20.3885,
+    "ic95": [
+     18.0916,
+     22.7569
+    ],
+    "nulo": 0.0,
+    "contiene_nulo": false,
+    "contiene_cero": false,
+    "fechas": 1940,
+    "bloque": 20,
+    "replicas_no_finitas": 0,
+    "filas": 7671,
+    "n": 7671,
+    "modelo_pct": 74.05,
+    "base_pct": 53.66,
+    "wilson_modelo_filas": [
+     73.1,
+     75.0
+    ],
+    "b": 2524,
+    "c": 960,
+    "mcnemar_p": 1.6424535296098583e-154,
+    "advertencia": "p y Wilson de FILAS: optimistas por clustering de día (unidad = fecha)"
+   }
+  }
+ },
+ "intentos_dsr": {
+  "intervalos_publicados_ajuste": 52,
+  "intervalos_publicados_prueba": 51,
+  "intervalos_publicados_total": 107,
+  "regla": "un intento por intervalo publicado (la casa yerra hacia arriba); el 14 declarado a mano queda retirado"
+ }
+}

@@ -1,0 +1,395 @@
+{
+ "generado_en_utc": "2026-09-02T18:50:54.611688+00:00",
+ "etiqueta": "PROPUESTA — Frente B2; predicciones escritas ANTES de descargar",
+ "ajuste": {
+  "anios": [
+   "2018-09-01",
+   "2023-12-31"
+  ],
+  "puntos": {
+   "XETR": {
+    "h": 8.75,
+    "delta_pp": 3.7,
+    "ic95_pp": [
+     0.15,
+     7.41
+    ],
+    "contiene_cero": false,
+    "fechas": 1350,
+    "tasa_base_gap_positivo": 0.556,
+    "corr_gap_sox": 0.227,
+    "tickers": [
+     "IFX.DE"
+    ],
+    "delta_por_ticker_pp": {
+     "IFX.DE": 3.7
+    }
+   },
+   "XKRX": {
+    "h": 1.75,
+    "delta_pp": 16.25,
+    "ic95_pp": [
+     13.03,
+     19.39
+    ],
+    "contiene_cero": false,
+    "fechas": 1296,
+    "tasa_base_gap_positivo": 0.557,
+    "corr_gap_sox": 0.616,
+    "tickers": [
+     "000660.KS",
+     "005930.KS"
+    ],
+    "delta_por_ticker_pp": {
+     "000660.KS": 18.27,
+     "005930.KS": 14.22
+    }
+   },
+   "XTAI": {
+    "h": 2.75,
+    "delta_pp": 16.76,
+    "ic95_pp": [
+     13.17,
+     20.42
+    ],
+    "contiene_cero": false,
+    "fechas": 1283,
+    "tasa_base_gap_positivo": 0.545,
+    "corr_gap_sox": 0.616,
+    "tickers": [
+     "2330.TW"
+    ],
+    "delta_por_ticker_pp": {
+     "2330.TW": 16.76
+    }
+   },
+   "XTKS": {
+    "h": 1.75,
+    "delta_pp": 21.55,
+    "ic95_pp": [
+     18.61,
+     24.46
+    ],
+    "contiene_cero": false,
+    "fechas": 1295,
+    "tasa_base_gap_positivo": 0.529,
+    "corr_gap_sox": 0.643,
+    "tickers": [
+     "3436.T",
+     "4063.T",
+     "6857.T",
+     "8035.T"
+    ],
+    "delta_por_ticker_pp": {
+     "3436.T": 22.97,
+     "4063.T": 17.47,
+     "6857.T": 21.58,
+     "8035.T": 24.17
+    }
+   }
+  },
+  "dispersion_entre_tickers_pp": {
+   "de": 6.47,
+   "min": 3.7,
+   "max": 24.17,
+   "n": 8
+  },
+  "advertencia_intervalo": "el IC de la predicción propaga SÓLO el error de muestreo de las anclas: es un intervalo de CONFIANZA de la curva, no de PREDICCIÓN de un exchange nuevo; la dispersión entre conjuntos de tickers al mismo h (Seúl vs Tokio a 1,75 h) y entre tickers (DE arriba) no está incluida y es mayor que el semiancho publicado",
+  "confusion_h_tickers": "h y el conjunto de tickers están perfectamente confundidos en el ajuste (XETR = 1 ticker, XTAI = 1, XKRX = 2, XTKS = 4)",
+  "a_pp": 28.12,
+  "tau_h": 4.65,
+  "ic95_a_pp": [
+   22.86,
+   36.94
+  ],
+  "ic95_tau_h": [
+   2.87,
+   7.57
+  ],
+  "forma": "Δ(h) = a·exp(−h/τ), MCP ponderados por fechas; control isotónico decreciente",
+  "advertencia": "cuatro exchanges, tres valores de h: la curva tiene un grado de libertad efectivo; la predicción a h=8,75 (Ámsterdam) es la que separa exchange de margen"
+ },
+ "predicciones_escritas_antes": {
+  "XHKG": {
+   "h": 3.25,
+   "tickers_candidatos": [
+    "0981.HK",
+    "1347.HK"
+   ],
+   "exp_pp": 13.98,
+   "exp_ic95_pp": [
+    11.36,
+    15.99
+   ],
+   "isotonica_pp": 15.67,
+   "isotonica_ic95_pp": [
+    12.29,
+    17.86
+   ]
+  },
+  "XAMS": {
+   "h": 8.75,
+   "tickers_candidatos": [
+    "ASML.AS",
+    "BESI.AS"
+   ],
+   "exp_pp": 4.29,
+   "exp_ic95_pp": [
+    1.71,
+    7.5
+   ],
+   "isotonica_pp": 3.7,
+   "isotonica_ic95_pp": [
+    0.07,
+    7.26
+   ]
+  },
+  "XNSE": {
+   "h": 5.5,
+   "tickers_candidatos": [
+    "MOSCHIP.NS",
+    "TATAELXSI.NS"
+   ],
+   "exp_pp": 8.62,
+   "exp_ic95_pp": [
+    5.27,
+    11.57
+   ],
+   "isotonica_pp": 10.77,
+   "isotonica_ic95_pp": [
+    8.17,
+    12.88
+   ]
+  },
+  "XASX": {
+   "h": 1.75,
+   "tickers_candidatos": [],
+   "exp_pp": 19.3,
+   "exp_ic95_pp": [
+    17.38,
+    21.39
+   ],
+   "isotonica_pp": 18.89,
+   "isotonica_ic95_pp": [
+    16.97,
+    21.08
+   ]
+  }
+ },
+ "medicion": {
+  "medido_en_utc": "2026-09-02T18:50:56.296994+00:00",
+  "testigo": "GEMELO/resultados/testigos_fuente/b2_nuevos_ohlc.csv.gz",
+  "testigo_sha256": "d7f213266f8823fa7dab7f0a29471579775235d9b543bbc6d768c0f7546b3a74",
+  "por_exchange": {
+   "XHKG": {
+    "faltantes": {},
+    "tickers_usados": [
+     "0981.HK",
+     "1347.HK"
+    ],
+    "primera_sesion": "2018-09-04",
+    "ultima_sesion": "2026-09-01",
+    "ajuste": {
+     "fechas": 1307,
+     "filas": 2471,
+     "delta_pp": 4.13,
+     "ic95_pp": [
+      1.04,
+      7.41
+     ],
+     "contiene_cero": false,
+     "diferencia_medido_menos_predicho_pp": -9.85,
+     "ic95_diferencia_pp": [
+      -13.79,
+      -5.92
+     ],
+     "compatible_propagando_ambas": false,
+     "tasa_base_gap_positivo": 0.621,
+     "corr_gap_sox": 0.45,
+     "tickers_con_historia_en_la_ventana": [
+      "0981.HK",
+      "1347.HK"
+     ],
+     "prediccion_exp_pp": 13.98,
+     "prediccion_exp_ic95_pp": [
+      11.36,
+      15.99
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": false,
+     "prediccion_isotonica_pp": 15.67,
+     "dentro_del_ic_isotonica": false
+    },
+    "prueba": {
+     "fechas": 644,
+     "filas": 1181,
+     "delta_pp": 3.13,
+     "ic95_pp": [
+      -1.53,
+      7.9
+     ],
+     "contiene_cero": true,
+     "diferencia_medido_menos_predicho_pp": -10.85,
+     "ic95_diferencia_pp": [
+      -16.1,
+      -5.59
+     ],
+     "compatible_propagando_ambas": false,
+     "tasa_base_gap_positivo": 0.643,
+     "corr_gap_sox": 0.449,
+     "tickers_con_historia_en_la_ventana": [
+      "0981.HK",
+      "1347.HK"
+     ],
+     "prediccion_exp_pp": 13.98,
+     "prediccion_exp_ic95_pp": [
+      11.36,
+      15.99
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": false,
+     "prediccion_isotonica_pp": 15.67,
+     "dentro_del_ic_isotonica": false
+    }
+   },
+   "XAMS": {
+    "faltantes": {},
+    "tickers_usados": [
+     "ASML.AS",
+     "BESI.AS"
+    ],
+    "primera_sesion": "2018-09-04",
+    "ultima_sesion": "2026-09-02",
+    "ajuste": {
+     "fechas": 1363,
+     "filas": 2726,
+     "delta_pp": 6.24,
+     "ic95_pp": [
+      3.01,
+      9.46
+     ],
+     "contiene_cero": false,
+     "diferencia_medido_menos_predicho_pp": 1.95,
+     "ic95_diferencia_pp": [
+      -2.39,
+      6.28
+     ],
+     "compatible_propagando_ambas": true,
+     "tasa_base_gap_positivo": 0.561,
+     "corr_gap_sox": 0.294,
+     "tickers_con_historia_en_la_ventana": [
+      "ASML.AS",
+      "BESI.AS"
+     ],
+     "prediccion_exp_pp": 4.29,
+     "prediccion_exp_ic95_pp": [
+      1.71,
+      7.5
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": true,
+     "prediccion_isotonica_pp": 3.7,
+     "dentro_del_ic_isotonica": true
+    },
+    "prueba": {
+     "fechas": 680,
+     "filas": 1360,
+     "delta_pp": 4.26,
+     "ic95_pp": [
+      -0.29,
+      8.82
+     ],
+     "contiene_cero": true,
+     "diferencia_medido_menos_predicho_pp": -0.03,
+     "ic95_diferencia_pp": [
+      -5.43,
+      5.38
+     ],
+     "compatible_propagando_ambas": true,
+     "tasa_base_gap_positivo": 0.548,
+     "corr_gap_sox": 0.33,
+     "tickers_con_historia_en_la_ventana": [
+      "ASML.AS",
+      "BESI.AS"
+     ],
+     "prediccion_exp_pp": 4.29,
+     "prediccion_exp_ic95_pp": [
+      1.71,
+      7.5
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": true,
+     "prediccion_isotonica_pp": 3.7,
+     "dentro_del_ic_isotonica": true
+    }
+   },
+   "XNSE": {
+    "faltantes": {},
+    "tickers_usados": [
+     "MOSCHIP.NS",
+     "TATAELXSI.NS"
+    ],
+    "primera_sesion": "2018-09-04",
+    "ultima_sesion": "2026-09-01",
+    "ajuste": {
+     "fechas": 1311,
+     "filas": 1311,
+     "delta_pp": -13.2,
+     "ic95_pp": [
+      -16.86,
+      -9.61
+     ],
+     "contiene_cero": false,
+     "diferencia_medido_menos_predicho_pp": -21.82,
+     "ic95_diferencia_pp": [
+      -26.62,
+      -17.01
+     ],
+     "compatible_propagando_ambas": false,
+     "tasa_base_gap_positivo": 0.758,
+     "corr_gap_sox": 0.39,
+     "tickers_con_historia_en_la_ventana": [
+      "TATAELXSI.NS"
+     ],
+     "prediccion_exp_pp": 8.62,
+     "prediccion_exp_ic95_pp": [
+      5.27,
+      11.57
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": false,
+     "prediccion_isotonica_pp": 10.77,
+     "dentro_del_ic_isotonica": false
+    },
+    "prueba": {
+     "fechas": 657,
+     "filas": 1018,
+     "delta_pp": -8.84,
+     "ic95_pp": [
+      -13.33,
+      -4.61
+     ],
+     "contiene_cero": false,
+     "diferencia_medido_menos_predicho_pp": -17.46,
+     "ic95_diferencia_pp": [
+      -22.84,
+      -12.08
+     ],
+     "compatible_propagando_ambas": false,
+     "tasa_base_gap_positivo": 0.68,
+     "corr_gap_sox": 0.199,
+     "tickers_con_historia_en_la_ventana": [
+      "MOSCHIP.NS",
+      "TATAELXSI.NS"
+     ],
+     "prediccion_exp_pp": 8.62,
+     "prediccion_exp_ic95_pp": [
+      5.27,
+      11.57
+     ],
+     "dentro_del_ic_de_la_prediccion_exp": false,
+     "prediccion_isotonica_pp": 10.77,
+     "dentro_del_ic_isotonica": false
+    }
+   },
+   "XASX": {
+    "nota": "sin ticker de semiconductores disponible: no se mide"
+   }
+  }
+ }
+}

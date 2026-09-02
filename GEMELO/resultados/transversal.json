@@ -1,0 +1,282 @@
+{
+ "generado_en_utc": "2026-09-02T18:39:29.846739+00:00",
+ "etiqueta": "PROPUESTA — Frente D, octava corrida; pendiente de dictamen",
+ "parametros": {
+  "n_perm": 4000,
+  "n_boot": 4000,
+  "min_tickers": 4,
+  "rho_relevante": 0.2,
+  "ajuste": [
+   "2018-09-01",
+   "2023-12-31"
+  ],
+  "prueba": [
+   "2024-01-01",
+   "2026-08-31"
+  ],
+  "semilla": 20260902,
+  "prueba_abierta": true
+ },
+ "sellada": {
+  "ultimo_sello": "2026-08-31",
+  "fechas": 35,
+  "filas": 259,
+  "rho_medio": 0.2294,
+  "ic95_rho": [
+   0.0343,
+   0.4182
+  ],
+  "ic95_rho_t_cluster": [
+   0.0252,
+   0.4335
+  ],
+  "se_muestral": 0.1005,
+  "se_nula_permutacion": 0.0683,
+  "p_permutacion_dentro_del_dia": 0.0007,
+  "p_permutacion_texto": "0.0007",
+  "p_z_se_muestral": 0.0224,
+  "tau_medio": 0.1882,
+  "ic95_tau": [
+   0.0333,
+   0.3423
+  ],
+  "fraccion_fechas_rho_positivo": 0.571,
+  "wilson95_fraccion_positiva": [
+   0.409,
+   0.72
+  ],
+  "relevante": false,
+  "contiene_cero": false,
+  "contiene_cero_t_cluster": false,
+  "mde_80_con_se_muestral": 0.2813,
+  "dejar_uno_fuera": {
+   "sin_000660.KS": 0.2124,
+   "sin_005930.KS": 0.2014,
+   "sin_2330.TW": 0.1993,
+   "sin_3436.T": 0.2305,
+   "sin_4063.T": 0.2054,
+   "sin_6857.T": 0.2123,
+   "sin_8035.T": 0.1903,
+   "sin_IFX.DE": 0.2301
+  },
+  "nota_ic": "el IC que vale es el de t de clúster (k = 35); el percentil sub-cubre (Frente A) y bloques de 20 degenera (2 bloques)",
+  "nota_empates": "apertura_estimada_pct está sellada a 2 decimales: empates en varias fechas atenúan ρ (sesgo CONTRA el hallazgo)",
+  "R2_sin_15_23_jul": {
+   "fechas": 29,
+   "filas": 215,
+   "rho_medio": 0.1899,
+   "ic95_rho": [
+    -0.0218,
+    0.4084
+   ],
+   "ic95_rho_t_cluster": [
+    -0.0391,
+    0.4189
+   ],
+   "se_muestral": 0.1118,
+   "se_nula_permutacion": 0.0738,
+   "p_permutacion_dentro_del_dia": 0.0092,
+   "p_permutacion_texto": "0.0092",
+   "p_z_se_muestral": 0.0894,
+   "tau_medio": 0.1534,
+   "ic95_tau": [
+    -0.0172,
+    0.3319
+   ],
+   "fraccion_fechas_rho_positivo": 0.552,
+   "wilson95_fraccion_positiva": [
+    0.375,
+    0.716
+   ],
+   "relevante": false,
+   "contiene_cero": true,
+   "contiene_cero_t_cluster": true,
+   "mde_80_con_se_muestral": 0.313
+  },
+  "betas_campeon_media_sellada": {
+   "000660.KS": 0.919,
+   "005930.KS": 0.6952,
+   "2330.TW": 0.3628,
+   "3436.T": 0.7496,
+   "4063.T": 0.3419,
+   "6857.T": 0.6314,
+   "8035.T": 0.6222,
+   "IFX.DE": 0.0921
+  }
+ },
+ "larga": {
+  "betas_ajuste": {
+   "000660.KS": 0.4312,
+   "005930.KS": 0.2929,
+   "2330.TW": 0.3829,
+   "3436.T": 0.5302,
+   "4063.T": 0.3627,
+   "6857.T": 0.5931,
+   "8035.T": 0.5488,
+   "IFX.DE": 0.1548
+  },
+  "orden_beta_ajuste": [
+   "6857.T",
+   "8035.T",
+   "3436.T",
+   "000660.KS",
+   "2330.TW",
+   "4063.T",
+   "005930.KS",
+   "IFX.DE"
+  ],
+  "fuente_gaps": "GEMELO/resultados/testigos_fuente/gaps_v2_propio_indice.csv.gz",
+  "fuente_sox": "GEMELO/resultados/testigos_fuente/cierres_353cacd57dc25f6a.csv.gz",
+  "embargo_sesiones": 5,
+  "burn_in": 250,
+  "sellada_excluida_de_la_prueba": [
+   "2026-07-05",
+   "2026-08-31"
+  ],
+  "excluir_cero": "aplicado también a la ventana larga (declarado en la enmienda del pre-registro)",
+  "ajuste_causal": {
+   "fechas": 1102,
+   "filas": 8371,
+   "rho_medio": 0.2484,
+   "ic95_rho": [
+    0.2202,
+    0.2768
+   ],
+   "ic95_rho_t_cluster": [
+    0.2204,
+    0.2764
+   ],
+   "se_muestral": 0.0143,
+   "se_nula_permutacion": 0.0118,
+   "p_permutacion_dentro_del_dia": 0.0002,
+   "p_permutacion_texto": "< 0.00025 (piso de 4000 permutaciones)",
+   "p_z_se_muestral": 0.0,
+   "tau_medio": 0.1952,
+   "ic95_tau": [
+    0.1724,
+    0.2181
+   ],
+   "fraccion_fechas_rho_positivo": 0.7,
+   "wilson95_fraccion_positiva": [
+    0.672,
+    0.726
+   ],
+   "relevante": true,
+   "contiene_cero": false,
+   "contiene_cero_t_cluster": false,
+   "mde_80_con_se_muestral": 0.04
+  },
+  "prueba": {
+   "desde_con_embargo": "2024-01-08",
+   "aperturas_de_la_prueba": [
+    "12:11 (gaps v1, 626 fechas, ρ̄ 0,2373) — defecto de datos en descargar_gaps",
+    "12:14 (gaps v2, 637 fechas) — la vigente; dos evaluaciones del holdout propio del frente, declaradas"
+   ],
+   "fechas": 637,
+   "filas": 4828,
+   "rho_medio": 0.2403,
+   "ic95_rho": [
+    0.2062,
+    0.2756
+   ],
+   "ic95_rho_t_cluster": [
+    0.2055,
+    0.2751
+   ],
+   "se_muestral": 0.0177,
+   "se_nula_permutacion": 0.0158,
+   "p_permutacion_dentro_del_dia": 0.0002,
+   "p_permutacion_texto": "< 0.00025 (piso de 4000 permutaciones)",
+   "p_z_se_muestral": 0.0,
+   "tau_medio": 0.1883,
+   "ic95_tau": [
+    0.1608,
+    0.2167
+   ],
+   "fraccion_fechas_rho_positivo": 0.703,
+   "wilson95_fraccion_positiva": [
+    0.667,
+    0.737
+   ],
+   "relevante": true,
+   "contiene_cero": false,
+   "contiene_cero_t_cluster": false,
+   "mde_80_con_se_muestral": 0.0496,
+   "nula_etiquetas_beta": {
+    "rho_observado": 0.2403,
+    "n_rep": 2000,
+    "nula_media": -0.0009,
+    "nula_sd": 0.1003,
+    "nula_q025_q975": [
+     -0.1931,
+     0.1887
+    ],
+    "p_bilateral": 0.005,
+    "fraccion_ordenes_sobre_relevante": 0.019
+   },
+   "dejar_uno_fuera": {
+    "sin_000660.KS": 0.2466,
+    "sin_005930.KS": 0.2485,
+    "sin_2330.TW": 0.2423,
+    "sin_3436.T": 0.2607,
+    "sin_4063.T": 0.23,
+    "sin_6857.T": 0.2067,
+    "sin_8035.T": 0.2425,
+    "sin_IFX.DE": 0.2053
+   },
+   "por_signo_sox": {
+    "sox_positivo": {
+     "fechas": 366,
+     "rho_medio": 0.2415,
+     "ic95_aprox": [
+      0.1978,
+      0.2852
+     ]
+    },
+    "sox_negativo": {
+     "fechas": 271,
+     "rho_medio": 0.2387,
+     "ic95_aprox": [
+      0.1822,
+      0.2952
+     ]
+    }
+   },
+   "identidad_rho_signo_max_discrepancia": 0.0,
+   "sin_excluir_cero": {
+    "fechas": 640,
+    "filas": 4857,
+    "rho_medio": 0.2426,
+    "ic95_rho": [
+     0.2075,
+     0.277
+    ]
+   }
+  },
+  "prueba_con_orden_del_campeon": {
+   "rotulo": "CONTRAFACTUAL CONTAMINADO (β selladas, estimadas en 2026): cota optimista de lo que el campeón habría hecho",
+   "fechas": 637,
+   "rho_medio": 0.1795,
+   "ic95_rho": [
+    0.1461,
+    0.212
+   ],
+   "ic95_rho_t_cluster": [
+    0.1462,
+    0.2128
+   ],
+   "fraccion_fechas_rho_positivo": 0.647,
+   "relevante": false
+  },
+  "proxy_menos_campeon": {
+   "fechas": 637,
+   "diferencia": 0.0608,
+   "ic95_aprox": [
+    0.0252,
+    0.0964
+   ]
+  },
+  "spearman_beta_proxy_vs_campeon": 0.4524,
+  "universo": "los 8 tickers son la composición de 2026 (universo.MERCADOS_POR_ABRIR) aplicada hacia atrás a 2018: selección ex post del corte transversal, declarada"
+ }
+}

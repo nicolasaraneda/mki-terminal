@@ -1,0 +1,15 @@
+{
+ "sha256": "17ae3a319bfab46ae2014e47a81f84ff34019b1ba4908d5e1e07af5cf2d511aa",
+ "datos": {
+  "GEMELO/resultados/testigos_fuente/gaps_v2_propio_indice.csv.gz": "485266d452e2e02f586acaa4d734ccea83914162c8c0995fe3c89767fe8b5fe3",
+  "GEMELO/resultados/testigos_fuente/cierres_353cacd57dc25f6a.csv.gz": "d828c0ca0a2b37ed51352a6e61b7e603e1cc63b8db048b4d4b5ef48b73ff9217"
+ },
+ "abierta_en_utc": "2026-09-02T18:50:25.464743+00:00",
+ "nota": "la primera apertura (12:24) fue anterior al candado; se registra aquí la primera con rastro",
+ "enmiendas": [
+  {
+   "en_utc": "2026-09-02T18:50:25.464743+00:00",
+   "razon": "dictamen B 2-sep (dictamen_08/B.md): selladas excluidas y embargadas de verdad, control de |SOX| corregido, bloques 20, McNemar pareado, potencia calculada; ninguna hipotesis cambia"
+  }
+ ]
+}

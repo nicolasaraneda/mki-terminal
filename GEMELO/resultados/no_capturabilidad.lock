@@ -1,0 +1,21 @@
+{
+ "sha256": "7557285791c075d94eac2c7c5c031b1ad55d0d80cdde333e19d7b599fba4c11d",
+ "abierta_en_utc": "2026-09-02T18:15:12.446392+00:00",
+ "archivos": [
+  "GEMELO/no_capturabilidad.py",
+  "GEMELO/preregistro/frente_C.md"
+ ],
+ "enmiendas": [
+  {
+   "en_utc": "2026-09-02T18:36:00.516332+00:00",
+   "sha256_anterior": "657f6564d93982f7a8f02910f1a0de265937818eb4a1753d2717a6dff9c2ff5e",
+   "sha256_nuevo": "7557285791c075d94eac2c7c5c031b1ad55d0d80cdde333e19d7b599fba4c11d",
+   "razon": "dictamen C 2-sep (dictamen_08/C.md): excluir_cero en los dos lados, McNemar, intervalos para los puntos desnudos, nulo declarado por IC, veredictos H2/H3 reescritos, costos y contraria, robustez, barrido de bloque, candado con datos; ninguna hipótesis cambia, cada estadístico nuevo es un intento"
+  }
+ ],
+ "datos": {
+  "GEMELO/resultados/testigos_fuente/gaps_v2_propio_indice.csv.gz": "485266d452e2e02f586acaa4d734ccea83914162c8c0995fe3c89767fe8b5fe3",
+  "GEMELO/resultados/testigos_fuente/cierres_03fdca36d64efb0d.csv.gz": "2778eadc9862af6e8913463384727c3488c516e3b92008b3c7e33027f897c301",
+  "GEMELO/resultados/testigos_fuente/cierres_353cacd57dc25f6a.csv.gz": "d828c0ca0a2b37ed51352a6e61b7e603e1cc63b8db048b4d4b5ef48b73ff9217"
+ }
+}

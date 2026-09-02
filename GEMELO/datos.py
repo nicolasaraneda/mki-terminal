@@ -261,6 +261,25 @@ def filtrar_por_cobertura(df: pd.DataFrame, minimo: float = COBERTURA_MINIMA,
     return df[quedan], descartadas
 
 
+def gaps_desde_ohlc(ap: pd.Series, ci: pd.Series) -> pd.Series:
+    """`Open(S)/Close(S−1) − 1` en pp, con S−1 la sesión LOCAL anterior del
+    ticker: se calcula sobre el índice PROPIO del ticker (barras con cierre),
+    no sobre el índice unión del panel multi-ticker.
+
+    2-sep-2026 (octava corrida, Frente B1): la versión anterior hacía
+    `ci.shift(1)` sobre el índice unión de los 8 mercados, donde un feriado
+    local deja NaN; el gap de la sesión siguiente al feriado salía NaN y
+    `dropna` la borraba. Consecuencia: la ventana larga reconstruida NO
+    tenía ninguna sesión posterior a un feriado local (~57 de ~1.296 en
+    Tokio, 2018–2023), que son exactamente las que agregan dos movimientos
+    de NY. El verificador de producción no tiene este defecto (descarga el
+    ticker solo). Test: tests/test_gaps_feriados.py."""
+    ci = pd.to_numeric(ci, errors="coerce").dropna()
+    ap = pd.to_numeric(ap, errors="coerce").reindex(ci.index)
+    gap = (ap / ci.shift(1) - 1.0) * 100.0
+    return gap.dropna()
+
+
 def descargar_gaps(tickers, anios: int = ANIOS_DATOS,
                    ttl_horas: float = TTL_CACHE_HORAS,
                    usar_cache: bool = True) -> pd.DataFrame:
@@ -294,8 +313,7 @@ def descargar_gaps(tickers, anios: int = ANIOS_DATOS,
         except KeyError:
             continue
         ap, ci = pd.to_numeric(ap, errors="coerce"), pd.to_numeric(ci, errors="coerce")
-        gap = (ap / ci.shift(1) - 1.0) * 100.0
-        gap = gap.dropna()
+        gap = gaps_desde_ohlc(ap, ci)
         filas.append(pd.DataFrame({"sesion": gap.index, "ticker": t,
                                    "gap_pct": gap.values}))
     if not filas:
