@@ -6266,3 +6266,539 @@ frente escribiendo en paralelo.
 configuración. La práctica de staging explícito no tiene interruptor de
 código; se revierte dejando de seguirla, y esta acta queda como el motivo
 escrito de por qué no conviene hacerlo.
+
+## 67. El banco de pruebas de cláusulas candidatas (`GEMELO/banco_clausulas.py`), y las cuatro que estaban sobre la mesa
+
+**Fecha:** 1-sep-2026. **Fuente:** `GEMELO/banco_clausulas.py`,
+`GEMELO/resultados/clausulas.md`, `GEMELO/resultados/clausulas.json`,
+`tests/test_banco_clausulas.py`.
+
+**Qué es.** Un banco que recibe una cláusula candidata como objeto
+(`Clausula`: texto, operacionalización, procedencia, campos declarados,
+`seleccionar(df)`, `criterio(df)`) y le corre tres pruebas fijas. Se corre
+con `python -m GEMELO.banco_clausulas`, lee `senales.db` en `mode=ro` y no
+mueve ninguna cifra publicada. El informe trae una sección "Cómo se evalúa
+la QUINTA cláusula" con el `Clausula(...)` a completar: agregar una
+candidata nueva no exige tocar el módulo.
+
+**Las tres pruebas.** PRUEBA 1 (metadata): 1a declarativa (campos
+clasificados como seguros o prohibidos, sin aprobación por omisión), 1b
+medida (se permutan los campos de resultado y se verifica que la selección
+no cambia — una declaración puede mentir, esto no depende de ella), 1c
+medida (asociación entre el criterio de la cláusula y el acierto, con
+intervalo, sin umbral de aprobación porque el umbral es convención de
+Nicolás). PRUEBA 2: cómo mueve la cláusula los pares discordantes del
+McNemar (`b`/`c`) — es la prueba que destapó `keep="last"` (acta §60).
+PRUEBA 3: preservación de los dos pre-registros congelados de
+`GEMELO/DISEÑO.md` (reproducidos y documentados en el acta §25 de este
+mismo archivo): 21/21 sobre su propia §2 (convención `estricta`) y 7/7
+sobre su propia §2.8 (línea base, `excluir_cero`), partida en 3a (costo
+retroactivo, se reporta pero no descalifica) y 3b (ruta del ancla
+preservada + base sin mutar, fatal si falla).
+
+**El resultado por cláusula.** C1 (era del Mac) pasa las tres y no mueve
+nada: Δb=0, Δc=0, retira 16 filas y las 16 son concordantes. C2 (ambas
+máquinas) deja 16 filas y **cero pares discordantes**. C3a (arbitraje por
+"selló antes de que abriera la sesión") y C3b (arbitraje por "selló dentro
+de la ventana operativa 17:50–20:30") dan, las dos, **Δb=0, Δc=−7**, y las
+7 filas retiradas favorecen todas a la baseline (binomial exacta contra una
+moneda, p=0,0156). C4 ("si son iguales, contar una vez", leído sobre el
+desenlace) es la única **reprobada**, en la PRUEBA 1.
+
+**Por qué C4 reprueba, y por qué su segunda lectura sí pasa.** "Iguales"
+sólo se puede leer sobre el desenlace, porque las dos filas de un par
+duplicado difieren en todo lo demás; el banco lo declara (1a: campos
+prohibidos `acierto_gap`, `gap_pct`) y además lo mide (1b: la selección
+cambió en las 200 de 200 permutaciones del resultado, IC95 Wilson de la
+fracción [0,981, 1,000]). Su segunda lectura, C4b ("iguales" = el mismo
+evento `(ticker, sesion_objetivo)`, sin mirar el desenlace), pasa la
+PRUEBA 1, y resulta ser exactamente la regla `keep="first"` que
+`cola_decisiones.md` ya había medido: reproduce n=241, b/c 72/56. El banco
+la usa como **validación externa** de su propio instrumento — si no
+reprodujera esa cifra, el instrumento estaría mal y ningún otro veredicto
+suyo valdría.
+
+**La distinción que conviene no confundir.** C2 no dispara la alarma de
+asimetría de la PRUEBA 2 **no porque esté limpia, sino porque no deja nada
+sobre lo que pueda haber asimetría**: con 0 discordantes el duelo
+campeón-vs-baseline no distingue nada, en ninguna dirección. El banco la
+marca aparte, `SIN PODER RESOLUTIVO`: cero discordantes es ausencia de
+medición, no medición de ausencia. C3a y C3b, en cambio, quedan marcadas
+`EXIGE MECANISMO` — no refutadas: disparan la misma firma (mueve `c`, no
+mueve `b`, todas las discordantes retiradas de un solo signo) que destapó
+`keep="last"`, y quedan pendientes de que alguien exhiba por qué el
+defecto que corrigen es asimétrico, antes de aceptarlas.
+
+**Hallazgo no encargado nº1 — el importante.** El criterio de la cláusula
+3 ("selló a tiempo", leído contra la apertura de la sesión) y el criterio
+de la regla ya firmada (§60: "la sesión sellada calza con `available_at`")
+son el **mismo indicador, fila por fila**: coinciden en las 256 de 256
+filas de la ventana viva, marcan exactamente las mismas 25 filas —las del
+defecto de `snapshot.py:140`— y producen b/c y ventaja idénticos (72/49,
++9,3 pp) cuando se aplican como arbitraje sobre C0. No es coincidencia, es
+álgebra: `sesion_objetivo` se selló como
+`proxima_sesion_despues_de(exchange, ahora_utc)`, así que "calza con
+`available_at`" equivale exactamente a "selló antes de que abriera" —
+ninguna apertura pudo caer entre medio sin que las dos lecturas
+divergieran. El banco lo midió en vez de asumirlo, porque un argumento
+algebraico sobre código que nadie recompiló es una hipótesis, no un hecho.
+**Consecuencia:** todo lo que la PRUEBA 1c dice sobre la cláusula 3 vale,
+palabra por palabra, sobre el criterio de la regla que YA está corriendo
+en producción.
+
+**Hallazgo no encargado nº2.** La PRUEBA 3, formulada sin la partición
+3a/3b, reprobaría a la propia regla ya firmada (toca 10 filas anteriores al
+corte §25). Se partió en 3a (costo retroactivo: se reporta, no
+descalifica) y 3b (ruta del ancla preservada + base sin mutar: fatal). Sólo
+con esa partición el test distingue una candidata nueva de una decisión que
+el proyecto ya tomó.
+
+**¿La cláusula 3 correlaciona con el acierto? No se puede declarar limpia,
+y tampoco contaminada.**
+
+| lectura de "a tiempo" | acierto a tiempo | acierto tarde | diferencia | IC95 clúster de día | p permutación de día |
+|---|---|---|---|---|---|
+| C3a (antes de la apertura) | 70,1% (n=231) | 24,0% (n=25) | **+46,1 pp** | [−22,8, +70,3] | no aplica (el criterio varía dentro del día) |
+| C3b (ventana 17:50–20:30) | 69,7% (n=228) | 32,1% (n=28) | **+37,6 pp** | [−23,0, +59,3] | **0,0319** (31 días contra 4) |
+
+El punto es grande y va en la dirección que importa (un sello tardío usa
+datos distintos: es exactamente el defecto de `snapshot.py:140`), pero el
+IC95 de clúster de día **contiene el cero en las dos lecturas**, y en C3b
+el p de permutación cruza α (0,0319) mientras el intervalo no excluye
+nada: eso es una **discrepancia entre dos rutas de clúster, no evidencia**.
+La razón es contable, no estadística: 28 filas tardías repartidas en sólo
+4 días no le dan poder al clúster. La parte que pesa es "no se puede
+descartar", porque el sentido del defecto ya está establecido por el
+código, no por estos números.
+
+**Conteo de intentos: 86 → 91.** Cinco tramos nuevos en `REGISTRO_INTENTOS`
+(`GEMELO/relevo_asiatico.py`) — C1, C2, C3a, C3b, C4, cada uno con su
+procedencia — verificados por el test que ata `N_INTENTOS_ACUMULADO` a la
+suma del registro (`tests/test_relevo_asiatico.py`). Ningún entero se
+escribió a mano. C3a y C3b cuentan por separado a propósito: una
+operacionalización distinta de la misma cláusula en castellano es una
+configuración distinta, y reportar sólo una sería elegir la definición sin
+decirlo. **No suman** al conteo, y quedan excluidos de forma declarada en
+el propio artefacto: C0 (la regla ya firmada y publicada, entra sólo como
+referencia), C4b (es exactamente `keep="first"`, ya contado en el registro
+bajo la fila `COLA`), `CLAUSULA_TRAMPA` (contraprueba del instrumento, no
+del modelo) y las mediciones de la PRUEBA 1c (diagnóstico del método, no
+configuraciones predictivas — misma clase de exclusión que el registro ya
+aplica al MDE y a las fronteras de gasto de alpha).
+
+**Deuda declarada, no aplicada.** `backtest/veredicto_51.py` subió
+`N_INTENTOS_PREVIO` de 86 a 91 (`N_INTENTOS_51` de 92 a 97) y **conserva 92
+dentro de `BANDA_N`** para que el resumen ya sellado
+`20260901-133154-5.1-arnes-corregido-gatillo-incumplido` (que declaró N=92
+antes de correr) siga reproduciendo columna a columna. Funciona, pero la
+forma correcta —la que el proyecto ya usa para `CORTE_SECCION_2`— es
+pinchar el instante en vez de conservar el número suelto: declarar
+`N_INTENTOS_PREVIO` como "el registro al 2026-09-01 13:31" y comparar
+contra esa foto, no contra la suma viva. No se hizo en esta corrida porque
+es un rediseño del módulo del veredicto 5.1, y tocar la reproducción de un
+resumen ya sellado no es un movimiento de una tanda autónoma. Queda como
+deuda con nombre.
+
+### Deuda: número de intentos y resumen sellado del 5.1 comparten una constante que crecerá de nuevo
+Hoy es inofensivo porque: `BANDA_N` conserva 92 explícitamente junto a los
+valores nuevos, así que el resumen ya sellado reproduce y el DSR vigente
+usa 91/97 (subir N sólo hace el DSR más exigente, nunca más favorable — el
+NO-CONCLUYENTE de la corrida sellada no se puede dar vuelta por esto).
+Se vuelve peligroso cuando: el registro vuelva a crecer (ya pasó dos veces
+en una semana) y alguien tenga que volver a tocar a mano la misma
+constante, con el mismo riesgo de olvidar `BANDA_N`.
+Bloquea: que `N_INTENTOS_PREVIO` deje de depender de una edición manual
+cada vez que `REGISTRO_INTENTOS` crece.
+Qué exigiría resolverla: rediseñar `backtest/veredicto_51.py` para que el
+N previo se pinche a un instante declarado (como `CORTE_SECCION_2`) en vez
+de a un entero que alguien tiene que recordar mover.
+
+## 68. Tres correcciones aplicadas hoy a artefactos ya commiteados, y la moraleja que comparten
+
+**Fecha:** 1-sep-2026. Las tres actas de este número comparten una sola
+lección: un artefacto committeado sigue ofreciendo su cifra vieja hasta
+que alguien la mueve. Ninguna de las tres fue un error de razonamiento en
+su día — las tres son artefactos correctos **en su fecha** que quedaron
+ofreciendo una cifra o una ausencia que ya no era cierta. Es la cuarta
+regla de la casa (los negativos y las correcciones se publican con la
+misma firmeza que los positivos) aplicada a documentos, no sólo a código.
+
+**1. Citas por número de línea, corregidas a sección.**
+`GEMELO/resultados/sello_y_verificacion.md` citaba `DECISIONES.md` por
+rango de línea en siete lugares (título de la errata de sellos degradados
+8–24 jul, §8, dos veces §16, §25.1, dos veces §60). El test
+`test_ninguna_cita_por_numero_de_linea_a_decisiones_quedo_desplazada`
+(`tests/test_epistemico.py`) detectó tres de esas siete ya desplazadas por
+actas insertadas después. Se reescribieron las siete a cita por sección —
+verificado: hoy el archivo cita exclusivamente por `§N` o por título de
+acta, ninguna por rango de línea. Suite verde después de la corrección.
+La lección ya tenía nombre en la memoria del usuario ("Citas por número de
+línea en DECISIONES.md": el acta que las cita las desplaza) y volvió a
+pasar igual, siete veces, en un documento distinto.
+
+**2. El conteo de intentos envejeció mientras esperaba firma.**
+`GEMELO/resultados/espera_firma.md` y `GEMELO/resultados/cola_decisiones.md`
+§14 ofrecían 86 como cifra vigente de intentos acumulados; el acta §67 de
+hoy la dejó en 91. Los dos documentos se actualizaron con nota fechada
+1-sep-2026, **conservando las cifras históricas medidas ese día**
+(`SR0(86) = 1,6266`, "20 tramos") como lo que son: lo que se midió
+entonces, no lo vigente hoy. `espera_firma.md` agregó además una opción
+(d) a la decisión que espera a Nicolás sobre cómo publicar el N en el
+README: publicar la fuente y la fecha (`REGISTRO_INTENTOS`, N tramos, al
+DD-MM-AAAA) en vez de clavar un entero. El argumento no es estético, es
+medido: el N subió dos veces en la misma semana (86→91, y `veredicto_51.py`
+acompañó a 97), así que cualquier entero clavado en la portada vuelve a
+esta misma cola el mes que viene. `README.md`:253 sigue diciendo "Va en
+25" y no se tocó: es cifra publicada, lleva firma de Nicolás, no de una
+tanda autónoma.
+
+**3. `GEMELO/resultados/parche_snapshot140.md`, dos correcciones.**
+(a) El documento decía que 8 filas cambiarían de elegibilidad de
+verificación con el parche de `sesion_objetivo` corregido; el forense de
+`GEMELO/resultados/huerfanas.md` §3.1 estableció que son **15**: el grupo
+del 05-ago (7 filas) también cae en `no_verificable_timing`, porque su
+sesión correcta (06-ago) ya había abierto cuando el proceso terminó de
+sellar (01:38 UTC). La diferencia entre los dos grupos —julio con 8 filas,
+agosto con 7— es de **severidad, no de resultado**: julio queda con la
+sesión ya cerrada por completo, agosto a mitad de sesión, pero en el eje de
+elegibilidad las 15 dan el mismo desenlace. El documento ahora lleva
+escrito el **riesgo simétrico** que eso deja: una corrección que toque
+`sesion_objetivo` sin tocar `estado` dejaría 15 filas corregidas pero
+todavía contando como `verificada` en las métricas selladas. (b) El
+documento trataba el dropout total del 2026-08-06 (0 predicciones ese día)
+como un cabo suelto no investigado; estaba reconstruido, con causa raíz,
+en este mismo archivo desde la Etapa 5.0.2 (18:24:48 Chile arrancó tarde,
+descargó 28/28, el Mac se re-durmió ~44 min con el timestamp ya escrito, al
+despertar el TTL de caché había expirado y la re-descarga falló para 12
+tickers más `^SOX`; sin `^SOX` no hay predicción). `parche_snapshot140.md`
+era el **cuarto** documento de la capa GEMELO en volver a marcarlo como
+incógnita (los otros tres: `cola_decisiones.md`, `bifurcaciones.md`,
+`espera_firma.md`). Lo único que sigue sin determinar es la atribución fina
+Yahoo-real vs. red-dormida para esos 12 tickers: los logs primarios
+rotaron y no están en git.
+
+**La moraleja, dicha una sola vez porque es la misma en los tres casos:**
+la frontera de la errata es el commit, pero un documento no deja de citar
+una cifra sólo porque en algún otro lado del repo esa cifra ya cambió.
+Cada uno de los tres artefactos tuvo que enterarse por separado, y en el
+caso de sello_y_verificacion.md un test tuvo que atraparlo porque nadie lo
+iba a notar leyendo.
+
+---
+
+## 69. El segundo sello, y la premisa del encargo que resultó estar mal
+
+**Fecha:** 1-sep-2026. Frente B de la sexta corrida autónoma.
+
+**Qué se decidió.** Se diseñó y se construyó, probado y sin activar, un
+mecanismo aditivo que vuelve a preguntarle a la fuente qué sirve hoy para
+una fecha ya sellada: `docs/SEGUNDO_SELLO.md` fija las siete
+restricciones (B1 aditiva nunca correctiva, B2 ciega con contraprueba, B3
+regla canónica congelada antes de la primera fila, B4 la discrepancia es
+dato, B5 la hora con evidencia, B6 qué NO arregla, B7 el corte de método)
+y `GEMELO/SEGUNDO_SELLO/segundo_sello.py`, con `tests/test_segundo_sello.py`
+(20 funciones, 3 parametrizadas, **32 tests** en total, verificado contra
+el archivo), es el arnés que las hace ejecutables y no prosa. Tres fases:
+`observar` (ciega, no abre ninguna base), `registrar` (`INSERT OR IGNORE`
+en `data/segundo_sello.db`, tabla propia, **nunca** `senales.db`) y
+`contrastar` (la única que abre `senales.db`, en `mode=ro`, con test de
+que el `mtime` de esa base no cambia). Seis veredictos declarados en el
+código (`PARIDAD`, `DIVERGENCIA_DE_VALOR`, `BARRA_RETIRADA`,
+`BARRA_APARECIDA`, `SIN_SEGUNDA_OBSERVACION`, `SIN_SELLO`), cuatro finales
+(`VEREDICTOS_FINALES` excluye los dos últimos: **las dos ausencias nunca
+son paridad**); `canonica` sale `None` en las tres ramas de retorno que
+importan, verificado por un test propio.
+
+**Por qué.** El encargo (heredado del Frente F, en
+`GEMELO/resultados/replica_una_pagina.md` y en el docstring de
+`GEMELO/CONDICIONAL/condicional.py`) llegó con una premisa: **«la fuente
+revisó su historia»**, con `dif_pp` de 3,47 y 3,49. Se midió esa premisa
+antes de aceptarla, el 1-sep-2026, en solo lectura, y estaba mal en un
+punto que cambia el diseño entero.
+
+Sobre las 25 fechas selladas que llevan `sox_usado_pct` (columna existe
+desde plataforma 5.0; la primera fecha es 2026-07-27), el arnés da **23
+PARIDAD, 2 BARRA_RETIRADA, 0 divergencias de valor**: 23/25 = 92,0%, IC95
+Wilson [75,0, 97,8]. **Ningún precio fue revisado.** Lo que pasó es que
+Yahoo **retiró la sesión 2026-08-28 entera** para `^SOX`: no hay barra en
+ninguna de cuatro formas de pedirla (`download` con `period`, con
+`start`/`end`, con `period="1y"`, y `Ticker.history`). No es sólo el
+`^SOX`: de 19 símbolos del universo, **10 perdieron esa fecha** (`^SOX`,
+`SMH`, `^GSPC`, `ASML`, `QCOM`, `TXN`, `ARM`, `UMC`, `BHP`, `FCX`) y **9 la
+conservan** (`NVDA`, `AMD`, `INTC`, `MU`, `TSM`, `AVGO`, `MSFT`, `GOOGL`,
+`META`): 10/19 = 52,6%, IC95 [31,7, 72,7]. Tasa base: **1 fecha en 752
+sesiones XNYS de tres años de `^SOX`** = 0,13%, IC95 Wilson [0,02, 0,75].
+
+El 3,47 pp del encargo tampoco era la diferencia real: es un **artefacto
+del ffill de `GEMELO/datos.py`**, que al rellenar el hueco sobre un marco
+multi-ticker hace salir el retorno del 28-ago exactamente en 0,00. Bajo la
+lógica de la propia producción (`motor.prediccion_apertura_al` descarga el
+`^SOX` solo, sin ffill cruzado) la diferencia del 28-ago no es 3,47 sino
+**5,80 pp**. La cifra del 31-ago sí reproduce: **3,4914 pp**.
+
+La verificación independiente que sostiene todo esto: los sellos del
+**28-ago (−3,47%)** y del **31-ago (+0,57%)**, tomados con **72 h de
+diferencia**, implican el **mismo** cierre del 28-ago, con bandas de
+redondeo que se solapan en **[11.469,26, 11.470,24]**. Confirmado por
+aritmética directa sobre una descarga fresca del 1-sep (cierre 27-ago
+11.882,17 y cierre 31-ago 11.535,05 dan ambos ≈11.469,7, y el valor
+sembrado en `tests/test_segundo_sello.py` como cierre implícito,
+11.469,86, cae dentro de esa banda). **Ese valor hoy no existe en la
+fuente.** El sello es coherente; la fuente no. Es una verificación por un
+mecanismo distinto del que produjo la cifra, no una repetición del mismo.
+
+La ventana en la que la barra desapareció queda acotada sin suponer nada:
+**≈18 h**, entre 2026-08-31T22:15:03Z (la barra existía, probado por la
+aritmética del sello del 31) y 2026-09-01T16:12Z (ausente, medido). Es
+decir, el retiro ocurrió **≥3 días de calendario después** de que la
+barra naciera.
+
+El vigía estuvo en verde las dos noches por una razón medible, no por
+falla: `salud_descarga` sólo pregunta si hay **alguna** barra en los
+últimos 7 días. Un hueco en el medio de la serie es estructuralmente
+invisible para ese chequeo, confirmado literalmente en `data/vigia.log`
+(`descarga: 28/28 completa` · `todo OK — sin alerta`, 2026-08-28T23:00Z y
+2026-08-31T23:00Z). El vigía no falló: el chequeo que existe no puede ver
+esta clase de falla.
+
+**Qué se descartó y por qué.** La regla canónica que gobernaría un futuro
+contraste (§3 del diseño) se congeló **antes** de producir la primera
+fila, con las tres opciones puestas una al lado de la otra:
+
+| Regla | Consecuencia medida |
+|---|---|
+| R-A: la primera fila gana siempre *(recomendada)* | No decide nunca; preserva la constitución sin excepción; no cierra ninguna puerta. |
+| R-B: gana la observación con más barras | En el caso medido habría abstendido bien, pero exige cierres crudos que el sello no guardó y no se pueden agregar hacia atrás, y **reescribe una fila sellada**. |
+| R-C: discrepancia ⇒ la fecha sale del track record | Habría sacado **16 filas** por un defecto de la fuente que no afectó al sello: es la forma de quitar los días malos, con mejor excusa. |
+
+Aplicar «gana la más reciente» a las dos fechas medidas **habría
+reemplazado 16 predicciones selladas por valores de signo contrario
+derivados de una serie amputada**. Eso está medido, no argumentado, y es
+la base de la recomendación por R-A.
+
+También se descartó, por diseño, mantener la vara de verificación variable
+en función del `mode=ro` sobre `senales.db`: el mecanismo mantiene fijo
+`motor._ultimo_mov_no_cero` (misma función que la producción) a propósito,
+porque el objeto bajo prueba es el **dato**, no el mecanismo — si los dos
+cambiaran a la vez, una discrepancia no diría nada. La contrapartida
+explícita: este mecanismo no puede decir si el modelo está bien, sólo si
+sus insumos siguen siendo los mismos. La vara independiente (una segunda
+fuente de precios) sigue sin existir en este repo, tal como quedó
+declarado en la acta §52.
+
+**Qué queda abierto — la consecuencia viva que toca el veredicto 5.1.**
+Re-correr `motor.prediccion_apertura_al` hoy sobre las mismas fechas da
+vuelta el signo de las **16 predicciones** del 28 y del 31-ago (el 27-ago
+reproduce 8/8 exacto, incluidas las betas). Las 16 están todas en estado
+`pendiente`, así que **ninguna cifra publicada se mueve**: no entraron a
+la ventana sellada de n=248 que el README publica. Pero **todo lo que
+reconstruye al campeón desde el Yahoo de hoy** —`backtest/`,
+`GEMELO/ventana_larga.py`, `GEMELO/CONDICIONAL/condicional.py`, y
+cualquier veredicto 5.1 cuya ventana incluya el 2026-08-28— está
+reconstruyendo un campeón de **signo contrario** al sellado en esas dos
+fechas. Queda declarado desde este frente, no corregido: el archivo que
+describe el incidente pertenece a otro frente (Frente F) y no se tocó.
+
+También queda abierto, y por diseño no se cierra: la acta §49 (el dato
+point-in-time de precios y la recomendación de no comprar una segunda
+fuente) no cubre este canal — su teorema es sobre factores de ajuste que
+se cancelan en el cociente `open/close`, y una sesión retirada no se
+cancela con nada. Es una laguna del teorema, no una contradicción con él.
+
+Y queda sin determinar: el instante exacto dentro de esas ~18 h en que la
+barra desapareció (no hay observación intermedia); si la barra vuelve
+(hoy, 1-sep-2026, sigue ausente, nada más); si 0,13% es representativo de
+esta fuente o de este año (n=1); y si FX e índices locales sufren la misma
+clase de retiro (no se revisaron).
+
+Por eso el diseño no fija una hora de corrida con cara de precisa: a la
+tasa medida, acumular 5 eventos de este tipo toma **~15 años** (~3,5 con
+el extremo optimista del IC, más de un siglo con el pesimista) — la curva
+de asentamiento de esta fuente no es caracterizable desde la producción
+de este proyecto. Lo que sí fija la evidencia es una cota inferior
+(horizonte ≥2 sesiones, porque el único evento medido era invisible a
+T+1) y una escalera congelada T+1/T+3/T+7/T+30 que corre a las 22:15 UTC,
+la misma hora que produce el sello, para que el horizonte sea la única
+dimensión que varíe.
+
+La contraprueba del propio arnés se cobró una pieza el mismo día en que
+se escribió: su primera corrida contra la base real reportó el 2026-08-07
+como divergencia de 0,3371 pp, y era falso — la observación cubría sólo
+las 25 fechas selladas y faltaba el 08-06 **en la muestra, no en la
+fuente**. Es el mismo error de índice mutilado que produce el 3,47 por
+ffill, aparecido en dos frentes distintos el mismo día. De ahí salió un
+parámetro congelado más: la guardia de cobertura contra el calendario
+XNYS, que convierte esa clase de hueco en `SIN_SEGUNDA_OBSERVACION` en
+vez de en una divergencia fabricada.
+
+Por diseño deliberado, el mecanismo no escribe en `senales.db` bajo
+ninguna circunstancia, lo que lo hace compatible con las dos lecturas de
+la pregunta constitucional que el Frente A de esta misma corrida
+resuelve en paralelo (acta §61: si la verificación es parte del sello o
+no): el segundo sello no depende de cómo se resuelva.
+
+**Deuda declarada.** `.gitignore` excluye `*.db`, así que el registro del
+segundo sello viviría **sólo en el disco de esta máquina** — el mismo
+modo de morir que el proyecto ya sufrió con el SSD que abre este archivo.
+Falta un export versionado (un CSV en `data/backups/`, mismo criterio que
+el resto); no se construyó porque espera la firma de la §12.
+
+**Cómo se revierte.** Borrar `GEMELO/SEGUNDO_SELLO/`,
+`tests/test_segundo_sello.py` y `data/segundo_sello.db`. Nada más:
+`motor.py`, `snapshot.py`, `senales.py`, `universo.py`, `alertas.py`,
+`calendarios.py`, `.env`, los timers y el modo de emisión no se tocaron
+ni una línea; ninguna fila sellada se escribió, se movió ni se leyó fuera
+de `mode=ro`; ningún archivo de otro frente se editó; no se commiteó ni
+se pusheó nada.
+
+**Lo que espera firma.** Una sola cosa bloquea: si se adopta **R-A** (la
+primera fila gana siempre, el segundo sello nunca produce una fila
+canónica) como regla congelada. Recomendada con la evidencia de arriba.
+Tres decisiones mecánicas quedan atadas a esa firma: si el mecanismo se
+activa (propuesta: no hay urgencia, puede quedar como código probado sin
+correr, igual que `replica.py`), si sus hallazgos van a Telegram
+(propuesta: no — 0,13% no justifica un canal que nadie recuerda leer) y
+la retención del registro (propuesta: no borrar nunca, el volumen es
+despreciable frente al costo de decidir qué tirar).
+
+**Verificación de cierre de esta acta.** Suite completa: `518 passed, 2
+xfailed` en 4:57, exit 0. Nada quedó stageado ni commiteado; los `mtime`
+de `senales.db` y `noticias.db` no cambiaron.
+
+---
+
+## 70. Producción tumbó tres tests mientras la corrida escribía, y el fallo es el hallazgo
+
+**Fecha:** 1-sep-2026. **Evidencia:** `backtest/linea_base.py`
+(`CORTE_SECCION_2`, `CORTE_REGLA_FIRMADA`), `GEMELO/banco_clausulas.py`
+(`ANCLA_C4B`, `CORTE_BANCO`), `tests/test_linea_base.py`,
+`tests/test_banco_clausulas.py`, `data/snapshot.log`, `data/noticias.log`,
+`data/vigia.log`, `data/costos_ia.log`.
+
+**Qué se decidió.** Pinchar el instante de dos afirmaciones congeladas más
+(`CORTE_REGLA_FIRMADA` en `backtest/linea_base.py`, `CORTE_BANCO` en
+`GEMELO/banco_clausulas.py`), en vez de mover ninguna cifra publicada, para
+que dejen de compararse contra un track record que crece.
+
+**El hecho.** El 1-sep-2026 a las 18:15 (`data/snapshot.log`, 22:15:01Z)
+el snapshot programado selló un día más (8 predicciones, 15 verificaciones
+de apertura) mientras esta misma corrida trabajaba. Con eso tres tests
+pasaron a fallar: `test_validacion_externa_c4b_reproduce_keep_first`
+(`tests/test_banco_clausulas.py`) y dos de `tests/test_linea_base.py`,
+`test_sin_deduplicar_la_conclusion_de_fondo_vale_en_las_TRES_convenciones`
+y `test_la_regla_firmada_cruza_alfa_y_eso_queda_fijado`. Los detectó el
+dictamen del guardián, no la corrida misma: el chequeo mecánico había
+corrido antes de las 18:15 y reportó `518 passed, 2 xfailed` (la
+verificación de cierre del acta §69) sobre una base que ya no era la
+vigente. Un verde con fecha de ayer no es un verde.
+
+**La causa raíz, una sola para los tres.** Anclas y afirmaciones
+congeladas verificadas contra `senales.db` vivo, sin pinchar el instante.
+`GEMELO/banco_clausulas.py` llamaba a `cargar_base()` sin `hasta_sello` en
+`main()` y en el fixture del test; los dos tests de `linea_base` llamaban
+a `lb.cargar(...)` igual.
+
+**El hallazgo, y vale más que la corrección.** El test
+`test_la_regla_firmada_cruza_alfa_y_eso_queda_fijado` fijaba que sin
+deduplicar el McNemar da p > 0,05 (el desenlace conocido al firmar la
+regla de deduplicación, acta §60). Con el sello de hoy, el p sin
+deduplicar pasó de 0,1849 a 0,0486: cruzó α = 0,05. Un solo día de
+sellado movió el estadístico de un lado al otro del umbral.
+
+Es la demostración más nítida de algo que esta misma corrida venía
+sosteniendo con aparato estadístico (cruzar α no es tener evidencia,
+porque el IC de clúster de día contiene el cero, acta §67): acá no hizo
+falta ningún aparato. Lo hizo el propio repositorio, solo, en una noche.
+La frase deja de ser una conclusión de acta y pasa a ser un hecho
+observado.
+
+**Las cifras, medidas contra los dos artefactos.** Con la ventana viva de
+hoy: n sin deduplicar 276, p 0,0486; con deduplicación n 266, p 0,0083.
+Con el corte al 2026-08-31 (`CORTE_REGLA_FIRMADA`): n sin deduplicar 261,
+p 0,1849; con deduplicación n 251, p 0,0455. Para el banco, el corte
+reproduce el ancla exacta: base 256, C4b n=241, b=72, c=56, contra
+`ANCLA_C4B = {"n": 241, "b": 72, "c": 56}`. Con la ventana viva la
+comparación quedaba desalineada (256 contra 241, según el propio
+comentario de `CORTE_BANCO`, que registra que el banco corrió a las 12:07
+y la ventana subió de 256 a 271 filas antes del dictamen del guardián).
+Las cuatro cuentas (261→276, 251→266, y las dos ramas del banco) suben
+todas en 15 filas, exactamente las 15 verificaciones de apertura que
+selló el snapshot de hoy: es la misma inyección de datos vista desde
+cuatro rutas, no cuatro incidentes distintos.
+
+**La corrección: se pincha el instante, no se mueve el número.** Se
+agregó `CORTE_REGLA_FIRMADA = "2026-08-31"` en `backtest/linea_base.py`,
+al lado de `CORTE_SECCION_2` y por la misma razón (ese precedente
+existía justamente para esto). `GEMELO/banco_clausulas.py` define
+`CORTE_BANCO = lb.CORTE_REGLA_FIRMADA`: un solo instante, un solo nombre,
+para que no queden dos fechas iguales con distinto apellido. El corte es
+opt-in: `cargar()` sin argumentos sigue leyendo el track record vivo, que
+es lo correcto para la plataforma; pinchar el instante es cosa de quien
+reproduce una afirmación congelada.
+
+**El patrón, y ya es el tercero del día.** La misma forma (una constante
+congelada contrastada contra algo que crece) apareció hoy tres veces: (a)
+el conteo de intentos que envejeció de 86 a 91 mientras esperaba firma
+(acta §68); (b) `backtest/veredicto_51.py`, que conserva 92 dentro de
+`BANDA_N` para que un resumen sellado siga reproduciendo, con la
+alternativa correcta ya nombrada (pinchar el instante) y no aplicada
+(acta §67); (c) esto. La deuda (b) deja de ser teórica: el mismo patrón
+acaba de romper en producción. Subir su prioridad queda propuesto, no
+decidido.
+
+**Y una falla de producción de la misma noche, sin relación de causa con
+lo anterior, que hay que declarar igual.** El vigía de las 19:00
+(`data/vigia.log`, 23:00:01Z) reportó `FALLA noticias: el job NO corrió
+hoy` y mandó alerta a Telegram. Medido contra `data/noticias.log`:
+`mki-noticias.service` sí corrió (arrancó 17:50:01 Chile, guardó 223
+titulares a las 18:17:44 Chile) y fue matado por systemd al agotarse
+`TimeoutStartSec=1800` del propio `.service`. **El corte no es
+inferencia: está medido.** `systemctl --user status mki-noticias.service`
+dice, textual, `Active: failed (Result: timeout) since Tue 2026-09-01
+18:20:00 -04`, `Main PID: 231887 (code=killed, signal=TERM)` y
+`Consumed 27min 15.310s CPU time over 30min 233ms wall clock time`.
+Esa última línea es la que más informa: **27 min 15 s de CPU sobre 30 min
+de reloj** — el proceso estuvo saturando un núcleo de punta a punta, así
+que no se colgó esperando red: **tardó**. `data/costos_ia.log` no tiene
+una sola línea con fecha 2026-09-01: el proceso nunca llegó a completar
+una llamada a la API antes de que lo mataran.
+
+Dos cosas se siguen de esto, y las dos quedan como deuda declarada, no
+corregidas aquí (tocar timers y unidades systemd es operación de
+Nicolás):
+- El margen del job es de minutos, no de sobra. El 31-ago (`data/noticias.log`, 21:50:01Z→22:18:15Z) tardó 28 min 14 s contra un tope de 30 min: un job de 28 minutos contra un `TimeoutStartSec` de 30 es frágil por diseño, y hoy el margen se agotó. Esta asimetría de timeout (systemd finito, launchd sin equivalente) ya estaba declarada como asimetría conocida antes de hoy; lo nuevo es que se activó.
+- El mensaje del vigía describe mal la falla: dice "NO corrió", lo cierto es que corrió y no completó. La distinción importa para diagnosticar: "no arrancó" y "lo mataron a mitad de camino" tienen causas distintas, y el mensaje actual no permite distinguirlas sin ir al log.
+
+**Autocrítica que va al acta, no a la conversación.** Esta corrida
+ejecutó trabajo pesado (varias corridas completas de la suite, de
+minutos cada una, más agentes en paralelo) dentro de la ventana de
+sellado 17:50-20:30, que el encargo prohíbe explícitamente. No se puede
+afirmar que eso haya causado el timeout de noticias (el job es intensivo
+en CPU y ya venía con poco margen contra el tope), y la hipótesis de que
+compitiera por cuota de IA queda descartada por el ledger vacío del día.
+Pero la regla existe exactamente para no tener que hacerse esta pregunta,
+y se incumplió. Queda anotado como incumplimiento, sin atenuante.
+
+**Qué se descartó y por qué.** Mover la cifra congelada del test para que
+volviera a dar p > 0,05 con la base viva: eso habría sido editar un
+pre-registro para que cuadre con el resultado, exactamente lo que la §9
+de `GEMELO/DISEÑO.md` y el acta §23 prohíben. Se descartó también dejar
+los tests rojos como recordatorio permanente: un test rojo que nadie
+puede arreglar deja de distinguir fallos nuevos de fallos ya conocidos.
+
+**Qué queda abierto.** Si conviene subir la prioridad de corregir
+`backtest/veredicto_51.py` (deuda (b) del patrón) ahora que el mismo
+defecto ya rompió en producción, no decidido aquí. Si el mensaje del
+vigía debe distinguir "no arrancó" de "lo mataron a mitad", no decidido:
+toca `mki_vigia.py`, que es superficie de Nicolás. Si el margen de
+`TimeoutStartSec` debe subir, tampoco: toca la unidad systemd. Y sigue
+sin resolverse, porque no es un fallo de esta corrida sino del propio
+mecanismo, que cualquier tercera constante congelada que dependa de
+`senales.db` seguirá rompiéndose cada vez que producción selle durante
+una revisión.
+
+**Cómo se revierte.** `CORTE_SECCION_2` y `CORTE_REGLA_FIRMADA` son
+opt-in: borrarlas de `backtest/linea_base.py` y de `GEMELO/banco_clausulas.py`
+devuelve ambos módulos a comparar siempre contra la ventana viva, que es
+exactamente el estado que produjo esta acta. No se toca ningún timer,
+ninguna unidad systemd ni `senales.db`: nada de eso se modificó hoy.

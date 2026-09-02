@@ -57,13 +57,32 @@ FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
                date(2026, 4, 14), date(2026, 6, 9), date(2026, 8, 11))
 
 # N_intentos del DSR. NO es un entero mágico: sale del registro con
-# procedencia `GEMELO/relevo_asiatico.REGISTRO_INTENTOS`, 20 tramos que
-# suman 86 —el frente E lo reconstruyó el 2026-09-01 y el 82 de la §1.4 del
-# expediente quedó superado por él—. Un test
+# procedencia `GEMELO/relevo_asiatico.REGISTRO_INTENTOS` —el frente E lo
+# reconstruyó el 2026-09-01 en 20 tramos que sumaban 86, y el 82 de la
+# §1.4 del expediente quedó superado por él—. Un test
 # (`test_el_N_del_veredicto_sale_del_registro_con_procedencia`) fija que
 # estos dos números no puedan separarse en silencio; no se importa en
 # runtime para no invertir la dependencia backtest→GEMELO.
-N_INTENTOS_PREVIO = 86
+#
+# 2026-09-01, MÁS TARDE EL MISMO DÍA: el registro creció a 21 tramos y
+# **91** con las 5 cláusulas del banco de pruebas
+# (`GEMELO/banco_clausulas.py`, informe en
+# `GEMELO/resultados/clausulas.md`). El constante se actualiza porque eso
+# es exactamente lo que el test existe para forzar: si el registro crece y
+# el veredicto no se entera, el DSR miente HACIA ARRIBA, que es la única
+# dirección en la que duele.
+#
+# DOS COSAS QUE NO CAMBIAN, y hay que decirlas juntas:
+#   · El resumen ya sellado de la corrida
+#     `20260901-133154-5.1-arnes-corregido-gatillo-incumplido` declaró
+#     **N = 92 ANTES de correr** y NO se reescribe: era el registro en SU
+#     instante, igual que `CORTE_SECCION_2` es el track record en el suyo.
+#     Por eso 92 se conserva explícitamente en `BANDA_N`, para que esa
+#     corrida siga siendo reproducible columna a columna.
+#   · Subir N sólo puede hacer el DSR MÁS exigente, nunca más favorable:
+#     el veredicto NO-CONCLUYENTE de aquella corrida no puede darse
+#     vuelta por esto.
+N_INTENTOS_PREVIO = 91
 # Esta corrida vuelve a mirar las SEIS baselines sobre la MISMA ventana con
 # el arnés CORREGIDO. Se podría argumentar que sólo B4 y B5 cambian de
 # cifra —el arreglo de B-1 toca las features de noticias y el de B-2 no
@@ -73,11 +92,13 @@ N_INTENTOS_PREVIO = 86
 # los resultados, o sea DESPUÉS, que es justo lo que el conteo declarado
 # existe para impedir.
 N_INTENTOS_NUEVOS = 6
-N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 92
+N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 97
 # La banda conserva los cortes históricos para que las corridas se comparen
-# columna a columna: 82 gobernó la corrida invalidada, 86 es el registro sin
-# esta corrida.
-BANDA_N = (26, 44, 82, 86, N_INTENTOS_51, 110)
+# columna a columna: 82 gobernó la corrida invalidada, 86 era el registro
+# sin esta corrida, y **92 es el N declarado por la corrida ya sellada del
+# 2026-09-01 13:31** — se conserva para que su resumen siga siendo
+# reproducible aunque el registro haya crecido después.
+BANDA_N = (26, 44, 82, 86, 92, N_INTENTOS_51, 110)
 
 # Un Sharpe ANUALIZADO sobre pocas decenas de días es un artefacto de
 # multiplicar por √252. Espejo de GEMELO/control_lineal.py:81 — abajo de

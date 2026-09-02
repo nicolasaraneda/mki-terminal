@@ -794,8 +794,24 @@ explícito apareció un **import circular** que hubo que resolver con import
 diferido — ese ciclo **es** el síntoma de que el registro no tiene casa.
 
 **Y una cifra publicada que no se movió:** `README.md`:253 dice **"Va en
-25"** en la portada. El registro verificado da 86 y la corrida del backtest
-declaró 92. **Regla de los doce bloques: lleva firma.**
+25"** en la portada. **Regla de los doce bloques: lleva firma.**
+
+> **Actualización 1-sep-2026 — y el argumento cambió de forma.** El banco de
+> cláusulas sumó cinco tramos (C1, C2, C3a, C3b, C4) y el registro pasó de
+> **86 a 91**; `veredicto_51.py` acompañó a **97**. Las cifras de arriba
+> —`SR0(86) = 1,6266`, "20 tramos"— siguen siendo lo que se midió ese día y
+> se dejan como están. Lo que se aprende es otra cosa: **el N subió dos veces
+> en una semana**, así que clavar cualquier entero en la portada es empezar
+> otra vez esta misma discusión el mes que viene. Ver la opción (d) de
+> `espera_firma.md` §7: publicar la fuente y la fecha, no el número.
+>
+> **Y hay un arrastre que necesita ojo de Nicolás.** `veredicto_51.py`
+> conserva **92 dentro de `BANDA_N`** —además de los valores nuevos— para que
+> el resumen ya sellado del 5.1 siga reproduciendo. Funciona, pero la forma
+> correcta es **pinchar el instante, no conservar el número suelto**, como se
+> hizo con `CORTE_SECCION_2`. Queda declarado como deuda, no aplicado: tocar
+> la reproducción de un resumen sellado no es movimiento de una tanda
+> autónoma.
 
 ---
 

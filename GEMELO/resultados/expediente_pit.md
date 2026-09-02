@@ -26,7 +26,8 @@ que la motivó.**
 Ese riesgo se midió el 26-ago (`ventana_larga.md:39-45`: 8.6% de filas
 contaminadas) y **se desmontó el mismo día** (`auditoria_ws3.md:213-236`:
 la cifra era un artefacto del join; la contaminación real es **0.00% sobre
-223 filas**). `DECISIONES.md:2913-2924` (§33.4) lo registra.
+223 filas**). `DECISIONES.md` §33.4 ("Y el 91.4% del §32.4 era un
+artefacto del join") lo registra.
 
 Como `GEMELO/DISEÑO.md` es un pre-registro congelado, su §8.5 **no se
 edita**: la corrección se documenta aparte y con fecha posterior. Este
@@ -308,8 +309,9 @@ además, AU/CA)**.
 ### 3.3 Notas por proveedor, donde el detalle cambia la lectura
 
 **EODHD** — el único de bajo costo con cobertura real de tres de las
-cuatro bolsas, y el más citado en el repo (`DECISIONES.md:447`, como
-integración futura para **intradía**, que es otra cosa).
+cuatro bolsas, y el más citado en el repo (`DECISIONES.md` §P0, "El
+Roca→Chip del terminal es exclusivamente el sellado", como integración
+futura para **intradía**, que es otra cosa).
 - Tickers verificados: **TSMC `2330.TW`** ✓, **Infineon `IFX.XETRA`** ✓,
   **Samsung `005930.KO`** ✓ — nótese: `.KO`, **no `.KS`**, así que un
   empalme con la serie de Yahoo exige mapear símbolos.
@@ -528,7 +530,7 @@ Escrito ahora, antes de que haya un resultado que lo tiente:
   (una discrepancia en el cociente, no en el nivel), entonces la §1.1 está
   incompleta y esta recomendación se cae.
 - **Si el proyecto empieza a usar datos intradía** — ya anotado en
-  `DECISIONES.md:447` como integración futura de EODHD, "donde se
+  `DECISIONES.md` §P0 como integración futura de EODHD, "donde se
   etiquetará como fuente distinta" —, esa compra se justifica por una
   razón completamente distinta (Yahoo no da intradía histórico), y este
   expediente no la evalúa.

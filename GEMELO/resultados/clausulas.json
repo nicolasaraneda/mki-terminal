@@ -1,0 +1,3704 @@
+{
+  "generado_en": "2026-09-02T03:28:23.965469+00:00",
+  "semilla": 0,
+  "n_base": 256,
+  "chequeos": {
+    "fallas": [],
+    "trampa_reprobada": true,
+    "trampa_1a": false,
+    "trampa_1b": false,
+    "ancla_c4b_reproduce": true,
+    "ancla_c4b_obtenido": {
+      "n": 241,
+      "b": 72,
+      "c": 56
+    },
+    "calza_igual_a_tiempo": true,
+    "filas_en_desacuerdo_calza_vs_a_tiempo": 0,
+    "filas_que_no_calzan": 25,
+    "filas_selladas_tarde": 25
+  },
+  "resultados": [
+    {
+      "nombre": "C0 — la regla firmada (referencia, NO candidata)",
+      "texto": "dentro de cada par, la fila válida es la de sesión objetivo correcta según `available_at`, nunca la más fresca",
+      "operacionalizacion": "`backtest.linea_base.deduplicar_por_sesion`, importada tal cual: el banco no la reimplementa",
+      "procedencia": "firmada el 1-sep-2026; DECISIONES.md, acta de la regla de deduplicación; ya APLICADA en el ejecutable",
+      "candidata": false,
+      "notas": [
+        "Entra al banco para que su propio movimiento de b/c esté en la misma tabla que el de las candidatas. NO suma un intento: sus cifras ya están publicadas y la regla ya está aplicada."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "exchange",
+          "available_at",
+          "sesion_objetivo",
+          "ticker"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": true,
+          "n_criterio_1": 231,
+          "aciertos_criterio_1": 162,
+          "tasa_criterio_1_pct": 70.12987012987013,
+          "wilson_criterio_1": [
+            0.639376342808208,
+            0.7566355047889715
+          ],
+          "n_criterio_0": 25,
+          "aciertos_criterio_0": 6,
+          "tasa_criterio_0_pct": 24.0,
+          "wilson_criterio_0": [
+            0.11496313693401441,
+            0.43429683355429083
+          ],
+          "diferencia_pp": 46.129870129870135,
+          "ic95_cluster_dia": [
+            -22.76263674085251,
+            70.31955075112812
+          ],
+          "frac_degeneradas": 0.013399999999999967,
+          "frac_replicas_del_otro_lado": 0.030002027163997566,
+          "p_permutacion_dia": {
+            "aplicable": false,
+            "criterio_constante_en_el_dia": false,
+            "motivo": "el criterio varía dentro de un mismo día: la permutación de etiqueta de día no es el test correcto y no se reporta un p que no aplica"
+          },
+          "dias_lado_minoritario": null,
+          "icc_acierto": 0.43133237909175776,
+          "deff": 3.817139600943043,
+          "n_efectivo": 67.06592547381656,
+          "clusters": 35,
+          "ic_excluye_cero": false,
+          "discrepancia_entre_rutas": false,
+          "lectura": "el intervalo CONTIENE el cero y no hay permutación de día válida (el criterio varía dentro del día), así que el intervalo es la única ruta: con estos datos no se puede distinguir asociación de ausencia de asociación — no es un permiso, es una falta de resolución, y con un punto de +46.1 pp la parte que pesa es que tampoco se puede descartar"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 246,
+        "filas_retiradas": 10,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 49,
+        "delta_b": 0,
+        "delta_c": -7,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 7,
+        "retiradas_concordantes": 3,
+        "retiradas_discordantes": 7,
+        "prop_retiradas_pro_baseline": 1.0,
+        "wilson_prop_pro_baseline": [
+          0.6456695649333126,
+          1.0
+        ],
+        "p_binomial_exacta_simetria": 0.015625000000000003,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.04505173972573706,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 9.34959349593496,
+          "lo": -7.2,
+          "hi": 26.316330950833866,
+          "clusters": 35,
+          "n_efectivo": 69.11059524093615
+        },
+        "mueve_c_y_no_b": true,
+        "retiradas_todas_un_signo": true,
+        "exige_mecanismo": true,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-07-29",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 10,
+        "3a_seccion_2": "5/21",
+        "3a_linea_base_2_8": "1/7",
+        "3a_afirmaciones_rotas": [
+          "n (verificaciones 4.6.0)",
+          "modelo: aciertos",
+          "modelo: acierto de gap %",
+          "baseline: aciertos",
+          "baseline: acierto de gap %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p",
+          "MAE modelo",
+          "MAE predecir 0.0",
+          "MAE predecir la media",
+          "cobertura del intervalo 80%",
+          "ratio ancho/error",
+          "R² sellado medio",
+          "zona muerta 0.25: n",
+          "zona muerta 0.25: ventaja pp"
+        ],
+        "3a_linea_base_rota": [
+          "n",
+          "modelo: acierto %",
+          "baseline: acierto %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "no reprobada · COSTO RETROACTIVO en 3a · EXIGE MECANISMO en la PRUEBA 2"
+    },
+    {
+      "nombre": "C1 — considerar las filas de cuando cerraba sólo el Mac",
+      "texto": "considerar las filas de cuando cerraba sólo el Mac",
+      "operacionalizacion": "conserva las filas cuya `fecha` cae en la era en que el Mac era la única máquina que sellaba: `fecha <= 2026-08-25` y fuera de la ventana de solapamiento evidenciada. El corte sale del documento de composición canónica y se corrobora contra `plataforma_version`, que está sellada por fila.",
+      "procedencia": "propuesta de Nicolás, sexta corrida: construir la regla desde el historial de máquinas",
+      "candidata": true,
+      "notas": [
+        "Es una cláusula de POBLACIÓN, no de arbitraje: no elige entre dos filas que compiten, elige una era entera. Las 25 filas del defecto de `snapshot.py:140` son TODAS de la era del Mac, así que esta cláusula las conserva a las 25."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "fecha",
+          "maquina",
+          "solapamiento",
+          "plataforma_version"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": true,
+          "n_criterio_1": 240,
+          "aciertos_criterio_1": 156,
+          "tasa_criterio_1_pct": 65.0,
+          "wilson_criterio_1": [
+            0.5877236332505564,
+            0.7075501907669759
+          ],
+          "n_criterio_0": 16,
+          "aciertos_criterio_0": 12,
+          "tasa_criterio_0_pct": 75.0,
+          "wilson_criterio_0": [
+            0.5050168346449122,
+            0.8981793250878696
+          ],
+          "diferencia_pp": -9.999999999999998,
+          "ic95_cluster_dia": [
+            -42.91666666666667,
+            23.548159952562727
+          ],
+          "frac_degeneradas": 0.12190000000000001,
+          "frac_replicas_del_otro_lado": 0.34494932240063775,
+          "p_permutacion_dia": {
+            "aplicable": true,
+            "criterio_constante_en_el_dia": true,
+            "p": 0.8051097445127744,
+            "n_perm": 20000,
+            "dias_con_criterio": 33,
+            "dias_sin_criterio": 2
+          },
+          "dias_lado_minoritario": 2,
+          "icc_acierto": 0.43133237909175776,
+          "deff": 3.817139600943043,
+          "n_efectivo": 67.06592547381656,
+          "clusters": 35,
+          "ic_excluye_cero": false,
+          "discrepancia_entre_rutas": false,
+          "lectura": "el intervalo CONTIENE el cero y la permutación de día no cruza α: con estos datos no se puede distinguir asociación de ausencia de asociación — no es un permiso, es una falta de resolución, y con un punto de -10.0 pp la parte que pesa es que tampoco se puede descartar"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 240,
+        "filas_retiradas": 16,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 56,
+        "delta_b": 0,
+        "delta_c": 0,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 0,
+        "retiradas_concordantes": 16,
+        "retiradas_discordantes": 0,
+        "prop_retiradas_pro_baseline": null,
+        "wilson_prop_pro_baseline": null,
+        "p_binomial_exacta_simetria": null,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.1846826270596634,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 6.666666666666667,
+          "lo": -10.655737704918034,
+          "hi": 23.932411674347147,
+          "clusters": 33,
+          "n_efectivo": 66.27808172337153
+        },
+        "mueve_c_y_no_b": false,
+        "retiradas_todas_un_signo": false,
+        "exige_mecanismo": false,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-08-26",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-26",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-27",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-27",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-28",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 0,
+        "3a_seccion_2": "21/21",
+        "3a_linea_base_2_8": "7/7",
+        "3a_afirmaciones_rotas": [],
+        "3a_linea_base_rota": [],
+        "3a_pasa": true,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "PASA LAS TRES"
+    },
+    {
+      "nombre": "C2 — considerar las de cuando cerraban ambas máquinas",
+      "texto": "considerar las de cuando cerraban ambas máquinas",
+      "operacionalizacion": "conserva las filas cuya `fecha` está en la ventana de solapamiento EVIDENCIADA, leída de `data/sombra/veredictos.jsonl` (veredicto PARIDAD o DIVERGENCIA ⇒ sellaron las dos). No se cablea ninguna fecha.",
+      "procedencia": "propuesta de Nicolás, sexta corrida: construir la regla desde el historial de máquinas",
+      "candidata": true,
+      "notas": [
+        "LIMITACIÓN DECLARADA: la ventana evidenciada no es necesariamente la ventana real. `comparar_sombra.py` REHÚSA por diseño las fechas <= 2026-08-24 (bases copiadas), así que un solapamiento anterior no dejaría rastro comparable. La cláusula se evalúa sobre lo que hay evidencia de que pasó."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "fecha",
+          "solapamiento",
+          "era"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": true,
+          "n_criterio_1": 16,
+          "aciertos_criterio_1": 12,
+          "tasa_criterio_1_pct": 75.0,
+          "wilson_criterio_1": [
+            0.5050168346449122,
+            0.8981793250878696
+          ],
+          "n_criterio_0": 240,
+          "aciertos_criterio_0": 156,
+          "tasa_criterio_0_pct": 65.0,
+          "wilson_criterio_0": [
+            0.5877236332505564,
+            0.7075501907669759
+          ],
+          "diferencia_pp": 9.999999999999998,
+          "ic95_cluster_dia": [
+            -23.548159952562727,
+            42.91666666666667
+          ],
+          "frac_degeneradas": 0.12190000000000001,
+          "frac_replicas_del_otro_lado": 0.34494932240063775,
+          "p_permutacion_dia": {
+            "aplicable": true,
+            "criterio_constante_en_el_dia": true,
+            "p": 0.8049097545122744,
+            "n_perm": 20000,
+            "dias_con_criterio": 2,
+            "dias_sin_criterio": 33
+          },
+          "dias_lado_minoritario": 2,
+          "icc_acierto": 0.43133237909175776,
+          "deff": 3.817139600943043,
+          "n_efectivo": 67.06592547381656,
+          "clusters": 35,
+          "ic_excluye_cero": false,
+          "discrepancia_entre_rutas": false,
+          "lectura": "el intervalo CONTIENE el cero y la permutación de día no cruza α: con estos datos no se puede distinguir asociación de ausencia de asociación — no es un permiso, es una falta de resolución, y con un punto de +10.0 pp la parte que pesa es que tampoco se puede descartar"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 16,
+        "filas_retiradas": 240,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 0,
+        "c_despues": 0,
+        "delta_b": -72,
+        "delta_c": -56,
+        "retiradas_tipo_b": 72,
+        "retiradas_tipo_c": 56,
+        "retiradas_concordantes": 112,
+        "retiradas_discordantes": 128,
+        "prop_retiradas_pro_baseline": 0.4375,
+        "wilson_prop_pro_baseline": [
+          0.35462313127053047,
+          0.5240189882636581
+        ],
+        "p_binomial_exacta_simetria": 0.1846826270596634,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 1.0,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "clusters": 2,
+          "n_efectivo": NaN
+        },
+        "mueve_c_y_no_b": false,
+        "retiradas_todas_un_signo": false,
+        "exige_mecanismo": false,
+        "sin_poder_resolutivo": true,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-07-05",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-05",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-06",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-08",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-09",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-09",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-10",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-13",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-14",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-13",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-14",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-13",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-14",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-13",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-14",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-14",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-15",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-15",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-16",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-16",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-17",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-20",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-20",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-21",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-21",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-21",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-21",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-17",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-21",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-22",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-22",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-23",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-23",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-24",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-27",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-27",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-28",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-28",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-29",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-30",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-31",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-03",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-04",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-07",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-05",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-06",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-07",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-10",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-11",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-11",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-11",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-10",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-11",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-12",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-13",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-12",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-13",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-12",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-13",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-12",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-13",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-12",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-13",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-13",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-14",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-14",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-17",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-17",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-17",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-17",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-17",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-18",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-19",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-19",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-20",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-20",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-21",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-21",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-24",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 1,
+            "base_acierto": 0,
+            "signo": "b (pro modelo)"
+          },
+          {
+            "fecha": "2026-08-24",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-25",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-25",
+            "ticker": "IFX.DE",
+            "exchange": "XETR",
+            "sesion_objetivo": "2026-08-26",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 228,
+        "3a_seccion_2": "0/21",
+        "3a_linea_base_2_8": "0/7",
+        "3a_afirmaciones_rotas": [
+          "(la cláusula deja la ventana histórica VACÍA: ninguna afirmación tiene filas sobre las que medirse)"
+        ],
+        "3a_linea_base_rota": [
+          "(ídem)"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "no reprobada · COSTO RETROACTIVO en 3a · SIN PODER RESOLUTIVO (la población que deja no distingue al campeón de la baseline)"
+    },
+    {
+      "nombre": "C3a — preferir la que selló a tiempo (antes de la apertura)",
+      "texto": "preferir la que selló a tiempo",
+      "operacionalizacion": "arbitraje dentro de cada grupo `(ticker, sesion_objetivo)` duplicado: conserva la fila cuyo `timestamp_utc` es anterior a la apertura UTC de la sesión que su propio `available_at` implica. Si ninguna o todas cumplen, el grupo queda intacto. Las filas sin pareja no se tocan.",
+      "procedencia": "propuesta de Nicolás, sexta corrida; la puntualidad como criterio de arbitraje",
+      "candidata": true,
+      "notas": [
+        "ES LA CLÁUSULA QUE HAY QUE MIRAR DE FRENTE: es metadata en la forma —un timestamp contra un calendario— pero la puntualidad puede correlacionar con el acierto, porque un sello tardío usa datos distintos. La PRUEBA 1c lo MIDE en vez de suponerlo."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "ticker",
+          "sesion_objetivo",
+          "timestamp_utc",
+          "available_at",
+          "exchange",
+          "sello_a_tiempo"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": true,
+          "n_criterio_1": 231,
+          "aciertos_criterio_1": 162,
+          "tasa_criterio_1_pct": 70.12987012987013,
+          "wilson_criterio_1": [
+            0.639376342808208,
+            0.7566355047889715
+          ],
+          "n_criterio_0": 25,
+          "aciertos_criterio_0": 6,
+          "tasa_criterio_0_pct": 24.0,
+          "wilson_criterio_0": [
+            0.11496313693401441,
+            0.43429683355429083
+          ],
+          "diferencia_pp": 46.129870129870135,
+          "ic95_cluster_dia": [
+            -22.76263674085251,
+            70.31955075112812
+          ],
+          "frac_degeneradas": 0.013399999999999967,
+          "frac_replicas_del_otro_lado": 0.030002027163997566,
+          "p_permutacion_dia": {
+            "aplicable": false,
+            "criterio_constante_en_el_dia": false,
+            "motivo": "el criterio varía dentro de un mismo día: la permutación de etiqueta de día no es el test correcto y no se reporta un p que no aplica"
+          },
+          "dias_lado_minoritario": null,
+          "icc_acierto": 0.43133237909175776,
+          "deff": 3.817139600943043,
+          "n_efectivo": 67.06592547381656,
+          "clusters": 35,
+          "ic_excluye_cero": false,
+          "discrepancia_entre_rutas": false,
+          "lectura": "el intervalo CONTIENE el cero y no hay permutación de día válida (el criterio varía dentro del día), así que el intervalo es la única ruta: con estos datos no se puede distinguir asociación de ausencia de asociación — no es un permiso, es una falta de resolución, y con un punto de +46.1 pp la parte que pesa es que tampoco se puede descartar"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 246,
+        "filas_retiradas": 10,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 49,
+        "delta_b": 0,
+        "delta_c": -7,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 7,
+        "retiradas_concordantes": 3,
+        "retiradas_discordantes": 7,
+        "prop_retiradas_pro_baseline": 1.0,
+        "wilson_prop_pro_baseline": [
+          0.6456695649333126,
+          1.0
+        ],
+        "p_binomial_exacta_simetria": 0.015625000000000003,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.04505173972573706,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 9.34959349593496,
+          "lo": -7.2,
+          "hi": 26.316330950833866,
+          "clusters": 35,
+          "n_efectivo": 69.11059524093615
+        },
+        "mueve_c_y_no_b": true,
+        "retiradas_todas_un_signo": true,
+        "exige_mecanismo": true,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-07-29",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 10,
+        "3a_seccion_2": "5/21",
+        "3a_linea_base_2_8": "1/7",
+        "3a_afirmaciones_rotas": [
+          "n (verificaciones 4.6.0)",
+          "modelo: aciertos",
+          "modelo: acierto de gap %",
+          "baseline: aciertos",
+          "baseline: acierto de gap %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p",
+          "MAE modelo",
+          "MAE predecir 0.0",
+          "MAE predecir la media",
+          "cobertura del intervalo 80%",
+          "ratio ancho/error",
+          "R² sellado medio",
+          "zona muerta 0.25: n",
+          "zona muerta 0.25: ventaja pp"
+        ],
+        "3a_linea_base_rota": [
+          "n",
+          "modelo: acierto %",
+          "baseline: acierto %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "no reprobada · COSTO RETROACTIVO en 3a · EXIGE MECANISMO en la PRUEBA 2"
+    },
+    {
+      "nombre": "C3b — preferir la que selló a tiempo (dentro de la ventana operativa 17:50–20:30)",
+      "texto": "preferir la que selló a tiempo",
+      "operacionalizacion": "idéntica a C3a salvo la definición de «a tiempo»: aquí es que el sello cayó dentro de la ventana operativa declarada del proyecto, 17:50–20:30 hora de Chile.",
+      "procedencia": "segunda lectura de la misma cláusula 3; se evalúa aparte porque una operacionalización distinta es una cláusula distinta y suma su propio intento",
+      "candidata": true,
+      "notas": [
+        "Las dos lecturas no son equivalentes: un sello a las 21:00 de Chile está fuera de la ventana operativa y sin embargo llega holgado antes de que abra Seúl. Evaluar sólo una de las dos sería elegir la definición sin decirlo."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "ticker",
+          "sesion_objetivo",
+          "timestamp_utc",
+          "sello_en_ventana"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": true,
+          "n_criterio_1": 228,
+          "aciertos_criterio_1": 159,
+          "tasa_criterio_1_pct": 69.73684210526316,
+          "wilson_criterio_1": [
+            0.6348733177143193,
+            0.7533229973787714
+          ],
+          "n_criterio_0": 28,
+          "aciertos_criterio_0": 9,
+          "tasa_criterio_0_pct": 32.142857142857146,
+          "wilson_criterio_0": [
+            0.17933246922494964,
+            0.5066115681914239
+          ],
+          "diferencia_pp": 37.593984962406005,
+          "ic95_cluster_dia": [
+            -22.952623779637378,
+            59.29641933531419
+          ],
+          "frac_degeneradas": 0.013399999999999967,
+          "frac_replicas_del_otro_lado": 0.0377052503547537,
+          "p_permutacion_dia": {
+            "aplicable": true,
+            "criterio_constante_en_el_dia": true,
+            "p": 0.03189840507974601,
+            "n_perm": 20000,
+            "dias_con_criterio": 31,
+            "dias_sin_criterio": 4
+          },
+          "dias_lado_minoritario": 4,
+          "icc_acierto": 0.43133237909175776,
+          "deff": 3.817139600943043,
+          "n_efectivo": 67.06592547381656,
+          "clusters": 35,
+          "ic_excluye_cero": false,
+          "discrepancia_entre_rutas": true,
+          "lectura": "DISCREPANCIA ENTRE RUTAS: la permutación de etiqueta de día cruza α (p = 0.0319) pero el IC95 de clúster CONTIENE el cero. Cruzar α no es tener evidencia. Con 4 día(s) del lado minoritario la asociación no se puede establecer NI descartar — y el punto (+37.6 pp) es lo bastante grande como para que 'no se puede descartar' sea la parte que pesa"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 246,
+        "filas_retiradas": 10,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 49,
+        "delta_b": 0,
+        "delta_c": -7,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 7,
+        "retiradas_concordantes": 3,
+        "retiradas_discordantes": 7,
+        "prop_retiradas_pro_baseline": 1.0,
+        "wilson_prop_pro_baseline": [
+          0.6456695649333126,
+          1.0
+        ],
+        "p_binomial_exacta_simetria": 0.015625000000000003,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.04505173972573706,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 9.34959349593496,
+          "lo": -7.2,
+          "hi": 26.316330950833866,
+          "clusters": 35,
+          "n_efectivo": 69.11059524093615
+        },
+        "mueve_c_y_no_b": true,
+        "retiradas_todas_un_signo": true,
+        "exige_mecanismo": true,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-07-29",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-07-29",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 0,
+            "base_acierto": 1,
+            "signo": "c (pro baseline)"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-03",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 10,
+        "3a_seccion_2": "5/21",
+        "3a_linea_base_2_8": "1/7",
+        "3a_afirmaciones_rotas": [
+          "n (verificaciones 4.6.0)",
+          "modelo: aciertos",
+          "modelo: acierto de gap %",
+          "baseline: aciertos",
+          "baseline: acierto de gap %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p",
+          "MAE modelo",
+          "MAE predecir 0.0",
+          "MAE predecir la media",
+          "cobertura del intervalo 80%",
+          "ratio ancho/error",
+          "R² sellado medio",
+          "zona muerta 0.25: n",
+          "zona muerta 0.25: ventaja pp"
+        ],
+        "3a_linea_base_rota": [
+          "n",
+          "modelo: acierto %",
+          "baseline: acierto %",
+          "ventaja pp",
+          "McNemar b10",
+          "McNemar p"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "no reprobada · COSTO RETROACTIVO en 3a · EXIGE MECANISMO en la PRUEBA 2"
+    },
+    {
+      "nombre": "C4 — si son iguales, contar una vez",
+      "texto": "si son iguales, contar una vez",
+      "operacionalizacion": "dentro de cada grupo `(ticker, sesion_objetivo)` duplicado, si las filas coinciden en `acierto_gap` y en `gap_pct` —lo que el duelo puntúa— se conserva una sola, la de emisión MÁS ANTIGUA. Si no coinciden, el grupo queda intacto.",
+      "procedencia": "propuesta de Nicolás, sexta corrida",
+      "candidata": true,
+      "notas": [
+        "El desempate declarado (la más antigua) es inmaterial para b/c por construcción —las dos filas puntúan idéntico— pero NO para el MAE, porque `error_gap_pp` sí difiere entre ellas. Quedarse con la fresca sería `keep=\"last\"` entrando por la ventana.",
+        "Esta cláusula LEE `acierto_gap` para decidir. La PRUEBA 1 lo va a marcar, y ése es exactamente el punto del banco."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "ticker",
+          "sesion_objetivo",
+          "fecha",
+          "acierto_gap",
+          "gap_pct"
+        ],
+        "1a_prohibidos": [
+          "acierto_gap",
+          "gap_pct"
+        ],
+        "1a_sin_clasificar": [],
+        "1a_pasa": false,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 200,
+        "1b_fraccion": 1.0,
+        "1b_wilson": [
+          0.9811546736227335,
+          1.0
+        ],
+        "1b_pasa": false,
+        "1c": {
+          "aplicable": false,
+          "motivo": "la cláusula no define un criterio por fila"
+        },
+        "pasa": false
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 253,
+        "filas_retiradas": 3,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 56,
+        "delta_b": 0,
+        "delta_c": 0,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 0,
+        "retiradas_concordantes": 3,
+        "retiradas_discordantes": 0,
+        "prop_retiradas_pro_baseline": null,
+        "wilson_prop_pro_baseline": null,
+        "p_binomial_exacta_simetria": null,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.1846826270596634,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 6.324110671936759,
+          "lo": -10.441767068273093,
+          "hi": 23.2,
+          "clusters": 35,
+          "n_efectivo": 70.23619625346257
+        },
+        "mueve_c_y_no_b": false,
+        "retiradas_todas_un_signo": false,
+        "exige_mecanismo": false,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-08-04",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 3,
+        "3a_seccion_2": "8/21",
+        "3a_linea_base_2_8": "3/7",
+        "3a_afirmaciones_rotas": [
+          "n (verificaciones 4.6.0)",
+          "modelo: aciertos",
+          "modelo: acierto de gap %",
+          "baseline: aciertos",
+          "baseline: acierto de gap %",
+          "MAE modelo",
+          "MAE predecir 0.0",
+          "MAE predecir la media",
+          "cobertura del intervalo 80%",
+          "ratio ancho/error",
+          "R² sellado medio",
+          "zona muerta 0.25: n",
+          "zona muerta 0.25: ventaja pp"
+        ],
+        "3a_linea_base_rota": [
+          "n",
+          "modelo: acierto %",
+          "baseline: acierto %",
+          "ventaja pp"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "REPROBADA en la PRUEBA 1 (lee el resultado)"
+    },
+    {
+      "nombre": "C4b — si son iguales, contar una vez (lectura de metadata: «iguales» = el mismo evento)",
+      "texto": "si son iguales, contar una vez",
+      "operacionalizacion": "«iguales» NO se lee sobre el desenlace sino sobre la identidad del evento: dos filas del mismo `(ticker, sesion_objetivo)` son dos pronósticos del MISMO evento y se cuenta uno. Desempate declarado y NO por frescura: la emisión más antigua.",
+      "procedencia": "segunda lectura de la cláusula 4, evaluada para no reportar sólo la lectura menos favorable. Resulta ser EXACTAMENTE la regla `keep=\"first\"` que la cola de decisiones ya midió (n=241, +6,64 pp, p=0,1847), así que **NO suma un intento nuevo**: es un intento ya contado, y reproducirlo sirve de validación externa del banco",
+      "candidata": true,
+      "notas": [
+        "Es la lectura que NO lee el resultado, y por eso pasa la PRUEBA 1 donde C4 la reprueba. La diferencia entre C4 y C4b no es de grado: es qué significa «iguales», y esa palabra es toda la cláusula.",
+        "El desempate por la más antigua está declarado. Su espejo por frescura está PROHIBIDO por la firma del 1-sep y este módulo no lo ofrece en ninguna forma — un número retirado que sigue ofrecido en el código vuelve a circular.",
+        "Sus cifras son la VALIDACIÓN EXTERNA del banco: si no reprodujeran n=241 y b/c 72/56, el instrumento estaría mal y nada de lo demás valdría."
+      ],
+      "prueba_1": {
+        "1a_campos_declarados": [
+          "ticker",
+          "sesion_objetivo",
+          "fecha"
+        ],
+        "1a_prohibidos": [],
+        "1a_sin_clasificar": [],
+        "1a_pasa": true,
+        "1b_permutaciones": 200,
+        "1b_selecciones_que_cambiaron": 0,
+        "1b_fraccion": 0.0,
+        "1b_wilson": [
+          0.0,
+          0.018845326377266568
+        ],
+        "1b_pasa": true,
+        "1c": {
+          "aplicable": false,
+          "motivo": "la cláusula no define un criterio por fila"
+        },
+        "pasa": true
+      },
+      "prueba_2": {
+        "n_antes": 256,
+        "n_despues": 241,
+        "filas_retiradas": 15,
+        "b_antes": 72,
+        "c_antes": 56,
+        "b_despues": 72,
+        "c_despues": 56,
+        "delta_b": 0,
+        "delta_c": 0,
+        "retiradas_tipo_b": 0,
+        "retiradas_tipo_c": 0,
+        "retiradas_concordantes": 15,
+        "retiradas_discordantes": 0,
+        "prop_retiradas_pro_baseline": null,
+        "wilson_prop_pro_baseline": null,
+        "p_binomial_exacta_simetria": null,
+        "mcnemar_exacto_antes": 0.1846826270596634,
+        "mcnemar_exacto_despues": 0.1846826270596634,
+        "ventaja_antes": {
+          "ventaja_pp": 6.25,
+          "lo": -10.196078431372548,
+          "hi": 23.015873015873016,
+          "clusters": 35,
+          "n_efectivo": 70.41131014619273
+        },
+        "ventaja_despues": {
+          "ventaja_pp": 6.639004149377594,
+          "lo": -10.981111710739341,
+          "hi": 24.390243902439025,
+          "clusters": 35,
+          "n_efectivo": 68.38607671562967
+        },
+        "mueve_c_y_no_b": false,
+        "retiradas_todas_un_signo": false,
+        "exige_mecanismo": false,
+        "sin_poder_resolutivo": false,
+        "minimo_filas_declarado": 30,
+        "detalle_retiradas": [
+          {
+            "fecha": "2026-07-30",
+            "ticker": "000660.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-07-30",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-07-31",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "2330.TW",
+            "exchange": "XTAI",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-04",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-05",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "3436.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "4063.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "6857.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-11",
+            "ticker": "8035.T",
+            "exchange": "XTKS",
+            "sesion_objetivo": "2026-08-12",
+            "acierto_gap": 0,
+            "base_acierto": 0,
+            "signo": "concordante"
+          },
+          {
+            "fecha": "2026-08-17",
+            "ticker": "005930.KS",
+            "exchange": "XKRX",
+            "sesion_objetivo": "2026-08-18",
+            "acierto_gap": 1,
+            "base_acierto": 1,
+            "signo": "concordante"
+          }
+        ]
+      },
+      "prueba_3": {
+        "disponible": true,
+        "filas_historicas": 228,
+        "filas_retiradas_del_historico": 15,
+        "3a_seccion_2": "7/21",
+        "3a_linea_base_2_8": "3/7",
+        "3a_afirmaciones_rotas": [
+          "n (verificaciones 4.6.0)",
+          "modelo: aciertos",
+          "modelo: acierto de gap %",
+          "baseline: aciertos",
+          "baseline: acierto de gap %",
+          "ventaja pp",
+          "MAE modelo",
+          "MAE predecir 0.0",
+          "MAE predecir la media",
+          "cobertura del intervalo 80%",
+          "ratio ancho/error",
+          "R² sellado medio",
+          "zona muerta 0.25: n",
+          "zona muerta 0.25: ventaja pp"
+        ],
+        "3a_linea_base_rota": [
+          "n",
+          "modelo: acierto %",
+          "baseline: acierto %",
+          "ventaja pp"
+        ],
+        "3a_pasa": false,
+        "3b_seccion_2": "21/21",
+        "3b_linea_base_2_8": "7/7",
+        "3b_base_sin_mutar": true,
+        "3b_pasa": true,
+        "pasa": true
+      },
+      "veredicto": "no reprobada · COSTO RETROACTIVO en 3a"
+    }
+  ]
+}

@@ -143,6 +143,20 @@ DEDUP_OFICIAL = True
 # instante es cosa de quien reproduce una afirmación congelada.
 CORTE_SECCION_2 = "2026-08-24"
 
+# El segundo instante pinchado, por la misma razón y con una lección
+# propia. La regla de deduplicación se firmó (acta §60) conociendo dos
+# desenlaces —p = 0,1847 sin deduplicar y p = 0,0323 con `keep="last"`,
+# prohibida— y produjo un tercero: bajo la convención oficial la ventaja
+# cruza α. Ese hallazgo se fijó como test contra la ventana VIVA, y el
+# 1-sep-2026 a las 18:15 producción selló un día más: el p SIN deduplicar
+# pasó de 0,1849 a 0,0486 y el test que fijaba «> 0,05» se cayó solo.
+#
+# No es un test roto: es la demostración más nítida de lo que esta misma
+# corrida estableció —CRUZAR α NO ES TENER EVIDENCIA—. Un solo día de
+# sellado movió el p de un lado al otro del umbral. Lo que estaba mal era
+# verificar una afirmación congelada contra una base que crece.
+CORTE_REGLA_FIRMADA = "2026-08-31"
+
 # La línea base oficial que la §2.8 congela.
 LINEA_BASE_OFICIAL = (
     ("n",                   223,    0),

@@ -324,12 +324,55 @@ tres días más adelante de la que en realidad describían — el parche no
 solo corrige el destino, corrige también, como efecto correcto de
 construcción, la elegibilidad de verificación en los casos extremos.
 
+> **Corrección 1-sep-2026 — no son 8, son 15, y el párrafo de arriba se
+> quedó corto.** El forense de las huérfanas
+> (`GEMELO/resultados/huerfanas.md` §3.1) recalculó el grupo del **2026-08-05**
+> y encontró el mismo desenlace: con `available_at` corregido la sesión
+> correcta es **2026-08-06**, que **ya había abierto** cuando el proceso
+> terminó de sellar (01:38 UTC del 06-ago, tras que el Mac se re-durmiera
+> durante los reintentos). Esas **7 filas también caerían en
+> `no_verificable_timing`**.
+>
+> La diferencia entre los dos grupos es de **severidad, no de resultado**:
+> agosto queda a mitad de la sesión correcta, julio con la sesión ya cerrada
+> por completo. **En el eje de elegibilidad los dos grupos dan lo mismo.**
+> Vale decirlo con todas las letras porque cambia el costo del parche: no son
+> 8 filas las que salen de las métricas selladas, son **15**.
+>
+> Y de ahí sale el **riesgo simétrico** que este documento tiene que llevar
+> escrito: una corrección que toque `sesion_objetivo` **sin tocar `estado`**
+> dejaría 15 filas "corregidas" pero **todavía contando como `verificada`**,
+> cuando bajo la regla maestra las 15 dejan de serlo. Las dos cosas se mueven
+> juntas o no se mueven.
+
 **Lo que la auditoría NO pudo determinar:** por qué el snapshot del
 2026-08-06 perdió el 100% de sus predicciones ese día (dropout total, no
 parcial) es una anomalía de datos aparte, no investigada aquí porque cae
 fuera del alcance de este parche — queda anotada para quien mire salud de
 datos de esa fecha, igual que el dropout del 17-ago que `dedup_opciones.md`
 ya había dejado anotado sin investigar.
+
+> **Corrección 1-sep-2026 — el 06-ago no era una incógnita, y este párrafo
+> es la cuarta vez que el proyecto lo trató como si lo fuera.** Estaba
+> reconstruido y documentado en `DECISIONES.md` (acta de la Etapa 5.0.2)
+> **desde el 8-ago**, 23 días antes: el proceso arrancó tarde (18:24:48
+> Chile), descargó 28/28 en 4 s, estampó `ts_emision` — y el Mac se
+> **re-durmió, dejando el proceso congelado ~44 minutos** con el timestamp ya
+> escrito. Al despertar (~19:08) el TTL de 15 min de la caché había expirado
+> y la re-descarga en red inestable falló para 12 tickers más `^KS11` y
+> `^SOX`; sin `^SOX`, `prediccion_apertura_al` devuelve vacío → **0
+> predicciones**. `regimen` y `roca_chip` sí quedaron bien porque se
+> calcularon **antes** del congelamiento.
+>
+> Lo que sigue sin determinarse es sólo la **atribución fina Yahoo-real vs.
+> red-dormida** para esos 12 tickers: los logs primarios ya rotaron y no
+> están en git (verificadas las dos cosas).
+>
+> **Y el hallazgo de proceso vale por sí solo.** `cola_decisiones.md`,
+> `bifurcaciones.md`, `espera_firma.md` y este documento —cuatro— marcaron el
+> 06-ago como cabo suelto no investigado. La respuesta llevaba tres semanas
+> escrita en `DECISIONES.md`. **La memoria institucional existía y la capa
+> que la necesitaba no la leyó.**
 
 ---
 

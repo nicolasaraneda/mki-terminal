@@ -292,7 +292,7 @@ def test_sin_deduplicar_la_conclusion_de_fondo_vale_en_las_TRES_convenciones():
     constante no es distinguible de cero. Este test fija ese hecho tal
     como estaba antes de la firma, para que el cambio que produce la regla
     sea visible como cambio y no como cifra nueva."""
-    base = lb.cargar(dedup=False)
+    base = lb.cargar(dedup=False, hasta_sello=lb.CORTE_REGLA_FIRMADA)
     for c in lb.CONVENCIONES:
         d = lb.duelo(lb.aplicar_convencion(base, c))
         assert d["mcnemar_p"] > 0.05, c
@@ -309,9 +309,11 @@ def test_la_regla_firmada_cruza_alfa_y_eso_queda_fijado():
     α = 0.05. La firma sigue siendo el criterio correcto (corrección de la
     sesión, no frescura), pero el desenlace no estaba a la vista al
     firmar y el acta lo dice."""
+    corte = lb.CORTE_REGLA_FIRMADA
     sin = lb.duelo(lb.aplicar_convencion(
-        lb.cargar(dedup=False), lb.CONVENCION_OFICIAL))
-    con = lb.duelo(lb.aplicar_convencion(lb.cargar(), lb.CONVENCION_OFICIAL))
+        lb.cargar(dedup=False, hasta_sello=corte), lb.CONVENCION_OFICIAL))
+    con = lb.duelo(lb.aplicar_convencion(
+        lb.cargar(hasta_sello=corte), lb.CONVENCION_OFICIAL))
     assert sin["mcnemar_p"] > 0.05          # el desenlace que se conocía
     assert con["mcnemar_p"] < 0.05          # el que la firma produjo
     # El mecanismo, también fijado: b no se mueve, c baja. Las filas

@@ -1,65 +1,58 @@
 # ESTADO
 
-Resumen curado de dónde está el proyecto. Se regenera al cierre de cada sesión
-con la skill `/cierre-sesion`. **Máximo 50 líneas.** No es historia: la historia
-vive en `DECISIONES.md`. Las cifras publicadas viven en `README.md`.
-
-**Actualizado:** 1-sep-2026 (quinta corrida, dos tandas) · verificar con `orientador`
+Dónde está el proyecto. Se regenera al cierre con `/cierre-sesion`. **Máximo 50
+líneas.** No es historia (`DECISIONES.md`) ni cifras publicadas (`README.md`).
+**Actualizado:** 1-sep-2026 (sexta corrida) · verificar con `orientador`
 
 ## Producción
 
-- **Titular: este PC (Windows/WSL), en `main`.** 6 timers activos, emite. Al
-  modo se le **pregunta a `modo.py`**.
-- Modelo 4.6.0 congelado. Último sello: 2026-08-31.
-- **Réplica: piezas listas, nada activado.** Falta una firma: quién gana ante
-  divergencia. Ver `GEMELO/resultados/espera_firma.md`.
+- **Titular: este PC (Windows/WSL), en `main`.** 6 timers activos, emite; al modo
+  se le **pregunta a `modo.py`**. Modelo 4.6.0 congelado. Último sello: 2026-08-31.
+- **Réplica y segundo sello: diseñados, ninguno activado.** Cubren fallas
+  distintas y no se sustituyen.
 
 ## Las cuatro reglas de la casa
 
-1. Una verificación con el mismo mecanismo que produjo la cifra **no es una
-   verificación**.
-2. Una retractación en prosa no es una retractación: **la corrección va al
-   ejecutable antes que al texto**.
+1. Una verificación con el mismo mecanismo que produjo la cifra **no es una verificación**.
+2. Una retractación en prosa no es una retractación: **la corrección va al ejecutable**.
 3. **Ningún estimador puntual sin intervalo**, y el intervalo se computa.
-4. **Un número retirado que sigue ofrecido en el código vuelve a circular** —
-   se retira también de defaults, constantes y firmas de función.
+4. **Un número retirado que sigue ofrecido en el código vuelve a circular.**
 
-## Lo que la quinta corrida estableció
+## Lo que sigue en pie
 
-- **La ventana sellada no alcanza para juzgar nada.** n efectivo **67**, no
-  238 (ICC ~0,39, DEFF ~3,6). Toda su información discriminante es un
-  **10-6 en 17 días**. **0 de 192 celdas** de la matriz de bifurcaciones dan
-  p < 0,05 con inferencia de clúster.
-- **Cruzar α no es tener evidencia.** Con la regla de deduplicación firmada la
-  ventaja es +9,7 pp con p=0,0451 — **pero su IC95 de clúster es
-  [−7,2, +26,5]**. McNemar cruza porque supone independencia que no hay.
-- **La ventaja NO está concentrada: está más dispersa que el azar.** Sobre
-  2.030 fechas, el 100% del neto vive en el 16,5% de ellas contra 0,64% bajo
-  la nula. **Julio no es de otra especie**: 157 bloques históricos iguales o
-  mejores.
-- **El gap existe (69% direccional) y no es capturable**: la cartera pierde
-  40,7% sin un solo punto básico de costo.
-- **R3 quedó LIMPIO.** Las dos fugas del arnés, corregidas con contraprueba
-  que dispara 10/10. **El holdout sigue intacto y sin gastar.**
+- **La ventana sellada no alcanza para juzgar nada.** n efectivo **67** (DEFF ~3,6);
+  **0 de 192 celdas** dan p < 0,05 por clúster. **Cruzar α no es tener evidencia.**
+- La ventaja está **más dispersa que el azar**; el gap existe (69% direccional) y
+  **no es capturable**. **R3 LIMPIO**, holdout intacto. **Gatillo 5.1: NO se
+  releva** — se espera al **25-oct-2026**.
 
-## Gatillo de la Etapa 5.1
+## Lo nuevo de la sexta corrida
 
-**NO se releva.** Se espera al **25-oct-2026** (condición b, se cumple sola).
-Relevar la (a) habiendo visto que N se cumple y el régimen no sería mover un
-criterio congelado después de mirar.
+- **Yahoo retiró la sesión del 2026-08-28 entera**; no revisó ningún precio (25
+  fechas: 23 paridad, 2 barra retirada, **0 divergencias de valor**). Tasa base
+  **0,13%**, IC95 [0,02, 0,75].
+- **El vigía no puede verlo:** `salud_descarga` sólo pregunta si hay alguna barra
+  en 7 días. **Un hueco en el medio es invisible por construcción.**
+- **Consecuencia viva:** lo que reconstruye al campeón desde el Yahoo de hoy sobre
+  una ventana con el 28-ago —`backtest/`, `ventana_larga`, `CONDICIONAL`,
+  **cualquier veredicto 5.1**— obtiene **signo contrario** en 16 filas. Están en
+  `pendiente`: **ninguna cifra publicada se mueve.** Declarado, no corregido.
+- **El criterio de la cláusula 3 y la regla ya firmada son el mismo indicador**
+  (256/256). **Conteo de intentos: 91** (registro) / **97** (veredicto 5.1).
 
 ## Deuda con modo de falla activo
 
-`snapshot.py:140` calcula `sesion_objetivo` con el reloj de pared: **25 filas
-históricas afectadas** y **sigue ocurriendo**. Parche listo con test y
-declaración del corte de método en `GEMELO/resultados/parche_snapshot140.md`.
+`snapshot.py:140` sella `sesion_objetivo` con el reloj de pared: **25 filas** y
+**sigue ocurriendo**. Corregido hoy: son **15** las que cambian de elegibilidad,
+no 8, y **`estado` se mueve junto con `sesion_objetivo`**.
 
 ## Esperando decisión
 
-**`GEMELO/resultados/espera_firma.md`** — un solo documento, resoluble en una
-sentada. Detrás está `cola_decisiones.md` con los 16 ítems y su costo de
-postergar.
+**`GEMELO/resultados/espera_firma.md`** (detrás, `cola_decisiones.md`), más una
+firma nueva y bloqueante: la **regla canónica del segundo sello** (R-A
+recomendada), `docs/SEGUNDO_SELLO.md`.
 
 ## Siguiente paso
 
 `git push origin main` (lo hace Nicolás, tras revisar el diff).
+

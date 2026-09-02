@@ -41,11 +41,12 @@ falta ningún aparato. Por la ruta de clúster, **0 de 192** formas legítimas
 de medir la misma ventana dan p < 0,05 (por la ruta que supone filas
 independientes, 59).
 
-**El conteo de intentos vigente es 86** (el registro de 20 tramos con
-procedencia) **o 92** (el que declaró en disco la corrida del backtest, que
-suma 6 propios). **No es 25.** El README todavía dice 25 — ver §7, y ver ahí
-también la prueba de que ese número no está quieto: la corrida de la ventana
-condicional de esta mañana partió de 25 y publicó "N acumulado 25 → 33".
+**El conteo de intentos vigente, al 1-sep-2026, es 91** (el registro, hoy de
+25 tramos con procedencia) **o 97** (el que declara en disco la corrida del
+backtest, que suma 6 propios). **No es 25.** El README todavía dice 25 — ver
+§7, y ver ahí también la prueba de que ese número no está quieto: la corrida
+de la ventana condicional partió de 25 y publicó "N acumulado 25 → 33", y el
+propio registro subió de 86 a 91 **mientras esta página esperaba firma**.
 
 **La rama de +14,3 pp no tiene intervalo computado.** Por la tercera regla de
 la casa, hasta que lo tenga es una consecuencia declarada, no un argumento.
@@ -460,7 +461,7 @@ fenómeno sobre la ventana larga. **Conviene decidirlos juntos.**
 
 ---
 
-# 7. `README.md`:253 dice "Va en 25". El registro da 86
+# 7. `README.md`:253 dice "Va en 25". El registro da 91
 
 **Qué hay que decidir:** si se corrige la portada pública.
 
@@ -469,10 +470,21 @@ fenómeno sobre la ventana larga. **Conviene decidirlos juntos.**
 **Costo de decidirlo: 5 minutos.**
 
 El texto dice, literal: *"**El N del DSR se declara antes de cada corrida y
-solo sube.** Va en 25…"*. **El registro verificado da 86** —calculado como
-suma de `REGISTRO_INTENTOS`, 20 tramos con procedencia línea a línea, ya no un
-entero mágico— **y la corrida del backtest declaró 92** (86 del registro más
+solo sube.** Va en 25…"*. **El registro verificado da 91** —calculado como
+suma de `REGISTRO_INTENTOS`, 25 tramos con procedencia línea a línea, ya no un
+entero mágico— **y la corrida del backtest declara 97** (91 del registro más
 6 propios).
+
+> **El número se movió mientras este ítem esperaba firma, y eso es el
+> hallazgo.** Cuando se escribió esta página el registro daba **86** sobre 20
+> tramos. El banco de cláusulas del 1-sep agregó **cinco tramos** (C1, C2,
+> C3a, C3b, C4) y lo dejó en **91**; `backtest/veredicto_51.py` acompañó
+> (`N_INTENTOS_PREVIO = 91`, `N_INTENTOS_51 = 97`). Nada de esto fue una
+> corrección: el registro hizo exactamente lo que promete hacer, subir cada
+> vez que se evalúa una configuración más. **Cualquier entero que se clave hoy
+> en la portada estará viejo la próxima vez que se evalúe algo** — que es el
+> argumento para la opción (d), abajo, y la razón por la que las opciones (a)
+> y (b) quedan escritas con su fecha.
 
 **Y no es un número dormido.** La corrida de la ventana condicional de esta
 mañana publicó *"Intentos sumados: 8 (N acumulado 25 → 33)"*: **partió del 25
@@ -488,14 +500,17 @@ PASA.** Ya está corregido. El del README no.
 
 | Opción | Consecuencia |
 |---|---|
-| (a) Actualizar a **86** con nota de procedencia | La cifra del registro, que es la auditable línea a línea. |
-| (b) Actualizar a **92** | El N que declaró en disco la corrida del 1-sep, antes de computar nada. |
+| (a) Actualizar a **91 al 1-sep-2026** con nota de procedencia | La cifra del registro, auditable línea a línea. Nace con fecha de vencimiento: el próximo tramo la deja vieja. |
+| (b) Actualizar a **97 al 1-sep-2026** | El N que declara en disco la corrida del 5.1, antes de computar nada. Mismo vencimiento. |
 | (c) Dejarlo y anotar errata fechada | El 25 sigue en la portada y sigue propagándose, como propagó hoy. |
+| **(d) Publicar la fuente, no el entero** | La portada dice de dónde sale el N (`REGISTRO_INTENTOS`, N tramos con procedencia) y cita el valor **con su fecha**. Es la única que no vuelve a envejecer sola. |
 
-**El propio texto promete que el N "solo sube", así que (a) y (b) son las dos
-consistentes con lo publicado. Dejarlo en 25 es lo único que lo contradice.**
-No recomiendo entre 86 y 92 porque depende de qué convención declares
-canónica — pero sí recomiendo, marcado como tal, **que no quede en 25.**
+**El propio texto promete que el N "solo sube", así que (a), (b) y (d) son las
+tres consistentes con lo publicado. Dejarlo en 25 es lo único que lo
+contradice.** No recomiendo entre 91 y 97 porque depende de qué convención
+declares canónica. Sí recomiendo, marcado como tal, **que no quede en 25**, y
+—viendo que el número se movió dos veces en una semana— **que la forma sea la
+(d)**: cualquiera de las otras vuelve a esta misma cola dentro de un mes.
 
 ---
 

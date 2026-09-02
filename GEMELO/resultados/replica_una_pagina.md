@@ -80,7 +80,41 @@ explícito para que nadie los use como si fueran intercambiables:
 | **Falla que cubre** | La máquina se cae, se duerme, o queda colgada — el proceso titular deja de existir o de avanzar | Los datos no habían asentado todavía cuando se selló — la máquina funcionó perfecto, la fuente externa cambió su historia después |
 | **Dónde corre** | Otra máquina (el Mac), en paralelo | La misma máquina, más tarde |
 | **Qué detectan las 4 fechas de −50 pp de arriba** | Exactamente esto: 07-29 y 08-05 son sellos tardíos por el Mac re-durmiéndose a mitad de una descarga o un cómputo | Nada de esto — ahí la descarga fue completa y a tiempo cuando se pudo completar; el problema fue el reloj, no el dato |
-| **Ejemplo real de la OTRA falla, medido esta semana** | — | `sox_sellado_vs_reconstruido` (`GEMELO/CONDICIONAL/condicional.py`) encontró **2026-08-28 y 2026-08-31** con `dif_pp` de 3.47 y 3.49 entre el SOX que la producción usó y el que Yahoo sirve hoy para esas mismas fechas — con `descarga_ok=28/28` y el vigía en verde las dos noches (`data/vigia.log`). La máquina no falló: la fuente revisó su historia después. **La réplica no habría detectado esto**: una segunda máquina leyendo la misma fuente externa en el mismo instante ve el mismo dato provisional y sella el mismo error dos veces |
+| **Ejemplo real de la OTRA falla, medido esta semana** | — | `sox_sellado_vs_reconstruido` (`GEMELO/CONDICIONAL/condicional.py`) marcó **2026-08-28 y 2026-08-31**, con `descarga_ok=28/28` y el vigía en verde las dos noches (`data/vigia.log`). **Corrección 1-sep, ver abajo: no es que la fuente revisara un precio — retiró la sesión del 28-ago entera.** La máquina no falló. **La réplica no habría detectado esto**: una segunda máquina leyendo la misma fuente externa en el mismo instante ve el mismo dato, y cuando la sesión se retira días después, se retira para las dos |
+
+> **Corrección 1-sep-2026 — el mecanismo no era el que decía esta tabla, y
+> el número tampoco.** El diseño del segundo sello
+> (`docs/SEGUNDO_SELLO.md`) fue a medir la premisa en vez de heredarla, y
+> encontró otra cosa:
+>
+> - **Ningún precio fue revisado.** Sobre las 25 fechas selladas con
+>   `sox_usado_pct`: **23 paridad, 2 barra retirada, 0 divergencias de
+>   valor** (23/25 = 92,0%, IC95 Wilson [75,0, 97,8]).
+> - **Yahoo retiró la sesión del 2026-08-28 completa.** No hay barra de
+>   `^SOX` para esa fecha por ninguna de cuatro formas de pedirla —
+>   verificado de nuevo hoy: la serie salta del 27 al 31. De 19 símbolos,
+>   **10 la perdieron y 9 la conservan** (52,6%, IC95 [31,7, 72,7]).
+> - **El `dif_pp` de 3,47 es un artefacto del ffill** de `GEMELO/datos.py`:
+>   al rellenar el hueco, el retorno sale 0,00. Bajo la lógica de
+>   producción la diferencia del 28-ago es **5,80 pp**, no 3,47. El 3,49
+>   del 31-ago sí reproduce (3,4914).
+> - **El sello es coherente y la fuente no.** Los sellos del 28 (−3,47%) y
+>   del 31 (+0,57%), tomados con 72 h de diferencia, implican el **mismo**
+>   cierre del 28-ago: bandas solapadas en **[11.469,26, 11.470,24]**, un
+>   valor que hoy no existe en la fuente.
+> - **Tasa base: 1 fecha en 752 sesiones XNYS de 3 años = 0,13%**, IC95
+>   [0,02, 0,75]. La ventana del retiro quedó acotada en **≈18 h**, y
+>   **≥3 días después** de que la barra naciera.
+>
+> **Por qué el vigía estuvo en verde:** `salud_descarga` sólo pregunta si
+> hay alguna barra en los últimos 7 días. **Un hueco en el medio es
+> estructuralmente invisible.**
+>
+> **La conclusión de la tabla sobrevive intacta y sale reforzada.** Sigue
+> siendo una falla que la réplica no cubre, y por una razón más fuerte que
+> la que decía: no es que las dos máquinas vean el mismo dato provisional
+> — es que **la sesión desaparece para las dos**, tres días más tarde,
+> mirando cualquiera de las dos las mire.
 
 **La consecuencia práctica:** activar la réplica sin el segundo sello deja
 sin cubrir exactamente la clase de incidente que 08-28/08-31 acaban de

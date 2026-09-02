@@ -152,6 +152,19 @@ REGISTRO_INTENTOS = (
     (6, "5.1", "B0-B5 sobre la ventana de evaluación nueva "
                "2024-09-02 -> 2026-08-28 (ventana nueva => intentos "
                "nuevos)", "backtest/veredicto_51.py:54"),
+    (5, "BANCO", "las 5 cláusulas candidatas corridas por el banco de "
+                 "pruebas: C1 (era del Mac), C2 (era de las dos "
+                 "máquinas), C3a y C3b (las DOS lecturas de «selló a "
+                 "tiempo»: contra la apertura y contra la ventana "
+                 "operativa) y C4 («iguales» leído sobre el desenlace). "
+                 "Cada una define una población distinta de la ventana "
+                 "sellada y de cada una se leyó un duelo, así que cada "
+                 "una es una configuración. C3a y C3b cuentan por "
+                 "separado a propósito: una operacionalización distinta "
+                 "es una configuración distinta, y evaluar dos para "
+                 "reportar una sería elegir la definición sin decirlo",
+     "GEMELO/resultados/clausulas.md; ejecutable en "
+     "GEMELO/banco_clausulas.py:CANDIDATAS"),
 )
 
 # EL número vigente. Se calcula, no se escribe.
@@ -183,6 +196,14 @@ N_INTENTOS_WS5 = 25                        # sello histórico (WS5, 30-ago)
 #   - MDE, fronteras de gasto de alpha, BLOQUES_FECHAS, el RTL del frente
 #     MICRO y las tres rutas del McNemar: parámetros de diseño o elección
 #     de método, no configuraciones predictivas.
+#   - del banco de cláusulas (`GEMELO/banco_clausulas.py`): la regla
+#     FIRMADA corrida como referencia (ya evaluada, publicada y
+#     aplicada); `C4b`, que resulta ser exactamente el `keep="first"` ya
+#     contado en la fila `COLA` —contarlo otra vez sería inflar el N por
+#     haberlo mirado desde otro nombre—; la `CLAUSULA_TRAMPA`, que es la
+#     contraprueba del instrumento y de la que no se lee ningún resultado
+#     sobre el modelo; y las mediciones de asociación criterio-acierto,
+#     que son diagnóstico del método.
 #
 # El desglose por bolsa dentro de ASIA en el WS5 tampoco suma: el ajuste
 # tiene que ser por bolsa (la trampa), pero el resultado reportable es el
