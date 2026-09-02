@@ -6802,3 +6802,443 @@ opt-in: borrarlas de `backtest/linea_base.py` y de `GEMELO/banco_clausulas.py`
 devuelve ambos módulos a comparar siempre contra la ventana viva, que es
 exactamente el estado que produjo esta acta. No se toca ningún timer,
 ninguna unidad systemd ni `senales.db`: nada de eso se modificó hoy.
+
+## 71. La fuente canónica: qué mutó, los testigos preservados, la copia de insumos como arnés no activado, y una decisión de aislamiento
+
+**Fecha:** 2-sep-2026, séptima corrida autónoma. **Evidencia:**
+`GEMELO/fuente_canonica.py`, `GEMELO/resultados/fuente_canonica.md`,
+`GEMELO/resultados/fuente_canonica.json`, `GEMELO/INSUMOS/insumos.py`,
+`tests/test_insumos.py`, `tests/test_fuente_canonica.py`,
+`tests/test_gemelo_datos.py`, `GEMELO/resultados/dictamen_07/DICTAMEN.md`,
+`GEMELO/resultados/espera_firma.md`:829.
+
+**Qué se decidió.** Medir, testigo por testigo, cuánta historia de la
+fuente (Yahoo) mutó desde que el proyecto empezó a sellar, preservar la
+evidencia involuntaria que ya existía antes de que un `ventana_larga.py`
+de rutina la sobrescribiera, y construir, sin activar, el arnés que
+permitiría en el futuro leer en vez de inferir. Ninguna de las tres
+decisiones que esto deja abiertas (§6 del expediente) se toma acá.
+
+**Por qué.** Seis testigos (M1–M6), cada uno con su fecha de captura,
+verificados por el `estadistico-adversario` con scripts propios
+(`dictamen_07/DICTAMEN.md`, Frente A) y corregidos en su sitio antes de
+publicarse:
+
+- **M1 (mutación de niveles, 8 años × 27 tickers, 52.507 celdas).**
+  **0 retornos diarios cambiados** (max |Δr| = 1,092e-6, ruido de
+  float32), **0 barras retiradas, 1 aparecida** (IFX.DE). Cambió niveles
+  en **1.953 celdas históricas, todas de un solo ticker, 000660.KS**, con
+  factor de reescalado constante **0,999783** (a ~4e-7). La primera
+  redacción decía «1.962 celdas, todas dividendos, factores 0,9868/
+  1,0148/0,9979 en varios tickers»: el adversario probó que esos tres
+  factores eran la barra de Tokio a medio día moviéndose entre dos
+  cachés tomadas con 95 s de diferencia, no un dividendo: corregido en
+  el clasificador (la última fecha de la caché se separa de toda cuenta
+  histórica), con contraprueba nueva.
+- **M2 (retiro de sesión).** El 28-ago-2026 desapareció de la fuente (1
+  fecha en 752, 0,13%, IC95 Wilson [0,02, 0,75]); la ventana en que
+  desapareció se estrechó a **≤ 8 horas** (entre las 22:15:03Z del
+  31-ago, aritmética del sello, y las 06:17Z del 1-sep, cuando el
+  backtest ya la reconstruye sin la barra).
+- **M6 (hipótesis, no hecho).** Cuatro noches de agosto (12, 14, 19, 20)
+  las betas selladas sólo reproducen si el `^SOX` NO tenía la barra del
+  31-jul; es la única de 130 barras candidatas que explica las cuatro a
+  la vez, con residuo 0,026–0,042 (4 a 8 veces el piso de reproducción
+  de noches sanas, 0,004–0,007). Verificado por el adversario con el
+  perfil completo (brecha al segundo candidato 0,035–0,057), y con lo
+  que NO se probó declarado: un cierre revisado en vez de ausente,
+  retirar dos o más barras, perturbar otra serie, y que las cuatro
+  fechas comparten ventanas de 120 días solapadas (no son cuatro votos
+  independientes).
+- **Las 15 filas verificadas del 28/31-ago.** El sello del 28-ago vio un
+  SOX de −3,47% que la fuente hoy ya no sirve y acertó 8/8; reconstruido
+  desde hoy erraría 8/8. El del 31-ago es el espejo: erró 0/7 con la
+  barra del 28 presente, acertaría 7/7 sin ella. McNemar de la
+  sustitución: **b = 8, c = 7, p = 1,00**: la pregunta constitucional
+  mueve el track record vivo en una cantidad indistinguible de cero.
+  MAE sobre esas 15 filas: **2,827 → 2,892** (la primera versión decía
+  2,897, mezclando el denominador de 15 filas con el de 87; corregido).
+
+**Qué se descartó y por qué.** Elegir una fuente canónica en este mismo
+movimiento: el expediente presenta cinco candidatas (C1 Yahoo vivo, C2 la
+copia derivada ya sellada, C3 copia cruda congelada, C4 segunda fuente,
+C5 híbrida) con lo que rompe cada una, pero la pregunta de cuál es el
+campeón cuando sello y fuente discrepan es la pregunta constitucional del
+proyecto vista desde el otro lado, y lleva firma de Nicolás
+(`espera_firma.md`:829, §16). Se descartó también comprar una segunda
+fuente (C4): no resuelve cuál es canónica, sólo suma un voto, y el
+expediente PIT (acta §49) ya recomendó no gastar.
+
+**Decisión de preservación.** Las cuatro cachés involuntarias de
+`GEMELO/cache/` (gitignoradas, con `mtime` 26-ago y 1-sep) se comprimieron
+y preservaron con sha256 en `GEMELO/resultados/testigos_fuente/` (~1,1 MB,
+permanentes en git): son la única evidencia de cómo servía Yahoo esos
+días, y un `ventana_larga.py` de rutina con TTL vencido las habría
+sobrescrito. Nicolás debe saber que ese directorio ya no es regenerable
+sin perder el testigo.
+
+**Decisión de no activar el arnés.** `GEMELO/INSUMOS/insumos.py`
+(`congelar`/`leer`/`contrastar`/`intermitencia`, con sha256) está escrito
+y probado (`tests/test_insumos.py`, 8 contrapruebas: hash reproducible,
+copia aditiva que nunca reescribe, cada clase de mutación nombrada,
+intermitencia leída con 5 copias, costo medido (no estimado) en
+213 KB/día ≈ 53 MB/año para el panel de 3 años completo o 36 KB/día ≈
+9 MB/año para las 130 barras que el modelo consume; la primera redacción
+decía «~60 KB/día, ~15 MB/año» a ojo, corregido al medirlo, 3,7× de
+error), pero **nadie lo invoca**: ni `snapshot.py`, ni `mki`, ni un timer
+(`tests/test_insumos.py::test_ningun_timer_ni_el_mki_lo_invocan`,
+`test_nada_de_la_ruta_de_sellado_importa_insumos`). Cablearlo a la ruta
+de sellado toca `snapshot.py` y es, por regla cero, decisión de Nicolás
+con corte de método y bump de `PLATAFORMA_VERSION`.
+
+**Decisión de aislamiento, y la tensión que deja declarada.**
+`GEMELO/fuente_canonica.py` importa `calendarios` (`fuente_canonica.py`:51)
+y funciones puras de `motor` dentro de `m2_sox_sellado_vs_hoy`,
+`m4_emisiones_vs_motor_hoy` y `m6_hipotesis_barra_transitoria` (imports
+locales; el módulo lee `senales.db` sólo vía `backtest.datos._conexion_ro`
+en `mode=ro`, `fuente_canonica.py`:52,85). Eso **contradice la prosa** de
+CLAUDE.md (Etapa 6.0.0, WS2a: «GEMELO imports NOTHING from the sealing
+path»), pero **no contradice ningún test que la aplique**: el conjunto
+`ESTRICTOS` de `tests/test_gemelo_datos.py`:260 (que sí prohíbe importar
+`motor`/`universo`) enumera `__init__.py`, `datos.py`, `features.py`,
+`control_lineal.py`; `fuente_canonica.py` no está en esa lista. La
+guardia que existe y sí lo cubre corre en la dirección contraria: que
+nada del camino de sellado importe `fuente_canonica`
+(`tests/test_fuente_canonica.py::test_nada_de_la_ruta_de_sellado_importa_fuente_canonica`,
+que recorre `motor.py`, `snapshot.py`, `senales.py`, `alertas.py`,
+`mki_vigia.py`, `mki_noticias.py`, `mki_backup.py` por AST). Se declara la
+tensión tal cual es: la prosa de CLAUDE.md describe una regla más estricta
+que la que el proyecto realmente hace cumplir, y **CLAUDE.md no se tocó**:
+corregir la prosa, o la lista `ESTRICTOS`, es decisión con firma.
+
+**Qué queda abierto.** Las tres preguntas de `fuente_canonica.md` §6: cuál
+es el campeón cuando sello y fuente discrepan; si se construye C3 (activar
+`insumos.py`); si la ventana larga se declara dependiente de la fuente con
+fecha y sha256 de descarga. Y, nueva: si la prosa de CLAUDE.md sobre el
+aislamiento de GEMELO debe ajustarse a lo que los tests realmente exigen,
+o si `ESTRICTOS` debe crecer para incluir `fuente_canonica.py`.
+
+**Cómo se revierte.** Nada de esto toca código de producción: `insumos.py`
+puede borrarse sin que nada lo eche de menos (los tres tests que lo
+comprueban son parte de su propio arnés), y las cachés preservadas son un
+directorio adicional que no participa de ningún flujo. Si Nicolás decide
+que `fuente_canonica.py` no debe importar `motor`/`calendarios`, es un
+cambio de una línea de import por función, sin efecto sobre `senales.db`.
+
+## 72. El registro de intentos 91 → 100 registrado DESPUÉS de correr, BANDA_N pinchada al instante, y la semilla inyectable
+
+**Fecha:** 2-sep-2026, séptima corrida autónoma. **Evidencia:**
+`GEMELO/relevo_asiatico.py`:90-192 (`REGISTRO_INTENTOS`,
+`N_INTENTOS_ACUMULADO`), `backtest/veredicto_51.py`:87-121
+(`N_INTENTOS_PREVIO`, `N_INTENTOS_51`, `N_DECLARADO_POR_CORRIDA`,
+`N_REGISTRO_AL_20260901_MEDIODIA`, `BANDA_N`),
+`tests/test_backtest.py`:318-353, `GEMELO/bifurcaciones.py`:93,702-724
+(`SEMILLA`, `_p_permutacion_dia`), `GEMELO/resultados/horizonte.md`,
+`GEMELO/resultados/dictamen_07/DICTAMEN.md`.
+
+**Qué se decidió.** Registrar en `REGISTRO_INTENTOS` las nueve
+configuraciones nuevas de esta corrida (tramo `TRAY`, 4 estadísticos
+principales candidatos del Frente C, y tramo `ESTIM`, 5 estimandos
+alternativos del Frente E (`relevo_asiatico.py`:171-188) DESPUÉS de
+haber evaluado esas configuraciones sobre datos reales, dejar que
+`BANDA_N` de `backtest/veredicto_51.py` deje de llevar enteros sueltos y
+pase a pinchar cada N histórico a la corrida sellada que lo declaró, y
+hacer inyectable la semilla de `bifurcaciones._p_permutacion_dia` sin
+mover su default.
+
+**Por qué.** El `estadistico-adversario` exigió, como condición de
+entrada para cualquier documento de resultados, que «ninguna configuración
+nueva puede alimentar un DSR ni habilitar V5 hasta que el registro las
+absorba, con su tramo y su archivo:línea» (`dictamen_07/DICTAMEN.md`:277).
+Es una **desviación explícita del pre-registro** de `GEMELO/DISEÑO.md`
+§4.2 bis, que exige que cada configuración se declare **antes** de correr
+ninguna. Registrar a posteriori no repara esa desviación (se nombra como
+lo que es), pero es la dirección que **sólo endurece el DSR**: subir N
+sólo puede hacerlo más exigente, nunca más favorable, y ninguna cifra de
+esta noche se publicó con el N viejo. El conteo: `N_INTENTOS_ACUMULADO`
+antes de esta corrida sumaba 91 en 21 tramos (verificado sumando
+`relevo_asiatico.py`:90-167); con `TRAY` (4) y `ESTIM` (5) pasa a **100**
+(`N_INTENTOS_PREVIO = 100`, `veredicto_51.py`:87); con los 6 intentos
+propios de la corrida 5.1, `N_INTENTOS_51 = 106` (`veredicto_51.py`:97;
+era 97 con el registro en 91).
+
+**BANDA_N pinchada al instante.** El 92 que hasta ayer vivía suelto en la
+tupla (acta §67) pasa a `N_DECLARADO_POR_CORRIDA`
+(`veredicto_51.py`:107-113), un diccionario que ata cada N histórico al
+nombre de la corrida sellada que lo declaró: `"20260901-061708-..."→82`,
+`"20260901-133154-..."→92`. `BANDA_N` (`veredicto_51.py`:117-121) se
+construye leyendo ese diccionario, no escribiendo el número. Un test
+nuevo (`test_los_N_historicos_de_la_banda_reproducen_los_resumenes_sellados`,
+`tests/test_backtest.py`:335-353) contrasta cada N contra
+`parametros_declarados.N_intentos` del `veredicto.json` sellado de su
+propia corrida: si alguien mueve el número sin mover el artefacto, el
+test lo desmiente. Es el mismo patrón que el acta §70 vio romper en
+producción esa misma noche, aplicado ahora donde ya se sabía que faltaba
+(acta §67 lo había dejado como alternativa nombrada y no aplicada).
+
+**La semilla inyectable.** `bifurcaciones._p_permutacion_dia` ganó un
+parámetro `semilla: int = SEMILLA` (`bifurcaciones.py`:702-703, con
+`SEMILLA = 0` en la línea 93). El motivo, medido por el adversario: dentro
+de un ESTUDIO de α (el Frente B, `horizonte.py`), resembrar con la misma
+semilla en cada réplica de Monte Carlo hacía que las 300 réplicas
+compartieran una sola matriz de signos, y el α empírico de 0,083 a 35 días
+(citado en `horizonte_veredicto.md`, `horizonte.md` y `propuestas_cde.md`)
+era ruido de Monte Carlo: con n_sim=1.000 sale 0,059 y con n_sim=3.000,
+0,056 [0,048, 0,065] (`dictamen_07/DICTAMEN.md`, Frente B). Corregido en
+el ejecutable con semilla por réplica y n_sim subido a 3.000 (lo que el
+dictamen exigió); el 0,083 se retiró de los tres archivos. **Ninguna cifra de `bifurcaciones.md`
+se mueve**: el docstring de la línea 716-722 declara a propósito que la
+semilla fija sigue siendo el default (los tres llamadores internos,
+`bifurcaciones.py`:566,661,756, la usan sin pasar el argumento), porque
+dentro de una TABLA de celdas de convención el ruido de Monte Carlo debe
+quedar común a la matriz entera para que la comparación entre celdas no
+lo herede como si fuera señal; sólo un ESTUDIO de α necesita variarla.
+
+**La cifra final, leída de `GEMELO/resultados/horizonte.md`** (ya
+regenerado, generado_en 2026-09-02T13:37:57Z): **α empírico 0,055 [0,048,
+0,064] a 35 días** (3.000 simulaciones, semilla por réplica), y entre
+0,045 y 0,053 en los demás horizontes probados (73 a 1.000 días), todos
+con IC que contiene 0,05: el test de permutación de signo por día queda
+calibrado en todo el rango.
+
+**Qué se descartó y por qué.** Publicar el 0,083 «anticonservador con
+pocos días» tal como salió de la primera corrida: no sobrevivió a subir
+`n_sim` sin tocar nada más, así que la narrativa no estaba establecida y
+se retiró en vez de matizarse. Se descartó también mover `SEMILLA` como
+default global: eso habría cambiado en silencio cifras ya publicadas de
+`bifurcaciones.md` que dependen de que la matriz de ruido sea la misma
+entre celdas.
+
+**Qué queda abierto.** El registro a posteriori de TRAY y ESTIM es una
+desviación declarada del pre-registro, no una excepción resuelta: si debe
+existir una regla explícita en `GEMELO/DISEÑO.md` §4.2 bis para el caso
+«el adversario exige registrar después de ver», no se decidió acá. Y el
+92 sellado en la corrida `20260901-133154-...` sigue siendo un veredicto
+NO-CONCLUYENTE: nada de esto lo reabre.
+
+**Cómo se revierte.** `N_DECLARADO_POR_CORRIDA` y `BANDA_N` son
+declarativos: quitar una entrada rompe el test asociado en vez de fallar
+en silencio. El parámetro `semilla` de `_p_permutacion_dia` es opt-in
+(default intacto): borrar el argumento de las llamadas de `horizonte.py`
+devuelve el comportamiento viejo sin tocar `bifurcaciones.py`. Ninguna
+fila sellada se tocó.
+
+## 73. El vigía distingue «no corrió» de «corrió y no completó», con una asimetría Mac/PC declarada; y el timeout de mki-noticias es O(n²)
+
+**Fecha:** 2-sep-2026, séptima corrida autónoma. **Evidencia:**
+`mki_vigia.py`:100-170 (`chequear_noticias`, `_estado_systemd_noticias`,
+`_hora_desde_timestamp_systemd`), `tests/test_vigia.py`:262-390 (7 tests),
+`GEMELO/resultados/parche_timeout_noticias.md`, `data/noticias.log`,
+`data/costos_ia.log`.
+
+**Qué se decidió.** Hacer que `mki_vigia.chequear_noticias()` distinga,
+con evidencia, tres estados distintos de una falla de `mki-noticias`
+(«NO corrió: hay un proceso colgado», «corrió y NO completó: hay rastro
+de hoy en el log pero nada en el ledger de costos», «NO corrió: sin
+rastro de ningún tipo»), reforzado opcionalmente por `systemctl` en Linux;
+y medir, sin aplicar ningún cambio, la causa raíz de por qué el job murió
+por timeout la noche del 1-sep.
+
+**Por qué.** La noche del 1-sep systemd mató `mki-noticias.service` a las
+18:20:00 por `TimeoutStartSec=1800` después de que el job guardara 223
+titulares (acta §70). El vigía viejo habría dicho «NO corrió hoy», que es
+falso: corrió, completó la fase de descarga, y lo mataron a mitad de la
+fase Haiku. La evidencia primaria de `chequear_noticias` sigue siendo
+`data/noticias.log` (`mki_vigia.py`:107-113,
+`_rastro_noticias_hoy_en_log`), no systemd: **el refuerzo
+`_estado_systemd_noticias()` (`mki_vigia.py`:116-137) es Linux-only y
+devuelve `None` en macOS sin `systemctl`** (probado sin red por
+`test_estado_systemd_noticias_no_se_llama_en_tests_de_arriba`,
+`tests/test_vigia.py`:380-390, que inyecta `FileNotFoundError`). Es una
+**asimetría entre máquinas declarada y NO igualada**: en el Mac (titular)
+la rama del refuerzo devuelve `None` siempre y el mensaje es «corrió y NO
+completó (rastro en el log, sin registro en el ledger de costos)»; en el
+PC (systemd), si `Result=timeout`, el mensaje agrega «— matado por timeout
+a las HH:MM» (`mki_vigia.py`:157-162, cubierto por
+`test_noticias_corrio_y_no_completo_refuerzo_systemd_nombra_la_hora`,
+`tests/test_vigia.py`:327-352). **La decisión es no igualar**: las dos
+ramas producen la misma alerta (`ok=False`), sólo cambia el texto, y
+forzar el refuerzo en macOS exigiría inventar una fuente que no existe
+(launchd no tiene equivalente de `systemctl show`). Contraprueba de que el
+mensaje viejo no reaparece por error:
+`test_noticias_corrio_y_no_completo_por_rastro_en_log`,
+`tests/test_vigia.py`:302-325, línea 324.
+
+**La causa raíz del timeout, medida por `ingeniero-plataforma`.**
+`noticias.migrar_noticias_v2()` compara por similitud
+(`difflib.SequenceMatcher`, umbral 0,85) **todo el historial de
+`noticias.db`** en cada corrida, no una ventana (a diferencia del dedup
+de titulares nuevos, que sí usa 10 días). Reproducido en `mode=ro` sin
+tocar la base real ni llamar a la API: **5.286 filas, 13.822.418
+comparaciones, 1.803,72 s** (`parche_timeout_noticias.md`). El ajuste
+`wall_s ≈ 7,16e-5 × N²` sobre las 5 corridas disponibles (26, 27, 28,
+31-ago y 1-sep) reproduce cada wall clock a ±3%: **no es estacionario**,
+crece con el cuadrado del historial acumulado (~190 filas netas/día
+hábil), así que ningún percentil de duraciones sirve y el job **vuelve a
+morir en días** si nadie lo toca. Propuesto (NO aplicado)
+`TimeoutStartSec=2700` (45 min, termina antes de `mki-backup.service` a
+las 18:40) como parche temporal; la solución real, acotar
+`migrar_noticias_v2()` a una ventana, es un cambio de comportamiento de
+`noticias.py` y queda declarada como decisión de Nicolás. `systemd/` y
+`launchd/` quedaron intactos; el diff está preparado en
+`parche_timeout_noticias.md` §e, sin aplicar.
+
+**Qué se descartó y por qué.** Aplicar el parche de `TimeoutStartSec`
+directamente: subir un techo finito sin tocar la causa raíz es, por
+diseño, una carrera contra un crecimiento cuadrático: sería resolver el
+síntoma de esta semana y dejar la misma bomba para la próxima, y tocar
+`systemd/mki-noticias.service` no es superficie de un agente. Se
+descartó también acotar `migrar_noticias_v2()` esta misma noche: es un
+cambio de comportamiento de `noticias.py`, con un riesgo declarado (un
+titular duplicado que reaparece después de la ventana dejaría de
+detectarse), y por eso lleva firma.
+
+**Deuda operativa fuera del diff, anotada por el `guardian-constitucion`
+en el dictamen de cierre de esta tanda:** permisos de `.env` en 644
+(debería ser 600, evidencia de la propia máquina, no de un artefacto
+versionado en el repo). Es operación de Nicolás (`chmod 600 .env`); no se
+tocó.
+
+**Qué queda abierto.** Si el mensaje del vigía debe además nombrar la
+hora en macOS por alguna otra vía (ninguna existe hoy); si
+`TimeoutStartSec` debe subir (parche preparado, sin aplicar); si
+`migrar_noticias_v2()` debe acotarse a una ventana (cambio de
+comportamiento, sin aplicar). Los tres tocan superficie de Nicolás.
+
+**Cómo se revierte.** El vigía: `_estado_systemd_noticias()` es aditivo:
+si devuelve `None` (cualquier plataforma sin `systemctl` funcional), el
+mensaje cae al texto sin refuerzo; borrar la función entera deja
+`chequear_noticias()` funcionando igual que antes de esta corrida, sólo
+sin la hora del kill. El timeout: nada se aplicó, no hay nada que
+revertir. `noticias.py`: no se tocó.
+
+## 74. Las propuestas de la séptima corrida con su dictamen, lo que se retiró, y la errata de horas de la bitácora
+
+**Fecha:** 2-sep-2026, séptima corrida autónoma. **Evidencia:**
+`GEMELO/resultados/propuestas_cde.md`, `GEMELO/resultados/dictamen_07/DICTAMEN.md`,
+`GEMELO/resultados/horizonte_veredicto.md`, `GEMELO/resultados/horizonte.md`,
+`GEMELO/resultados/tesis.md` §6, `GEMELO/resultados/bitacora_07.md`
+(hitos 01:50–02:55), `README.md`:60.
+
+**Qué se decidió.** Publicar los Frentes C, D y E de la séptima corrida
+como **PROPUESTAS** (regla quinta de la corrida, `bitacora_07.md`:9-13):
+nada entra a cifra publicada, criterio congelado ni documento de
+resultados sin dictamen del `estadistico-adversario`. El dictamen llegó
+antes de cerrar (`dictamen_07/DICTAMEN.md`, ~02:45–03:06) y las
+correcciones que exigió están aplicadas en su sitio, no como errata
+(«todavía no está publicado»: nota de memoria «la frontera de la errata
+es el commit»).
+
+**Por qué.** Lo que entró, con sus condiciones:
+
+- **C-1 (ratificar el IC de clúster de día como estadístico principal; no
+  publicar decisiones binarias sobre la ventana sellada hasta que haya un
+  MDE firmado): ENTRA sin condición.**
+- **C-2 (el proceso de apuestas anytime-valid como secundario): ENTRA con
+  cinco declaraciones** (estimando distinto del ICD, σ̂² conservador
+  respecto de Waudby-Smith & Ramdas, una cola, λ/c/α declarados antes en
+  `DISEÑO.md`, cuenta como intento).
+- **C-3 (sacar el p de McNemar de filas de la salida por defecto de
+  `duelo()`, `comparar_pareado()` y `control_lineal`): ENTRA, con el
+  motivo cambiado por el adversario.** No es que el McNemar de filas sea
+  frágil (la cuenta de cruces confundía fragilidad con potencia): es que
+  su tamaño real, bajo el agrupamiento de día (DEFF 3,77 sobre la ventana
+  viva), es **α real ≈ 0,31** contra un nominal de 0,05
+  (`z_MCN/z_ICD = 1,865` frente a `√DEFF = 1,941`). `b` y `c` se siguen
+  reportando siempre; la función sigue calculando el p porque
+  `LINEA_BASE_OFICIAL` (`backtest/linea_base.py`) congela 0,4633 (§2.8) y
+  esa reproducción no se rompe.
+- **D-1 (autocorrelación de la ventana larga como referencia sobre la
+  autocorrelación de la sellada): entra reescrita como MEDICIÓN DE
+  REFERENCIA, no como «cota externa».** AC1 sobre 518 fechas reconstruidas
+  = **−0,042, IC95 [−0,122, +0,041]** (contiene el cero); en el mismo
+  tramo de calendario que la sellada (40 fechas desde 2026-07-05), AC1
+  **−0,180 ± 0,158** contra **−0,176 ± 0,164** de la sellada:
+  reproduce a 0,004, el chequeo que decide la admisibilidad y que la
+  propuesta original no había hecho. El α del plan bajo esa referencia,
+  con las dos fuentes de error (simulador + Wilson de las 2.000 réplicas):
+  **[0,031, 0,065]**, no el [0,039, 0,055] de la primera versión. **La
+  banda firmada [0,046, 0,079] no se toca.** D.2 (¿existe una familia
+  robusta a autocorrelación desconocida a 51-203 fechas?) verificado y
+  publicado tal cual: **no existe ningún estadístico con α = 0,05 plano**
+  en ese rango bajo φ desconocida.
+- **E-1 (pendiente de calibración g~p como endpoint secundario): entra
+  sólo contra el control lineal C1, no contra cero**: «siempre al alza»
+  es una constante de pendiente 0 por construcción, así que b > 0 sólo
+  dice que la predicción correlaciona consigo misma vía el SOX, cosa que
+  C1 ya demuestra en las mismas filas (WS2b, McNemar 0 vs 0).
+
+**Lo RECHAZADO y retirado, con su motivo:**
+
+- **El α empírico 0,083 de la permutación de signo por día a 35 días**:
+  era ruido de Monte Carlo (n_sim=300) agravado por una semilla que se
+  resembraba igual en cada réplica (acta §72). Retirado de los tres
+  archivos donde vivía.
+- **E-2 (el decaimiento como pendiente por hora, con IC):** la unidad de
+  replicación del mecanismo es la BOLSA, no la fecha (hay 4 bolsas con
+  sólo 2 valores distintos de margen horario). Con la bolsa como unidad, la
+  permutación exacta da p = 0,231 y el p mínimo alcanzable es 1/13 = 0,077;
+  el `README.md`:60 ya lo decía: «con n = 4 bolsas no se puede ajustar una
+  curva. Esto es un escalón». Publicable sólo la tabla por bolsa y el
+  contraste Asia−Fráncfort, declarados como comparación de 4 bolsas, sin
+  pendiente ni su IC.
+- **La adenda «4×» de `tesis.md`** (que el contraste entre bolsas necesita
+  ~4× más días de señal que el nivel, y que por eso la recomendación 1b
+  del director-programa quedaba contradicha): rechazada junto con E-2, por
+  la misma razón de unidad de replicación. La adenda se reescribió: la
+  recomendación 1b queda condicional y sin resolver, tal como el director
+  la había dejado; la medición de esta noche no la resuelve ni a favor ni
+  en contra.
+
+**R2 disparó, sin nombrarse, y se corrigió.** `horizonte_veredicto.md`
+presentaba «primera mitad +19,17 pp / segunda mitad 0,0 pp» como chequeo
+de estacionariedad y lo suavizaba con «los intervalos se solapan». El
+adversario encontró que los seis días del bloque 15–23 jul están enteros
+en esa primera mitad: es **R2** (criterio de rechazo congelado en
+`GEMELO/DISEÑO.md` §6.2) **disparando sobre el ancla del Frente B**, no un
+caveat de estacionariedad. Medido: sin el bloque 1, n=202, ventaja
+**+2,5 pp** (contra +9,3 pp con todo), IC95 de día **[−13,6, +19,2]**
+(contiene el cero), McNemar de filas p=0,675 (b=48, c=43), permutación de
+día p=0,82. Corregido en `horizonte.md` y `horizonte_veredicto.md`
+(nombrado explícitamente como R2, ya no como «mitades»).
+
+**El Frente B, cifras finales (`GEMELO/resultados/horizonte.md`).**
+El instrumento no es estructuralmente subpotente (~2 observaciones
+efectivas por día sellado, crece lineal), pero el tiempo suficiente es de
+años: **9 pp de ventaja → 248 días sellados [109, 370] (jul-2027)**; al
+**25-oct-2026** (73 días) el veredicto 5.1 tendrá **MDE al 80% de 16,6 pp
+[11,0, 20,3]** y **potencia 0,34 [0,31, 0,37]** frente al efecto de 9 pp
+que el proyecto declaró relevante: un NO PASA ese día no será evidencia
+de ausencia.
+
+**Errata de la propia bitácora (`bitacora_07.md`, hito 02:55).** Las horas
+de los hitos entre 01:50 y 02:50 no se leyeron del reloj: se estimaron, y
+mal, por un factor de ~4 (escritas como 02:00–06:30 para trabajo que
+ocurrió entre 01:50 y 02:50). Descubierto al correr `date` antes del
+cierre (02:54) y reconstruido desde los `mtime` de cada entregable y el
+`generado_en_utc` de cada `.json`. Las tres primeras horas (01:40, 01:42,
+01:43) sí venían de `date`. Corregido en su sitio en la propia bitácora,
+con la regla «desde acá, cada hito lleva `date`» adoptada para el resto
+de la noche.
+
+**Qué se descartó y por qué (general).** Publicar cualquiera de las
+cifras rechazadas con una salvedad en vez de retirarlas: la regla de la
+casa es que un negativo se publica con la misma firmeza que un positivo,
+y una cifra que no sobrevive a subir `n_sim` o a corregir la unidad de
+replicación no es una cifra con salvedad, es una cifra que no estaba
+establecida.
+
+**Qué queda abierto.** Las tres decisiones de `fuente_canonica.md` §6
+(acta §71); si `GEMELO/DISEÑO.md` §4.2 bis debe ganar una cláusula
+explícita para el registro a posteriori exigido por un dictamen (acta
+§72); la recomendación 1b de `tesis.md` (medir la pendiente entre bolsas
+como estimando) sigue condicional, con su chequeo habilitante («medir el
+ICC del contraste entre bolsas sobre la ventana larga») sin hacer tal
+como el director-programa la formuló.
+
+**Cómo se revierte.** Ninguna cifra publicada del README se movió; ningún
+`DISEÑO.md` se tocó; ninguna decisión de Nicolás se tomó; nada se pusheó.
+Todo lo de esta acta vive en `GEMELO/resultados/` y en los ejecutables que
+esos documentos citan: revertir es borrar esos archivos y los tests que
+los acompañan, sin efecto sobre `senales.db` ni sobre ningún módulo de
+producción.
