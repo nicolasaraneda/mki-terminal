@@ -1,4 +1,6 @@
-# El parche de la regla de deduplicación — ESCRITO, NO APLICADO
+# El parche de la regla de deduplicación — ESCRITO el 1-sep; APLICADO el 3-sep-2026 (D1)
+
+> **3-sep-2026, novena corrida (encargo 09, D1):** Nicolás decidió que la cifra publicada es la de la regla firmada. Aplicado por el árbitro (`cifras.sellada()` con `DEDUP_PUBLICADO = True`), doce bloques movidos, la rama sin deduplicar entró a `GEMELO/cifras_retiradas.md`. Diferencia respecto de este parche: el README publica la ventaja **con su IC95 de clúster de día [-7,2, +26,6]** y la permutación de día (p 0,29) al lado del McNemar de filas (0,0455, χ²cc), y el titular sigue siendo «no distinguible de cero» con la unidad correcta — no «cruza por primera vez». La rama «+ coherencia» (+14,3) sigue en cola sin publicar. Lo de abajo queda como se escribió.
 
 **Fecha:** 1-sep-2026 · Frente A de la segunda tanda de la quinta corrida.
 **Estado:** la regla está **aplicada en el ejecutable** (regla 2 de la

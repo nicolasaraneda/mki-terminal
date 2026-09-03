@@ -735,7 +735,9 @@ el conflicto que hizo que no se instalara hoy. **Va naturalmente junto con
 
 ---
 
-# 14. `CLAUDE.md` afirma que el Mac es titular
+# 14. `CLAUDE.md` afirma que el Mac es titular — HECHO el 3-sep-2026 (encargo 09 §1d, opción (a))
+
+> Corregido con nota fechada en la sección 5.0.3 de `CLAUDE.md` (el titular es este PC; `migracion-wsl` muerta; la skill `switch-titular` que citaba **no existe**: la cita pasa a `modo-emision`), y en el frontmatter de `.claude/agents/guardian-constitucion.md:3` (decía «rama migracion-wsl en el PC»). Lo de abajo queda como historia.
 
 **Qué hay que decidir:** cómo se corrige la sección de la Etapa 5.0.3, que
 dice que el Mac *"stays **titular**"* y que `MKI_MODO=sombra` vive en la línea
@@ -1079,3 +1081,214 @@ escritura por Bash. Acta §76.
 (copiar `contexto-mki.sh` y no el guardia); (c) rechazar y borrar
 `GEMELO/propuestas/hooks/`. Recomendación: (a); si el bloque 8 molesta en la
 práctica, la marca de retiro dentro del texto nuevo lo levanta.
+
+# Lo que agregó la novena corrida (noche del 2 al 3-sep-2026)
+
+Las decisiones D1, D2 y D3 del encargo 09 **no esperan firma: ya están
+aplicadas** (acta §78; `bitacora_09.md`). Lo que sigue es lo nuevo que sí la
+espera, más lo que esta corrida cerró de la lista anterior (marcado arriba
+en su ítem, con fecha, sin borrar).
+
+## 26. Aplicar el parche de `snapshot.py:140` — ahora con `.diff`, test y tabla (frente 2b)
+
+**Qué hay que decidir:** lo mismo que el §1 (aplicar el parche y declarar el
+corte de método). Lo que cambió esta noche es que ya no hay nada que
+preparar:
+
+- `GEMELO/propuestas/parches/snapshot140.diff` aplica limpio contra el
+  `snapshot.py` de `HEAD` (`git apply --check` rc=0); una sola expresión.
+- `tests/test_parche_snapshot140.py` (6 tests, en la suite, VERDE con el
+  archivo sin parchear): copia a tmp, aplica el diff, calendario real,
+  fijación (sello tardío 01:30 UTC del 31-jul → 31-jul parcheado, 3-ago
+  original) y no-regresión (sello 22:15 UTC → misma sesión).
+- `GEMELO/resultados/corrida09/parche_snapshot140_tabla.md`: las **25 filas
+  malas** (4 fechas de emisión: 07-05: 8, 07-29: 7, 08-03: 3, 08-05: 7; XTKS
+  14, XKRX 6, XTAI 4, XETR 1), las 25 `verificada` (6 aciertos, 19 errores
+  contra la sesión equivocada), **y bajo el parche las 25 serían
+  `no_verificable_timing` y 0 verificables** — no 15 como decía la cola: es
+  por construcción (la sesión sellada difiere de la correcta sólo si una
+  sesión abrió entre `available_at` y la emisión, y ésa es la correcta, ya
+  abierta). Ninguna fila nueva desde el 5-ago (los 20 sellos posteriores
+  sellaron entre 22:15 y 23:45 UTC). La declaración del corte de método está
+  lista para acta en la §5 de ese archivo.
+
+| Opción | Consecuencia |
+|---|---|
+| **(a) Aplicar el diff + bump de `PLATAFORMA_VERSION`** *(recomendada)* | El corte queda auto-documentado en cada fila; las 25 viejas no se tocan (errata, no backfill). |
+| (b) Aplicar sin bump | Hay que anotar a mano el `timestamp_utc` del primer sello posterior, en el momento. |
+| (c) No aplicar | Cada sello tardío futuro produce una fila verificada contra una sesión que no era la suya. |
+
+**Costo de decidirlo: 5 minutos.** La copia de insumos (`GEMELO/INSUMOS/`,
+§16b) va en el mismo bump si se firma; no está en el diff.
+
+## 27. `sqlite_sequence` duplicada en `senales.db` — limpiar o dejar (frente 2a)
+
+**Qué hay que decidir:** si se limpian las 4 filas sobrantes de
+`sqlite_sequence` (8 filas para 4 tablas; rowid 1-4 vivas con seq =
+max(id), rowid 5-8 restos de la composición canónica del 30-ago, p. ej.
+`verificacion_apertura = 253`). MEDIDO en `corrida09/importador_roundtrip.md`
+§5. Riesgo de colisión de ids: **nulo** (SQLite usa `max(seq, MAX(rowid))+1`).
+Es lo único de `senales.db` sin camino de vuelta por CSV, y **no es una fila
+sellada** — pero es una escritura en la base sellada, así que es tuya.
+
+| Opción | Consecuencia |
+|---|---|
+| **(a) Dejarla** *(recomendada)* | Cero riesgo; el importador ya la reconstruye bien (próximo id = max+1 en las 4 tablas). |
+| (b) `DELETE` de las 4 filas sobrantes | Estético; una escritura en la base sellada fuera del sello. |
+
+**Lo que el frente 2a cerró sin firma:** el importador (`scripts/restaurar_backup.py`,
+acta §42) cumple el criterio de aceptación del encargo: 5 tablas, 2.301 = 2.301
+filas, 25.082 celdas, **0 discrepancias**, `plataforma_version` 42/42 idénticas,
+floats `repr`-exactos, ids surrogados 2.259/2.259; `tests/test_importador_roundtrip.py`
+(16 tests) en la suite con contraprueba. Stale sin editar: `.claude/agents/integridad-datos.md:71`
+(«cuando exista el importador») y `docs/RESTAURAR.md` §Pruebas (dice que sólo
+`verificacion_puntaje` coincide; hoy coinciden las 5).
+
+## 28. La réplica permanente — ocho decisiones en `GEMELO/diseno/replica.md` §8 (frente 2e)
+
+Diseño escrito, sin código. Van a la cola (`cola_decisiones.md` §29) las ocho:
+quién gana (rec. A: la titular siempre), qué máquina (rec. el Mac con
+`caffeinate` en la ventana), retención (rec. 90 días para los `.md`; JSONL y
+base sin límite), séptimo job de comparación a las 21:00 con alerta pasiva,
+N = 5 días de PARIDAD para promover, marca `data/backups/titular.json`,
+guardia de titular como `ExecStartPre` del reporte de las 18:25, y no cambiar
+el default de `FECHA_CORTE`. Dos avisos medidos: la skill `switch-titular` que
+cita el encargo **no existe** (el orden vive en `modo-emision`), y **la
+réplica gasta presupuesto de IA** (`mki_noticias.py` no consulta `modo`).
+
+## 29. La frase de potencia del 5.1, en dos versiones, con n, intervalo y fecha — REEMPLAZA al §22 (frentes 1b y 3c; v2 tras el dictamen)
+
+Medido con el simulador calibrado (`horizonte.md` ruta 3, v2: 1.000 réplicas
+por celda, α a 3.000, bisección con 3 semillas; `potencia_por_metrica.json`;
+`corrida09/frase_potencia.md`). Ancla: cadena local a 31-ago con la regla
+firmada, n = 246 en 35 días (**no** la canónica del README, 28-ago, n = 238:
+divergencia declarada, misma regla, tres sellos más). Registro de intentos al
+escribirla: 310. El §22 queda superado. **Dictamen 1b/3c (adversario, 12:20):**
+la tabla y la pareada de la ruta 3 sostienen; el intervalo de «días para 0,80»
+de la v1 no (medía sólo Monte Carlo con una semilla); la frase «cae antes del
+25-oct» no sostiene y se retiró. Lo que sigue es la v2 con esas exigencias.
+
+**Versión «dirección» (V1, secundaria bajo D3):**
+
+> Con ~73 días sellados el 25-oct, la potencia para detectar una ventaja
+> direccional verdadera de 9 pp es **0,30 [0,27, 0,33]**; de 6,5 pp, **0,18
+> [0,16, 0,21]**. Para 0,80 hacen falta **≈263 días sellados a 9 pp** (rango
+> Monte Carlo [229, 296]; banda paramétrica de la ruta 1: 248 [109, 370]) →
+> **18-ago-2027** [25-jun-2027, 8-oct-2027 por MC], y ≈510 (ruta 1: 475
+> [209, 709]) → 6-sep-2028 a 6,5 pp. El veredicto del 25-oct sobre la
+> dirección será, con alta probabilidad, «no distinguible de cero» aunque la
+> ventaja exista.
+
+**Versión «magnitud» (V1-bis propuesta, primaria bajo D3):**
+
+> Con ~73 días sellados el 25-oct, la potencia para detectar que el modelo
+> reduce el MAE del gap frente a predecir cero está en la banda **0,90 / 0,86
+> / 0,70** (generador de 9 pp [0,87, 0,92] / efecto observado [0,83, 0,89] /
+> bajo R2 [0,66, 0,74]); para el CRPS frente a la climatología **0,76 [0,72,
+> 0,80]**. Días para 0,80 en MAE **al efecto observado** (+0,44 pp, IC t de
+> clúster [−0,09, +0,96]: contiene el cero): **96 [20, ∞) → 1-dic-2026**
+> [27-ago-2026, ∞); bajo R2, 175. Si el efecto fuera el del generador de 9
+> pp, ≈58 días (interpolación en log(D), verificada directa 0,80–0,82; sólo
+> Monte Carlo). **Ninguna fecha encabeza:** el 25-oct fija ~73 días y lo
+> que la muestra dice es la banda de potencia a ese horizonte; una fecha de
+> 0,80 sólo vale condicional a un tamaño de efecto cuyo intervalo contiene
+> el cero.
+
+**Lo que hay que saber al firmar:** las dos van juntas y en ese orden;
+ninguna al README sin firma; la magnitud contrasta campeón contra
+cero/climatología (no es V2 ni V4); MAE y CRPS son una familia; «contra
+cero» mide también la deriva del gap (m > 0 bajo ventaja nula el 54 %:
+`tipo1_conjuncion_v1bis.json`) — para «habilidad» el adversario exige la
+climatología causal (§30); la interpolación en log(D) no estaba prefijada
+(lineal daría ≈61); la ruta 2 − ruta 3 sobre las 12 celdas de A4 da +2,45
+[1,64, 3,27], comparable con el +2,67 [1,85, 3,55] del dictamen A (7 de las
+28 celdas están en techo).
+
+## 30. La enmienda V1-bis v2 — cambio de PREGUNTA, y un conflicto con D3 (frente 1c)
+
+`GEMELO/preregistro/enmienda_v1bis.md` v2, con el dictamen pegado al pie.
+El adversario dictaminó: **no es un cambio de vara, es un cambio de
+pregunta** (qué demuestra el proyecto), firmable como tal. Lo que espera
+firma: (1) adoptar V1-bis v2 como adición fechada bajo `DISEÑO.md` §6.1,
+etiquetada como cambio de pregunta; (2) la **conjunción V1-bis ∧ V1** (si no,
+afloja: un retador que gane en magnitud y pierda en dirección pasaría); (3)
+salida α (el veredicto bajo V1-bis se evalúa sólo sobre sellos posteriores al
+3-sep) o β (contaminación declarada); (4) V2 con IC de día, V4 como regla
+general «todo nivel numérico del §6 es descriptivo», R1 y R2 sobre la métrica
+primaria con la regla operativa «el IC de día sin 15–23 jul sigue excluyendo
+el cero»; (5) **el conflicto: D3 dice «MAE contra predecir cero»; el
+adversario exige que decida la climatología causal** porque «cero» mide la
+deriva (54 % de m > 0 bajo ventaja nula). La v2 publica los dos y hace decidir
+al de climatología; si preferís «cero», la enmienda vuelve a la v1 en ese punto
+con el tipo I medido a la vista (MAE contra cero 0,04–0,05: correcto como
+test; lo que mide es otra cosa). Hasta la firma, el juez lineal de esta
+corrida es **EXPLORATORIO** (no computa como evidencia de R1).
+
+## 31. La ventana del dedup retroactivo de noticias, y retirar el parche del timer (frente 2c)
+
+El O(n²) está corregido en `noticias.py` (marca en tabla `meta`, ventana ±10
+días; `corrida09/noticias_on2.md`). Dos cosas tuyas: (a) **ventana 10 vs 30
+días**: 10 deja pasar 11 republicaciones de 11,9–138 días (≈ 0,0005 USD cada
+una en Haiku; el decaimiento 0,7^días ya las pesa poco); 30 recupera 3 y
+triplica el costo diario (~35 s → ~100 s); rec. 10. (b) **El parche
+`TimeoutStartSec=2700` de `parche_timeout_noticias.md` queda innecesario y
+no debería aplicarse**: hoy ≈ 13–15 min (primera pasada 615 s + RSS + Haiku),
+desde mañana ≈ 5–6 min; 1.800 s alcanza. Confirmalo con la línea nueva del
+log de hoy («dedup retroactivo: … en X s»).
+
+## 32–35. Las cuatro tarjetas de `corrida09/tarjetas_09.md` (frente 2d)
+
+Cada una con opciones, costo medido sobre datos reales, recomendación
+PROPUESTA y «el día después». En una línea cada una:
+
+- **32. Abstención por sello tardío.** Rec. **A** (salto de sesión, medido por
+  calendario con `sesion_correcta`, no por reloj): 15/269 filas en 2 fechas
+  (3 aciertos y 12 errores se irían); como flag retrospectivo en el campeón
+  y regla de emisión sólo en el retador. B ≥ 19:00 abstendría 32; B ≥ 20:30 ≡
+  ≥ 20:00 (apertura de Seúl) 10. La ventaja «sin A» no se publica.
+- **33. Qué significa `ts_emision`.** `timestamp_utc` y `creado_en` son el
+  mismo instante por construcción; ninguno dice cuándo la fila se hizo
+  pública. Rec. `commiteado_en` (aditivo, una línea en `senales.guardar_snapshot`)
+  + `publicado_en` escrito por backup y reporte llenando sólo el campo vacío,
+  nunca cambiando un valor.
+- **34. `Persistent=true`.** Journal no leído (tu restricción): sólo
+  `data/*.log`, en UTC, desde el 25/26-ago. Rec. **M**: mantener en
+  noticias, reporte, backup, vigía y re-chequeo; para snapshot, con el parche
+  `:140` firmado `true` es seguro; sin él, `false` o guardia. Orden: primero
+  el parche, no tocar timers.
+- **35. Campeón cuando sello y fuente discrepan (28-ago).** Rec. **(a) las
+  filas selladas son el campeón y B2 las lee, + C3 copia de insumos**, en el
+  mismo bump que el parche `:140`. Escrito: el sello es «emitido antes»,
+  no «reproducible después»; C3 le daría la segunda hacia adelante, nada
+  hacia atrás.
+
+## 36. Lo del frente 2f que espera firma
+
+- `GEMELO/propuestas/parches/motor_concat.diff` (tres `sort=True`, byte-idéntico
+  verificado por `tests/test_parche_motor_concat.py`, 10 passed): aplicar o no
+  (`motor.py` es intocable; la regla cero manda).
+- **`^VIX3M` sin datos en la caché desde el 17-jul**: con ffill acotado a 5 d,
+  C2/C3 del WS2b sólo se reproducen sobre 79 filas. Verificar si Yahoo dejó de
+  publicarlo (exige red: tuya) — afecta a toda re-corrida del WS2b/WS3 y al juez
+  lineal (C2).
+- Tarjetas Q1 (ventana larga a la convención congelada: parche del medidor +
+  test ahora, re-corrida después), Q3 (errata en §32.5 de `DECISIONES.md`) y
+  Q4 (IC en la fila de Fráncfort) en `corrida09/ws4_cinco_preguntas.md`.
+
+## 37. Dictamen del `director-programa` sobre las recomendaciones de 2d y 2e (3-sep, 13:00)
+
+Tarjetas: **T1 SUSCRIBE** (A como flag retrospectivo, regla sólo en el retador,
+«sin A» no se publica); **T2 CAMBIA**: primero la alternativa barata
+(`publicado_en` escrito por los jobs, sin tocar `senales.py`); `commiteado_en`
+sólo si va en el mismo bump que `:140`, nunca como corte aparte sobre un
+intocable; **T3 SUSCRIBE**; **T4 SUSCRIBE (a)**, y la copia de insumos C3 es un
+frente nuevo que entra después de firmar `:140`, no la misma noche. Réplica
+(§28 / cola §29): 1 SUSCRIBE (bloquea el resto); 2 SUSCRIBE sólo después de
+firmadas 1 y 6; 3 SUSCRIBE; **4 AHORA NO** (un timer más en la única máquina
+que emite: comparar a mano N días primero); 5 SUSCRIBE; 6 SUSCRIBE; **7
+CAMBIA**: la guardia sólo en el vigía mientras haya una sola máquina (un
+pre-paso nuevo que falla apaga el reporte del titular sin réplica que lo
+cubra); 8 SUSCRIBE. Y el orden de firmas que propone: **primero V1-bis + §30,
+después el parche `:140` con bump**; sobre el juez lineal, su objeción está
+registrada en la nota de dependencia del pre-registro (corrió EXPLORATORIO
+por orden del encargo, con los dos denominadores).

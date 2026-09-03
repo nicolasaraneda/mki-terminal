@@ -7793,3 +7793,208 @@ vez y deja la suite en verde: el test y los hooks se revierten juntos o ninguno.
 Revertir sólo `.claude/hooks/` deja `tests/test_hooks_propuestos.py` en rojo, que
 es la señal deseada, no un accidente. Nada de esto toca `senales.db`, ningún
 módulo de producción ni ninguna cifra publicada.
+
+## 78. Novena corrida: D1, D2 y D3 aplicadas, la deuda que sostiene la visión pagada en cinco frentes, y la ruta al veredicto abierta con la métrica correcta
+
+**Fecha:** 3-sep-2026 (corrida de la noche del 2 al 3, prolongada a la mañana
+por dos incidentes del límite de sesión de la API; bitácora en
+`GEMELO/resultados/bitacora_09.md`, encargo en `encargo_corrida_09.md`).
+
+### 78.1 Las tres decisiones de Nicolás, aplicadas y no rediscutidas
+
+**D1 — Rama del efecto.** La cifra publicada de la ventana sellada es la de
+la regla de deduplicación firmada el 1-sep (§2a de la cola). Aplicado en el
+**árbitro** (`cifras.sellada()`, `DEDUP_PUBLICADO = True`, mismo corte
+28-ago), y desde ahí en los doce bloques (README ×9, skill
+`cifras-canonicas` ×2, `estado_epistemico.md` ×1) y en los sitios fuera de
+los doce que la cifra vieja ocupaba (skill `estadistica-evaluacion` y su
+self-test, agente `estadistico-adversario`, `GEMELO/RELEVO.md`,
+`bifurcaciones.ANCLA` como ancla histórica). Publicado: **n = 238 en 34 días,
+67,6% [61,5, 73,3] contra 58,0% [51,6, 64,1], +9,7 pp (9,66) con IC95 de
+clúster de día [−7,2, +26,6] (contiene el cero), permutación de signo por
+día p = 0,294, McNemar de filas p = 0,0455 (χ²cc; exacta 0,0451; b 72, c
+49), ICC 0,39, DEFF 3,55, n efectivo 67; MAE 2,52 contra 2,98 pp (−15,3%);
+cobertura del 80% 92,9%, ratio de ancho 2,19× [1,71, 2,78] de día; retorno
+de sesión 62,1% [55,9, 68,0] (n 243).** El titular sigue siendo «no
+distinguible de cero» con la unidad correcta, aunque el McNemar de filas
+cruce el 5%: se publican los dos y decide el de día (acta §61). La convención
+sin deduplicar queda **derogada**: `n = 248`, `164/248`, `148/248`, `+6,5 pp`,
+`0,1849` y `1,84×` entran a `GEMELO/cifras_retiradas.md` (bloqueadas por el
+hook y por `test_cifras_arbitro`). La rama «+ coherencia» (+14,3, cola
+§2a-ter) **no se publica** y queda DECISIÓN PENDIENTE, con un dato nuevo
+(78.4). El test del Frente G se completa: ahora también fija que cambiar la
+convención mueve los doce bloques y que los fragmentos de la rama derogada
+no sobreviven sin marca.
+
+**D2 — Registro de intentos.** La convención del §28 de la cola queda
+CONFIRMADA. Verificado en la máquina: 286 al abrir la corrida. La corrida
+suma, bajo esa misma convención, **DEUDA-2f 14, TARJ-2d 7, ENM-1c 1,
+TIPO1-1c 1, HOR-1b 1, JUEZ-3b 36 (declarados antes de correr), ADV-3b 6 (lo
+que el adversario computó para dictaminar) → 352**
+(`GEMELO/relevo_asiatico.REGISTRO_INTENTOS`; `veredicto_51.N_INTENTOS_PREVIO`
+286 → 352, `N_INTENTOS_51` 292 → 358). Con esa N ningún Sharpe positivo pasa
+V5: es lo que un conteo honesto hace.
+
+**D3 — Métrica primaria.** La métrica primaria del veredicto pasa a
+magnitud (MAE contra predecir cero, y CRPS donde haya densidad); la
+dirección se sigue publicando como secundaria con la misma firmeza. Aplicado
+en: la enmienda V1-bis (78.2), el pre-registro del juez lineal (78.5), la
+frase de potencia en dos versiones (78.3) y el agente
+`estadistico-adversario` (V1 secundaria).
+
+### 78.2 La enmienda V1-bis es un cambio de PREGUNTA, no de vara (dictamen), y hay un conflicto con D3 que es de Nicolás
+
+`GEMELO/preregistro/enmienda_v1bis.md` (documento separado; `DISEÑO.md` §6
+no se toca). La v1 decía «cambio de vara que sólo endurece». El
+`estadistico-adversario` dictaminó **NO SOSTIENE**: cambia el denominador
+(de «siempre al alza» a «predecir cero», que en magnitud es el análogo del
+50%), la familia de endpoint, y saca a la dirección del gating; un retador
+que ganara en magnitud y perdiera en dirección habría PASADO bajo la v1 y no
+bajo V1. Verificó además que la ganancia MAE del campeón contra cero es
++0,4547 pp con t de clúster [−0,087, +0,996] (contiene el cero; p de día
+0,10) y que contra la constante μ el modelo gana 0,42 [−0,98, +0,13]
+(contiene el cero). **Con verdad conocida** (simulador calibrado, ventaja
+verdadera −0,01 pp, 1.000 réplicas): tipo I de MAE ∧ CRPS 0,021 [0,014,
+0,032] a 73 días; CRPS contra una climatología EN MUESTRA 0,075 [0,060,
+0,093] a 250 días (inflado); y «MAE contra cero» positivo bajo ventaja nula
+el 54 % [51, 57] — **mide la deriva del gap, no la habilidad**. La v2
+aplica las cinco exigencias: la climatología causal decide y «cero» se
+publica al lado; conjunción V1-bis ∧ V1 (V1 sigue bloqueante); el endpoint
+se eligió mirando la ventana del veredicto y se declara (salida α: sellos
+posteriores al 3-sep / β: contaminación declarada); clave del día = fecha
+de emisión; regla operativa de R2 para métricas continuas; V4 como regla
+general y direccional; V6 nombrado como «el cambio de pregunta en una
+línea»; el plan secuencial v5 no vale para magnitud. **El conflicto:** D3
+dice «MAE contra predecir cero»; el adversario exige que decida la
+climatología causal. Ningún agente lo resuelve: `espera_firma.md` §30.
+Errata hallada de paso: `dictamen_08/E.md` decía que la constante recupera
+el «93 %» de la ganancia de MAE; es 7,2–7,3 % (anotado al pie).
+
+### 78.3 El horizonte con el simulador calibrado, y la frase de potencia en dos versiones
+
+`horizonte.py` gana la **ruta 3** (generadores del Frente A calibrados al
+ICC observado; 1.000 réplicas por celda, α a 3.000; días para 0,80 por
+bisección con tres semillas) y la ruta 2 (δ constante sumado a cada fila)
+deja de mandar: pareada sobre 28 celdas, la ruta 2 está por encima en 23 y
+por debajo en 1 (McNemar exacto p = 3·10⁻⁶), +2,17 pp [1,55, 2,81]
+(descriptivo); sobre las 12 celdas de A4, +2,45 [1,64, 3,27], comparable
+con el +2,67 [1,85, 3,55] del dictamen A — «verificado con el simulador, no
+con la bitácora», como pedía el encargo (la bitácora 08 decía +2,7). Días
+para 0,80 a 9 pp: **≈263** (rango de semillas [252, 269]; rango de Monte
+Carlo [229, 296]; la banda paramétrica es la de la ruta 1: 248 [109, 370])
+→ ago-2027. El dictamen 1b/3c exigió, y se aplicó, que el intervalo de la
+ruta 3 se etiquete «sólo Monte Carlo» (la v1 publicaba [229, 275] desde una
+sola semilla), que la frase no encabece con una fecha, y que declare el
+ancla (31-ago, n 246, distinta de la canónica 28-ago n 238) y N (310). La
+frase (`espera_firma.md` §29): dirección 0,30 [0,27, 0,33] el 25-oct a 9
+pp; magnitud en banda **0,90 / 0,86 / 0,70** (generador / observado / R2);
+días al efecto observado 96 [20, ∞) → 1-dic-2026; ≈58 si el efecto fuera
+el del generador. «Cae antes del 25-oct» se retiró: era condicional a un
+efecto cuyo intervalo contiene el cero.
+
+### 78.4 La deuda pagada (bloque 2)
+
+- **2a, importador de CSV.** Ya existía (acta §42). Verificado contra el
+  criterio del encargo con `tests/test_importador_roundtrip.py` (16 tests):
+  5 tablas, **2.301 = 2.301 filas, 25.082 celdas, 0 discrepancias,
+  `plataforma_version` 42/42**, floats `repr`-exactos, ids surrogados
+  2.259/2.259. Hallazgo: `sqlite_sequence` con 8 filas para 4 tablas (restos
+  de la composición del 30-ago; riesgo nulo; firma). `docs/RESTAURAR.md` e
+  `integridad-datos.md` corregidos con nota fechada.
+- **2b, parche `snapshot.py:140`.** `GEMELO/propuestas/parches/snapshot140.diff`
+  (aplica limpio contra `HEAD`) + `tests/test_parche_snapshot140.py` (6
+  tests, verde con el archivo sin parchear) + `corrida09/parche_snapshot140_tabla.md`:
+  **25 filas** con sesión objetivo incorrecta en 4 fechas de emisión, las 25
+  `verificada` (6 aciertos, 19 errores), **y bajo el parche las 25 serían
+  `no_verificable_timing`, 0 verificables** — por construcción: la sesión
+  sellada difiere de la correcta sólo si una sesión abrió entre `available_at`
+  y la emisión, y ésa es la correcta, ya abierta. **Errata a la cola §2a-ter y
+  al expediente §6**, que decían 15. Ninguna fila nueva desde el 5-ago.
+- **2c, O(n²) de noticias.** Causa raíz corregida en `noticias.py`
+  (`migrar_noticias_v2` con marca `dedup_retro_ultimo_id` en tabla aditiva
+  `meta`; sólo las filas nuevas son candidatas, comparadas contra ±10 días).
+  MEDIDO sobre copia: vieja 2.233 s (13,8 M comparaciones), nueva primera
+  pasada 615 s, corrida diaria 34,7 s. Comportamiento declarado: una
+  republicación a más de 10 días ya no se detecta (11 de 31 hoy).
+  `tests/test_noticias_dedup_lineal.py` (7): lineal contra cuadrático,
+  equivalencia dentro de la ventana, idempotencia, esquema aditivo. **El
+  parche `TimeoutStartSec=2700` queda innecesario** (`espera` §31). Corre
+  por primera vez hoy 17:50.
+- **2d, cuatro tarjetas firmables** (`corrida09/tarjetas_09.md`; journal
+  NO leído por instrucción de Nicolás, sólo `data/*.log`): abstención por
+  sello tardío (A abstendría 15/269, 3 aciertos y 12 errores; rec. flag en el
+  campeón, regla en el retador), `ts_emision` (`timestamp_utc` y `creado_en`
+  son el mismo instante; rec. `commiteado_en` + `publicado_en`),
+  `Persistent=true` (rec. mantener en cinco; snapshot depende del parche
+  `:140`), y el campeón cuando sello y fuente discrepan (rec. las filas
+  selladas + copia de insumos; «emitido antes» ≠ «reproducible después»).
+- **2e, diseño de la réplica** (`GEMELO/diseno/replica.md`, 825 líneas):
+  regla de desempate (rec. A), transferencia, detección de doble titular por
+  `git fetch` + `git show` con marca `titular.json` y auto-degradación
+  antes del reporte de las 18:25, puesta en marcha con el importador,
+  séptimo job de comparación. Ocho decisiones en cola §29. Dos avisos: la
+  skill `switch-titular` que cita `CLAUDE.md` no existe (corregido, 78.6); la
+  réplica gasta presupuesto de IA.
+- **2f, deuda estadística.** IC de ΔMAE del WS2b recomputados por clúster
+  de día (C1 reproduce; C2/C3 sólo sobre 79 filas porque **`^VIX3M` no tiene
+  datos en la caché desde el 17-jul**; WS3 no recomputable sin red); contra
+  cero nadie mejora de forma distinguible al nivel de día; ninguna
+  conclusión del WS2b cambia; erratas al pie de `control_lineal.md` y
+  `ventana_larga.md`. `motor_concat.diff` (tres `sort=True`, byte-idéntico
+  por `tests/test_parche_motor_concat.py`, 10 tests). Cinco preguntas del
+  WS4: Q5 medida (la regla firmada ya sacó 7 de las 8 filas del 29-jul), Q2
+  resuelta en código, Q1/Q3/Q4 como tarjetas.
+
+### 78.5 La ruta al veredicto (bloque 3)
+
+**3a.** La §2 sigue reproduciendo en el harness (`tests/test_linea_base.py`
+34 passed; acta §34.10): nada que rehacer. **3b.** El juez lineal bajo D3
+se pre-registró y congeló (`GEMELO/preregistro/juez_lineal_d3.md`: C1, C2 y
+campeón; MAE contra cero y CRPS contra climatología CAUSAL; clúster de día
+por fecha de emisión; R2; 36 intentos declarados), el `auditor-lookahead`
+dictaminó al quinto intento (los cuatro anteriores murieron por límite de
+API, 529 ×2 y uno colgado) y **demostró una fuga de disponibilidad antes de
+correr**: la caché de cierres se bajó el 1-sep a las 13:16 UTC con la fila
+del 1-sep parcial (`^SOX` NaN, barras intradía); se descartó toda fecha
+posterior a la última barra completa de `^SOX` y se selló sha256 + mtime de
+cada caché (Enmienda 1). Corrió a las 12:42 con la etiqueta **EXPLORATORIO**
+(V1-bis sin firma; endpoint elegido tras ver la ventana; sin hash de commit
+anterior). Resultado sobre 262 filas / 37 días: C1 (ridge sobre SOX t, t−1)
+supera a predecir cero en MAE (+0,387 [+0,049, +0,725], p de día 0,021) y a
+la climatología causal en CRPS; **pero no sobre las mismas filas que el
+campeón**: el adversario cazó que C1 no predice el 5-jul (8 filas) y que
+sobre las 254 comunes **el campeón supera a cero más que C1** (+0,558
+[+0,089, +1,027]); la pareada C1 − campeón −0,171 [−0,375, +0,033] contiene
+el cero; **bajo R2 nadie supera nada** (R2 se activa sobre C1); C2 (16
+features) sólo predice 79 filas por `^VIX3M` muerto y C2 − C1 no dice nada.
+**Conclusión honesta publicada:** los features disponibles no traen señal
+de magnitud detectable con esta ventana que sea distinta de la que ya porta
+SOX(t, t−1) ni robusta a R2; NO CONCLUYENTE. El director objetó el orden
+(correr antes de firmar §30); el encargo lo ordenaba y corrió con los dos
+denominadores publicados; la nota de dependencia quedó en el pre-registro.
+**3c.**
+Los días que faltan bajo D3 están en 78.3: la magnitud tiene potencia 0,86
+[0,83, 0,89] el 25-oct al efecto observado y 0,80 a los ≈96 días [20, ∞);
+la fecha no se afirma porque el intervalo del efecto contiene el cero.
+
+### 78.6 Arreglos menores y erratas
+
+`CLAUDE.md` 5.0.3 con nota fechada (el titular es este PC; `migracion-wsl`
+muerta; `switch-titular` → `modo-emision`); frontmatter de
+`guardian-constitucion.md:3`. El ratio 1,84× entra al árbitro con n e
+intervalo (2,19× [1,71, 2,78]) y el suelto se retira. Erratas propias de la
+corrida: tres horas de la bitácora escritas sin leer `date` y corregidas en
+el acto; la cola §2a-ter (15 → 25 bajo el parche); el «93 %» del dictamen E.
+
+### 78.7 Lo que decide Nicolás (espera_firma §26–§36)
+
+Aplicar el parche `:140` con bump; `sqlite_sequence`; las ocho de la
+réplica; la frase de potencia; la enmienda V1-bis v2 y el conflicto con D3;
+la ventana del dedup de noticias y retirar el parche del timer; las cuatro
+tarjetas; `motor_concat.diff`; `^VIX3M`; las tarjetas Q1/Q3/Q4.
+
+**Cómo se revierte.** Cada frente vive en archivos propios y en un commit
+propio; revertir el commit de 1a devuelve los doce bloques y el árbitro
+juntos (el test los ata). Nada tocó `motor.py`, `senales.py`, `snapshot.py`,
+`universo.py`, `.env`, timers ni ninguna fila sellada; `noticias.py` y
+`mki_noticias.py` sí cambiaron (78.4, 2c) y se revierten con su test.

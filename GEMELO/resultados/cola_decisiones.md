@@ -198,6 +198,8 @@ tickers del 17-ago. Los logs de esas fechas **ya rotaron y no existen**.
 
 ### 2a — ESTADO al 1-sep, tarde: FIRMADA, aplicada, y abrió DOS preguntas
 
+**CERRADA el 3-sep-2026 (D1, encargo 09; acta §78):** la cifra publicada ES la de la regla firmada (n = 238, +9,7 pp, IC95 de día [-7,2, +26,6], que contiene el cero); la convención sin deduplicar queda derogada y sus cifras en `cifras_retiradas.md`. Lo que sigue es la historia de cómo se llegó.
+
 **Nicolás firmó**, y su texto es el criterio: *«Los dos grupos se tratan
 por separado… Grupo del defecto de `snapshot.py`: la fila válida es la que
 tiene la sesión objetivo correcta según `available_at`, no la más
@@ -233,7 +235,9 @@ demostrable, no frescura). **Las dos cosas van juntas o no van.**
 aplicado: `GEMELO/resultados/parche_dedup.md`, trece bloques con
 archivo:línea.
 
-### 2a-ter. Las 15 filas SIN pareja que tampoco calzan — NUEVA, abierta
+### 2a-ter. Las 15 filas SIN pareja que tampoco calzan — DECISIÓN PENDIENTE (D1 la dejó explícitamente en cola: no se publica)
+
+**Actualización 3-sep-2026 (frente 2b, `corrida09/parche_snapshot140_tabla.md`):** bajo el parche de `snapshot.py:140`, las 25 filas con sesión objetivo incorrecta (las 10 del lado viejo de los pares Y estas 15) serían todas `no_verificable_timing` — no sólo las 8 del 5-jul como decía este ítem: las 10 del lado viejo también se emitieron después de la apertura de la sesión correcta. La rama «+ coherencia» sigue sin intervalo de día computado y sin publicar.
 
 **Qué decidir, en una frase:** si además de deduplicar se retiran las
 **15 filas sin pareja** cuya `sesion_objetivo` tampoco corresponde a su
@@ -1009,7 +1013,9 @@ cero, que explica por qué la dirección necesita ~250 días y la magnitud
 `horizonte.md`, instrumento que el dictamen A midió optimista; con el
 simulador calibrado es 0,31 [0,27, 0,35].
 
-## 28. La convención del conteo de intentos — dos convivían, se declaró una (y es tuya confirmarla)
+## 28. La convención del conteo de intentos — CONFIRMADA por Nicolás el 3-sep-2026 (D2, encargo 09)
+
+**CERRADA (D2):** la convención declarada abajo es la que usa el DSR; el conteo vigente al abrir la novena corrida era 286 (verificado en `GEMELO.relevo_asiatico.N_INTENTOS_ACUMULADO`); la novena corrida suma lo suyo con la misma regla (ver `bitacora_09.md`, cierre).
 
 **Qué decidir, en una frase:** si el registro `REGISTRO_INTENTOS` cuenta,
 para los frentes que evalúan hipótesis sobre retornos reales, **un intento
@@ -1025,3 +1031,50 @@ tamaño teórico de la regla V5 baja aún más (m_N ≈ 2,9 sd) — ningún
 retador con Sharpe positivo pasa V5 en este siglo con esta convención, y
 eso es lo que un conteo honesto hace cuando se han probado casi trescientas
 cosas.
+
+# Lo que agregó la novena corrida (noche del 2 al 3-sep-2026)
+
+D1, D2 y D3 del encargo 09 están aplicadas (acta §78): §2a y §28 de esta cola
+quedan CERRADAS con fecha, arriba. Lo nuevo:
+
+## 29. La réplica permanente: ocho decisiones (`GEMELO/diseno/replica.md` §8)
+
+**Qué decidir, en una frase:** las ocho de `replica.md` §8, en este orden,
+porque la 1 bloquea a las otras siete: (1) quién gana ante divergencia —
+rec. **A, la titular siempre**; (2) qué máquina es réplica — rec. **el Mac**
+con `caffeinate -dimsu` 17:45–21:15 como precondición escrita, y pasar a
+una tercera máquina si el registro muestra que falla como réplica con la
+frecuencia con que falló como titular; (3) retención — rec. `.md` a 90
+días, JSONL y base sin límite; (4) séptimo job `mki-comparar-replica` a las
+21:00 con alerta pasiva — rec. instalar; (5) N = 5 días de PARIDAD para
+promover; (6) marca `data/backups/titular.json` escrita por `mki_backup.py`
+sólo en titular — rec. sí; (7) guardia de titular como `ExecStartPre` del
+reporte de las 18:25 — rec. sí; (8) no cambiar el default de `FECHA_CORTE`.
+**Expediente:** `GEMELO/diseno/replica.md` (825 líneas, cada afirmación
+MEDIDO / PROPUESTA / DECISIÓN PENDIENTE). **Costo de postergarlo:** el de
+siempre, ya materializado una vez (un solo disco sellando).
+
+## 30. `sqlite_sequence` duplicada — `espera_firma.md` §27
+
+Rec. dejarla. Riesgo nulo, medido.
+
+## 31. La enmienda V1-bis v2 — `espera_firma.md` §30
+
+Cambio de PREGUNTA (dictamen), no de vara. Cinco firmas: adoptar; conjunción
+V1-bis ∧ V1; salida α/β; declaraciones V2/V4/R1/R2; **conflicto D3 (cero) vs
+adversario (climatología causal)**. El juez lineal de la 09 es EXPLORATORIO
+hasta entonces.
+
+## 32. Las cuatro tarjetas de decisiones humanas — `GEMELO/resultados/corrida09/tarjetas_09.md` (T1–T4); resumen en `espera_firma.md` §32–35
+
+Abstención (rec. A, flag + retador) · `ts_emision` (rec. `commiteado_en` +
+`publicado_en`) · `Persistent=true` (rec. M; snapshot depende del parche
+`:140`) · campeón cuando sello y fuente discrepan (rec. (a) + C3, mismo bump).
+**Recomendación de orden:** el parche `:140` primero (§1-bis, `espera` §26);
+las otras tres se apoyan en él.
+
+## 33. Noticias: ventana del dedup (10 vs 30 días) y retirar el parche del timer — `espera_firma.md` §31
+
+## 34. `^VIX3M` sin datos desde el 17-jul en la caché — `espera_firma.md` §36
+
+Exige red para verificar. Afecta a C2/C3 del WS2b, al WS3 y al juez lineal.

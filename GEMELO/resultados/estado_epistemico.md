@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (2-sep-2026, actualizado al cierre de la octava corrida)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (3-sep-2026, actualizado al cierre de la novena corrida)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -50,10 +50,12 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    hoy —no un sello— y depende de que esa fuente no mute (punto 2) y de
    una composición de universo que no se pudo verificar (punto 17).
 6. **Sobre la ventana sellada —la única evidencia prospectiva— la ventaja
-   no se distingue de cero.** Publicado: +6,5 pp, n = 248. Bajo la regla de
-   deduplicación firmada: +9,7 pp con **IC95 de clúster de día [−7,2,
-   +26,5]**, n efectivo 67 (las ocho filas de un día comparten el mismo
-   movimiento del SOX). 0 de 192 formas legítimas de medirla dan p < 0,05
+   no se distingue de cero.** Publicado desde el 3-sep-2026 (D1: regla de
+   deduplicación firmada; errata: hasta el 2-sep era +6,5 pp sin deduplicar
+   sobre n = 248, rama derogada): **+9,7 pp, n = 238**, con **IC95 de
+   clúster de día [−7,2, +26,6]**, permutación de signo por día p = 0,29,
+   McNemar de filas p = 0,0455, n efectivo 67 (las ocho filas de un día
+   comparten el mismo movimiento del SOX). 0 de 192 formas legítimas de medirla dan p < 0,05
    respetando el clúster — **y eso es prácticamente no informativo:** con
    verdad conocida, la nula produce «0 de 192» el 75 % de las veces y una
    ventaja verdadera de 9 pp el 47 % (cociente de verosimilitudes 1,6).
@@ -63,20 +65,27 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    el SOX sube, el campeón y «siempre al alza» coinciden por construcción.
    *(`secuencial_v5.md`, dictamen F.)*
 7. **El instrumento acumula ~2 observaciones efectivas por día sellado.**
-   Detectar 9 pp con potencia 0,80 exige ~250 días sellados, IC95 [109,
-   370] (≈ jul-2027); 6,5 pp, ~475 [209, 709]; 5 pp, ~800 [354, 1.199]. El
-   veredicto programado del 25-oct llegará con ~73 días y un efecto mínimo
-   detectable de 16,6 pp [11,0, 20,3]: **un resultado negativo ese día no será evidencia de
-   ausencia.** *(`horizonte_veredicto.md`.)* **Esas cifras son optimistas:** el
-   instrumento que las produjo inyecta el efecto de forma homogénea y, contra
-   un simulador calibrado con verdad conocida, está por encima en 12 de 12
-   celdas (+2,7 pp de potencia [1,8, 3,6]). Y el tamaño del efecto del que
-   dependen está indeterminado por un factor ~5 según la rama (+6,45 pp
-   publicada sin deduplicar / +9,66 con la regla firmada / +14,3 en la cola).
-   *(Dictámenes A y E, octava corrida.)*
-8. **La magnitud predicha aporta:** MAE del gap 2,98 pp contra 3,33 de
-   predecir cero (n = 248). Los intervalos del 80% cubren el 90,3%: son
-   1,84× más anchos de lo necesario. *(`README.md`.)*
+   Detectar 9 pp con potencia 0,80 exige ~250 días sellados —ruta
+   analítica 248 con IC95 paramétrico [109, 370]; simulador calibrado
+   (ruta 3, 3-sep) ≈263 con rango Monte Carlo [229, 296]— (≈ ago-2027);
+   6,5 pp, ~475–510 [209, 709]; 5 pp, ~800 [354, 1.199]. El veredicto
+   programado del 25-oct llegará con ~73 días, una potencia direccional
+   de **0,30 [0,27, 0,33]** a 9 pp y un efecto mínimo detectable de 16,6
+   pp [11,0, 20,3]: **un resultado negativo ese día no será evidencia de
+   ausencia.** *(`horizonte.md` rutas 1 y 3; dictamen 1b, novena corrida.)*
+   El instrumento anterior (ruta 2, δ constante por fila) era optimista:
+   contra el simulador calibrado está por encima en 23 de 28 celdas
+   (+2,2 pp [1,6, 2,8]; sobre las 12 celdas de A4 +2,45 [1,64, 3,27]),
+   y ya no manda. Y el tamaño del efecto del que
+   dependen ya no está indeterminado por la rama: D1 fijó la regla firmada
+   (+9,66 pp) como la publicada; la rama sin deduplicar (era +6,45) queda
+   retirada y la de «+ coherencia» (+14,3, sin intervalo) sigue en cola sin
+   publicarse. *(Dictámenes A y E, octava corrida; D1, acta §78.)*
+8. **La magnitud predicha aporta:** MAE del gap 2,52 pp contra 2,98 de
+   predecir cero (n = 238; parte de la mejora relativa respecto de la rama
+   retirada —era 2,98 contra 3,33— es que la regla saca filas con gaps
+   enormes del 29-jul). Los intervalos del 80% cubren el 92,9%: son 2,19×
+   [1,71, 2,78] más anchos de lo necesario. *(`README.md`, `cifras.sellada()`.)*
 9. **Un solo régimen de mercado en toda la ventana sellada.** Todo lo
    anterior sobre esa ventana vale para ese régimen.
 9b. **El signo del SOX no compra nada en la sesión asiática, ni al derecho
@@ -189,6 +198,29 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
 
+- **Novena corrida (3-sep), con dictamen del adversario:** (i) la enmienda
+  V1-bis v2 (`GEMELO/preregistro/enmienda_v1bis.md`) es un **cambio de
+  pregunta, no de vara** —firmable como tal—; con verdad conocida, la
+  conjunción MAE ∧ CRPS tiene tipo I 0,021 [0,014, 0,032] a 73 días, el CRPS
+  contra una climatología en muestra se infla a 0,075 [0,060, 0,093] a 250
+  días, y «MAE contra cero» es positivo bajo ventaja nula el 54 % [51, 57]:
+  mide también la deriva del gap. (ii) La frase de potencia del 5.1 en dos
+  versiones (`espera_firma.md` §29): dirección 0,30 [0,27, 0,33] a 9 pp el
+  25-oct; magnitud en banda 0,90 / 0,86 / 0,70 (generador / observado / R2),
+  96 [20, ∞) días al efecto observado; ninguna fecha encabeza. (iii) Sobre
+  la ventana sellada al nivel de día **nadie mejora a predecir cero de forma
+  distinguible**: campeón +0,375 pp [−0,201, +0,955], control lineal C1
+  +0,362 [−0,055, +0,803]; cada intervalo contiene el cero
+  (`corrida09/ic_dmae_recomputados.md`; el bloque
+  de filas sí lo excluía: la unidad cambia la respuesta). (iv) Bajo el parche
+  de `snapshot.py:140`, las 25 filas con sesión objetivo incorrecta serían
+  todas `no_verificable_timing` (censo; corrige el «15» de la cola). (v)
+  **El juez lineal bajo D3 (EXPLORATORIO, dictamen: cifras sostienen, lectura
+  corregida, NO CONCLUYENTE):** sobre 262 filas / 37 días el control lineal
+  C1 supera a predecir cero en MAE (+0,39 [+0,05, +0,73]) pero no al campeón
+  sobre las mismas 254 filas (−0,17 [−0,38, +0,03], contiene el cero; allí el
+  campeón supera a cero +0,56 [+0,09, +1,03]) y **no sobrevive a R2**; los 16
+  features no traen magnitud detectable distinta de SOX(t, t−1).
 - **Octava corrida (2-sep):** el instrumento calibrado con verdad conocida
   (`calibracion_instrumento.md` v2) y su riesgo declarado (con dependencia
   entre días ρ = 0,2 el tamaño de la permutación sube a 0,061); la frase de

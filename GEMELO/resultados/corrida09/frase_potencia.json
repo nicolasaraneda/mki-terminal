@@ -1,0 +1,266 @@
+{
+ "fuentes": {
+  "horizonte": "2026-09-03T15:36:13.572630+00:00",
+  "potencia_por_metrica": "2026-09-02T18:59:47.809708+00:00"
+ },
+ "ancla": {
+  "hasta_sello": "2026-08-31",
+  "n": 246,
+  "dias": 35,
+  "ventaja_pp": 9.35,
+  "ic95_dia_pp": [
+   -7.2,
+   26.32
+  ],
+  "cadencia": 0.897
+ },
+ "direccion": {
+  "potencia_25oct": {
+   "9.0": [
+    0.301,
+    [
+     0.273,
+     0.33
+    ]
+   ],
+   "6.5": [
+    0.185,
+    [
+     0.162,
+     0.21
+    ]
+   ],
+   "5.0": [
+    0.134,
+    [
+     0.114,
+     0.157
+    ]
+   ]
+  },
+  "dias_para_0_80": {
+   "5.0": {
+    "dias": 811,
+    "rango_mc": [
+     759,
+     936
+    ],
+    "rango_semillas": [
+     799,
+     846
+    ],
+    "fecha": "2029-12-20",
+    "fecha_rango_mc": [
+     "2029-10-01",
+     "2030-07-03"
+    ]
+   },
+   "6.5": {
+    "dias": 510,
+    "rango_mc": [
+     467,
+     580
+    ],
+    "rango_semillas": [
+     505,
+     516
+    ],
+    "fecha": "2028-09-06",
+    "fecha_rango_mc": [
+     "2028-06-30",
+     "2028-12-25"
+    ]
+   },
+   "9.0": {
+    "dias": 263,
+    "rango_mc": [
+     229,
+     296
+    ],
+    "rango_semillas": [
+     252,
+     269
+    ],
+    "fecha": "2027-08-18",
+    "fecha_rango_mc": [
+     "2027-06-25",
+     "2027-10-08"
+    ]
+   },
+   "12.0": {
+    "dias": 141,
+    "rango_mc": [
+     130,
+     167
+    ],
+    "rango_semillas": [
+     141,
+     147
+    ],
+    "fecha": "2027-02-09",
+    "fecha_rango_mc": [
+     "2027-01-22",
+     "2027-03-22"
+    ]
+   }
+  },
+  "observado_ruta_E": {
+   "punto": 0.0935,
+   "ic95": [
+    -0.0779,
+    0.2649
+   ],
+   "ic95_percentil_dia": [
+    -0.069,
+    0.2653
+   ],
+   "z": 1.11,
+   "dias": 35,
+   "dias_para_0_80_al_efecto_observado": 223,
+   "dias_para_0_80_ic95": [
+    28,
+    Infinity
+   ],
+   "nota": "IC de los días propagado del IC del efecto; ∞ = el IC del efecto contiene el cero",
+   "dias_para_0_80_al_efecto_alternativo": {
+    "efecto": 0.0645,
+    "dias": 470
+   }
+  }
+ },
+ "magnitud": {
+  "MAE": {
+   "potencia_25oct_simulador_9pp": [
+    0.9,
+    [
+     0.871,
+     0.923
+    ]
+   ],
+   "dias_para_0_80_simulador": {
+    "dias": 58,
+    "ic95": [
+     54,
+     62
+    ],
+    "fecha": "2026-10-01",
+    "ic95_fecha": [
+     "2026-09-25",
+     "2026-10-08"
+    ]
+   },
+   "dias_para_0_80_al_efecto_observado": {
+    "dias": 96,
+    "ic95": [
+     20,
+     Infinity
+    ],
+    "fecha": "2026-12-01",
+    "ic95_fecha": [
+     "2026-08-27",
+     "∞"
+    ]
+   },
+   "efecto_observado": {
+    "punto": 0.4372,
+    "ic95_t_cluster": [
+     -0.0872,
+     0.9616
+    ],
+    "z": 1.69,
+    "dias": 35
+   },
+   "banda_73_dias": {
+    "generador_9pp": {
+     "potencia": 0.9,
+     "ic95": [
+      0.871,
+      0.923
+     ]
+    },
+    "efecto_observado": {
+     "potencia": 0.864,
+     "ic95": [
+      0.831,
+      0.891
+     ]
+    },
+    "efecto_bajo_R2": {
+     "potencia": 0.704,
+     "ic95": [
+      0.663,
+      0.742
+     ]
+    }
+   },
+   "R2": 175
+  },
+  "CRPS": {
+   "potencia_25oct_simulador_9pp": [
+    0.76,
+    [
+     0.721,
+     0.795
+    ]
+   ],
+   "dias_para_0_80_simulador": {
+    "dias": 83,
+    "ic95": [
+     74,
+     93
+    ],
+    "fecha": "2026-11-11",
+    "ic95_fecha": [
+     "2026-10-28",
+     "2026-11-25"
+    ]
+   },
+   "dias_para_0_80_al_efecto_observado": {
+    "dias": 88,
+    "ic95": [
+     19,
+     Infinity
+    ],
+    "fecha": "2026-11-18",
+    "ic95_fecha": [
+     "2026-08-27",
+     "∞"
+    ]
+   },
+   "efecto_observado": {
+    "punto": 0.2916,
+    "ic95_t_cluster": [
+     -0.0443,
+     0.6275
+    ],
+    "z": 1.76,
+    "dias": 35
+   },
+   "banda_73_dias": {
+    "generador_9pp": {
+     "potencia": 0.76,
+     "ic95": [
+      0.721,
+      0.795
+     ]
+    },
+    "efecto_observado": {
+     "potencia": 0.66,
+     "ic95": [
+      0.617,
+      0.7
+     ]
+    },
+    "efecto_bajo_R2": {
+     "potencia": 0.498,
+     "ic95": [
+      0.454,
+      0.542
+     ]
+    }
+   },
+   "R2": 200
+  }
+ },
+ "gatillo": "2026-10-25"
+}
