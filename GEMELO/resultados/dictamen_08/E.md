@@ -22,3 +22,8 @@
 **Exigidos:** (8) CRPS y MAE como una familia; (9) «predecir cero» no es la baseline pareada; (10) climatología y σ_pred en muestra; (11) factor de sub-cobertura del z; (12) anotar §17 y §18.
 
 **Lo que vale para las dos (E y F):** el README publica **+6,45 pp (rama sin deduplicar)** mientras la regla de dedup **firmada** da **+9,66 pp sobre la misma ventana**; y `cola_decisiones.md` §2a-ter tiene una tercera rama (+14,3). Cualquier cifra que dependa del tamaño del efecto está indeterminada por un factor ~5. Es más urgente que E y que F.
+
+
+---
+
+**Errata (3-sep-2026, novena corrida, dictamen sobre la enmienda V1-bis):** donde este dictamen dice que la constante μ recupera el «93 %» de la ganancia de MAE, la cifra no reproduce: la constante recupera el **7,2 %** (verificado por el adversario sobre n = 238) / 7,3 % (`potencia_por_metrica.md` v2). El 0,405 es lo que el modelo gana SOBRE la constante. Ya lo había anotado la bitácora 08 (15:03); queda también aquí, al pie del documento que la cifra habita.

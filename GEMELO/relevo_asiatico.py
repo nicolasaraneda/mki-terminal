@@ -212,6 +212,28 @@ REGISTRO_INTENTOS = (
     # modelo —no lleva tupla porque el registro no admite n = 0 (test)—; la
     # elección del estimador de IC tras ver la cobertura es un eje declarado
     # en bifurcaciones.NO_EJES, no un intento (dictamen_08/A.md).
+    # --- novena corrida (3-sep-2026), convención confirmada por D2 (§28) ---
+    (14, "DEUDA-2f", "IC de ΔMAE del WS2b recomputados por clúster de día (6 pares) + 4 «vs cero» "
+                     "+ 4 re-mediciones del campeón con/sin las 8 filas del 29-jul (Q5)",
+     "GEMELO/resultados/corrida09/ic_dmae_recomputados.md; ws4_cinco_preguntas.md"),
+    (7, "TARJ-2d", "particiones retrospectivas del campeón con intervalo de día: abstención A / B19 / B20:30, "
+                   "sólo-B19, dedup=False sin A, y la cifra viva bajo la reconstrucción (tarjetas 1 y 4)",
+     "GEMELO/resultados/corrida09/tarjetas_09.md §Cierre del frente, punto (b)"),
+    (1, "ENM-1c", "enmienda V1-bis: elección de la familia de endpoint (magnitud) tras medir tres z sobre la ventana sellada "
+                  "(dictamen del adversario, 3-sep)",
+     "GEMELO/preregistro/enmienda_v1bis.md §6"),
+    (1, "TIPO1-1c", "estadístico candidato nuevo: la conjunción MAE ∧ CRPS (y MAE ∧ DIR) como regla de entrada, "
+                    "medida bajo la nula con el simulador calibrado",
+     "GEMELO/resultados/corrida09/tipo1_conjuncion_v1bis.json; GEMELO/preregistro/enmienda_v1bis.md §2"),
+    (1, "HOR-1b", "configuración nueva del instrumento de potencia: ruta 3 de horizonte.py (simulador calibrado, "
+                  "bisección sobre D); la elección de la ruta que manda se hizo tras el dictamen A, no tras un resultado",
+     "GEMELO/resultados/horizonte.md §Ruta 3; GEMELO/SECUENCIAL/horizonte.py:dias_para_80_simulador"),
+    (36, "JUEZ-3b", "juez lineal bajo D3: (C1, C2, campeón) × (MAE, CRPS, DIR) contra su vara + 3 pares × 3 métricas, "
+                    "en la ventana completa y bajo R2; declarados ANTES de correr (pre-registro §5)",
+     "GEMELO/preregistro/juez_lineal_d3.md §5; GEMELO/resultados/corrida09/juez_lineal_d3.md"),
+    (6, "ADV-3b", "dictamen del adversario sobre el juez: campeón sobre las 254 filas de C1 (MAE, CRPS), dos contrastes "
+                  "por bootstrap de bloques sobre medias diarias, dos con climatología por ticker",
+     "GEMELO/resultados/corrida09/juez_lineal_d3.md §Dictamen; GEMELO/preregistro/juez_lineal_d3.md §Trazabilidad"),
 )
 
 # EL número vigente. Se calcula, no se escribe.

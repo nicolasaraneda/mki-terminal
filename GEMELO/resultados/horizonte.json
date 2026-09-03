@@ -1,5 +1,5 @@
 {
- "generado_en_utc": "2026-09-02T13:37:57.423791+00:00",
+ "generado_en_utc": "2026-09-03T15:36:13.572630+00:00",
  "ancla": {
   "hasta_sello": "2026-08-31",
   "convencion": "excluir_cero",
@@ -72,7 +72,8 @@
    500,
    750,
    1000
-  ]
+  ],
+  "registro_intentos_al_correr": 310
  },
  "analitica": [
   {
@@ -406,6 +407,370 @@
    ]
   }
  ],
+ "simulador_calibrado": {
+  "parametros": {
+   "n_rep": 1000,
+   "n_rep_alfa": 3000,
+   "n_rep_biseccion": 600,
+   "semillas_biseccion": [
+    20260902,
+    20260903,
+    20260904
+   ],
+   "icc_objetivo": 0.3925,
+   "tolerancia_icc": "±0,005 sobre 3.000 días simulados (proceso.calibrar_c); a otra semilla el ICC del generador puede quedar ~0,01 fuera",
+   "generadores": {
+    "0.0": {
+     "b": 0.5156,
+     "c": 5.5312
+    },
+    "5.0": {
+     "b": 0.875,
+     "c": 5.1562
+    },
+    "6.5": {
+     "b": 0.9688,
+     "c": 4.9688
+    },
+    "9.0": {
+     "b": 1.1562,
+     "c": 4.6875
+    },
+    "12.0": {
+     "b": 1.375,
+     "c": 4.3125
+    }
+   },
+   "verdad_pp_por_generador": {
+    "0.0": -0.01,
+    "5.0": 5.04,
+    "6.5": 6.36,
+    "9.0": 8.97,
+    "12.0": 11.94
+   }
+  },
+  "potencia": [
+   {
+    "dias": 35,
+    "alfa_empirico": 0.037,
+    "alfa_ic95": [
+     0.031,
+     0.044
+    ],
+    "potencia_5.0pp": 0.073,
+    "potencia_5.0pp_ic95": [
+     0.058,
+     0.091
+    ],
+    "potencia_6.5pp": 0.098,
+    "potencia_6.5pp_ic95": [
+     0.081,
+     0.118
+    ],
+    "potencia_9.0pp": 0.171,
+    "potencia_9.0pp_ic95": [
+     0.149,
+     0.196
+    ],
+    "potencia_12.0pp": 0.266,
+    "potencia_12.0pp_ic95": [
+     0.24,
+     0.294
+    ]
+   },
+   {
+    "dias": 73,
+    "alfa_empirico": 0.048,
+    "alfa_ic95": [
+     0.041,
+     0.056
+    ],
+    "potencia_5.0pp": 0.134,
+    "potencia_5.0pp_ic95": [
+     0.114,
+     0.157
+    ],
+    "potencia_6.5pp": 0.185,
+    "potencia_6.5pp_ic95": [
+     0.162,
+     0.21
+    ],
+    "potencia_9.0pp": 0.301,
+    "potencia_9.0pp_ic95": [
+     0.273,
+     0.33
+    ],
+    "potencia_12.0pp": 0.493,
+    "potencia_12.0pp_ic95": [
+     0.462,
+     0.524
+    ]
+   },
+   {
+    "dias": 125,
+    "alfa_empirico": 0.044,
+    "alfa_ic95": [
+     0.037,
+     0.052
+    ],
+    "potencia_5.0pp": 0.166,
+    "potencia_5.0pp_ic95": [
+     0.144,
+     0.19
+    ],
+    "potencia_6.5pp": 0.272,
+    "potencia_6.5pp_ic95": [
+     0.245,
+     0.3
+    ],
+    "potencia_9.0pp": 0.508,
+    "potencia_9.0pp_ic95": [
+     0.477,
+     0.539
+    ],
+    "potencia_12.0pp": 0.746,
+    "potencia_12.0pp_ic95": [
+     0.718,
+     0.772
+    ]
+   },
+   {
+    "dias": 250,
+    "alfa_empirico": 0.053,
+    "alfa_ic95": [
+     0.046,
+     0.062
+    ],
+    "potencia_5.0pp": 0.344,
+    "potencia_5.0pp_ic95": [
+     0.315,
+     0.374
+    ],
+    "potencia_6.5pp": 0.512,
+    "potencia_6.5pp_ic95": [
+     0.481,
+     0.543
+    ],
+    "potencia_9.0pp": 0.783,
+    "potencia_9.0pp_ic95": [
+     0.756,
+     0.807
+    ],
+    "potencia_12.0pp": 0.965,
+    "potencia_12.0pp_ic95": [
+     0.952,
+     0.975
+    ]
+   },
+   {
+    "dias": 500,
+    "alfa_empirico": 0.051,
+    "alfa_ic95": [
+     0.044,
+     0.059
+    ],
+    "potencia_5.0pp": 0.571,
+    "potencia_5.0pp_ic95": [
+     0.54,
+     0.601
+    ],
+    "potencia_6.5pp": 0.794,
+    "potencia_6.5pp_ic95": [
+     0.768,
+     0.818
+    ],
+    "potencia_9.0pp": 0.974,
+    "potencia_9.0pp_ic95": [
+     0.962,
+     0.982
+    ],
+    "potencia_12.0pp": 1.0,
+    "potencia_12.0pp_ic95": [
+     0.996,
+     1.0
+    ]
+   },
+   {
+    "dias": 750,
+    "alfa_empirico": 0.053,
+    "alfa_ic95": [
+     0.045,
+     0.061
+    ],
+    "potencia_5.0pp": 0.754,
+    "potencia_5.0pp_ic95": [
+     0.726,
+     0.78
+    ],
+    "potencia_6.5pp": 0.933,
+    "potencia_6.5pp_ic95": [
+     0.916,
+     0.947
+    ],
+    "potencia_9.0pp": 0.999,
+    "potencia_9.0pp_ic95": [
+     0.994,
+     1.0
+    ],
+    "potencia_12.0pp": 1.0,
+    "potencia_12.0pp_ic95": [
+     0.996,
+     1.0
+    ]
+   },
+   {
+    "dias": 1000,
+    "alfa_empirico": 0.054,
+    "alfa_ic95": [
+     0.046,
+     0.063
+    ],
+    "potencia_5.0pp": 0.857,
+    "potencia_5.0pp_ic95": [
+     0.834,
+     0.877
+    ],
+    "potencia_6.5pp": 0.98,
+    "potencia_6.5pp_ic95": [
+     0.969,
+     0.987
+    ],
+    "potencia_9.0pp": 1.0,
+    "potencia_9.0pp_ic95": [
+     0.996,
+     1.0
+    ],
+    "potencia_12.0pp": 1.0,
+    "potencia_12.0pp_ic95": [
+     0.996,
+     1.0
+    ]
+   }
+  ],
+  "dias_para_0_80": {
+   "5.0": {
+    "dias": 811,
+    "rango_semillas": [
+     799,
+     846
+    ],
+    "ic_mc": [
+     759,
+     936
+    ],
+    "n_rep": 600,
+    "semillas": [
+     20260902,
+     20260903,
+     20260904
+    ],
+    "nota": "sólo error de Monte Carlo; sin incertidumbre paramétrica (b, c, ICC, SE de día): ver ruta 1",
+    "fecha_estimada": "2029-12-20",
+    "fecha_rango_mc": [
+     "2029-10-01",
+     "2030-07-03"
+    ]
+   },
+   "6.5": {
+    "dias": 510,
+    "rango_semillas": [
+     505,
+     516
+    ],
+    "ic_mc": [
+     467,
+     580
+    ],
+    "n_rep": 600,
+    "semillas": [
+     20260902,
+     20260903,
+     20260904
+    ],
+    "nota": "sólo error de Monte Carlo; sin incertidumbre paramétrica (b, c, ICC, SE de día): ver ruta 1",
+    "fecha_estimada": "2028-09-06",
+    "fecha_rango_mc": [
+     "2028-06-30",
+     "2028-12-25"
+    ]
+   },
+   "9.0": {
+    "dias": 263,
+    "rango_semillas": [
+     252,
+     269
+    ],
+    "ic_mc": [
+     229,
+     296
+    ],
+    "n_rep": 600,
+    "semillas": [
+     20260902,
+     20260903,
+     20260904
+    ],
+    "nota": "sólo error de Monte Carlo; sin incertidumbre paramétrica (b, c, ICC, SE de día): ver ruta 1",
+    "fecha_estimada": "2027-08-18",
+    "fecha_rango_mc": [
+     "2027-06-25",
+     "2027-10-08"
+    ]
+   },
+   "12.0": {
+    "dias": 141,
+    "rango_semillas": [
+     141,
+     147
+    ],
+    "ic_mc": [
+     130,
+     167
+    ],
+    "n_rep": 600,
+    "semillas": [
+     20260902,
+     20260903,
+     20260904
+    ],
+    "nota": "sólo error de Monte Carlo; sin incertidumbre paramétrica (b, c, ICC, SE de día): ver ruta 1",
+    "fecha_estimada": "2027-02-09",
+    "fecha_rango_mc": [
+     "2027-01-22",
+     "2027-03-22"
+    ]
+   }
+  },
+  "comparacion_pareada_con_ruta_2": {
+   "celdas": 28,
+   "ruta2_por_encima": 23,
+   "ruta2_por_debajo": 1,
+   "mcnemar_exacto_p": 3e-06,
+   "ruta2_menos_simulador_pp_media": 2.17,
+   "ic95_pp": [
+    1.55,
+    2.81
+   ],
+   "celdas_en_techo": [
+    "δ=9.0 D=500",
+    "δ=12.0 D=500",
+    "δ=9.0 D=750",
+    "δ=12.0 D=750",
+    "δ=6.5 D=1000",
+    "δ=9.0 D=1000",
+    "δ=12.0 D=1000"
+   ],
+   "subconjunto_A4_12_celdas": {
+    "celdas": 12,
+    "ruta2_menos_simulador_pp_media": 2.45,
+    "ic95_pp": [
+     1.64,
+     3.27
+    ]
+   },
+   "nota": "el IC del bootstrap sobre celdas es DESCRIPTIVO (las celdas comparten generador y semilla), no inferencial"
+  }
+ },
  "cadencia": {
   "sellos_por_dia_habil": 0.897,
   "wilson95": [

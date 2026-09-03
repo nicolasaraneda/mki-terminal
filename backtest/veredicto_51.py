@@ -90,7 +90,12 @@ FECHAS_GATE = (date(2024, 10, 15), date(2024, 12, 10), date(2025, 2, 11),
 # registro, con la convención declarada allí (por intervalo publicado en los
 # frentes empíricos). El salto es grande a propósito: bajar N es lo único que
 # el DSR no perdona.
-N_INTENTOS_PREVIO = 286
+# 2026-09-03 (novena corrida): 286 -> 310 con los tramos DEUDA-2f (14),
+# TARJ-2d (7), ENM-1c (1), TIPO1-1c (1) y HOR-1b (1) del registro, bajo la
+# convención que D2 confirmó (cola §28), y 310 -> 346 con JUEZ-3b (36,
+# declarados ANTES de correr el juez lineal bajo D3; bitacora_09.md), y
+# 346 -> 352 con ADV-3b (6: lo que el adversario computó para dictaminar).
+N_INTENTOS_PREVIO = 352
 # Esta corrida vuelve a mirar las SEIS baselines sobre la MISMA ventana con
 # el arnés CORREGIDO. Se podría argumentar que sólo B4 y B5 cambian de
 # cifra —el arreglo de B-1 toca las features de noticias y el de B-2 no
@@ -100,7 +105,7 @@ N_INTENTOS_PREVIO = 286
 # los resultados, o sea DESPUÉS, que es justo lo que el conteo declarado
 # existe para impedir.
 N_INTENTOS_NUEVOS = 6
-N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 292 (2-sep-2026, cierre de la octava; era 106 con el registro en 100)
+N_INTENTOS_51 = N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS      # 358 (3-sep-2026, novena; era 292 al cierre de la octava y 106 con el registro en 100)
 # La banda conserva los cortes históricos para que las corridas se comparen
 # columna a columna. 2026-09-02 (séptima corrida): los N históricos dejan de
 # ser enteros sueltos dentro de la tupla —el patrón que la acta §70 vio
