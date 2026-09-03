@@ -1,0 +1,24 @@
+--- a/snapshot.py
++++ b/snapshot.py
+@@ -137,7 +137,20 @@
+             t = fila["Ticker"]
+             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")
+             try:
+-                sesion_obj, _, _ = calendarios.proxima_sesion_despues_de(exchange, ahora_utc)
++                # Parche snapshot140 (corrida 09): la sesión objetivo se ancla
++                # en `available_at` (cuándo era conocible el insumo: cierre UTC
++                # del SOX usado), NUNCA en el reloj de pared del proceso. Con
++                # `ahora_utc` un sello tardío que cruza medianoche/01h UTC
++                # salta a la sesión siguiente porque la asiática ya abrió.
++                # `timestamp_utc` sigue siendo el reloj de pared: es el
++                # instante real de emisión, y la regla maestra del verificador
++                # lo compara contra la apertura de la sesión elegida aquí. Si
++                # no hubo sox_fecha, available_at == ts_emision y el resultado
++                # es idéntico al anterior. Expediente:
++                # GEMELO/resultados/parche_snapshot140.md y
++                # GEMELO/resultados/corrida09/parche_snapshot140_tabla.md.
++                sesion_obj, _, _ = calendarios.proxima_sesion_despues_de(
++                    exchange, datetime.fromisoformat(available_at))
+             except Exception:
+                 continue
+             predicciones.append({

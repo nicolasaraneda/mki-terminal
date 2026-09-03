@@ -232,3 +232,23 @@ esos 30 días son la ventana que R2 elimina. `MINIMO_DIAS_SHARPE = 60` sigue
 vigente con esa justificación nueva y con su origen declarado (umbral
 introducido después de ver el 1,0000): es hoy lo único que separa a estas
 tres configuraciones de un titular «V5 superado», y se dice con esas palabras.
+
+---
+**Errata (3-sep-2026, corrida 09, Frente 2f).** Tres cosas de este reporte
+están superadas y se dejan escritas aquí sin tocar las cifras originales:
+1. La columna «IC 95%» de la tabla de pares está en la escala del **Sharpe**
+   de la diferencia, no en pp (DECISIONES.md §34.9). Recomputar los IC de
+   este reporte exige el OHLC del campeón, que `ventana_larga.py:94` baja sin
+   caché: quedó **NO EVALUABLE** sin red; el método y los IC del WS2b están en
+   `GEMELO/resultados/corrida09/ic_dmae_recomputados.md`.
+2. La sección «La contaminación por revisión, medida» (91,4 % / 17 filas / 8,6 %)
+   está **refutada**: era un artefacto del join por sesión de calendario en
+   vez de por `sesion_objetivo` sellada; alineando bien, las 223 filas
+   reproducen con desviación 0,00 % (`auditoria_ws3.md`, Amenaza 7;
+   DECISIONES.md §33.4). El código ya lo mide correctamente
+   (`ventana_larga.py`, docstring de la función de contaminación); la tabla
+   de arriba es la salida anterior y queda como errata.
+3. El **+15,9 pp** de la fila CAMPEON no aplica la convención congelada
+   `excluir_cero` de la §2.8; bajo ella es **+15,66 pp** sobre 14.618 filas
+   (`auditoria_ws3.md`, tabla de convenciones; DECISIONES.md §33.1), que es lo
+   que el README publica.

@@ -10,7 +10,7 @@ import json
 import os
 import re
 import sqlite3
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import feedparser
 
@@ -206,8 +206,32 @@ def init_db() -> None:
     columnas_analisis = {f[1] for f in conn.execute("PRAGMA table_info(analisis)").fetchall()}
     if "relevancia" not in columnas_analisis:
         conn.execute("ALTER TABLE analisis ADD COLUMN relevancia REAL")
+    _asegurar_tabla_meta(conn)
     conn.commit()
     conn.close()
+
+
+# ------------------------------------------------------------
+# Tabla meta (corrida 09, 3-sep-2026): marcas de proceso de la propia base.
+# Aditiva e idempotente: CREATE IF NOT EXISTS, nunca altera tablas existentes.
+# ------------------------------------------------------------
+def _asegurar_tabla_meta(conn) -> None:
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS meta (
+            clave TEXT PRIMARY KEY,
+            valor TEXT NOT NULL
+        )
+    """)
+
+
+def _leer_meta(conn, clave: str):
+    fila = conn.execute("SELECT valor FROM meta WHERE clave = ?", (clave,)).fetchone()
+    return fila[0] if fila else None
+
+
+def _escribir_meta(conn, clave: str, valor) -> None:
+    conn.execute("INSERT OR REPLACE INTO meta (clave, valor) VALUES (?, ?)",
+                 (clave, str(valor)))
 
 
 # ------------------------------------------------------------
@@ -270,14 +294,121 @@ def _guardar_titular(conn, fecha, fuente, titular, url, tickers_hint,
         return False
 
 
-def migrar_noticias_v2() -> dict:
-    """Limpieza retroactiva Etapa 4.6 (idempotente):
-    1) Regraba la columna tickers de TODOS los titulares con matching estricto
-       de entidad (el hint del feed de origen deja de existir hacia atrás).
-    2) Deduplica por similitud de titular (difflib > 0.85 sobre normalizados),
-       conservando la entrada más antigua y borrando las réplicas con su análisis.
-    Devuelve {"retagueados": n, "duplicados_borrados": m}."""
+# Deduplicación retroactiva incremental (corrida 09, 3-sep-2026).
+# Hasta el 2-sep `migrar_noticias_v2` comparaba CADA titular contra TODO el
+# historial en cada corrida: O(n²) con n = filas totales, ~7.16e-5·n² s
+# (acta §73, GEMELO/resultados/parche_timeout_noticias.md §b). El 1-sep
+# systemd mató el job a los 1800 s. Ahora:
+#   - una marca en `meta` (`dedup_retro_ultimo_id`) recuerda hasta qué id ya
+#     se procesó; solo las filas con id mayor son candidatas;
+#   - cada candidata se compara SOLO con las filas cuya fecha cae dentro de
+#     ±VENTANA_DEDUP_RETRO_DIAS de la suya (misma ventana que el dedup de
+#     inserción en `actualizar_titulares`), preservando "el más antiguo
+#     sobrevive" en las dos direcciones;
+#   - costo por corrida ≈ candidatas × filas_en_ventana: no crece con n.
+# Cambio de comportamiento DECLARADO: un duplicado que reaparece más de
+# VENTANA_DEDUP_RETRO_DIAS días después de su original ya no se detecta
+# (tests/test_noticias_dedup_lineal.py lo documenta como caso declarado).
+# Primera corrida sin marca: TODAS las filas son candidatas (una pasada por
+# ventanas sobre el historial, lineal en n); desde la segunda, solo las nuevas.
+VENTANA_DEDUP_RETRO_DIAS = 10
+_META_DEDUP_ULTIMO_ID = "dedup_retro_ultimo_id"
+_META_DEDUP_CORRIDO_EN = "dedup_retro_corrido_en"
+
+
+def _desplazar_fecha_iso(fecha: str, dias: int) -> str:
+    """fecha ± dias como texto comparable con la columna `fecha` (ISO 8601,
+    el formato que escribe `_fecha_entrada`). Si no parsea, ventana nula."""
+    try:
+        return (datetime.fromisoformat(fecha) + timedelta(days=dias)).isoformat()
+    except (ValueError, TypeError):
+        return fecha
+
+
+def _deduplicar_retro_incremental(conn) -> dict:
+    """Núcleo del dedup retroactivo. No commitea: el llamador decide.
+    Devuelve {"candidatos", "comparaciones", "duplicados_borrados", "primera_corrida"}."""
     import difflib
+    from bisect import bisect_left, bisect_right
+
+    _asegurar_tabla_meta(conn)
+    marca = _leer_meta(conn, _META_DEDUP_ULTIMO_ID)
+    primera = marca is None
+    # Sin marca (primera corrida) TODAS las filas son candidatas: una pasada
+    # completa por ventanas, O(n × filas_en_ventana) — lineal en n —, sin
+    # asumir nada sobre migraciones anteriores. Medido sobre copia de la base
+    # real (n=5286): ver GEMELO/resultados/corrida09/noticias_on2.md.
+    ultimo_id = -1 if primera else int(marca)
+
+    filas = conn.execute(
+        "SELECT id, fecha, titular FROM titulares ORDER BY fecha ASC, id ASC").fetchall()
+    if not filas:
+        return {"candidatos": 0, "comparaciones": 0, "duplicados_borrados": 0,
+                "primera_corrida": primera}
+    ids = [f[0] for f in filas]
+    fechas = [f[1] for f in filas]
+    normalizados = [_normalizar_titular(f[2]) for f in filas]
+    vivo = [bool(n) for n in normalizados]  # vacíos: ni se comparan ni cuentan como vistos
+    es_candidata = [id_ > ultimo_id for id_ in ids]
+
+    comparaciones = 0
+    duplicados = set()
+
+    def similar(a, b):
+        return difflib.SequenceMatcher(None, a, b).ratio() > UMBRAL_SIMILITUD_DUP
+
+    for i, (id_, fecha, norm) in enumerate(zip(ids, fechas, normalizados)):
+        if not es_candidata[i] or not vivo[i]:
+            continue
+        # (1) contra las anteriores vivas dentro de la ventana: si hay una, la
+        #     candidata es la réplica (el más antiguo sobrevive).
+        lo = bisect_left(fechas, _desplazar_fecha_iso(fecha, -VENTANA_DEDUP_RETRO_DIAS))
+        es_dup = False
+        for j in range(lo, i):
+            if not vivo[j]:
+                continue
+            comparaciones += 1
+            if similar(norm, normalizados[j]):
+                es_dup = True
+                break
+        if es_dup:
+            duplicados.add(id_)
+            vivo[i] = False
+            continue
+        # (2) contra las posteriores YA PROCESADAS dentro de la ventana: una
+        #     candidata con fecha más antigua desplaza a la réplica posterior,
+        #     igual que hacía la migración completa. Las posteriores candidatas
+        #     se resuelven solas cuando les toque el paso (1).
+        hi = bisect_right(fechas, _desplazar_fecha_iso(fecha, VENTANA_DEDUP_RETRO_DIAS))
+        for j in range(i + 1, hi):
+            if not vivo[j] or es_candidata[j]:
+                continue
+            comparaciones += 1
+            if similar(norm, normalizados[j]):
+                duplicados.add(ids[j])
+                vivo[j] = False
+
+    for id_ in sorted(duplicados):
+        conn.execute("DELETE FROM analisis WHERE titular_id = ?", (id_,))
+        conn.execute("DELETE FROM titulares WHERE id = ?", (id_,))
+    # La marca nunca retrocede: un id borrado no vuelve (AUTOINCREMENT).
+    _escribir_meta(conn, _META_DEDUP_ULTIMO_ID, max(max(ids), ultimo_id))
+    _escribir_meta(conn, _META_DEDUP_CORRIDO_EN, datetime.now(timezone.utc).isoformat())
+    return {"candidatos": sum(es_candidata), "comparaciones": comparaciones,
+            "duplicados_borrados": len(duplicados), "primera_corrida": primera}
+
+
+def migrar_noticias_v2() -> dict:
+    """Limpieza retroactiva Etapa 4.6 (idempotente), incremental desde la
+    corrida 09 (3-sep-2026):
+    1) Regraba la columna tickers de TODOS los titulares con matching estricto
+       de entidad (O(n) y barato: 0.13 s con n=5286, medido — sigue global).
+    2) Deduplica por similitud de titular (difflib > 0.85 sobre normalizados)
+       SOLO las filas nuevas desde la última marca, cada una contra su ventana
+       de ±VENTANA_DEDUP_RETRO_DIAS días; conserva la entrada más antigua y
+       borra las réplicas con su análisis. Ver `_deduplicar_retro_incremental`.
+    Devuelve {"retagueados": n, "duplicados_borrados": m, "candidatos": c,
+    "comparaciones": k, "primera_corrida": bool}."""
     init_db()
     conn = get_connection()
 
@@ -290,29 +421,11 @@ def migrar_noticias_v2() -> dict:
                          (estrictos, id_))
             retagueados += 1
 
-    filas = conn.execute(
-        "SELECT id, titular FROM titulares ORDER BY fecha ASC, id ASC").fetchall()
-    vistos = []  # titulares normalizados ya aceptados — el más antiguo sobrevive
-    duplicados = []
-    for id_, titular in filas:
-        normalizado = _normalizar_titular(titular)
-        if not normalizado:
-            continue
-        es_dup = any(
-            difflib.SequenceMatcher(None, normalizado, previo).ratio() > UMBRAL_SIMILITUD_DUP
-            for previo in vistos
-        )
-        if es_dup:
-            duplicados.append(id_)
-        else:
-            vistos.append(normalizado)
-    for id_ in duplicados:
-        conn.execute("DELETE FROM analisis WHERE titular_id = ?", (id_,))
-        conn.execute("DELETE FROM titulares WHERE id = ?", (id_,))
+    dedup = _deduplicar_retro_incremental(conn)
 
     conn.commit()
     conn.close()
-    return {"retagueados": retagueados, "duplicados_borrados": len(duplicados)}
+    return {"retagueados": retagueados, **dedup}
 
 
 def limpiar_titulares_irrelevantes() -> int:
@@ -348,7 +461,7 @@ def actualizar_titulares() -> int:
     """Descarga RSS de Yahoo Finance (por ticker) y Google News (por empresa/sector).
     Guarda los titulares nuevos en SQLite. Devuelve cuántos titulares nuevos se agregaron."""
     init_db()
-    migrar_noticias_v2()  # idempotente: asegura matching estricto y dedup retroactivos
+    migrar_noticias_v2()  # idempotente e incremental: matching estricto + dedup retroactivo por ventana
     conn = get_connection()
     nuevos = 0
 

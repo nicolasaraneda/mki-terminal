@@ -178,3 +178,15 @@ esos 30 días son la ventana que R2 elimina. `MINIMO_DIAS_SHARPE = 60` sigue
 vigente con esa justificación nueva y con su origen declarado (umbral
 introducido después de ver el 1,0000): es hoy lo único que separa a estas
 tres configuraciones de un titular «V5 superado», y se dice con esas palabras.
+
+---
+**Errata (3-sep-2026, corrida 09, Frente 2f).** La columna «IC 95%» de la
+tabla de pares acompaña un `delta_mae` en pp con el intervalo del **Sharpe**
+de la diferencia (`inferencia.bootstrap_bloques`), no con el IC de la media:
+son escalas distintas (DECISIONES.md §34.9). Las cifras de arriba se dejan
+como se publicaron. Los IC en la escala correcta, recomputados por bootstrap
+de clúster de día, están en
+`GEMELO/resultados/corrida09/ic_dmae_recomputados.md`: el par completo
+`C1 vs CAMPEON` reproduce y ningún veredicto `ic_excluye_cero` cambia; los
+pares con C2/C3 solo pudieron recomputarse sobre 79 de las 215 filas
+(`^VIX3M` sin datos desde el 17-jul en la caché local; sin red esta noche).

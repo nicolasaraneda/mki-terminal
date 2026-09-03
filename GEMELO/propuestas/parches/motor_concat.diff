@@ -1,0 +1,29 @@
+--- a/motor.py
++++ b/motor.py
+@@ -182,7 +182,7 @@
+     cadena = datos_cadena_al(fecha)
+     if len(cadena["series_nivel"]) < 3:
+         return None
+-    serie = pd.concat(cadena["series_nivel"].values(), axis=1).mean(axis=1).dropna() * 100
++    serie = pd.concat(cadena["series_nivel"].values(), axis=1, sort=True).mean(axis=1).dropna() * 100
+     if len(serie) <= 60:
+         return None
+     percentil = float((serie.tail(252) <= serie.iloc[-1]).mean() * 100)
+@@ -212,7 +212,7 @@
+             regresores.append(fx[par_fx].pct_change().rename("fx"))
+     if not regresores:
+         return ret_accion - ret_accion.mean()
+-    df = pd.concat([ret_accion.rename("y")] + regresores, axis=1).dropna()
++    df = pd.concat([ret_accion.rename("y")] + regresores, axis=1, sort=True).dropna()
+     if len(df) < 60:
+         return ret_accion - ret_accion.mean()
+     X = df.drop(columns=["y"])
+@@ -295,7 +295,7 @@
+     for t in MERCADOS_POR_ABRIR:
+         if t not in ret_acc.columns:
+             continue
+-        par = pd.concat([ret_acc[t], ret_sox.shift(1)], axis=1).dropna().tail(ventana)
++        par = pd.concat([ret_acc[t], ret_sox.shift(1)], axis=1, sort=True).dropna().tail(ventana)
+         if len(par) < 40:
+             continue
+         y, x = par.iloc[:, 0], par.iloc[:, 1]

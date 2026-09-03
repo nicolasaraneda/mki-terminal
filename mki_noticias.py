@@ -61,6 +61,17 @@ def main() -> int:
     _log(f"mki_noticias.py — gasto hoy {estado['gasto_usd']:.4f} / "
          f"tope {estado['tope_usd']:.2f} USD")
 
+    # 0) dedup retroactivo incremental, medido y en el log (corrida 09: la
+    #    versión O(n²) de esta fase mató el job por timeout el 1-sep).
+    #    actualizar_titulares() lo vuelve a llamar: la segunda pasada no
+    #    tiene candidatas y cuesta cero comparaciones.
+    try:
+        t0 = time.perf_counter()
+        dedup = noticias.migrar_noticias_v2()
+        _log(f"dedup retroactivo: {dedup} en {time.perf_counter() - t0:.1f}s")
+    except Exception as e:
+        _log(f"dedup retroactivo falló: {enmascarar_secretos(str(e))}")
+
     # 1) RSS (gratis) con reintento breve
     nuevos = None
     for intento in (1, 2):
