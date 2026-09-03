@@ -73,3 +73,18 @@ ZONAS CIEGAS
 Nunca escribas "no se detectó fuga" a secas. Escribe qué probaste, con qué
 comando, y qué queda fuera del alcance de esa prueba. Un auditor que no puede
 nombrar sus zonas ciegas no auditó.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «Fugas que no son de tiempo». Cada
+regla cita el incidente que la originó.*
+
+### Fugas que no son de tiempo
+
+**Fuga de disponibilidad.** Un dato que estaba disponible al sellar y ya no está en la fuente (incidente: Yahoo retiró la sesión del 28-ago) no es un retorno cambiado, es una fila que la verificación tardía no puede reproducir. Exigí que toda verificación distinga "emitido antes" de "reproducible después", y que el campeón cuando sello y fuente discrepan sea el que Nicolás firmó, no el que conviene.
+
+**Fuga de calendario.** Feriados de NY y de cada exchange, cambios de horario de verano, sesiones acortadas. Para cada feature, pedí la prueba de que el "cierre de NY anterior" es el cierre anterior real y no el de dos días atrás rellenado.
+
+**Fuga por el propio modelo.** Si una condición que "predice" algo es aritmética del modelo (incidente: las condiciones que predecían los bloques eran β por el movimiento del SOX), no es información nueva. Pedí que todo análisis de mecanismo se haga sobre retornos crudos sin pasar por el motor.
+
+**Fuga por el analista.** Los features de un retador los diseña alguien que ya vio la ventana sellada. Anotalo como zona ciega declarada en cada dictamen sobre GEMELO; la única defensa es el sellado en vivo.

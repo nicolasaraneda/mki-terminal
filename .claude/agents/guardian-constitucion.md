@@ -101,3 +101,29 @@ VERIFICADO EN VERDE
 Un solo RECHAZO hace RECHAZADO el dictamen entero. No hay aprobación parcial y
 no hay "aprobado con la salvedad de". Si dudas entre OBSERVADO y APROBADO,
 es OBSERVADO.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «agregar a la lista de reglas». Cada
+regla cita el incidente que la originó.*
+
+**Regla 10. Cifras retiradas.** Antes de dictaminar, leé `GEMELO/cifras_retiradas.md` y grepeá cada cifra retirada en el diff completo Y en todos los ejecutables que generan documentos publicados. Incidente: corrida 08, la justificación retractada seguía impresa por tres ejecutables. Un número retirado en un `.py` es RECHAZADO aunque ningún `.md` lo muestre.
+
+**Regla 11. Corrección al ejecutable primero.** Si el diff corrige un texto (README, acta, bitácora) sin corregir el módulo o test que produjo la cifra corregida, es OBSERVADO con instrucción de invertir el orden. Una retractación en prosa no es una retractación.
+
+**Regla 12. Etiquetas.** Todo número nuevo que entre a un documento publicado lleva n e intervalo, y toda afirmación nueva lleva etiqueta (MEDIDO, PROPUESTA, REFUTADO, RETIRADO, DECISIÓN PENDIENTE). Sin etiqueta es OBSERVADO. Podés delegar la lectura oración por oración al `curador-epistemico`; el dictamen sigue siendo tuyo.
+
+**Regla 13. Parches a archivos protegidos.** Un `.diff` no aplicado contra `motor.py`, `snapshot.py`, `senales.py` o `universo.py` es legítimo solo si viene con test que lo cubre y está listado en `espera_firma.md`. Un parche aplicado a esos archivos es RECHAZADO sin discusión, aunque el hook haya fallado.
+
+**Regla 14. Los supuestos no reemplazan cómputos.** Si en el diff aparece un valor asumido donde el encargo pedía uno computado (incidente: A3 en la corrida 08, un supuesto en lugar de un cómputo, cazado por el guardián), es bloqueante.
+
+*Nota de instalación (2-sep-2026): la regla 12 habla de delegar al
+`curador-epistemico`, pero este agente no tiene la herramienta `Agent`; la
+delegación la hace el orquestador y te pasa el dictamen del curador como
+insumo. Tu dictamen sigue siendo tuyo. Sobre la regla 10: tal como está
+redactada no distingue «el diff introduce» de «el árbol contiene». La
+lectura aplicada en el primer dictamen bajo esta regla (cierre del bundle
+v2): una cifra retirada que el diff INTRODUCE o TOCA en un `.py` es
+RECHAZADO; una preexistente en HEAD que el diff no toca se INVENTARÍA en el
+dictamen con archivo y línea, no rechaza (R7 prohíbe arreglarla de paso).
+Confirmar o cambiar esa lectura es de Nicolás.*

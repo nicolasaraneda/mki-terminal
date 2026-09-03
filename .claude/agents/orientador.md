@@ -73,3 +73,28 @@ CONTRADICCIONES O DESACTUALIZACIONES
 - Si te preguntan por una decisión específica ("por qué no igualamos el
   intérprete"), busca el acta y **cita la fecha y el razonamiento original**,
   no lo reconstruyas de memoria.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «agregar a la lista de lo que
+devuelve».*
+
+Además de lo que ya devolvés, siempre estas cinco líneas leídas de la máquina, nunca de los documentos:
+- rama del efecto vigente y su cifra con n e intervalo, desde el árbitro;
+- conteo de intentos del DSR vigente;
+- número de verdes de la última suite y fecha;
+- cifras retiradas en el último mes;
+- lo que espera firma de Nicolás, en orden de urgencia según `espera_firma.md`, con cuántos días lleva esperando cada ítem.
+
+Leé también `GEMELO/resultados/calibracion_instrumento.md` y la última bitácora completa.
+
+*Nota de instalación (2-sep-2026): el árbitro es `cifras.py` (`sellada()`
+para la rama publicada; la rama deduplicada se computa con
+`backtest.linea_base.cargar(dedup=True)`); el conteo de intentos vive en
+`GEMELO.relevo_asiatico.N_INTENTOS_ACUMULADO` y en
+`backtest.veredicto_51.N_INTENTOS_51`; las cifras retiradas en
+`GEMELO/cifras_retiradas.md` con fecha por fila. El «número de verdes de la
+última suite» no está registrado en ningún artefacto que la máquina produzca
+(el badge del README se escribe a mano): reportá la última cifra escrita en
+la bitácora o acta más reciente, con su fecha, y decí que es de documento y
+no de máquina.*

@@ -7568,3 +7568,148 @@ B a F, propuestas H1/H2/I, el registro de intentos— vive en `GEMELO/` y en
 las cinco tuplas nuevas de `REGISTRO_INTENTOS`, sin efecto sobre
 `senales.db`, sobre ningún módulo de producción ni sobre ninguna cifra
 sellada.
+
+## 76. Bundle de agentes v2: entra el curador epistémico, sale el escriba, siete mandatos ampliados desde incidentes, y una suite de regresión que los ocho pasan
+
+**Fecha:** 2-sep-2026 (sesión aparte, anterior al encargo 09). Bitácora:
+`docs/bitacora_agentes_v2.md`. Manual: `docs/manual-agentes.md`.
+
+**Qué se decidió.** La maquinaria que juzga las corridas cambia antes de
+la próxima corrida, y cambia por incidentes concretos, no por gusto: (1)
+entra el agente `curador-epistemico` (solo lectura, `Read, Grep, Glob,
+Bash`, como los otros cinco de rigor), que exige etiqueta evidencial
+(MEDIDO, PROPUESTA, REFUTADO, RETIRADO, DECISIÓN PENDIENTE) en cada
+oración de un documento público y que la prosa no diga más que el
+árbitro; (2) sale `escriba-decisiones`, cuyo cuerpo entero se fusionó en
+la skill `/acta-decision` (estilo de la casa, cuatro formatos, pre-registro,
+dónde se escribe) y cuyo archivo se borró; el techo de ocho agentes se
+mantiene; (3) los siete agentes restantes reciben un bloque «Mandato
+ampliado (2-sep-2026)» al final, con el texto de `parches-mandato.md`
+verbatim y el incidente citado en cada regla; nada del texto anterior se
+borró; (4) el párrafo de `director-programa` que llamaba «hallazgo
+central» al decaimiento del efecto con la distancia queda tachado con la
+nota «derogado 2-sep, ver abajo» (REFUTADO en la octava corrida, Frente B);
+(5) existe `.claude/tests-agentes/`, un caso por agente de rigor con
+insumo, veredicto esperado y dictamen real, y la regla de que un agente
+que falla su caso no se da por instalado.
+
+**Por qué.** Cada parche tiene su incidente escrito en el propio agente:
+la justificación retractada impresa por tres ejecutables (Regla 10); la
+corrección en prosa sin tocar el módulo (Regla 11); el Sharpe anualizado
+en una varianza por período (el DSR aprobaba el 25 % de las réplicas bajo
+la nula); «0 de 192» que la nula produce el 75 % de las veces; el MDE
+contra el observado que el diseño no ordena, dos veces; la sesión del
+28-ago que la fuente retiró; «ejecutá la 5.1 con los criterios congelados»
+cuando el gatillo es uno de ellos; el encargo que citaba 86 intentos
+cuando la máquina decía 100; y el «hallazgo central» de agosto, una curva
+de cuatro puntos que circuló como hecho hasta que Hong Kong e India la
+refutaron. El escriba se retira por costo: un agente paga fichas en cada
+sesión por su `description`; una skill cuesta cero hasta que se invoca, y
+su procedimiento ya vivía ahí.
+
+**La suite de regresión, primera corrida: 8 de 8 (uno «con nota»).**
+Cada agente recibió el insumo pegado en el prompt con la orden de no leer
+el directorio de casos, dentro de la ventana de sello (nada pesado, solo
+lectura). Ninguno falló; ningún parche hubo que corregir. Tabla completa
+en la bitácora. El caso `guardian-prosa-primero` dio RECHAZADO en vez de
+OBSERVADO porque el agente corrió el detector del árbitro sobre el árbol
+real y cazó una reintroducción verdadera (abajo); la Regla 11 la aplicó
+como se esperaba. El curador, corrido sobre `ESTADO.md` y sobre esta acta
+antes del cierre, cazó una afirmación sin etiqueta en la nota de instalación
+del director («lo que ordena la ventaja por bolsa es la tasa base», que la
+fuente rotula NO CONCLUYENTE): corregida a PROPUESTA; y cazó que el
+«hallazgo central» derogado en el director **sigue publicado sin marca en
+`README.md:9-16` y `:36`**, el único documento que un lector externo lee. La
+errata al README es publicación y es de Nicolás; queda en «abierto». Los
+agentes también dejaron hallazgos colaterales
+reales, verificados y NO tocados (el encargo dice que el resto del repo
+queda intacto): `GEMELO/simulador/calibracion.py:536` emite la cifra
+retirada 0,36 [0,34, 0,37] con la palabra «optimista», que el detector no
+reconoce como marca de retiro; el verificador (`senales.py:334-354`) usa
+«la última barra que haya» y no la sesión anterior de calendario, con 2
+filas del 17-jul de gap de dos sesiones ya así al sellar; la cláusula §0.3
+de `docs/SEGUNDO_SELLO.md` expiró (las 16 filas del 28/31-ago están
+`verificada` y dentro de las métricas, la decimosexta desde el sello de
+esta noche); el patrón retirado del 3,47 pp es direccional y se esquiva
+con el verbo antes; `evaluacion.py` de la skill no tiene la guarda de
+unidad de `backtest/inferencia.py`; `ventana_larga.md` sigue publicando el
+91,4 % y la saturación en 1,0000 (retiradas) fuera de
+`DOCUMENTOS_PUBLICADOS`; `README.md:253` dice «Va en 25» contra 286;
+`calibracion_instrumento.md:12-13` dice 100/106 contra 286/292; y
+`mki-noticias` no completó el 2-sep (17:50, sin cierre, sin proceso; O(n²)
+declarado, parche esperando firma). El guardián del cierre agregó, por la
+Regla 10 sobre todos los `.py` rastreados, cuatro archivos más con cifra
+retirada sin marca, todos preexistentes en HEAD:
+`GEMELO/CONDICIONAL/condicional.py` (4 líneas), `GEMELO/ventana_larga.py:236`
+(«STALE» no es marca), `tests/test_control_lineal.py:234` y
+`tests/test_epistemico.py` (4 líneas).
+
+**La cláusula del encargo, aplicada al propio encargo.** El paso 4 pedía
+editar `contexto-mki.sh` y `guardia-reglas.py` (sólo agregando). El hook
+vigente se protege a sí mismo, `settings.json` deniega `Edit` sobre
+`.claude/hooks/`, y el harness denegó además la escritura por Bash desde
+la sesión. No se buscó otra vía: la barrera existe para eso. Las dos
+versiones nuevas viven en `GEMELO/propuestas/hooks/` como el vigente más
+un bloque cada una (0 líneas quitadas, verificado por `diff` y por
+`tests/test_hooks_propuestos.py`): el arranque lee de la máquina la rama
+del efecto con sus dos ramas computables (publicada sin dedup +6,5 pp
+n = 248 p 0,1849; dedup firmada +9,7 pp n = 238 p 0,0455), marcada
+DECISIÓN PENDIENTE, el conteo de intentos (286 en 28 tramos; 292 para la
+5.1) y los ítems que esperan firma (23 al medirlo; 24 con el §25 que esta
+misma tanda agregó); y el guardia gana el bloque 8,
+que deniega reintroducir una cifra retirada en `.md` y en `.py` (exentos
+el registro y los casos de regresión; un `.txt` o un heredoc por Bash no
+pasan por él, declarado; y evalúa sólo el texto nuevo del Edit/Write, no
+el archivo resultante, así que una marca de retiro que ya vive en el
+archivo no lo salva: falla hacia denegar, nunca hacia permitir, cazado por
+el guardián del cierre y declarado en el docstring). Reemplaza a la propuesta anterior
+`guardia-cifras-retiradas.py`, que cubría sólo tres `.md` y exigía un
+segundo comando en `settings.json`. Instalación: `bash
+GEMELO/propuestas/hooks/instalar.sh`, de Nicolás. Un segundo choque: un
+script que escribía en `.claude/agents/` fue bloqueado por el clasificador;
+se hizo con `Write`/`Edit` directos, que dejan el diff a la vista.
+
+**Qué se descartó y por qué.** Quitar `Bash` al curador: los agentes de
+solo lectura del bundle lo llevan y el curador tiene que consultar el
+árbitro. Corregir de paso las `description` rancias de
+`guardian-constitucion` («rama migracion-wsl») y de `ingeniero-plataforma`
+(«switch a medias»), o agregar el curador a `CLAUDE.md`: el encargo
+prohíbe borrar texto de un agente y pide el resto del repo intacto; quedan
+anotadas. Arreglar cualquiera de los doce hallazgos colaterales de la
+bitácora: son de otra tanda y varios tocan `senales.py` o cifras
+publicadas. Añadir un
+chequeo de cifras retiradas sobre comandos Bash: los `grep` por una cifra
+retirada son legítimos y lo dispararían.
+
+**Qué queda abierto.** La errata fechada al README por el «hallazgo
+central» refutado (`README.md:9-16` y `:36`), y la misma corrección en
+`estado_epistemico.md:74-75`, que atribuye al efecto un «factor ~5» que es
+de los días para potencia 0,80 (las ramas difieren 2,2×), ambas publicación
+y de Nicolás; la instalación de los hooks (Nicolás; registrada como
+`espera_firma.md` §25 a pedido del guardián, para que el `orientador` la
+vea); los hallazgos colaterales de la bitácora; la Regla 10, que tal como
+quedó redactada no distingue «el diff introduce» de «el árbol contiene»
+(el guardián del cierre aplicó la lectura «lo introducido rechaza, lo
+preexistente se inventaría» y así quedó anotada en el agente; confirmarla
+es de Nicolás); las dos `description` rancias y `CLAUDE.md`; el
+«número de verdes de la última suite» que el orientador debe reportar no
+está registrado en ningún artefacto que la máquina produzca; la Regla 12 del guardián
+habla de delegar al curador y el guardián no tiene `Agent` (delega el
+orquestador). Y la regla de la casa sobre el verde: al escribir esta acta
+(19:35) la suite completa NO se había corrido sobre el árbol final; queda
+programada para las 20:31, fuera de la ventana de sello, y su resultado
+literal se anota en la bitácora al cerrar; el hook de pre-commit la vuelve
+a correr al commit. El guardián cazó la primera redacción de esta oración,
+que afirmaba el verde en pasado: la Regla 14 aplicada a la tanda que la
+instala. Resultado, agregado a las 20:36 desde el log: `604 passed, 2
+xfailed, 36 warnings in 293.92s`, exit 0, y `tests/test_motor.py` en verde,
+sobre el árbol con todas las correcciones de esta acta.
+
+**Cómo se revierte.** `git checkout` de `.claude/agents/`,
+`.claude/skills/acta-decision/SKILL.md` y `GEMELO/propuestas/I_enmienda_V1.md`;
+restaurar `escriba-decisiones.md` desde `57c8ba1`; borrar
+`.claude/agents/curador-epistemico.md`, `.claude/tests-agentes/`,
+`GEMELO/propuestas/hooks/`, `tests/test_hooks_propuestos.py`,
+`docs/manual-agentes.md` y `docs/bitacora_agentes_v2.md`. Nada de esto
+toca `senales.db`, ningún módulo de producción, ninguna cifra publicada ni
+los hooks vigentes.

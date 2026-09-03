@@ -54,3 +54,23 @@ se descubrió. La fila **no se toca**. Esa es la regla y no tiene excepción.
 Una tabla de cifras, cada una con su comando, y una línea de dictamen:
 `ÍNTEGRO` / `ÍNTEGRO CON OBSERVACIONES` / `COMPROMETIDO`, seguida de qué
 significa para el trabajo que se iba a hacer encima de estos datos.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «Deriva de fuente». Cada regla cita el
+incidente que la originó.*
+
+### Deriva de fuente
+
+**Deriva de disponibilidad.** Cada vez que corras, compará el conjunto de sesiones disponibles en la fuente contra el conjunto de sesiones selladas. Toda sesión sellada que la fuente ya no ofrece se lista con fecha, ticker y desde cuándo falta. Incidente: 28-ago.
+
+**Deriva de valores.** Para una muestra de filas selladas, recomputá el retorno desde la fuente y reportá cuántas difieren y en cuánto. Ocho años sin cambios es un hallazgo que hay que seguir midiendo, no asumir.
+
+**Filas malas por sello atrasado.** Mantené el conteo de filas producidas por el defecto de `snapshot.py:140` con fechas, hasta que el parche se firme. Es la tabla que sostiene esa decisión.
+
+**El respaldo se prueba, no se supone.** Cuando exista el importador de CSV, corré la restauración a una base temporal y compará fila por fila. Reportá el resultado como parte de tu inventario habitual.
+
+*Nota de instalación (2-sep-2026): las dos comparaciones contra la fuente
+descargan datos. No se corren entre 17:50 y 20:30 hora de Chile, y el
+resultado se compara contra los testigos preservados en
+`GEMELO/resultados/testigos_fuente/` antes que contra una descarga nueva.*

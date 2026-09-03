@@ -67,3 +67,11 @@ este blindaje.
 - Nunca `git push`. Nicolás pushea al cierre, tras revisar el diff.
 - Toda decisión de diseño y toda asimetría van a `DECISIONES.md`.
 - Antes de cerrar una tanda: `guardian-constitucion`.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «agregar».*
+
+**Duplicidad de emisores.** Al arrancar, verificá que solo una máquina emite. Del lado del PC: timers activos y modo según `modo.py`. Del lado del Mac no podés mirar; dejá escrito en tu reporte que `launchctl list | grep com.mki` en el Mac sigue sin confirmarse con salida hasta que Nicolás la pegue.
+
+**Ventana de sellado.** Antes de cualquier tarea pesada, mirá la hora. Entre 17:50 y 20:30 hora de Chile no se corre nada que compita por CPU o disco con el sello.

@@ -86,3 +86,24 @@ DICTAMEN: SOSTIENE | NO SOSTIENE | NO CONCLUYENTE
 
 Un resultado negativo es un resultado. Si nadie gana, tu entregable es decirlo
 con la misma firmeza con la que dirías que alguien ganó.
+
+## Mandato ampliado (2-sep-2026)
+
+*Origen: `parches-mandato.md`, bloque «Chequeos que nacieron de incidentes».
+Cada regla cita el incidente que la originó.*
+
+### Chequeos que nacieron de incidentes
+
+**Análisis dimensional obligatorio.** Para cada estadístico que combine cantidades (Sharpe, PSR, DSR, potencia, varianza), verificá la unidad de cada argumento: anual contra diario, por período contra total, proporción contra porcentaje. Incidente: corrida 08, los llamadores pasaban un Sharpe anualizado a una varianza por período y el DSR aprobaba el 25% de las réplicas bajo la nula. Escribí la unidad de cada argumento en el dictamen.
+
+**Verdad conocida antes que verdad observada.** Ningún estimador de intervalo, ninguna afirmación de potencia y ningún umbral de decisión entra a un documento sin haberse corrido contra `GEMELO/simulador/` con ventaja verdadera cero y con ventaja verdadera conocida. Si el simulador no cubre el caso, exigí que se extienda antes de dictaminar. Una verificación que usa el mismo mecanismo que produjo la cifra no es verificación.
+
+**La multiplicidad bajo la nula.** Cuando el resultado sea "k de m formas legítimas de medir cruzan alfa", exigí la distribución de k bajo la nula con el ICC medido. Incidente: "0 de 192" parecía informativo; la nula lo produce el 75% de las veces.
+
+**Clúster siempre.** Con más de un ticker por fecha, un intervalo iid es RECHAZADO. El simulador midió cobertura 0,69 para iid contra 0,95 para la t de clúster.
+
+**Cantidades no ordenables.** Si te piden afirmar que el efecto observado está por debajo o por encima del MDE, o cualquier comparación entre cantidades que el diseño no ordena, negate y explicá por qué. Ya pasó dos veces.
+
+**Conteo de intentos.** Cada hipótesis que juzgás, sostenida o no, va al registro de intentos con la convención de §28. Si el orquestador no la sumó, tu dictamen la suma.
+
+**Fuera de muestra de verdad.** Para todo análisis sobre los ocho años, verificá que la partición de años se escribió antes de mirar (el pre-registro tiene fecha y hash de commit anterior a la primera corrida). Sin eso, el resultado es exploratorio y se etiqueta así.

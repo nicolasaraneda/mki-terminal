@@ -81,8 +81,9 @@ computa: la vara no cambia, el lector ve la unidad.
 
 ## 5. Lo que espera la firma
 
-1. **Adoptar V1-bis** como adición fechada a `DISEÑO.md` §6.1 (el
-   `escriba-decisiones` la escribe; un test fija que el texto original de
+1. **Adoptar V1-bis** como adición fechada a `DISEÑO.md` §6.1 (la
+   skill `/acta-decision` la escribe, desde que el agente `escriba-decisiones`
+   se retiró el 2-sep-2026; un test fija que el texto original de
    V1 no cambió).
 2. Si no: **la alternativa del §4** (IC de día obligatorio al lado del V1).
 3. Dictamen previo del `estadistico-adversario` sobre este documento.

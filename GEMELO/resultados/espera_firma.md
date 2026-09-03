@@ -1040,3 +1040,33 @@ DIR 1,11 / MAE 1,69 / CRPS 1,76; días para 0,80 al efecto observado **223
 2.728 / 175 / 200, todos [·, ∞). Potencia de MAE a 73 días: **0,90
 (generador) / 0,86 (efecto observado) / 0,70 (bajo R2)**; CRPS 0,76 / 0,66 /
 0,50; DIR 0,31 / 0,29 / 0,21. La frase del §22 se lee con esa banda o no se lee.
+
+# Lo que agregó el bundle de agentes v2 (2-sep-2026, noche)
+
+## 25. Instalar los dos hooks propuestos del bundle v2 — un comando, 2 minutos
+
+**Qué decidir, en una frase:** si `.claude/hooks/contexto-mki.sh` y
+`guardia-reglas.py` pasan a ser las versiones de `GEMELO/propuestas/hooks/`
+(el vigente más un bloque cada una; 0 líneas quitadas, verificado por
+`diff` y por `tests/test_hooks_propuestos.py`, 8 tests).
+
+**Qué desbloquea:** al abrir sesión, la rama del efecto con sus dos ramas
+computables (n, p, Wilson) marcada DECISIÓN PENDIENTE, el conteo de intentos
+del DSR y cuántos ítems esperan tu firma, leídos de la máquina; y el bloqueo
+de reintroducir una cifra retirada en `.md` **y en `.py`** (regla de la casa
+4). Hoy hay seis `.py` en HEAD que la propuesta cazaría al primer `Edit`
+(`docs/bitacora_agentes_v2.md` §1 y §11).
+
+**Costo:** `bash GEMELO/propuestas/hooks/instalar.sh` muestra los dos
+`diff`, pide confirmación y copia. El arranque tarda ~4 s más. Zonas ciegas
+declaradas en el docstring: sólo evalúa el texto nuevo del Edit/Write (falla
+hacia denegar); un `.txt` o un heredoc por Bash no pasan por él.
+
+**Por qué no lo hizo la sesión:** el hook vigente se protege a sí mismo,
+`settings.json` deniega `Edit` sobre `.claude/hooks/` y el harness denegó la
+escritura por Bash. Acta §76.
+
+**Opciones:** (a) instalar; (b) instalar sólo el bloque de arranque
+(copiar `contexto-mki.sh` y no el guardia); (c) rechazar y borrar
+`GEMELO/propuestas/hooks/`. Recomendación: (a); si el bloque 8 molesta en la
+práctica, la marca de retiro dentro del texto nuevo lo levanta.
