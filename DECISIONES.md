@@ -7713,3 +7713,83 @@ restaurar `escriba-decisiones.md` desde `57c8ba1`; borrar
 `docs/manual-agentes.md` y `docs/bitacora_agentes_v2.md`. Nada de esto
 toca `senales.db`, ningún módulo de producción, ninguna cifra publicada ni
 los hooks vigentes.
+
+**Actualización 2-sep-2026 noche (§77), en su sitio y fechada porque §76 ya está
+en HEAD:** la última oración dejó de ser cierta. Nicolás instaló los hooks esa
+misma noche, así que `.claude/hooks/contexto-mki.sh` y `guardia-reglas.py` SÍ
+quedaron tocados y versionados. La receta de reversión de arriba queda incompleta:
+para volver al estado previo hay que revertir también esos dos archivos y
+`tests/test_hooks_propuestos.py`, y revertirlos por separado deja la suite en rojo.
+El §77 lleva la receta completa.
+
+---
+
+## 77. Los hooks del bundle v2 quedan instalados, y el test que los custodiaba cambia de sujeto
+
+**Fecha:** 2-sep-2026, noche (después del sello del día).
+
+**Qué se decidió.** Nicolás corrió `bash GEMELO/propuestas/hooks/instalar.sh`:
+`.claude/hooks/contexto-mki.sh` y `.claude/hooks/guardia-reglas.py` pasan a ser
+copia byte a byte de `GEMELO/propuestas/hooks/`, y `tests/test_hooks_propuestos.py`
+se adapta al estado post-instalación: prueba el hook VIGENTE en vez de la
+propuesta, y verifica que la propuesta está aplicada en vez de que sólo agrega.
+
+**Por qué.** El test escrito el 2-sep de tarde comparaba propuesta contra vigente
+con `len(propuesta) > len(vigente)`: era la garantía correcta mientras la
+propuesta esperaba firma (nada del vigente se quita). Instalada, los dos archivos
+son idénticos (`diff` sin salida en los dos, y `git diff --cached -- .claude/hooks`
+con cero líneas borradas), así que esa desigualdad estricta no puede volver a
+cumplirse nunca. Se invierte la contención: **toda línea de la propuesta está en
+el vigente**, más una marca por archivo que exige que el bloque nuevo siga ahí
+(`BLOQUE 8 (bundle v2): cifras retiradas` y `fin del bloque 8`; `BLOQUE NUEVO
+(bundle v2, 2-sep-2026)` y `fin del bloque nuevo`). Los seis tests de
+comportamiento cambian de sujeto de `GEMELO/propuestas/hooks/guardia-reglas.py` a
+`.claude/hooks/guardia-reglas.py`: el que ahora guarda de verdad es el vigente, y
+un test que sigue probando la propuesta certificaría un archivo inerte. MEDIDO:
+`606 passed, 2 xfailed` en 302 s, y `tests/test_motor.py` en verde, sobre el árbol
+final; el delta 604 a 606 del §76 son los dos casos parametrizados del test de
+marca. La corrida es de las 23:16 hora de Chile, fuera de la ventana 17:50 a 20:30.
+
+**Qué se descartó y por qué.** Exigir identidad byte a byte entre propuesta y
+vigente: ata la suite a que nadie vuelva a extender el hook, y la extensión
+siguiente es legítima. Borrar `GEMELO/propuestas/hooks/`: se conserva como
+registro de qué se instaló y porque es lo que el instalador copia. Dos líneas de
+docstring que agregué de camino al test de la zona ciega quedaron fuera: empujaban
+la marca de retiro de ±2 a ±3 líneas del literal retirado y convertían el propio
+archivo en una reintroducción (regla de la casa 4). Lo cazó el `guardian-constitucion`
+corriendo el árbitro, no leyendo, y el bloque 8 que esta misma tanda instala NO lo
+habría cazado: evalúa el texto nuevo del `Edit`, y el literal no estaba en el texto
+nuevo. Es la zona ciega declarada, materializada en la tanda que la declara.
+
+**Qué queda abierto.** La contención invertida ya no detecta que alguien borre del
+hook vigente líneas que la propuesta no tenga: hoy no existe ninguna (son
+idénticos), y el día que el vigente se extienda por su cuenta esa garantía habrá
+que reescribirla. Un `git checkout` de `.claude/hooks/` deja la suite en rojo, que
+es el punto: el test es ahora el custodio del hook instalado. Los hooks están
+versionados, así que el Mac los hereda en su próximo pull (ver la asimetría abajo).
+INVENTARIO, no rechaza y no se toca acá (R7): el árbitro encuentra cifras retiradas
+sin marca a ±2 en archivos que esta tanda no toca, entre ellos seis `.py`
+(`GEMELO/ventana_larga.py`, `GEMELO/CONDICIONAL/condicional.py`,
+`GEMELO/simulador/calibracion.py`, `tests/test_control_lineal.py`,
+`tests/test_epistemico.py`), cuatro puntos de `DECISIONES.md` y unos veinte
+documentos de `GEMELO/resultados/`. Coincide con los «seis `.py` en HEAD que la
+propuesta cazaría al primer `Edit`» que anunciaba `espera_firma.md` §25: el bloque
+8 los bloqueará en cuanto alguien los edite, y limpiarlos es otra tanda.
+
+### Asimetría: el bloque de cifras retiradas y el arranque enriquecido
+PC (titular): hooks con bloque 8 y bloque de arranque, desde este commit.
+Mac (fuera de servicio): los hereda en su próximo `pull`, sin acción de nadie.
+Decisión: igualar, por omisión (los hooks están versionados).
+Razón: ninguno de los dos bloques toca el camino de sello. El de arranque lee
+`senales.db` en `mode=ro` vía `backtest.linea_base`; el bloque 8 sólo deniega
+`Edit`/`Write`. Una sesión en el Mac gana el mismo bloqueo y unos segundos de
+arranque.
+Qué la haría revisar: que el arranque del Mac tarde de más o falle, o que el
+árbitro `cifras.py` no importe ahí (el bloque 8 falla hacia no bloquear en ese
+caso, declarado en el propio hook).
+
+**Cómo se revierte.** `git revert` de este commit devuelve los tres archivos a la
+vez y deja la suite en verde: el test y los hooks se revierten juntos o ninguno.
+Revertir sólo `.claude/hooks/` deja `tests/test_hooks_propuestos.py` en rojo, que
+es la señal deseada, no un accidente. Nada de esto toca `senales.db`, ningún
+módulo de producción ni ninguna cifra publicada.

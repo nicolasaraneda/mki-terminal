@@ -4,8 +4,14 @@ Cada fila es un patrón (regex) que **no debe reaparecer sin marca de
 retiro** en un documento publicado (`README.md`,
 `GEMELO/resultados/estado_epistemico.md`, la skill `cifras-canonicas`).
 Lo lee `cifras.cifras_retiradas()`; lo aplican `tests/test_cifras_arbitro.py`
-y el hook propuesto `GEMELO/propuestas/guardia-cifras-retiradas.py` (NO
-instalado: el hook vigente se protege a sí mismo y sólo Nicolás lo edita).
+y, desde el 2-sep-2026 de noche, el **bloque 8 del hook VIGENTE**
+`.claude/hooks/guardia-reglas.py`, que deniega el `Edit`/`Write` que reintroduzca
+uno de estos patrones en un `.md` o en un `.py` sin marca de retiro (exentos este
+registro y `.claude/tests-agentes/`; un `.txt` o un heredoc por Bash no pasan por
+él, y evalúa sólo el texto nuevo de la edición, no el archivo resultante). Lo
+instaló Nicolás con `GEMELO/propuestas/hooks/instalar.sh`; reemplaza a la
+propuesta anterior `GEMELO/propuestas/guardia-cifras-retiradas.py`, que cubría
+sólo los tres documentos publicados y nunca se instaló (DECISIONES §77).
 Una mención con «retirad», «errata», «decía», «era», «refutad», «corregid»,
 «es falsa», «falso» o «desmont» a ±2 líneas no cuenta como reintroducción:
 es la historia (el README dice del 91,4% «es falsa» en la línea siguiente).

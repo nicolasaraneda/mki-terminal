@@ -1043,7 +1043,16 @@ DIR 1,11 / MAE 1,69 / CRPS 1,76; días para 0,80 al efecto observado **223
 
 # Lo que agregó el bundle de agentes v2 (2-sep-2026, noche)
 
-## 25. Instalar los dos hooks propuestos del bundle v2 — un comando, 2 minutos
+## 25. Instalar los dos hooks propuestos del bundle v2 — HECHO (2-sep-2026, noche)
+
+**RESUELTO, no pendiente.** Nicolás corrió `bash
+GEMELO/propuestas/hooks/instalar.sh`: los dos hooks vigentes son hoy copia byte a
+byte de la propuesta (opción (a)), y `tests/test_hooks_propuestos.py` quedó
+adaptado al estado post-instalación (10 tests, prueban el hook VIGENTE). Suite
+completa `606 passed, 2 xfailed`. Acta `DECISIONES.md` §77. Lo que sigue abajo es
+el texto original de la decisión, en pasado; se conserva como registro de qué se
+firmaba, no como pendiente.
+
 
 **Qué decidir, en una frase:** si `.claude/hooks/contexto-mki.sh` y
 `guardia-reglas.py` pasan a ser las versiones de `GEMELO/propuestas/hooks/`

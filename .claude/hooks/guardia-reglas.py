@@ -13,10 +13,21 @@ Bloquea, sin excepcion:
   5. git pull sobre el arbol de trabajo. Se usa git fetch y se lee origin/main.
   6. Historia destructiva: reset --hard, clean -fd, checkout --, filter-branch.
   7. SQL que reescriba filas selladas.
+  8. (bundle v2, 2-sep-2026) Reintroducir una cifra retirada
+     (GEMELO/cifras_retiradas.md) en un .md O en un .py, sin marca de retiro.
+     Frente G de la octava corrida: la justificacion retractada seguia
+     impresa por tres ejecutables. Un numero retirado que sigue ofrecido en
+     el codigo vuelve a circular.
 
 Para desactivarlo a conciencia hay que editar .claude/settings.json a mano.
 Esa friccion es deliberada: la regla cero de este proyecto es que motor.py no
 se toca, y una barrera que el agente puede abrir sola no es una barrera.
+
+VERSION PROPUESTA: es el hook vigente mas el bloque 8, marcado abajo. No se
+quita nada. La instala Nicolas con `bash GEMELO/propuestas/hooks/instalar.sh`.
+Reemplaza a la propuesta anterior `GEMELO/propuestas/guardia-cifras-retiradas.py`
+(que cubria solo los tres documentos publicados y exigia un segundo comando en
+settings.json; esta va dentro del mismo hook y cubre .md y .py).
 
 Salida: JSON de denegacion en stdout, motivo en stderr, exit 2.
 Exit 0 sin salida cuando no hay nada que bloquear.
@@ -127,6 +138,65 @@ def revisar_bash(cmd: str) -> None:
             denegar(f"BLOQUEADO por guardia-reglas: {cmd.strip()[:200]}\n{motivo}")
 
 
+# ------------------------------------ BLOQUE 8 (bundle v2): cifras retiradas
+# El arbitro es cifras.py (raiz del repo): `cifras.reintroducciones(texto)`
+# devuelve las cifras retiradas que aparecen en `texto` sin marca de retiro a
+# ±2 lineas. Se aplica al TEXTO NUEVO de todo Edit/Write sobre .md y .py.
+# Exentos: el registro mismo (contiene los patrones) y los casos de
+# regresion de agentes (.claude/tests-agentes/, que reintroducen a proposito
+# para probar al guardian). Si el arbitro no importa, no se bloquea: la
+# zona ciega se declara en vez de romper el arranque.
+# ZONA CIEGA DECLARADA (guardian del cierre, 2-sep-2026): se evalua SOLO el
+# texto nuevo del Edit/Write, no el archivo resultante. Una marca de retiro
+# que ya vive en el archivo a ±2 lineas del literal no salva a la edicion:
+# el hook falla hacia DENEGAR, nunca hacia permitir. Remedio para el autor:
+# repetir la marca dentro del texto nuevo. Un .txt o un heredoc por Bash no
+# pasan por este bloque (los grep por una cifra retirada son legitimos).
+SUFIJOS_CIFRAS = (".md", ".py")
+EXENTOS_CIFRAS = (
+    r"(^|/)GEMELO/cifras_retiradas\.md$",
+    r"(^|/)\.claude/tests-agentes/",
+)
+
+
+def revisar_cifras_retiradas(ruta: str, texto_nuevo: str) -> None:
+    if not ruta or not texto_nuevo:
+        return
+    norm = ruta.replace("\\", "/")
+    if not norm.endswith(SUFIJOS_CIFRAS):
+        return
+    if any(re.search(p, norm) for p in EXENTOS_CIFRAS):
+        return
+    raiz = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    try:
+        if raiz not in sys.path:
+            sys.path.insert(0, raiz)
+        import cifras  # noqa: E402
+        hallazgos = cifras.reintroducciones(texto_nuevo)
+    except Exception:
+        return
+    if hallazgos:
+        lista = "\n".join(f"  linea {i}: [{pat}] {txt}" for i, pat, txt in hallazgos[:5])
+        denegar("BLOQUEADO por guardia-reglas (cifras retiradas): la edicion reintroduce "
+                f"una cifra retirada en {ruta} sin marca de retiro a ±2 lineas "
+                f"(GEMELO/cifras_retiradas.md). Un numero retirado que sigue ofrecido "
+                f"en un .py vuelve a circular.\n{lista}")
+
+
+def _textos_nuevos(entrada: dict) -> list:
+    """Todo texto que la herramienta va a dejar en el archivo."""
+    textos = []
+    for clave in ("content", "new_string", "new_source"):
+        v = entrada.get(clave)
+        if isinstance(v, str) and v:
+            textos.append(v)
+    for edicion in entrada.get("edits", []) or []:
+        if isinstance(edicion, dict) and isinstance(edicion.get("new_string"), str):
+            textos.append(edicion["new_string"])
+    return textos
+# --------------------------------------------------------- fin del bloque 8
+
+
 # ---------------------------------------------------------------------- main
 
 def main() -> None:
@@ -144,6 +214,10 @@ def main() -> None:
         for edicion in entrada.get("edits", []) or []:
             if isinstance(edicion, dict):
                 revisar_archivo(str(edicion.get("file_path", "") or ""))
+        # bloque 8 (bundle v2): cifras retiradas en .md y .py
+        ruta = str(entrada.get("file_path") or entrada.get("notebook_path") or entrada.get("path") or "")
+        for texto in _textos_nuevos(entrada):
+            revisar_cifras_retiradas(ruta, texto)
 
     elif herramienta in ("Bash", "BashOutput"):
         revisar_bash(str(entrada.get("command", "") or ""))

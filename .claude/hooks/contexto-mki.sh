@@ -3,6 +3,13 @@
 # Imprime el estado real de la maquina al abrir sesion, para que ninguna
 # sesion tenga que adivinar si esta maquina emite o no.
 # Todo defensivo: nada de esto puede hacer fallar el arranque.
+#
+# VERSION PROPUESTA (bundle de agentes v2, 2-sep-2026). Es el hook vigente
+# mas UN bloque nuevo, marcado abajo, que lee de la maquina la rama del
+# efecto con su cifra, el conteo de intentos del DSR y cuantos items esperan
+# firma. No se quita nada. La instala Nicolas con
+# `bash GEMELO/propuestas/hooks/instalar.sh` (el hook vigente se protege a
+# si mismo y el harness denego la escritura desde la sesion).
 
 set +e
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null
@@ -54,6 +61,44 @@ if [ -f senales.db ] && command -v sqlite3 >/dev/null 2>&1; then
   n=$(sqlite3 -readonly senales.db "SELECT COUNT(*) FROM verificacion_apertura;" 2>/dev/null)
   [ -n "$sello" ] && echo "Ultimo sello: ${sello}   N verificaciones: ${n:-?}"
 fi
+
+# --- BLOQUE NUEVO (bundle v2, 2-sep-2026): leido de la maquina, no de docs --
+# Rama del efecto con su cifra (arbitro cifras.py, mode=ro), conteo de
+# intentos del DSR (registro con procedencia) e items que esperan firma.
+# Leccion de la octava corrida: el encargo citaba 86 intentos y la maquina
+# decia 100; la rama del efecto esta indeterminada por un factor ~5 y es la
+# decision mas urgente. Ninguna de estas tres lineas se escribe a mano.
+if [ -n "$PY" ]; then
+  "$PY" - 2>/dev/null <<'PYEOF'
+import sys
+try:
+    import cifras
+    c = cifras.sellada()
+    print("Rama efecto : DECISION PENDIENTE de Nicolas (cola_decisiones 2a-ter, espera_firma 22)")
+    print("              publicada (README, sin dedup): %+.1f pp, n=%d, p=%.4f, Wilson modelo [%.1f, %.1f] base [%.1f, %.1f]"
+          % (c["ventaja_pp"], c["n"], c["mcnemar_p"], c["modelo_wilson"][0], c["modelo_wilson"][1],
+             c["base_wilson"][0], c["base_wilson"][1]))
+    from backtest import linea_base as lb
+    df = lb.aplicar_convencion(lb.cargar(hasta_sello=cifras.CORTE_README, dedup=True), lb.CONVENCION_OFICIAL)
+    d = lb.duelo(df)
+    print("              dedup firmada 1-sep (misma ventana): %+.1f pp, n=%d, p=%.4f; la tercera rama (2a-ter) no se computa aca"
+          % (d["ventaja_pp"], d["n"], d["mcnemar_p"]))
+except Exception as e:
+    print("Rama efecto : no se pudo computar desde el arbitro cifras.py (%s)" % type(e).__name__)
+try:
+    import GEMELO.relevo_asiatico as ra
+    import backtest.veredicto_51 as v51
+    print("Intentos DSR: %d acumulados en %d tramos (GEMELO.relevo_asiatico.REGISTRO_INTENTOS); el veredicto 5.1 declara %d"
+          % (ra.N_INTENTOS_ACUMULADO, len(ra.REGISTRO_INTENTOS), v51.N_INTENTOS_51))
+except Exception as e:
+    print("Intentos DSR: no se pudo leer el registro (%s)" % type(e).__name__)
+PYEOF
+fi
+if [ -f GEMELO/resultados/espera_firma.md ]; then
+  nf=$(grep -c '^#\{1,2\} [0-9]\{1,\}\. ' GEMELO/resultados/espera_firma.md 2>/dev/null | tr -d ' ')
+  echo "Espera firma: ${nf:-?} item(s) numerados en GEMELO/resultados/espera_firma.md"
+fi
+# --- fin del bloque nuevo ---------------------------------------------------
 
 if [ -f ESTADO.md ]; then
   echo
