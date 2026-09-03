@@ -13,8 +13,12 @@
 > **+2.5 pp with p = 0.111 in Frankfurt**, which opens **8.75 hours**
 > later. A statistical artifact has no reason to fade with elapsed time;
 > an information cascade does. **The contagion doesn't hand off — it
-> dissipates.** On the point-in-time sealed window (n=248) the edge is
-> **+6.5 pp with p = 0.1849: still not distinguishable from zero.**
+> dissipates.** On the point-in-time sealed window (n=238) the edge is
+> **+9.7 pp, day-cluster 95% CI [-7.2, +26.6]: still not distinguishable
+> from zero** (row-level McNemar p = 0.0455, but the eight rows of a day
+> share one SOX move: the day is the unit, and with it the interval
+> contains zero). Until 2-sep it read n=248, +6.5 pp, p = 0.1849 under a
+> convention since repealed (errata, D1).
 >
 > Both windows are published, with what each one can and cannot prove.
 > Four workstreams of adversarial auditing sit underneath, including one
@@ -27,7 +31,7 @@
 ![tests](https://img.shields.io/badge/tests-299%20passing-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
 ![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
-![sellada](https://img.shields.io/badge/ventana%20sellada-%2B6.5%20pp%20·%20p%3D0.18%20·%20n%3D248-b45309?style=flat-square)
+![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
 
@@ -114,28 +118,42 @@ potencia.**
 ### Sellada — la única evidencia point-in-time
 
 Emitida **antes** del hecho, con timestamps UTC en SQLite y filas que
-jamás se reescriben. Al **30-ago-2026**, sobre la **cadena canónica**
-(compuesta el 30-ago bajo la regla de `docs/SOMBRA.md`: hasta el 25-ago
-manda el Mac, desde el 26-ago el PC) y bajo la convención congelada en la
-§2.8 (`excluir_cero`):
+jamás se reescriben. Al **28-ago-2026** (instante pinchado
+`cifras.CORTE_README`; se recomputa desde `senales.db` con `cifras.sellada()`),
+sobre la **cadena canónica** (compuesta el 30-ago bajo la regla de
+`docs/SOMBRA.md`: hasta el 25-ago manda el Mac, desde el 26-ago el PC),
+bajo la convención congelada en la §2.8 (`excluir_cero`) y bajo la **regla
+de deduplicación firmada el 1-sep-2026** (entre dos filas que apuntan a la
+misma sesión objetivo sobrevive la que corresponde a su `available_at`,
+nunca la más fresca; decisión D1, acta §78):
 
-| | Acierto de gap | IC95 Wilson |
+| | Acierto de gap | IC95 Wilson (filas) |
 |---|---|---|
-| **Modelo 4.6.0** | **66.1%** (164/248) | [60.0 – 71.7] |
-| **"Siempre al alza", mismas filas** | **59.7%** (148/248) | [53.5 – 65.6] |
-| **Ventaja** | **+6.5 pp** | **McNemar p = 0.1849** |
+| **Modelo 4.6.0** | **67.6%** (161/238) | [61.5 – 73.3] |
+| **"Siempre al alza", mismas filas** | **58.0%** (138/238) | [51.6 – 64.1] |
+| **Ventaja** | **+9.7 pp** | IC95 de día **[-7.2, +26.6]** · McNemar p = 0.0455 (χ² con corrección de continuidad; binomial exacta 0.0451) |
 
-**Todavía NO distinguible de cero.** Y que se vea que **se mueve**: el
-25-ago, con n=223, era **+4.0 pp con p = 0.4633**. Cinco días y 25 filas
-después la ventaja subió 2.5 pp y el p bajó a menos de la mitad. Sigue sin
-cruzar el 5%, y se publica igual — con su fecha, para que dentro de tres
-meses se pueda leer la trayectoria y no solo el último número.
+**Todavía NO distinguible de cero.** El McNemar de filas cruza el 5%, pero
+las ocho filas de un día comparten el mismo movimiento del SOX: la unidad
+es el día (34 días, ICC 0.39, DEFF 3.55, ~67 observaciones efectivas), y
+con esa unidad el intervalo contiene el cero y la permutación de signo por
+día da p = 0.29. El McNemar de filas se publica al lado porque es el test
+del diseño original, no porque decida (acta §61).
 
-| Otras métricas (n=248) | Valor | Caveat honesto |
+**Y que se vea que se mueve, y por qué.** El 25-ago, con n=223, era
+**+4.0 pp con p = 0.4633**. Hasta el 2-sep esta sección publicaba, en este
+mismo corte, la rama sin deduplicar: era n=248, +6.5 pp, p = 0.1849.
+**Errata 3-sep-2026:** esa convención quedó derogada por decisión de
+Nicolás (D1). Las 10 filas que la regla retira son el lado viejo de 10
+pares que apuntaban a una sesión que su insumo no podía predecir; de las
+10, 7 eran discordantes y las 7 favorecían a la base. El salto de +6.5 a
++9.7 pp es la regla, no filas nuevas, y se publica con su causa.
+
+| Otras métricas (n=238) | Valor | Caveat honesto |
 |---|---|---|
-| Acierto del retorno de sesión | 60.9% · IC95 [54.7–66.8] | un solo régimen observado |
-| **MAE del gap** | **2.98 pp** vs **3.33** de predecir cero | **la magnitud sí aporta: −10.5%** |
-| Cobertura del intervalo 80% | 90.3% (nominal 80%) | intervalos **1.84× más anchos** de lo necesario |
+| Acierto del retorno de sesión | 62.1% · IC95 [55.9–68.0] (n=243) | un solo régimen observado |
+| **MAE del gap** | **2.52 pp** vs **2.98** de predecir cero | **la magnitud sí aporta: −15.3%**; parte de la mejora es que la regla retira filas con gaps enormes del 29-jul |
+| Cobertura del intervalo 80% | 92.9% (nominal 80%) | intervalos **2.19× más anchos** de lo necesario (IC95 de día [1.71, 2.78]) |
 | Régimen | 1 sola etiqueta en 39 snapshots | la columna no tiene varianza |
 
 Todo esto se recomputa con `python -m backtest.linea_base`, que lee

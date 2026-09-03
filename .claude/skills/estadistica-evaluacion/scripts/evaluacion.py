@@ -354,7 +354,7 @@ def cobertura(y, lo, hi) -> float:
 def ancho_relativo(lo, hi, error_abs) -> float:
     """Ancho medio del intervalo dividido por el MAE.
 
-    El campeon marca 1.84 (README, n=248): intervalos 84% mas anchos de lo que su propio error
+    El campeon marca 2.19 [1.71, 2.78] (README, n=238; era 1.84 con n=248): intervalos mas anchos de lo que su propio error
     justifica. Un intervalo demasiado ancho no es prudencia, es no informar.
     """
     ancho = float(np.mean(np.asarray(hi) - np.asarray(lo)))
@@ -415,24 +415,26 @@ def _self_test() -> None:
     print("\n0. norm_ppf y norm_cdf coinciden con los valores de tabla  OK")
 
     # 1. Wilson contra la ventana sellada CANONICA (acta 37.5, excluir_cero)
-    lo_m, hi_m = wilson_ci(164, 248)
-    lo_b, hi_b = wilson_ci(148, 248)
-    print(f"\n1. Ventana sellada canonica, convencion excluir_cero, n=248")
-    print(f"   modelo 164/248 = {164/248:.1%}  Wilson [{lo_m:.1%}, {hi_m:.1%}]   acta: [60.0, 71.7]")
-    print(f"   base   148/248 = {148/248:.1%}  Wilson [{lo_b:.1%}, {hi_b:.1%}]   acta: [53.5, 65.6]")
-    print(f"   ventaja = {100*(164-148)/248:+.1f} pp        acta: +6.5 pp")
-    assert abs(lo_m - 0.600) < 0.001 and abs(hi_m - 0.717) < 0.001, (lo_m, hi_m)
-    assert abs(lo_b - 0.535) < 0.001 and abs(hi_b - 0.656) < 0.001, (lo_b, hi_b)
-    print("   reproduce el acta 37.5 exactamente  OK")
+    # 3-sep-2026 (D1): regla de deduplicacion firmada, n=238. La rama sin
+    # deduplicar (era 164/248 y 148/248) esta retirada.
+    lo_m, hi_m = wilson_ci(161, 238)
+    lo_b, hi_b = wilson_ci(138, 238)
+    print(f"\n1. Ventana sellada canonica, excluir_cero + dedup firmada, n=238")
+    print(f"   modelo 161/238 = {161/238:.1%}  Wilson [{lo_m:.1%}, {hi_m:.1%}]   README: [61.5, 73.3]")
+    print(f"   base   138/238 = {138/238:.1%}  Wilson [{lo_b:.1%}, {hi_b:.1%}]   README: [51.6, 64.1]")
+    print(f"   ventaja = {100*(161-138)/238:+.1f} pp        README: +9.7 pp")
+    assert abs(lo_m - 0.615) < 0.001 and abs(hi_m - 0.733) < 0.001, (lo_m, hi_m)
+    assert abs(lo_b - 0.516) < 0.001 and abs(hi_b - 0.641) < 0.001, (lo_b, hi_b)
+    print("   reproduce el README exactamente  OK")
 
     # 2. McNemar. Anclas historicas: validan la ARITMETICA, no son cifras vigentes.
     p = mcnemar_exact(67, 55)
     print(f"\n2. McNemar exacto, ancla de aritmetica: b=67 c=55 -> p = {p:.3f}")
     assert abs(p - 0.319) < 0.002, p
-    p2 = mcnemar_exact(72, 56)
-    print(f"   el par que reproduce la ventana canonica: b=72 c=56 -> p = {p2:.4f}"
-          f"   acta: 0.1849")
-    assert abs(p2 - 0.1849) < 0.001, p2
+    p2 = mcnemar_exact(72, 49)
+    print(f"   el par que reproduce la ventana canonica: b=72 c=49 -> p = {p2:.4f}"
+          f"   README: 0.0451 (exacta; el chi2cc publicado es 0.0455)")
+    assert abs(p2 - 0.0451) < 0.001, p2
     print("   coincide con scipy y con el acta  OK")
 
     # 3. Comparacion pareada sintetica con ventaja real
@@ -476,9 +478,10 @@ def _self_test() -> None:
     assert abs(c_mu - c_an) < 0.01
     print("   la version muestral reproduce la analitica  OK")
 
-    anchos = rng.normal(mu[:, None], 1.84 * sg[:, None], size=(300, 5000))
+    # ratio de ancho del campeon: 2.19 (README n=238, 3-sep-2026; era 1.84)
+    anchos = rng.normal(mu[:, None], 2.19 * sg[:, None], size=(300, 5000))
     c_ancho = crps_muestral(y, anchos).mean()
-    print(f"   CRPS con intervalos 1.84x mas anchos = {c_ancho:.4f}  (peor)")
+    print(f"   CRPS con intervalos 2.19x mas anchos = {c_ancho:.4f}  (peor)")
     assert c_ancho > c_mu
 
     # 7. Cobertura y ancho relativo
@@ -488,7 +491,7 @@ def _self_test() -> None:
     ar = ancho_relativo(lo80, hi80, y - mu)
     print(f"\n7. Cobertura nominal 80%  ->  empirica {cob:.1%}   "
           f"V3 exige [76%, 84%]: {'PASA' if 0.76 <= cob <= 0.84 else 'NO PASA'}")
-    print(f"   ancho relativo = {ar:.2f}  (el campeon marca 1.84)")
+    print(f"   ancho relativo = {ar:.2f}  (el campeon marca 2.19 [1.71, 2.78]; era 1.84)")
 
     # 8. Walk-forward: sin solape, con embargo respetado
     splits = walk_forward_purgado(1000, n_splits=5, embargo=5, purge=1)

@@ -12,8 +12,9 @@ decide, no quien la encuentra.
 **Insumos:** `GEMELO/DISEÑO.md` (pre-registro del retador, criterios V1 a
 V7 y R1 a R3 congelados el 25-ago), `backtest/DISEÑO.md` §11 (gatillo de la
 Etapa 5.1), `backtest/inferencia.py` (WS1: PSR, DSR, bootstrap circular),
-track record sellado al 30-ago (n=248, convención `excluir_cero`,
-DECISIONES.md §37.5), ventana larga reconstruida (n=14.618, DECISIONES.md
+track record sellado al 28-ago bajo la regla de deduplicación firmada (n=238,
+convención `excluir_cero`; errata 3-sep-2026: era n=248 sin deduplicar,
+rama derogada por D1, acta §78; DECISIONES.md §37.5 y §78), ventana larga reconstruida (n=14.618, DECISIONES.md
 §35.6).
 
 > **Regla cero de este documento:** ningún número de aquí se movió después
@@ -111,8 +112,11 @@ ajuste que un pre-registro existe para impedir.
 
 **El punto de partida que este criterio tiene que respetar:** el campeón,
 hoy, no le gana a una constante con significancia. Sobre la ventana sellada
-bajo la convención congelada `excluir_cero`: n=248, modelo 66.1%, "siempre
-al alza" 59.7%, ventaja +6.5 pp, McNemar p=0.1849 (DECISIONES.md §37.5). Un
+bajo la convención congelada `excluir_cero` y la regla de deduplicación
+firmada: n=238, modelo 67.6%, "siempre al alza" 58.0%, ventaja +9.7 pp con
+IC95 de clúster de día [-7.2, +26.6] y McNemar de filas p=0.0455 (errata
+3-sep-2026: era n=248, +6.5 pp, p=0.1849 bajo la rama sin deduplicar,
+derogada por D1; `cifras.sellada()`). Un
 retador que solo empatara esa ventaja, o la superara por un margen que
 tampoco fuera significativo, no estaría demostrando nada: estaría
 reemplazando ruido por ruido con más pasos en el medio. Por eso el criterio
@@ -125,7 +129,8 @@ Todas obligatorias, evaluadas en la misma ventana out-of-sample sellada
 (§4), con la maquinaria de `backtest/inferencia.py`. **REL-V1 a REL-V5 son
 ADICIONALES a V1–V7 y R1–R3 de `GEMELO/DISEÑO.md` §6, que siguen vigentes
 sin excepción para cualquier retador, incluidos V3 (cobertura del 80% en
-[76%, 84%] — el campeón hoy está en 90.3%, ratio de ancho 1.84×), V6
+[76%, 84%] — el campeón hoy está en 92.9%, ratio de ancho 2.19× [1.71, 2.78];
+errata 3-sep-2026: era 90.3% y 1.84× bajo la rama retirada), V6
 (superar comprar-y-mantener SMH neto de 25 pb) y V7 (holdout confirmado en
 cuarentena, evaluado una sola vez). Ningún criterio de `DISEÑO.md` §6 se
 relaja por llegar a la etapa de relevo — este documento agrega barreras,
@@ -161,9 +166,10 @@ no las reemplaza.**
   punto, Y (b) tener un **IC95 por bootstrap circular de bloques de 20
   días, semilla declarada, que excluya el cero** (misma maquinaria de
   `backtest/inferencia.py` que el resto de este documento). La condición
-  (b) es la que manda: sobre las 248 filas selladas hoy, la ventaja del
-  campeón sobre su propia baseline es +6.45 pp con IC95 de bootstrap de
-  bloques **[−5.24, +22.58] pp — 28 puntos de ancho**. Un umbral de punto
+  (b) es la que manda: sobre las 238 filas selladas (regla firmada; errata
+  3-sep-2026: era 248 y +6.45 pp con bloques de filas [−5.24, +22.58]), la
+  ventaja del campeón sobre su propia baseline es +9.66 pp con IC95 de
+  clúster de día **[-7.2, +26.6] pp — 34 puntos de ancho**. Un umbral de punto
   sobre una cantidad con esa dispersión no discrimina nada por sí solo; un
   p < 0.05 con una ventaja de 0.3 pp de punto sería igual de inútil que un
   intervalo de 28 pp de ancho que además excluye el cero por casualidad.
@@ -313,10 +319,11 @@ tarjetas lado a lado, nunca una sola cifra fusionada:
 
 ```
 +- modelo 4.6.0 (histórico) ------+   +- modelo X.Y.Z (activo) ----------+
-| n = 248, hasta DD-mmm-AAAA      |   | n = <n>, desde DD-mmm-AAAA       |
-| acierto 66.1% [60.0-71.7] IC95  |   | acierto <cifra> [IC95 Wilson]    |
-| vs. base 59.7% [53.5-65.6]      |   | vs. base <cifra> [IC95 Wilson]   |
-| McNemar p = 0.1849              |   | McNemar p = <cifra>              |
+| n = 238, hasta 28-ago-2026      |   | n = <n>, desde DD-mmm-AAAA       |
+| acierto 67.6% [61.5-73.3] IC95  |   | acierto <cifra> [IC95 Wilson]    |
+| vs. base 58.0% [51.6-64.1]      |   | vs. base <cifra> [IC95 Wilson]   |
+| ventaja +9.7 [-7.2, +26.6] día  |   | ventaja <cifra> [IC95 de día]    |
+| McNemar p = 0.0455 (filas)      |   | McNemar p = <cifra>              |
 +----------------------------------+   +-----------------------------------+
 ```
 

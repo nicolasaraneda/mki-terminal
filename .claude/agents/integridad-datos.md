@@ -68,7 +68,7 @@ incidente que la originó.*
 
 **Filas malas por sello atrasado.** Mantené el conteo de filas producidas por el defecto de `snapshot.py:140` con fechas, hasta que el parche se firme. Es la tabla que sostiene esa decisión.
 
-**El respaldo se prueba, no se supone.** Cuando exista el importador de CSV, corré la restauración a una base temporal y compará fila por fila. Reportá el resultado como parte de tu inventario habitual.
+**El respaldo se prueba, no se supone.** El importador de CSV existe desde el 31-ago-2026 (`scripts/restaurar_backup.py`, acta §42) y desde el 3-sep-2026 `tests/test_importador_roundtrip.py` compara fila por fila las 5 tablas contra `senales.db` en `mode=ro` (incluida `plataforma_version`): corré ese test como parte de tu inventario habitual y reportá el resultado. (Errata 3-sep: esta línea decía «cuando exista el importador».)
 
 *Nota de instalación (2-sep-2026): las dos comparaciones contra la fuente
 descargan datos. No se corren entre 17:50 y 20:30 hora de Chile, y el

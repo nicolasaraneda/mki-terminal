@@ -23,8 +23,9 @@ Corre su self-test antes de confiar en él:
 python ${CLAUDE_SKILL_DIR}/scripts/evaluacion.py
 ```
 
-El self-test reproduce las dos Wilson de la ventana sellada canónica: 164/248
-da [60.0%, 71.7%] y 148/248 da [53.5%, 65.6%], ambas idénticas a las del acta
+El self-test reproduce las dos Wilson de la ventana sellada canónica: 161/238
+da [61.5%, 73.3%] y 138/238 da [51.6%, 64.1%] (desde el 3-sep-2026, regla de
+deduplicación firmada; antes era 164/248 y 148/248), ambas idénticas a las del acta
 37.5. Si esas dos no salen, el módulo se rompió y no sigas.
 
 Las anclas históricas (150/228 y b=67, c=55) siguen en el self-test como
@@ -72,8 +73,10 @@ print(comparar_pareado(acierto_modelo, acierto_base))
 
 **No las cites de memoria.** Están en la skill `cifras-canonicas`, y la fuente
 de verdad es el `README.md` del repo. Al 30-ago-2026 la ventana sellada
-canónica (`excluir_cero`) va n=248, modelo 66.1% [60.0, 71.7], base 59.7%
-[53.5, 65.6], ventaja +6.5 pp con McNemar p = 0.1849, MAE 2.98 contra 3.33,
-cobertura 90.3% con ratio 1.84×.
+canónica (`excluir_cero` + regla de deduplicación firmada, 3-sep-2026) va
+n=238, modelo 67.6% [61.5, 73.3], base 58.0% [51.6, 64.1], ventaja +9.7 pp con
+IC95 de clúster de día [-7.2, +26.6] (McNemar de filas p = 0.0455, χ²cc), MAE
+2.52 contra 2.98, cobertura 92.9% con ratio 2.19× [1.71, 2.78]. La rama sin
+deduplicar (era n=248, +6.5 pp) está retirada.
 
 Si lo que ves acá no coincide con el README, manda el README.

@@ -34,3 +34,7 @@ Formato: `| patrón | contexto | fecha de retiro | acta o expediente | reemplazo
 | `0[,.]36\s*\[0[,.]34,\s*0[,.]37\]` | potencia del 25-oct según `horizonte.md`, instrumento medido optimista (+2,7 pp) | 2026-09-02 | `dictamen_08/A.md` A4; acta §75 | 0,31 [0,27, 0,35] (simulador calibrado, `calibracion_instrumento.md` A4) |
 | `satura[n]?\s+en\s+1[,.]0000` | «el PSR y el DSR saturan en 1,0000 por anualizar un Sharpe sobre pocos días» | 2026-09-02 | `dictamen_08/A.md` A3; erratas en `control_lineal.md`, `ventana_larga.md` | defecto de unidades del PSR/DSR; con la unidad correcta 0,95–0,96 |
 | `3[,.]47\s?pp[^\n]{0,60}revis` | «la fuente revisó su historia, 3,47 pp» | 2026-09-01 | acta §69 (`docs/SEGUNDO_SELLO.md` §0) | barra retirada; 5,80 pp bajo la lógica de producción |
+| `\bn\s?=\s?248\b|n%3D248|\b(164|148)/248\b` | ventana sellada SIN deduplicar (n = 248), convención derogada por D1 | 2026-09-03 | acta §78; `cola_decisiones.md` §2a; encargo 09 D1 | n = 238 bajo la regla de deduplicación firmada (`cifras.sellada()`) |
+| `\+6[,.]5\s?pp` | ventaja de la ventana sellada sin deduplicar | 2026-09-03 | acta §78 | +9,7 pp [−7,2, +26,6] de día (n = 238) |
+| `0[,.]1849` | McNemar χ²cc de la rama sin deduplicar | 2026-09-03 | acta §78 | 0,0455 de filas, y decide el IC de día |
+| `1[,.]84\s?[×x]` | ratio ancho/error de los intervalos del 80% sin n ni intervalo | 2026-09-03 | acta §78; encargo 09 §1d | 2,19× [1,71, 2,78] de día (n = 238) |

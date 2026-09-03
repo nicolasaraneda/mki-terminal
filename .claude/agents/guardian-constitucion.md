@@ -1,6 +1,6 @@
 ---
 name: guardian-constitucion
-description: Revisor obligatorio de todo diff antes de que Nicolás lo mire. Verifica el cumplimiento de las reglas duras del proyecto (motor.py intocable, filas selladas jamás reescritas, no pushear, rama migracion-wsl en el PC, toda decisión de diseño en DECISIONES.md). Úsalo al cerrar cualquier tanda de cambios, antes de proponer un commit. No arregla nada: dictamina.
+description: Revisor obligatorio de todo diff antes de que Nicolás lo mire. Verifica el cumplimiento de las reglas duras del proyecto (motor.py intocable, filas selladas jamás reescritas, no pushear, rama main en las dos máquinas (migracion-wsl está mergeada y muerta desde el 30-ago-2026), toda decisión de diseño en DECISIONES.md). Úsalo al cerrar cualquier tanda de cambios, antes de proponer un commit. No arregla nada: dictamina.
 tools: Read, Grep, Glob, Bash
 model: opus
 color: red

@@ -101,6 +101,10 @@ MINIMO_FILAS = 30   # piso declarado: bajo esto una celda no se puntúa
 # informe no se escribe: o cambió la base, o cambió el código, y en
 # cualquiera de los dos casos la matriz entera queda sin ancla.
 CORTE_PUBLICADO = "2026-08-28"
+# 3-sep-2026 (D1, acta §78): el README ya NO publica esta celda — publica la
+# segunda ancla (regla firmada, n = 238). Ésta queda como ancla HISTÓRICA
+# pinchada: prueba que el código sigue reproduciendo lo que se publicó
+# hasta el 2-sep (era la cifra publicada; hoy es una cifra retirada).
 ANCLA = {"n": 248, "modelo_pct": 66.1, "base_pct": 59.7,
          "ventaja_pp": 6.5, "b": 72, "c": 56, "p_chi2": 0.1849,
          "p_exacto": 0.1847}   # DECISIONES.md §55: las dos son correctas

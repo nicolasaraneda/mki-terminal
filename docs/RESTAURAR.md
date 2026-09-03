@@ -168,6 +168,9 @@ cantidad.
 
 ## Pruebas
 
+> **Nota fechada 3-sep-2026 (corrida 09, frente 2a):** lo que sigue describe el estado del 31-ago. Desde el 3-sep `tests/test_importador_roundtrip.py` (16 tests, en la suite) compara **las cinco tablas de `senales.db` fila por fila** contra la base real en `mode=ro` —incluida `plataforma_version` de cada snapshot— con contraprueba; sobre el CSV del 2-sep 18:15: 2.301 = 2.301 filas, 25.082 celdas, 0 discrepancias. Ver `GEMELO/resultados/corrida09/importador_roundtrip.md`. La frase de abajo «la única tabla que hoy coincide» era cierta el 31-ago y ya no lo es.
+
+
 `tests/test_restaurar_backup.py`, en la suite normal
 (`python -m pytest tests/ -q`): verifica que ninguna fila del CSV se pierde
 ni se duplica al importar, que el hash de contenido es reproducible entre

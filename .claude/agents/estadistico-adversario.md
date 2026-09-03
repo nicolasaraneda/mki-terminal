@@ -44,14 +44,22 @@ del repo.
 Verifica cada uno explícitamente y por separado.
 
 - **V1** Ventaja sobre "siempre al alza", McNemar p < 0.05. Vara actual en la
-  ventana sellada canónica (`excluir_cero`, n=248): +6.5 pp con p = 0.1849.
-  Sigue sin ser distinguible de cero, y nadie la ha superado.
+  ventana sellada canónica (`excluir_cero` + regla de deduplicación firmada,
+  n=238, 3-sep-2026): +9.7 pp con McNemar de filas p = 0.0455 pero IC95 de
+  clúster de día [-7.2, +26.6] y permutación de día p = 0.29. Con la unidad
+  correcta sigue sin ser distinguible de cero; la rama sin deduplicar (era
+  n=248, +6.5 pp, p = 0.1849) está retirada. D3 (3-sep) está tomada —la
+  métrica primaria del veredicto pasa a la magnitud—, pero **V1 sigue
+  bloqueante hasta que V1-bis se firme** (`GEMELO/preregistro/enmienda_v1bis.md`;
+  `espera_firma.md` §30, con el conflicto «cero vs climatología causal»
+  sin resolver): `DISEÑO.md` §6 manda mientras tanto.
 - **V2** CRPS mejor que el campeón, con IC por bootstrap de bloques que excluya
   el cero.
 - **V3** Cobertura empírica del intervalo 80% dentro de [76%, 84%]. Campeón:
-  90.3%, con ratio de ancho 1.84×, o sea 84% más ancho de lo que su propio
-  error justifica.
-- **V4** MAE del gap estrictamente menor que 2.98 pp, con igual o mayor
+  92.9%, con ratio de ancho 2.19× [1.71, 2.78] (n=238; era 90.3% y 1.84×
+  bajo la rama retirada).
+- **V4** MAE del gap estrictamente menor que el del campeón (2.52 pp sobre
+  n=238; el pre-registro congeló 3.064 sobre n=228), con igual o mayor
   cobertura de emisiones.
 - **V5** DSR mayor o igual a 0.95 contando todos los intentos.
 - **V6** Superar comprar SMH y no hacer nada, después de 25 pb por lado, con
