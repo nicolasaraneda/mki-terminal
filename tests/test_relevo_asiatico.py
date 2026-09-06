@@ -432,15 +432,38 @@ def _par_sintetico(semilla=3, n=400):
     return a, b
 
 
-def test_el_IC_del_WS2b_esta_en_OTRA_escala_que_el_punto_estimado():
-    """HALLAZGO: `cl.comparar` imprime un `delta_mae` en pp junto a un
-    intervalo que sale del bootstrap del SHARPE. Este test FIJA el
-    hallazgo: si alguien lo arregla en `cl` sin documentarlo, falla."""
+def test_el_WS2b_publica_los_dos_intervalos_con_el_nombre_de_cada_uno():
+    """El hallazgo del WS5, CORREGIDO EN SU ORIGEN el 6-sep-2026.
+
+    Este test cambia de sujeto. Antes fijaba el DEFECTO —`cl.comparar`
+    imprimía `delta_mae_ic`, que es el IC del Sharpe, junto a un `delta_mae`
+    en pp— para que nadie lo arreglara en silencio. El arreglo llegó con su
+    documentación: exigencia 3 del `guardian-constitucion` sobre la corrida
+    09, cuyo argumento es la regla de la casa —la errata se había escrito en
+    la prosa de `control_lineal.md` y `ventana_larga.md` y el ejecutable
+    seguía igual—. Ahora fija la CORRECCIÓN: la función publica los dos
+    intervalos, cada uno con el nombre de lo que es, y el nombre ambiguo ya
+    no existe. Las cifras de esos dos reportes se publicaron con la versión
+    anterior y llevan su errata fechada al pie; no se reescriben."""
     a, b = _par_sintetico()
-    viejo = cl.comparar(a, b, "A", "B")
-    lo, hi = viejo["delta_mae_ic"]
-    assert not (lo <= viejo["delta_mae"] <= hi), \
-        "si el punto ya cae dentro, el hallazgo del WS5 dejó de ser cierto"
+    r = cl.comparar(a, b, "A", "B")
+    assert "delta_mae_ic" not in r          # el nombre ambiguo se fue
+    lo, hi = r["ic_delta_mae_pp"]
+    assert lo <= r["delta_mae"] <= hi       # el IC de lo que dice ser
+    slo, shi = r["ic_sharpe_dmae"]          # y el viejo, conservado y nombrado
+    assert not (slo <= r["delta_mae"] <= shi), \
+        "si el punto cae dentro del IC del Sharpe, el hallazgo del WS5 dejó " \
+        "de ser cierto y este test hay que rehacerlo, no relajarlo"
+
+
+def test_las_dos_escalas_deciden_lo_mismo_tambien_en_cl():
+    """La equivalencia que salva las conclusiones previas, comprobada
+    directamente sobre la función que produjo el WS2b y el WS3, no sólo
+    sobre el envoltorio del WS5."""
+    for semilla in range(12):
+        a, b = _par_sintetico(semilla=semilla, n=300)
+        r = cl.comparar(a, b, "A", "B")
+        assert r["ic_excluye_cero"] == r["ic_pp_excluye_cero"], semilla
 
 
 def test_el_WS5_publica_el_IC_en_la_escala_del_punto_estimado():

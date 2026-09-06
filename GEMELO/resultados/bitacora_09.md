@@ -156,7 +156,8 @@ es `data/*.log` solamente y se anota. Para 1d se salta la lectura del hook
 - **01:06** — `horizonte.py` terminó (EXIT 0). **Ruta 3 (simulador
   calibrado) manda:** potencia del 25-oct (73 días) a 9 pp **0,30 [0,27,
   0,33]**, a 6,5 pp 0,18 [0,16, 0,21]; días para 0,80: 9 pp **269 [229,
-  275] → 27-ago-2027** [25-jun-2027, 6-sep-2027]; 6,5 pp 510 [490, 531] →
+  275] → 27-ago-2027** [25-jun-2027, 6-sep-2027] —RETIRADO a las 12:20: el
+  intervalo no medía lo que decía; v2 ≈263, rango MC [229, 296]—; 6,5 pp 510 [490, 531] →
   6-sep-2028; 5 pp 811 → dic-2029; 12 pp 141 → feb-2027. **Pareada ruta 2
   − ruta 3 sobre 28 celdas: la ruta 2 por encima en 23, por debajo en 1
   (McNemar exacto p = 3e-6), +2,17 pp [1,55, 2,81]** — verificado con el
@@ -224,9 +225,12 @@ es `data/*.log` solamente y se anota. Para 1d se salta la lectura del hook
   bump; «emitido antes» ≠ «reproducible después», escrito. Intentos: 7.
 - **11:22** — Retomo tras el límite. `frase_potencia.py`
   (`corrida09/frase_potencia.md`): **dirección** 0,30 [0,27, 0,33] el
-  25-oct, 269 días [229, 275] → 27-ago-2027; **magnitud** (MAE contra
+  25-oct, 269 días [229, 275] → 27-ago-2027 —RETIRADO a las 12:20; v2 ≈263,
+  rango MC [229, 296]—; **magnitud** (MAE contra
   cero) 0,90 [0,87, 0,92] con el generador de 9 pp y 0,86 [0,83, 0,89] al
   efecto observado; potencia 0,80 en **58 días [54, 62] → 1-oct-2026**
+  —RETIRADO a las 12:20; 96 [20, ∞) al efecto observado, ninguna fecha
+  encabeza—
   [25-sep, 8-oct] por el simulador (**ANTES del 25-oct**) y 96 [20, ∞) →
   1-dic-2026 al efecto observado (DESPUÉS); bajo R2 175 días. **Esa frase
   quedó retirada por el dictamen de las 12:20** (ver ese hito): la
@@ -235,10 +239,12 @@ es `data/*.log` solamente y se anota. Para 1d se salta la lectura del hook
   look-ahead del juez lineal relanzado.
 - **12:20** — Dictamen del adversario sobre 1b/3c (con otro modelo: el
   de `opus` cayó tres veces por 529): la tabla de potencia y la pareada de
-  la ruta 3 **SOSTIENEN**; el intervalo «269 [229, 275]» **NO** (Wilson de
+  la ruta 3 **SOSTIENEN**; el intervalo «269 [229, 275]» **NO** —RETIRADO—
+  (Wilson de
   celda invertida por bisección con una semilla: sólo Monte Carlo, y ni
   ése completo — verificó a tres semillas que 269 cruza 0,80 con una y no
-  con las otras dos); la frase «58 [54, 62] → cae ANTES del 25-oct» **NO
+  con las otras dos); la frase «58 [54, 62] → cae ANTES del 25-oct»
+  —RETIRADA— **NO
   SOSTIENE** (condicional a un efecto MAE de 0,48 pp que el observado +0,44
   [−0,09, +0,96], que contiene el cero, no distingue; ANTES/DESPUÉS entre
   una fecha fija y una cantidad con IC [20, ∞) no está ordenado). Exigido y
@@ -342,7 +348,9 @@ es `data/*.log` solamente y se anota. Para 1d se salta la lectura del hook
 - **13:05** — **Cierre sin dos dictámenes: se agotaron los créditos de la
   API** y murieron el `guardian-constitucion` y el `curador-epistemico`
   (dos intentos), además del 4.º auditor que ya había sido reemplazado. El
-  guardián se sustituye por **verificación mecánica propia, con evidencia**:
+  dictamen del guardián NO se obtuvo y nada lo sustituye; queda, **sin valor
+  de dictamen y hecha por el mismo orquestador que produjo los cambios**,
+  esta verificación mecánica:
   `git diff --stat` sobre `motor.py`, `senales.py`, `snapshot.py`,
   `universo.py`, `version.py`, `calendarios.py` **vacío**; `.env`, `systemd/`
   y `launchd/` no aparecen en `git status`; `senales.db` conserva mtime
@@ -359,3 +367,61 @@ es `data/*.log` solamente y se anota. Para 1d se salta la lectura del hook
   frase «antes del 25-oct» quedó marcada como retirada también en su hito;
   `ESTADO.md` y `estado_epistemico.md` ya leen el juez con la celda de
   filas comunes; ninguna cifra retirada reaparece (test).
+
+---
+
+# Los dos dictámenes que faltaban (6-Sep-2026)
+
+Sesión aparte, tres días después del cierre. Nicolás pidió correr los dos
+dictámenes que murieron por límite de API, con una condición explícita: el
+guardián dictamina por su cuenta y **no** puede apoyarse en la autoverificación
+mecánica del hito de las 13:05, porque la hizo el mismo mecanismo que produjo el
+diff. Los dictámenes están en `GEMELO/resultados/dictamen_09/`.
+
+- **18:03 (3-sep), reconstruido hoy** — Lo que el hito de cierre no dijo, y el
+  guardián exigió que dijera. La bitácora se editó por última vez a las
+  **18:02:46**; el commit `e0179b7` es de las **18:03:05** y su hook corrió la
+  suite completa; los otros tres son de las **18:08:52** con `SKIP_TESTS=1`. El
+  job de las 17:50 corrió `noticias.py` **sin commitear**, byte-idéntico a lo que
+  entró en `7d13f5e` (mtime 10:15:31, sin tocar después). `ESTADO.md` decía
+  «`.env` sigue en 644» y la máquina da **600** desde el 2-sep 15:26.
+- **18:10–18:16** — Suite completa sobre el árbol actual: **1 failed, 648 passed,
+  2 xfailed** en 327,88 s. El fallo NO es de la corrida 09:
+  `test_senales_db_conserva_su_scoring_original` clavaba en 5 un **censo** de filas
+  de gap cero sobre la base viva, escrito el 25-ago (`78c83ea`); el sello del
+  2-sep verificó una sexta. Hasta cualquier ventana congelada siguen siendo cinco
+  y el invariante no se rompió. Corregido donde vive el defecto, más dos tests
+  verdes con el mismo defecto que habrían caído en el próximo par duplicado.
+- **18:21** — `dictamen_09/verificacion_arbol_skip_tests.md`. Ningún archivo de
+  los tres commits con `SKIP_TESTS=1` tiene mtime posterior a las 18:03:05; el
+  más tardío es la propia bitácora, 19 s antes, y ningún test la lee. **El árbol
+  sobre el que se saltaron los tests es el que corrió los verdes**, salvo
+  `data/backups/`, que el hook exime por diseño.
+- **Hallazgo propio, que el guardián dejó abierto** — La suite **sí toca la red**:
+  `motor._datos_crudos` llama a `yf.download` con caché sólo en memoria (15 min).
+  El hook la corrió a las ~17:57–18:03 del 3-sep, **dentro** de la ventana de
+  sellado que el encargo declaraba prohibida para descargas. Evidencia de que no
+  hubo daño: el sello de las 18:15 salió **28/28** y a la hora. Evidencia de que
+  no escribe caché en disco: durante la corrida de hoy sólo cambiaron los dos
+  archivos de `.pytest_cache`. Queda como regla incumplida, no como incidente.
+- **19:09** — **`guardian-constitucion`: APROBADO CON EXIGENCIAS** (7). En verde
+  con evidencia propia: intocables sin tocar, parches sin aplicar
+  (`git apply --check` en las dos direcciones), ningún `DELETE`/`ALTER` nuevo
+  sobre tablas selladas, `.env` en 600 e ignorado, sin push ni pull, hooks
+  intactos, y las cifras publicadas reproducidas con aritmética independiente.
+- **19:05** — **`curador-epistemico`: RECHAZADO** (7 bloqueantes, 30 exigencias).
+  Ninguno mueve una cifra del árbitro: son prosa que dice más que la cifra. Lo
+  más serio, y da la razón a la regla de la casa: el titular del README sostenía
+  «la firma de un mecanismo» cuando la predicción fuera de muestra de esa curva
+  había **fallado** en dos de tres bolsas, y el README no lo mencionaba en
+  ninguna parte. El curador no escribe en el árbol: su dictamen lo volcó esta
+  sesión, con una nota que declara las podas.
+- **19:20** — Las 37 exigencias aplicadas. Tres tocan ejecutables, y las tres
+  son la misma regla: el IC del ΔMAE salía en escala de Sharpe con la errata sólo
+  en la prosa (`control_lineal.comparar`, corregido en su origen); la ganancia de
+  MAE se publicaba sin intervalo (`cifras.sellada` ahora la publica con IC de
+  clúster de día, +0,45 [−0,09, +1,00] —contiene el cero—, p 0,10); y dos
+  módulos emitían cifras
+  retiradas en sus cadenas de salida. El resto es prosa, y una decisión nueva
+  para Nicolás: el dedup de noticias cambia el método de un insumo **sellado**
+  (`puntaje_ia`, peso 0,3), y el bump de `FEATURE_VERSION` es suyo (`espera` §38).

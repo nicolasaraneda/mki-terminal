@@ -341,9 +341,21 @@ def comparar(a: pd.DataFrame, b: pd.DataFrame, nombre_a: str,
     mae_a = np.abs(j["pred_a"] - gap)
     mae_b = np.abs(j["pred_b"] - gap)
     dif = (mae_b - mae_a).to_numpy(float)      # >0 ⇒ A tiene MENOS error
-    ic = inf.bootstrap_bloques(dif, semilla=SEMILLA_BOOTSTRAP,
-                               bloque=BLOQUE_BOOTSTRAP, alpha=ALPHA_BOOTSTRAP,
-                               anualizar=1)
+    # Los DOS intervalos del mismo sorteo, cada uno con el nombre de lo que es.
+    # `bootstrap_bloques` devuelve el IC del SHARPE de la diferencia, y hasta
+    # el 6-sep-2026 se imprimía aquí bajo el nombre `delta_mae_ic`, al lado de
+    # un punto en pp: escalas distintas. El WS5 lo halló, lo dejó fijado en un
+    # test y lo arregló SOLO en `relevo_asiatico.comparar`; la errata se
+    # escribió en la prosa de los reportes y el ejecutable siguió como estaba.
+    # Corregido en su origen (exigencia 3 del `guardian-constitucion` sobre la
+    # corrida 09). Ningún veredicto se mueve: `sd > 0` conserva el signo
+    # réplica a réplica, así que «excluye el cero» es el mismo evento en las
+    # dos escalas, y hay test. Lo que estaba mal era el número impreso.
+    ic_sh = inf.bootstrap_bloques(dif, semilla=SEMILLA_BOOTSTRAP,
+                                  bloque=BLOQUE_BOOTSTRAP,
+                                  alpha=ALPHA_BOOTSTRAP, anualizar=1)
+    ic_pp = inf.bootstrap_media(dif, semilla=SEMILLA_BOOTSTRAP,
+                                bloque=BLOQUE_BOOTSTRAP, alpha=ALPHA_BOOTSTRAP)
     return {
         "par": f"{nombre_a} vs {nombre_b}", "n": int(len(j)),
         "acierto_a_pct": round(100 * ha.mean(), 1),
@@ -353,8 +365,10 @@ def comparar(a: pd.DataFrame, b: pd.DataFrame, nombre_a: str,
         "mae_a": round(float(mae_a.mean()), 4),
         "mae_b": round(float(mae_b.mean()), 4),
         "delta_mae": round(float(dif.mean()), 4),
-        "delta_mae_ic": [round(ic["lo"], 4), round(ic["hi"], 4)],
-        "ic_excluye_cero": bool(ic["lo"] > 0 or ic["hi"] < 0),
+        "ic_delta_mae_pp": [round(ic_pp["lo"], 4), round(ic_pp["hi"], 4)],
+        "ic_sharpe_dmae": [round(ic_sh["lo"], 4), round(ic_sh["hi"], 4)],
+        "ic_excluye_cero": bool(ic_sh["lo"] > 0 or ic_sh["hi"] < 0),
+        "ic_pp_excluye_cero": bool(ic_pp["lo"] > 0 or ic_pp["hi"] < 0),
     }
 
 

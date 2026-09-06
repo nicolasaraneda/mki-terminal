@@ -44,6 +44,8 @@ Redactá la enmienda al pre-registro de GEMELO como documento separado (`GEMELO/
 ### 1d. Arreglos menores
 `CLAUDE.md` deja de describir al Mac como titular (manda la máquina). El ratio 1,84× o entra al árbitro con n e intervalo o se retira; no puede circular suelto. El hook `guardia-reglas` deja de afirmar que en el PC la rama es `migracion-wsl`.
 
+> **Anotación de la corrida 09, agregada el 6-sep-2026 sin tocar el texto de arriba** (exigencia 7 del `guardian-constitucion`). El ratio quedó RETIRADO y está en `GEMELO/cifras_retiradas.md`; el árbitro publica en su lugar el ratio de ancho con su IC de clúster de día (bloque 9). Se anota aquí para que la cifra no circule suelta ni siquiera en el encargo que ordenó retirarla.
+
 ## 4. Bloque 2: la deuda que sostiene la visión
 
 Un instrumento de medición que no puede restaurarse desde su propio respaldo, que produce filas malas cuando el sello se atrasa, y que sella desde una sola máquina cuyo disco ya falló, no es todavía un instrumento. Estos frentes llevan meses en el backlog. Van en este orden.

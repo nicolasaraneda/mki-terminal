@@ -108,6 +108,17 @@ def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> di
     _, lo_t, hi_t = bf._ic_t_cluster(grupos)
     p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
     icc = bf.icc_y_deff(grupos)
+    # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+    # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+    # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+    # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+    # detector busca pares punto/intervalo). El cociente no tiene unidad de
+    # replicación; la ganancia por fila sí, y es el día.
+    gan = (df["gap_pct"].abs()
+           - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+    g_gan = _grupos_por_dia(df, gan)
+    _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+    gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
     # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
     from math import comb
     b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
@@ -139,6 +150,9 @@ def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> di
         "retorno_wilson": [f(x) for x in lb._wilson(ra, rn)] if rn else None,
         "mae_modelo_pp": f(m["mae_modelo"]), "mae_cero_pp": f(m["mae_cero"]),
         "mae_mejora_pct": round(100 * (m["mae_modelo"] / m["mae_cero"] - 1), 1),
+        "mae_ganancia_pp": round(float(gan.mean()), 4),
+        "mae_ganancia_ic_t_dia": [round(float(gan_lo), 3), round(float(gan_hi), 3)],
+        "mae_ganancia_p_dia": round(float(gan_p), 3),
         "cobertura_80_pct": f(cal.get("cobertura_pct")), "ratio_ancho": f(cal.get("ratio_ancho_error")),
         "ratio_ancho_ic_dia": _ic_ratio_dia(df),
         "procedencia": ("backtest.linea_base.{cargar(dedup=%s),aplicar_convencion,duelo,magnitud,calibracion} en mode=ro; "
@@ -173,8 +187,10 @@ def doce_bloques(c: dict) -> list:
     la cifra vigente. Si n cambia en el árbitro, los doce fragmentos cambian
     (test), y cada archivo tiene que actualizarse — o no se mueve ninguno.
     Desde el 3-sep-2026 el bloque 2 (TL;DR) y el 6 (tabla) llevan el IC de
-    clúster de día, y el 9 lleva el ratio de ancho con su IC (D1: el 1,84×
-    no circula suelto; entra con n e intervalo o se retira)."""
+    clúster de día, y el 9 lleva el ratio de ancho con su IC. El «1,84×»
+    suelto quedó RETIRADO el 3-sep-2026 por D1 y está en el registro
+    `GEMELO/cifras_retiradas.md`: el ratio entra con n e intervalo, o no
+    entra."""
     n = c["n"]
     v = f"{c['ventaja_pp']:+.1f}"
     ic = f"[{c['ventaja_ic_dia'][0]:+.1f}, {c['ventaja_ic_dia'][1]:+.1f}]"
@@ -187,7 +203,7 @@ def doce_bloques(c: dict) -> list:
         ("README.md", f"**{c['base_pct']:.1f}%** ({c['base_aciertos']}/{n})"),            # 5 tabla base
         ("README.md", f"**{v} pp** | IC95 de día **{ic}** · McNemar p = {c['mcnemar_p']:.4f}"),  # 6 tabla ventaja
         ("README.md", f"| Otras métricas (n={n}) |"),                                     # 7 otras métricas
-        ("README.md", f"**{c['mae_modelo_pp']:.2f} pp** vs **{c['mae_cero_pp']:.2f}**"),   # 8 MAE
+        ("README.md", f"**{c['mae_modelo_pp']:.2f} pp** vs **{c['mae_cero_pp']:.2f}** de predecir cero | ganancia {c['mae_ganancia_pp']:+.2f} pp por fila, IC95 t de clúster de día [{c['mae_ganancia_ic_t_dia'][0]:+.2f}, {c['mae_ganancia_ic_t_dia'][1]:+.2f}]"),   # 8 MAE con su ganancia e IC de día
         ("README.md", f"{c['cobertura_80_pct']:.1f}% (nominal 80%) | intervalos **{c['ratio_ancho']:.2f}× más anchos** de lo necesario (IC95 de día {ric})"),  # 9 cobertura + ratio con IC
         (".claude/skills/cifras-canonicas/SKILL.md", f"**{n}** | **{c['modelo_pct']:.1f}%** | **{c['base_pct']:.1f}%** | **{v} pp** | **{ic}** | **{c['mcnemar_p']:.4f}**"),  # 10 skill
         (".claude/skills/cifras-canonicas/SKILL.md", f"MAE del gap {c['mae_modelo_pp']:.2f} contra {c['mae_cero_pp']:.2f}"),   # 11 skill MAE

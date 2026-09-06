@@ -425,25 +425,18 @@ def comparar(a: pd.DataFrame, b: pd.DataFrame, na: str, nb: str) -> dict:
     de la proporción de réplicas sobre cero). Lo que estaba mal era el
     número impreso, no el veredicto.
 
-    Aquí se publican los dos, con el nombre que dice qué es cada uno:
+    Se publican los dos, con el nombre que dice qué es cada uno:
     `ic_sharpe_dmae` (la maquinaria del WS2b/WS3, para comparabilidad) e
     `ic_delta_mae_pp` (el intervalo de lo que la columna dice ser).
+
+    **6-sep-2026:** la corrección se movió AGUAS ARRIBA, a `cl.comparar`
+    (exigencia 3 del `guardian-constitucion` sobre la corrida 09: la errata
+    estaba en la prosa de los reportes y el ejecutable seguía imprimiendo la
+    escala equivocada). Esta función ya no reparte nombres: sólo aplica la
+    convención `excluir_cero` y devuelve lo que `cl.comparar` publica. Las
+    cifras no cambian —mismo `dif`, misma semilla, mismos bloques—.
     """
-    a, b = excluir_cero(a), excluir_cero(b)
-    r = cl.comparar(a, b, na, nb)
-    if not r.get("n"):
-        return r
-    j = a.merge(b, on=["fecha", "ticker"], suffixes=("_a", "_b"))
-    gap = j["gap_pct_a"].to_numpy(float)
-    dif = (np.abs(j["pred_b"].to_numpy(float) - gap)
-           - np.abs(j["pred_a"].to_numpy(float) - gap))
-    ic = inf.bootstrap_media(dif, semilla=cl.SEMILLA_BOOTSTRAP,
-                             bloque=cl.BLOQUE_BOOTSTRAP,
-                             alpha=cl.ALPHA_BOOTSTRAP)
-    r["ic_sharpe_dmae"] = r.pop("delta_mae_ic")
-    r["ic_delta_mae_pp"] = [round(ic["lo"], 4), round(ic["hi"], 4)]
-    r["ic_pp_excluye_cero"] = bool(ic["lo"] > 0 or ic["hi"] < 0)
-    return r
+    return cl.comparar(excluir_cero(a), excluir_cero(b), na, nb)
 
 
 # ------------------------------------------------------------

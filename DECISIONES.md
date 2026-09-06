@@ -7840,7 +7840,14 @@ magnitud (MAE contra predecir cero, y CRPS donde haya densidad); la
 dirección se sigue publicando como secundaria con la misma firmeza. Aplicado
 en: la enmienda V1-bis (78.2), el pre-registro del juez lineal (78.5), la
 frase de potencia en dos versiones (78.3) y el agente
-`estadistico-adversario` (V1 secundaria).
+`estadistico-adversario`.
+
+> **Errata (6-Sep-2026, exigencia 5 del `guardian-constitucion`).** Esta línea
+> terminaba en «(V1 secundaria)» y contradecía al agente que dice describir:
+> `.claude/agents/estadistico-adversario.md` mantiene **V1 bloqueante hasta
+> que V1-bis se firme**, y `DISEÑO.md` §6 manda mientras tanto. D3 mueve la
+> métrica primaria del veredicto; no rebaja la vara vigente. La vara sólo
+> cambia con la firma de la enmienda (`espera_firma.md` §30).
 
 ### 78.2 La enmienda V1-bis es un cambio de PREGUNTA, no de vara (dictamen), y hay un conflicto con D3 que es de Nicolás
 
@@ -7920,6 +7927,24 @@ efecto cuyo intervalo contiene el cero.
   equivalencia dentro de la ventana, idempotencia, esquema aditivo. **El
   parche `TimeoutStartSec=2700` queda innecesario** (`espera` §31). Corre
   por primera vez hoy 17:50.
+- **2c bis — el cambio toca un insumo SELLADO (6-Sep-2026, exigencia 4 del
+  `guardian-constitucion`).** La corrida 09 declaró el cambio de conducta
+  («una republicación a más de 10 días ya no se detecta») pero no dijo dónde
+  desemboca. `senales.py` sella `puntaje_ia = puntaje_v0 × 0,7 +
+  ((sentimiento + 1) / 2) × 0,3`: el sentimiento de noticias entra con peso
+  0,3 en una columna **sellada**. La deduplicación retroactiva alimenta ese
+  sentimiento, así que su método cambió **dentro** de una columna sellada, y
+  eso es un corte de método en un insumo, no una mejora interna del job.
+  MEDIDO en producción (`data/noticias.log`): el 3-sep 21:50 UTC la primera
+  pasada corrió en **615,9 s** con 4.921.843 comparaciones y borró **20**
+  duplicados; el 4-sep, **54,0 s**, 445.139 comparaciones y **13**. El sello
+  de las 18:15 del 3-sep es el primero que descansa sobre el método nuevo.
+  Evidencia colateral del defecto que se corrigió: el job del 1-sep quedó en
+  «titulares guardados» sin analizar y el del 2-sep no pasó de la línea de
+  arranque. **Ninguna fila se reescribe**; lo que sigue abierto es si esto
+  obliga a mover `FEATURE_VERSION`, que es decisión de Nicolás y entra a
+  `espera_firma.md`. La señal verificada (`apertura_estimada_pct`, el gap del
+  track record) **no** depende de este insumo: el motor no lee noticias.
 - **2d, cuatro tarjetas firmables** (`corrida09/tarjetas_09.md`; journal
   NO leído por instrucción de Nicolás, sólo `data/*.log`): abstención por
   sello tardío (A abstendría 15/269, 3 aciertos y 12 errores; rec. flag en el
@@ -7998,3 +8023,115 @@ propio; revertir el commit de 1a devuelve los doce bloques y el árbitro
 juntos (el test los ata). Nada tocó `motor.py`, `senales.py`, `snapshot.py`,
 `universo.py`, `.env`, timers ni ninguna fila sellada; `noticias.py` y
 `mki_noticias.py` sí cambiaron (78.4, 2c) y se revierten con su test.
+
+## 79. Los dos dictámenes que la novena corrida no obtuvo, corridos tres días después: el guardián aprueba con siete exigencias, el curador rechaza con treinta, y las tres que tocan ejecutables son la misma regla
+
+**Fecha:** 6-Sep-2026. **Contexto:** la corrida 09 cerró sin `guardian-constitucion`
+ni `curador-epistemico` porque se agotaron los créditos de la API (acta §78,
+`bitacora_09.md` 13:05). En su lugar quedó una **autoverificación mecánica**
+hecha por el mismo mecanismo que produjo el diff. Nicolás ordenó correr los dos
+dictámenes con esa condición explícita: el guardián dictamina por su cuenta y no
+puede apoyarse en esa autoverificación. Todo en
+`GEMELO/resultados/dictamen_09/`.
+
+### 79.1 El árbol sobre el que se saltaron los tests
+
+Tres de los cuatro commits de la 09 se hicieron con `SKIP_TESTS=1`. La pregunta
+—¿era el mismo árbol que corrió los verdes?— tiene respuesta porque el hook corre
+`pytest` sobre el **árbol de trabajo**, no sobre el índice. Ningún archivo de los
+51 que traen esos tres commits tiene `mtime` posterior al commit que sí corrió la
+suite; el más tardío es la propia bitácora, 19 s antes, y ningún test la lee. La
+única deriva desde entonces es `data/backups/`, que el hook exime por diseño.
+Evidencia y límites en `dictamen_09/verificacion_arbol_skip_tests.md`.
+
+### 79.2 Errata: un censo clavado como constante
+
+`tests/test_linea_base.py::test_senales_db_conserva_su_scoring_original`
+contaba las filas de gap cero **sobre la base viva**, sin corte, y afirmaba que
+eran cinco. Lo escribió el 25-ago (`78c83ea`) y el sello del 2-sep verificó una
+sexta: la suite se puso roja sola, tres días después de cerrar. Hasta cualquier
+ventana congelada siguen siendo cinco y el invariante que el test dice proteger
+—el `acierto_gap` sellado conserva la semántica del verificador— **no se rompió**.
+Corregido donde vive el defecto: el conteo se fija sobre la ventana congelada y
+el invariante se afirma sobre todas las filas, incluidas las que no existen aún.
+Dos tests verdes tenían el mismo defecto y habrían caído en el próximo par de
+sesión duplicada; se fijaron también, tras comprobar que sus nueve valores son
+idénticos en las cuatro ventanas, y se les agregó el invariante que sí vale sobre
+la base viva: un par nuevo sin criterio es un hallazgo, no un test roto.
+
+### 79.3 El guardián: APROBADO CON EXIGENCIAS (7)
+
+Verificó por su cuenta y en verde: intocables sin tocar, los dos parches sin
+aplicar (`git apply --check` en las dos direcciones), ningún `DELETE`/`ALTER`
+nuevo sobre tablas selladas, `.env` en 600 e ignorado, sin push ni pull, hooks
+intactos, sin 5.1 ni retador ni fuente nueva, y las cifras publicadas
+reproducidas con aritmética independiente. Sus siete exigencias, aplicadas.
+
+**La que más importa (exigencia 4): el dedup de noticias toca un insumo
+SELLADO.** La corrida 09 declaró el cambio de conducta pero no dónde desemboca.
+`senales.py` sella `puntaje_ia = puntaje_v0 × 0,7 + ((sentimiento + 1) / 2) ×
+0,3`, y la deduplicación retroactiva alimenta ese sentimiento. Es un corte de
+método **dentro** de una columna sellada. Declarado en §78.4 bis; el bump de
+`FEATURE_VERSION` es decisión de Nicolás (`espera_firma.md` §38). La señal
+verificada no depende de esto: el motor no lee noticias.
+
+**Lo que el guardián dejó abierto y esta sesión cerró.** Preguntó si la suite del
+hook tocó la red dentro de la ventana de sellado del 3-sep. **Sí la toca:**
+`motor._datos_crudos` llama a `yf.download` con caché sólo en memoria, así que
+correr la suite a las ~17:57–18:03 fue una descarga dentro de la ventana que el
+encargo declaraba prohibida. Sin daño —el sello de las 18:15 salió 28/28 y a la
+hora— pero la regla se cruzó y queda anotada. Es además una restricción real
+sobre el trabajo futuro: **la suite no se corre entre 17:50 y 20:30 de un día
+hábil.**
+
+### 79.4 El curador: RECHAZADO (7 bloqueantes, 30 exigencias)
+
+Ninguno mueve una cifra del árbitro. Son prosa que dice más que la cifra que la
+sostiene, una decisión pendiente dada por aplicada, la omisión de lo que no se
+obtuvo, y cifras retiradas que seguían en ejecutables. Las treinta, aplicadas.
+
+**B4, el más grave.** El titular del README sostenía «the central finding is a
+mechanism» y «la firma de un mecanismo» cuando la predicción fuera de muestra de
+esa misma curva **había fallado** en dos de tres bolsas (Hong Kong: predicho
++14,0 pp, medido +4,1; India: predicho +8,6, medido −12,7; el mejor predictor de
+la ventaja por bolsa es la tasa base, r = −0,89), y el README no lo mencionaba en
+ninguna parte. Lo midió el dictamen B de la octava corrida y
+`estado_epistemico.md` ya lo listaba como CONTESTADA. El escalón queda MEDIDO; el
+mecanismo, PROPUESTA con su refutación al lado. Es exactamente el caso para el
+que se creó el rol, y el argumento para no cerrar otra corrida sin él.
+
+**B5 y B6.** «D3 aplicada: magnitud primaria» daba por firmado lo que espera
+firma: hasta que se firme V1-bis, V1 sigue bloqueante. Y ni `ESTADO.md` ni
+`estado_epistemico.md` decían que la corrida había cerrado sin sus dos
+dictámenes; sólo la bitácora lo declaraba.
+
+### 79.5 Las tres exigencias que tocan ejecutables son la misma regla
+
+- **El IC del ΔMAE, corregido en su origen.** `control_lineal.comparar` publicaba
+  `delta_mae_ic` —el IC del **Sharpe** de la diferencia— al lado de un
+  `delta_mae` en **pp**. El WS5 lo halló, construyó `inferencia.bootstrap_media`
+  para arreglarlo, lo arregló **sólo en su propio envoltorio** y dejó un test que
+  fijaba el defecto en el original; la errata se escribió en la prosa de
+  `control_lineal.md` y `ventana_larga.md` y el ejecutable siguió igual. Ahora la
+  función publica `ic_delta_mae_pp` e `ic_sharpe_dmae`, cada uno con el nombre de
+  lo que es; `relevo_asiatico.comparar` dejó de repartir nombres y
+  `experimento.py` lee el correcto. **Ningún veredicto se mueve:** `sd > 0`
+  conserva el signo réplica a réplica, y hay test sobre doce semillas. El test
+  que fijaba el defecto cambió de sujeto, con su fecha y su razón.
+- **La ganancia de MAE, con intervalo.** Era el único estimador del árbitro que
+  salía sin uno, y el test que dice vigilarlo no lo cazaba porque
+  `mae_mejora_pct` es un cociente. `cifras.sellada()` publica ahora
+  `mae_ganancia_pp` **+0,4547**, IC95 t de clúster de día **[−0,087, +0,996]**,
+  p de día **0,101**: contiene el cero. El bloque 8 de los doce lo lleva, así que
+  el README y el árbitro se mueven juntos o no se mueve ninguno.
+- **Cifras retiradas en cadenas de salida.** `bifurcaciones.py` seguía llamando
+  «publicada» y «del README» a la rama derogada en el informe que genera, y
+  `potencia_por_metrica.py` emitía el ratio retirado como literal. El ratio se
+  computa ahora de las mismas filas; los textos históricos llevan su marca.
+
+### 79.6 Cómo se revierte
+
+Todo en un commit propio por tanda. Nada tocó `motor.py`, `senales.py`,
+`snapshot.py`, `universo.py`, `version.py`, `.env`, timers ni ninguna fila
+sellada. `cifras.py` sí cambió: revertirlo devuelve el árbitro y los doce bloques
+juntos, porque el test los ata. Nada se publicó.

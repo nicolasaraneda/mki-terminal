@@ -11,9 +11,11 @@ día, el efecto del campeón medido con tres métricas:
        3,33 pp).
   CRPS densidad: c = CRPS(climatología) − CRPS(modelo), con el modelo como
        N(p, σ_pred) y la climatología como N(media, sd) del gap; σ_pred se
-       calibra al ancho medio del `intervalo80_pp` sellado (1,84× más ancho
-       de lo necesario, README) y se reporta también con la σ que
-       calibraría el modelo.
+       calibra al ancho medio del `intervalo80_pp` sellado (más ancho de lo
+       necesario por el ratio que publica el árbitro CON su IC,
+       `cifras.sellada()['ratio_ancho']`: 2,19× [1,71, 2,78] al 3-sep-2026;
+       el «1,84×» suelto está RETIRADO en `GEMELO/cifras_retiradas.md`) y se
+       reporta también con la σ que calibraría el modelo.
 
 Para cada métrica, el test es el mismo (permutación de signo de la SUMA
 diaria, `bifurcaciones._p_permutacion_dia`), así que la única diferencia
@@ -178,6 +180,10 @@ def main() -> dict:
     res["sellada"]["climatologia_y_sigma_pred"] = "ESTIMADAS EN MUESTRA sobre las mismas filas que puntúan (sesgo: la climatología ajustada en muestra favorece a la baseline; σ_pred sellada favorece al modelo sólo si está calibrada)"
     for col in ("DIR", "MAE", "CRPS"):
         res["sellada"][col] = dias_para_80(ds, col, efecto_alternativo=(0.0645 if col == "DIR" else None))
+    # El ratio se COMPUTA de las mismas filas: un literal aquí es un número
+    # retirado circulando (dictamen del curador, 6-sep-2026, exigencia 15).
+    res["sellada"]["ratio_ancho_error"] = round(
+        float(lb.calibracion(sell).get("ratio_ancho_error")), 2)
     res["sellada"]["mae_modelo_pp"] = round(float(sell["error_gap_pp"].mean()), 3)
     res["sellada"]["mae_cero_pp"] = round(float(sell["gap_pct"].abs().mean()), 3)
     res["sellada"]["mae_constante_mu_pp"] = round(float((sell["gap_pct"] - mu_clim).abs().mean()), 3)
@@ -232,7 +238,9 @@ def informe(r: dict) -> str:
           "| días | DIR | MAE | CRPS |", "|---|---|---|---|"]
     for x in r["simulador"]["sigma_pred_sellada"]:
         L.append(f"| {x['n_dias']} | {x['DIR']['potencia']} {x['DIR']['ic95']} | {x['MAE']['potencia']} {x['MAE']['ic95']} | {x['CRPS']['potencia']} {x['CRPS']['ic95']} |")
-    L += ["\nCon la σ calibrada (lo que el modelo tendría si su intervalo no fuera 1,84× ancho):\n", "| días | DIR | MAE | CRPS |", "|---|---|---|---|"]
+    L += [f"\nCon la σ calibrada (lo que el modelo tendría si su intervalo no fuera "
+          f"{r['sellada']['ratio_ancho_error']}× ancho, sobre estas mismas filas):\n",
+          "| días | DIR | MAE | CRPS |", "|---|---|---|---|"]
     for x in r["simulador"]["sigma_calibrada"]:
         L.append(f"| {x['n_dias']} | {x['DIR']['potencia']} {x['DIR']['ic95']} | {x['MAE']['potencia']} {x['MAE']['ic95']} | {x['CRPS']['potencia']} {x['CRPS']['ic95']} |")
     L.append("")

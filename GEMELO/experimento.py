@@ -202,7 +202,7 @@ def _lectura(r: dict) -> str:
     L.append(
         f"\n**2. La pregunta real —C2 contra C1— no da nada.** Ventaja "
         f"{c2c1.get('ventaja_pp')} pp con McNemar p={c2c1.get('mcnemar_p')}, y el "
-        f"IC del ΔMAE {c2c1.get('delta_mae_ic')} **incluye el cero**. Con el "
+        f"IC del ΔMAE {c2c1.get('ic_delta_mae_pp')} **incluye el cero**. Con el "
         "mismo motor y la misma ventana, añadir las catorce features nuevas a "
         "las dos del SOX **no produce una mejora detectable**, ni en dirección "
         "ni en magnitud.")
@@ -210,7 +210,7 @@ def _lectura(r: dict) -> str:
     L.append(
         f"\n**3. Lo que sí mueve la aguja es la estructura por ticker, y solo "
         f"en magnitud.** C3 contra C1: ΔMAE {c3c1.get('delta_mae')} con IC "
-        f"{c3c1.get('delta_mae_ic')}, que **excluye el cero**. En dirección, en "
+        f"{c3c1.get('ic_delta_mae_pp')}, que **excluye el cero**. En dirección, en "
         f"cambio, p={c3c1.get('mcnemar_p')}: no significativo. Coincide con la "
         "§2.5 — la contribución medible está en la magnitud, no en el signo.")
 

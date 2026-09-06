@@ -27,7 +27,8 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    fila lleva `timestamp_utc`, la sesión objetivo y el instante en que su
    insumo era conocible; el verificador descarta toda predicción emitida
    después de la apertura objetivo (`no_verificable_timing`), y ese descarte
-   no lo hace el modelo ni el tablero. 276 verificaciones desde julio.
+   no lo hace el modelo ni el tablero. 276 verificaciones desde julio al censo
+   del 1-sep (`fuente_canonica.md`); 292 al 3-sep en `senales.db`.
    *(Regla maestra de la Etapa 4.6; `senales.py`.)*
 2. **La fuente de precios no reescribió un solo retorno diario en 8 años ×
    27 tickers entre el 26-ago y el 2-sep** (52.507 celdas; 1.953 niveles de
@@ -46,13 +47,16 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    dirección del gap de apertura +15,66 pp más que "siempre al alza", y la
    ventaja cae con las horas de margen: +19,1 / +16,8 / +15,4 pp en las tres
    bolsas que abren dentro de 3 h, +2,5 pp (p = 0,111) en la que abre a
-   8,75 h.** *(`README.md`.)* Es una **reconstrucción** desde la fuente de
+   8,75 h.** *(`README.md`.)* Sin IC de clúster de día computado; reconstrucción
+   sobre el caché v1, que omite toda sesión posterior a un feriado local (~4,5 %
+   de las filas): recomputar mueve los doce bloques y lleva firma
+   (`cifras.larga().procedencia`). Es una **reconstrucción** desde la fuente de
    hoy —no un sello— y depende de que esa fuente no mute (punto 2) y de
    una composición de universo que no se pudo verificar (punto 17).
 6. **Sobre la ventana sellada —la única evidencia prospectiva— la ventaja
    no se distingue de cero.** Publicado desde el 3-sep-2026 (D1: regla de
    deduplicación firmada; errata: hasta el 2-sep era +6,5 pp sin deduplicar
-   sobre n = 248, rama derogada): **+9,7 pp, n = 238**, con **IC95 de
+   sobre n = 248, rama derogada): **+9,7 pp, n = 238, 34 días**, con **IC95 de
    clúster de día [−7,2, +26,6]**, permutación de signo por día p = 0,29,
    McNemar de filas p = 0,0455, n efectivo 67 (las ocho filas de un día
    comparten el mismo movimiento del SOX). 0 de 192 formas legítimas de medirla dan p < 0,05
@@ -64,11 +68,14 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    (19 de 35) contribuyen exactamente cero** al estadístico direccional: cuando
    el SOX sube, el campeón y «siempre al alza» coinciden por construcción.
    *(`secuencial_v5.md`, dictamen F.)*
-7. **El instrumento acumula ~2 observaciones efectivas por día sellado.**
+7. **El instrumento acumula ~2 observaciones efectivas por día sellado.** Todo lo
+   que sigue está calibrado sobre el ancla del 31-ago (cadena local, n = 246,
+   35 días), no sobre la ventana publicada (n = 238, 34 días); el MDE a 73 días
+   es de la ruta 1 (analítica).
    Detectar 9 pp con potencia 0,80 exige ~250 días sellados —ruta
    analítica 248 con IC95 paramétrico [109, 370]; simulador calibrado
    (ruta 3, 3-sep) ≈263 con rango Monte Carlo [229, 296]— (≈ ago-2027);
-   6,5 pp, ~475–510 [209, 709]; 5 pp, ~800 [354, 1.199]. El veredicto
+   6,5 pp, ≈510 (MC [467, 580]; ruta 1: 475 [209, 709]); 5 pp, ~800 [354, 1.199]. El veredicto
    programado del 25-oct llegará con ~73 días, una potencia direccional
    de **0,30 [0,27, 0,33]** a 9 pp y un efecto mínimo detectable de 16,6
    pp [11,0, 20,3]: **un resultado negativo ese día no será evidencia de
@@ -81,11 +88,14 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
    (+9,66 pp) como la publicada; la rama sin deduplicar (era +6,45) queda
    retirada y la de «+ coherencia» (+14,3, sin intervalo) sigue en cola sin
    publicarse. *(Dictámenes A y E, octava corrida; D1, acta §78.)*
-8. **La magnitud predicha aporta:** MAE del gap 2,52 pp contra 2,98 de
-   predecir cero (n = 238; parte de la mejora relativa respecto de la rama
-   retirada —era 2,98 contra 3,33— es que la regla saca filas con gaps
-   enormes del 29-jul). Los intervalos del 80% cubren el 92,9%: son 2,19×
-   [1,71, 2,78] más anchos de lo necesario. *(`README.md`, `cifras.sellada()`.)*
+8. **La magnitud predicha no se distingue de cero al nivel de día:** MAE del gap
+   2,52 pp contra 2,98 de predecir cero (n = 238, 34 días; ganancia +0,45 pp por
+   fila, IC95 t de clúster de día [−0,09, +1,00], p de día 0,10: contiene el
+   cero). Parte de la mejora relativa respecto de la rama retirada —era 2,98
+   contra 3,33— es que la regla saca filas con gaps enormes del 29-jul. Los
+   intervalos del 80% cubren el 92,9%: son 2,19× [1,71, 2,78] más anchos de lo
+   necesario. *(`cifras.sellada()`; verificado por el adversario el 3-sep,
+   `enmienda_v1bis.md` §6.)*
 9. **Un solo régimen de mercado en toda la ventana sellada.** Todo lo
    anterior sobre esa ventana vale para ese régimen.
 9b. **El signo del SOX no compra nada en la sesión asiática, ni al derecho
@@ -125,7 +135,9 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
     *(Acta §64.)* Pero **R2 —el criterio de rechazo congelado— dispara**: al
     excluir el bloque 15–23 jul la ventaja sellada queda en +2,5 pp con IC95
     de día [−13,6, +19,2] (contiene el cero) sobre el ancla del 31-ago, y en
-    −1,0 pp sobre la publicada. *(`horizonte.md`, acta §64.)* **La ventana no
+    −1,0 pp sobre la rama sin deduplicar que entonces se publicaba (n = 204 tras
+    excluir el bloque; rama retirada por D1; no recomputado bajo la regla
+    firmada). *(`horizonte.md`, acta §64.)* **La ventana no
     admite partirse**, en ninguna dirección.
 14b. **«La ventaja decae con las horas de margen como una ley Δ(h).»** No:
     predicha antes de descargar para tres bolsas nuevas, la curva falla en
@@ -198,7 +210,9 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
 
-- **Novena corrida (3-sep), con dictamen del adversario:** (i) la enmienda
+- **Novena corrida (3-sep), con dictamen del adversario y SIN dictamen del
+  guardián ni del curador (agentes caídos por límite de API; este documento se
+  publicó sin curaduría y se corrigió el 6-sep con los dos dictámenes en mano):** (i) la enmienda
   V1-bis v2 (`GEMELO/preregistro/enmienda_v1bis.md`) es un **cambio de
   pregunta, no de vara** —firmable como tal—; con verdad conocida, la
   conjunción MAE ∧ CRPS tiene tipo I 0,021 [0,014, 0,032] a 73 días, el CRPS
@@ -248,8 +262,9 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
 
 **En una frase, para el que pregunta:** MKI demuestra que un experimento de
 pronóstico puede sellarse y auditarse con rigor a costo cero; mide, sobre
-ocho años reconstruidos, una propagación real entre husos horarios que cae
-con el margen sin ser una ley del tiempo; demuestra que **no** se puede
+ocho años reconstruidos, un escalón real entre bolsas —tres cercanas arriba, la
+lejana no distinguible de cero— cuya lectura como decaimiento con el margen falló
+fuera de muestra (14b); demuestra que **no** se puede
 capturar entrando en la apertura, ni al derecho ni al revés, y que eso
 replica fuera de muestra; y todavía **no** puede confirmar prospectivamente el fenómeno,
 porque su ventana sellada es unas siete veces más corta que lo que hace

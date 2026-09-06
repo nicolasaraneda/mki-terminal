@@ -38,3 +38,6 @@ Formato: `| patrón | contexto | fecha de retiro | acta o expediente | reemplazo
 | `\+6[,.]5\s?pp` | ventaja de la ventana sellada sin deduplicar | 2026-09-03 | acta §78 | +9,7 pp [−7,2, +26,6] de día (n = 238) |
 | `0[,.]1849` | McNemar χ²cc de la rama sin deduplicar | 2026-09-03 | acta §78 | 0,0455 de filas, y decide el IC de día |
 | `1[,.]84\s?[×x]` | ratio ancho/error de los intervalos del 80% sin n ni intervalo | 2026-09-03 | acta §78; encargo 09 §1d | 2,19× [1,71, 2,78] de día (n = 238) |
+| `269\s?(días\s?)?\[229,\s?275\]` | días para 0,80 a 9 pp con el Wilson invertido por bisección y UNA sola semilla: el intervalo no medía la incertidumbre que decía medir | 2026-09-03 | `bitacora_09.md` 12:20; acta §78.3 | ≈263 días, rango Monte Carlo [229, 296] sobre tres semillas (`horizonte.json`) |
+| `58\s?(días\s?)?\[54,\s?62\]` | días para 0,80 en magnitud «antes del 25-oct», condicional a un efecto que el observado no distingue de cero | 2026-09-03 | `bitacora_09.md` 12:20; acta §78.3 | 96 [20, ∞) días al efecto observado; ninguna fecha encabeza |
+| `ganancia[^\n]{0,30}93\s?%` | «la constante μ recupera el 93 % de la ganancia de MAE» | 2026-09-03 | `dictamen_08/E.md`, errata al pie; `bitacora_08.md` 15:03 | 7,2 % sobre n = 238 (7,3 % en `potencia_por_metrica.json`) |

@@ -1292,3 +1292,51 @@ cubra); 8 SUSCRIBE. Y el orden de firmas que propone: **primero V1-bis + §30,
 después el parche `:140` con bump**; sobre el juez lineal, su objeción está
 registrada en la nota de dependencia del pre-registro (corrió EXPLORATORIO
 por orden del encargo, con los dos denominadores).
+
+
+## 38. ¿El dedup nuevo de noticias obliga a mover `FEATURE_VERSION`? (6-Sep-2026, exigencia 4 del `guardian-constitucion`)
+
+**Lo que nadie había dicho.** El §31 pregunta por la VENTANA del dedup
+retroactivo. Lo que faltaba es dónde desemboca: `senales.py` sella
+`puntaje_ia = puntaje_v0 × 0,7 + ((sentimiento + 1) / 2) × 0,3`. El
+sentimiento de noticias entra con peso 0,3 en una columna **sellada**, y la
+deduplicación lo alimenta. Cambiar su método es un corte de método **dentro**
+de un insumo sellado, no una mejora interna del job.
+
+**Medido en producción** (`data/noticias.log`, no sobre copia):
+
+| corrida | comparaciones | duplicados borrados | duración |
+|---|---|---|---|
+| 3-sep 21:50 UTC (primera) | 4.921.843 | 20 | 615,9 s |
+| 4-sep 21:50 UTC (diaria) | 445.139 | 13 | 54,0 s |
+
+El sello de las 18:15 del 3-sep es el primero que descansa sobre el método
+nuevo. Evidencia colateral de que el defecto era real: el job del 1-sep quedó
+en «titulares guardados» sin analizar y el del 2-sep no pasó de la línea de
+arranque.
+
+**Lo que NO está en juego.** La señal verificada —`apertura_estimada_pct`, el
+gap del track record— no depende de este insumo: el motor no lee noticias.
+Ninguna fila sellada se reescribe. `MODELO_VERSION` no se toca.
+
+**Opciones.**
+
+1. **Mover `FEATURE_VERSION`** y declarar el corte en el acta: `puntaje_ia`
+   antes y después del 3-sep no son la misma variable, y cualquier análisis
+   que la use tiene que respetar el corte. Costo: una versión más que trazar;
+   no reinicia el track record (eso sólo lo hace `MODELO_VERSION`).
+2. **No moverlo** y dejar el corte declarado sólo en `DECISIONES.md` §78.4
+   bis. Costo: dentro de un año, quien mida `puntaje_ia` a lo largo del
+   tiempo no tiene cómo saber que el método cambió sin leer el acta.
+3. **Volver la ventana ilimitada** (revierte el corte, reintroduce el O(n²)).
+   Descartada salvo que la ventana misma se juzgue mal elegida en el §31.
+
+**Recomendación.** La 1, y en el mismo acto que se resuelva el §31: la ventana
+y el bump son la misma decisión mirada desde dos lados.
+
+**El día después de la firma.** Si es la 1: `version.py` sube
+`FEATURE_VERSION`, el acta declara el corte con su fecha, y las consultas que
+agrupen `puntaje_ia` filtran por versión como ya hacen con `modelo_version`.
+Si es la 2: no se toca nada y este ítem se cierra como decisión tomada, no
+como pendiente olvidado.
+

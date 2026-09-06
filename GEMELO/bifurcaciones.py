@@ -33,8 +33,8 @@
 #   `evaluacion.mcnemar_exact`     binomial exacta con p=0.5, la del
 #       módulo de la skill `estadistica-evaluacion`.
 #
-# DECISIONES.md §55 ya midió la brecha en la cifra titular: 0.1849 por
-# chi2 contra 0.1847 exacto, «las dos cifras son correctas». Este informe
+# DECISIONES.md §55 ya midió la brecha en la cifra titular DE ENTONCES
+# (rama sin dedup, RETIRADA por D1): 0.1849 por chi2 contra 0.1847 exacto, «las dos cifras son correctas». Este informe
 # reporta LAS DOS en cada celda. **El conteo titular usa la EXACTA**,
 # porque a estos n no depende de una aproximación asintótica y porque
 # —DECISIONES.md §52— *una verificación que usa el mismo mecanismo que
@@ -51,7 +51,8 @@
 # `backtest/linea_base.py:CORTE_SECCION_2`, y reincidente en el cuarto
 # dictamen del diseño secuencial el 31-ago. Así que el corte de sello es
 # aquí un EJE declarado, no un default escondido, y su nivel `publicado`
-# reproduce EXACTAMENTE la cifra del README (n=248, +6.5 pp, p=0.1849).
+# reproducía EXACTAMENTE la cifra que el README publicó hasta el 2-sep-2026
+# (n=248, +6.5 pp, p=0.1849; rama RETIRADA por D1, acta §78).
 # `_verificar_ancla()` lo comprueba en cada corrida y aborta si no.
 # ============================================================
 
@@ -329,8 +330,9 @@ NO_EJES = (
      "docs/SOMBRA.md; DECISIONES.md §36.1 (líneas 3382-3385) y §36.7 "
      "(líneas 3491-3494)",
      "YA DECIDIDO Y APLICADO, no abierto: «fecha <= 2026-08-25 → canónico "
-     "el MAC; fecha >= 2026-08-26 → canónico el PC». Movió n de 245 a 253 "
-     "y la ventaja de +6.7 a +6.5 pp. La base local ya está en su forma "
+     "el MAC; fecha >= 2026-08-26 → canónico el PC». Movió n de 245 a 253 y "
+     "la ventaja de +6.7 a +6.5 pp (las dos, de la rama RETIRADA por D1). "
+     "La base local ya está en su forma "
      "canónica y tiene UNA sola fila por (fecha, ticker) —verificado "
      "abajo—, así que no queda bifurcación DENTRO de esta base."),
     ("desglose por bolsa / región",
@@ -1337,9 +1339,10 @@ def componer_informe(mat: pd.DataFrame, n_boot: int, ctx: dict) -> str:
         f"(bootstrap de clústeres de día, semilla {SEMILLA}, {n_boot} "
         f"réplicas; permutación de signo por día, {N_PERM} permutaciones)",
         f"- **Dos anclas verificadas, y las dos abortan el informe si "
-        f"fallan.** (1) *Publicada*: sin la regla de deduplicación, la "
+        f"fallan.** (1) *Histórica (publicada hasta el 2-sep-2026; RETIRADA "
+        f"por D1, acta §78)*: sin la regla de deduplicación, la "
         f"celda `excluir_cero · dentro · dentro · dentro · publicado · gap "
-        f"· 0.00` reproduce la ventana sellada del README "
+        f"· 0.00` reproduce la ventana que el README publicó hasta el 2-sep "
         f"(n={ANCLA['n']}, {ANCLA['modelo_pct']}% contra "
         f"{ANCLA['base_pct']}%, {ANCLA['ventaja_pp']:+} pp, b={ANCLA['b']}, "
         f"c={ANCLA['c']}, p = {ANCLA['p_chi2']}). (2) *Regla firmada*: la "
@@ -2113,7 +2116,7 @@ def main(argv=None) -> int:
         f.write(informe)
     mat.to_csv(DESTINO_CSV, index=False)
     v = mat[mat["n"] >= MINIMO_FILAS]
-    print(f"[ancla]   reproduce la ventana sellada del README "
+    print(f"[ancla]   reproduce la ventana RETIRADA (publicada hasta el 2-sep) "
           f"(n={ANCLA['n']}, {ANCLA['ventaja_pp']:+} pp, p={ANCLA['p_chi2']})")
     print(f"[matriz]  {len(v)} celdas · "
           f"{int((v['p_dia'] < ALFA).sum())} con p < {ALFA} por clúster de "

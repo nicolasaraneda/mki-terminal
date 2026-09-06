@@ -6,16 +6,21 @@
 > opens — provably emitted *before* the sessions they anticipate — then
 > verifies them against reality and publishes its own track record.
 >
-> **The central finding is a mechanism, not a score.** Reconstructed over
+> **The central measurement is a step across exchanges, not a score, and not
+> (yet) a mechanism.** Reconstructed over
 > eight years (n=14.618), the model beats the "always up" baseline by
 > **+19.1 pp in Tokyo, +16.8 in Taipei and +15.4 in Seoul** — the three
 > exchanges that open **within three hours** of the emission — and by
 > **+2.5 pp with p = 0.111 in Frankfurt**, which opens **8.75 hours**
-> later. A statistical artifact has no reason to fade with elapsed time;
-> an information cascade does. **The contagion doesn't hand off — it
-> dissipates.** On the point-in-time sealed window (n=238) the edge is
+> later. The obvious reading, an information cascade fading with elapsed
+> time, was **pre-registered as a prediction for three new exchanges and
+> failed** in two (Hong Kong: predicted +14.0 pp, measured +4.1; India:
+> predicted +8.6, measured -12.7); the best predictor of the per-exchange
+> edge is the base rate of positive gaps (r = -0.89), not hours elapsed.
+> **The hand-off to Asia was refuted too.** The step is measured; the
+> mechanism is a PROPOSAL. On the point-in-time sealed window (n=238) the edge is
 > **+9.7 pp, day-cluster 95% CI [-7.2, +26.6]: still not distinguishable
-> from zero** (row-level McNemar p = 0.0455, but the eight rows of a day
+> from zero** (nominal 95%, measured coverage ~0.93; cluster-t [-8.1, +27.4]) (row-level McNemar p = 0.0455, but the eight rows of a day
 > share one SOX move: the day is the unit, and with it the interval
 > contains zero). Until 2-sep it read n=248, +6.5 pp, p = 0.1849 under a
 > convention since repealed (errata, D1).
@@ -28,7 +33,7 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-299%20passing-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-650%20passing-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
 ![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
@@ -37,7 +42,7 @@
 
 ---
 
-## El hallazgo: el efecto se disipa con la distancia
+## Lo medido: un escalón entre bolsas, no una ley de la distancia
 
 Cuando Nueva York cierra, el SOX (índice de semiconductores) ya dijo lo
 suyo — pero Seúl, Tokio, Taipéi y Fráncfort **todavía no abren**. La tesis
@@ -55,11 +60,15 @@ día siguiente. Ocho años de datos reconstruidos dicen algo más preciso:
 Las tres bolsas que abren **dentro de tres horas** dan entre +15 y +19 pp.
 La que abre casi **nueve horas** después **no es distinguible de cero**.
 
-**Eso no es una debilidad del resultado: es la firma de un mecanismo.** Un
-artefacto estadístico no tiene por qué desvanecerse con el tiempo
-transcurrido; una propagación de información sí. El proyecto llevaba dos
-años diciendo que *el contagio viaja con el sol*; los datos dicen que **se
-apaga cuando el sol viaja demasiado lejos**.
+**Lo que ese escalón no es: una ley de la distancia.** La lectura de
+mecanismo —una propagación de información que se apaga con las horas— se
+pre-registró como predicción para tres bolsas nuevas antes de descargarlas
+y falló en dos: Hong Kong (predicho +14,0 pp, medido +4,1) e India
+(predicho +8,6, medido −12,7). Lo que mejor predice la ventaja por bolsa no
+es el margen horario sino la tasa base de gaps positivos (r = −0,89).
+Estatus: **CONTESTADA** (`decaimiento_prediccion.json`, dictamen B de la
+octava corrida; `estado_epistemico.md` 14b). El escalón queda MEDIDO; el
+mecanismo queda PROPUESTA.
 
 Con **n = 4 bolsas no se puede ajustar una curva**. Esto es un **escalón
 medido**, no un gradiente estimado: cuatro puntos, tres arriba y uno
@@ -90,7 +99,7 @@ después** de las 22:15 UTC en que el sistema sella. Y el cierre asiático
 que **sí** es conocible cerró **antes** que el SOX del mismo día: es más
 viejo (15.75 h contra 1.25 h) y redundante con lo que el modelo ya usa.
 
-Medido sobre el holdout en cuarentena:
+Medido sobre el holdout en cuarentena (n = 393 filas en Fráncfort, 2.548 en Asia):
 
 | | E1 (solo SOX) | E2 (solo Asia) | Tasa base |
 |---|---|---|---|
@@ -131,7 +140,7 @@ nunca la más fresca; decisión D1, acta §78):
 |---|---|---|
 | **Modelo 4.6.0** | **67.6%** (161/238) | [61.5 – 73.3] |
 | **"Siempre al alza", mismas filas** | **58.0%** (138/238) | [51.6 – 64.1] |
-| **Ventaja** | **+9.7 pp** | IC95 de día **[-7.2, +26.6]** · McNemar p = 0.0455 (χ² con corrección de continuidad; binomial exacta 0.0451) |
+| **Ventaja** | **+9.7 pp** | IC95 de día **[-7.2, +26.6]** · McNemar p = 0.0455 (χ² con corrección de continuidad; binomial exacta 0.0451); percentil de día con cobertura medida ~0.93 (`calibracion_instrumento.md` A1), t de clúster [-8.1, +27.4] |
 
 **Todavía NO distinguible de cero.** El McNemar de filas cruza el 5%, pero
 las ocho filas de un día comparten el mismo movimiento del SOX: la unidad
@@ -152,9 +161,9 @@ pares que apuntaban a una sesión que su insumo no podía predecir; de las
 | Otras métricas (n=238) | Valor | Caveat honesto |
 |---|---|---|
 | Acierto del retorno de sesión | 62.1% · IC95 [55.9–68.0] (n=243) | un solo régimen observado |
-| **MAE del gap** | **2.52 pp** vs **2.98** de predecir cero | **la magnitud sí aporta: −15.3%**; parte de la mejora es que la regla retira filas con gaps enormes del 29-jul |
+| **MAE del gap** | **2.52 pp** vs **2.98** de predecir cero | ganancia +0.45 pp por fila, IC95 t de clúster de día [-0.09, +1.00], p de día 0.10: **contiene el cero, no distinguible al nivel de día**; parte de la mejora respecto de la rama retirada es que la regla saca filas con gaps enormes del 29-jul |
 | Cobertura del intervalo 80% | 92.9% (nominal 80%) | intervalos **2.19× más anchos** de lo necesario (IC95 de día [1.71, 2.78]) |
-| Régimen | 1 sola etiqueta en 39 snapshots | la columna no tiene varianza |
+| Régimen | 1 sola etiqueta en 37 de 39 snapshots (2 sin etiqueta) | la columna no tiene varianza |
 
 Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 `senales.db` en modo solo lectura.
@@ -163,7 +172,10 @@ Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 
 **n = 14.618 · +15.66 pp · McNemar p ≈ 0**, sobre ocho años y cuatro
 bolsas, con el modelo de producción reconstruido (misma función, misma
-ventana rodante de 120 sesiones; solo se amplía el rango de fechas).
+ventana rodante de 120 sesiones; solo se amplía el rango de fechas). Sin IC
+de clúster de día computado; reconstrucción sobre el caché v1, que omite
+toda sesión posterior a un feriado local (~4,5 % de las filas): recomputar
+mueve los doce bloques y lleva firma (`cifras.larga().procedencia`).
 
 **Un matiz que corrige al propio proyecto.** El WS3 declaró como
 limitación una *"contaminación por revisión"* del 91.4%: el 8.6% de las
@@ -202,17 +214,17 @@ la versión vieja.
 
 | | Muestra | C2 vs C1 (información expandida) |
 |---|---|---|
-| **WS2b** | 223 filas selladas | +2.8 pp, **p = 0.3613** · IC del ΔMAE **incluye cero** |
-| **WS3** | 12.628 filas | **+1.3 pp, p = 0.0003** · IC del ΔMAE **excluye cero** |
+| **WS2b** | 223 filas selladas | +2.8 pp, **p = 0.3613** · ΔMAE C2 vs C1 recomputado por clúster de día: +0.20 pp [-0.06, +0.43] sobre 79 filas parciales (`corrida09/ic_dmae_recomputados.md`), **incluye cero** |
+| **WS3** | 12.628 filas | +1.3 pp, p = 0.0003 **de filas, sin IC de clúster de día**; la columna «IC del ΔMAE» estaba en escala de Sharpe, no en pp (errata 3-sep al pie de `ventana_larga.md`); recomputarla es NO EVALUABLE sin red |
 
-El efecto **encogió** (de +2.8 a +1.3 pp) y a la vez **se volvió
-significativo**. No es una contradicción: es el patrón clásico de una
-muestra chica **sobreestimando el tamaño** de un efecto que no podía
-detectar.
+El efecto encogió de +2.8 a +1.3 pp al pasar de 223 a 12.628 filas y el p
+de filas bajó a 0.0003. Ese p trata las filas como independientes; con la
+unidad de día (acta §61) el WS3 no está recomputado.
 
-**La conclusión correcta es: la información expandida SÍ aporta, y aporta
-poco.** *"No significativo"* no es lo mismo que *"no hay nada"* — el WS2b
-acertó al no declarar victoria y se equivocó al leer lo uno como lo otro.
+**Estatus: PROPUESTA. En la ventana sellada, el juez lineal bajo D3
+(EXPLORATORIO, 3-sep) da C2 − C1 +0.20 pp [-0.09, +0.49], p de día 0.17:
+los 16 features no traen magnitud detectable distinta de SOX(t, t−1).**
+*"No significativo"* no es *"no hay nada"*; tampoco es *"sí aporta"*.
 
 C1 existe precisamente para que esa lectura sea posible: usa **el mismo
 insumo que el campeón con la maquinaria nueva**, de modo que *C2 vs C1*
@@ -268,7 +280,8 @@ experimento** alrededor de ella:
   ([`GEMELO/DISEÑO.md`](GEMELO/DISEÑO.md)). Cuando el harness contradijo
   una cifra del documento, **mandó el harness** y la corrección se publicó
   aparte, con fecha posterior.
-- **El N del DSR se declara antes de cada corrida y solo sube.** Va en 25:
+- **El N del DSR se declara antes de cada corrida y solo sube.** Va en 352
+  (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 358 con los seis del 5.1):
   re-evaluar la misma configuración sobre otra ventana produce otro
   resultado publicable entre los cuales se puede elegir, y **elegir entre
   resultados es exactamente lo que el Deflated Sharpe deflacta**. Contar
@@ -276,8 +289,8 @@ experimento** alrededor de ella:
 - **Incertidumbre de primera clase:** cada acierto se publica con su
   intervalo de Wilson 95%, la cobertura del intervalo del 80% tiene su
   curva de calibración, y la advertencia va fija en la UI: *la muestra
-  proviene de un solo régimen de mercado* — una sola etiqueta en 39
-  snapshots, mientras la volatilidad realizada del SOX recorría un rango
+  proviene de un solo régimen de mercado* — una sola etiqueta en 37 de 39
+  snapshots (2 sin etiqueta), mientras la volatilidad realizada del SOX recorría un rango
   de 2×. La etiqueta no detecta la variación que sí existe.
 - **El denominador al lado del número**, nunca en una nota al pie. Una
   tasa de acierto sin su tasa base no dice nada.
@@ -382,7 +395,7 @@ se puede recomputar es una afirmación de marketing.**
 ## Roadmap
 
 1. **Etapa 6.0.0 — el retador:** el control lineal corrió sobre las dos
-   ventanas y la auditoría adversarial ya hizo dos pasadas. Quedan por
+   ventanas y la auditoría adversarial lleva nueve corridas. Quedan por
    construir los niveles que el control lineal no cubre: β en espacio de
    estados, pooling jerárquico por nivel de la cadena, régimen latente y
    densidad predictiva con colas.
@@ -398,7 +411,8 @@ Python (pandas, yfinance, exchange-calendars, FastAPI) · SQLite con sellos
 inmutables y CSVs versionados como respaldo · Claude Haiku para noticias
 (con tope de gasto diario en `.env` y freno duro) · React + TypeScript +
 Tailwind 4 + Recharts (terminal en :5173) · Streamlit como fallback ·
-launchd/systemd (6 jobs, según plataforma) · pytest (299 tests) +
+launchd/systemd (6 jobs, según plataforma) · pytest (652 tests: 650 passed, 2 xfailed al
+6-sep-2026) +
 Playwright. **Sin scipy ni sklearn**: la maquinaria de inferencia (PSR,
 Deflated Sharpe, error estándar de Lo, bootstrap circular de bloques) está
 escrita en `backtest/inferencia.py` sobre `math.erfc`, con 14 valores de

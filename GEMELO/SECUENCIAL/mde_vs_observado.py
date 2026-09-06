@@ -55,7 +55,8 @@ from backtest.linea_base import aplicar_convencion, cargar     # noqa: E402
 from evaluacion import block_bootstrap, mcnemar_exact, wilson_ci  # noqa: E402
 
 # El corte `publicado` del ancla de `GEMELO/bifurcaciones.py`: el conjunto
-# exacto de 248 filas sobre el que el README publica +6.5 pp. Anclado a
+# exacto de 248 filas sobre el que el README publicó +6.5 pp hasta el
+# 2-sep-2026 (rama sin deduplicar, RETIRADA por D1). Anclado a
 # propósito — sin esto la cifra se mueve con el reloj, que es el defecto
 # que el cuarto dictamen le encontró a `mde_desde_v6.py` y que sigue vivo.
 CORTE_PUBLICADO = "2026-08-28"
