@@ -327,14 +327,25 @@ def test_senales_db_conserva_su_scoring_original():
     """La exclusión de los empates vive en la capa de MEDICIÓN. El valor
     sellado `acierto_gap` sigue siendo el del verificador (`>=`), incluido
     en las filas de gap cero: si esto cambiara, se habría reescrito el
-    significado de filas ya selladas."""
+    significado de filas ya selladas.
+
+    El CONTEO se fija sobre la ventana congelada, no sobre la base viva:
+    las filas de gap cero son un censo que crece con cada sello nuevo —el
+    2-sep-2026 selló la sexta, 2330.TW— y un censo clavado como constante
+    convierte un sello legítimo en un test rojo. Escrito el 25-ago-2026
+    (78c83ea) contra la base viva; corregido el 6-sep-2026 al primer sello
+    que lo cruzó. El INVARIANTE, en cambio, se afirma sobre todas las
+    filas, incluidas las que todavía no existen."""
+    congelado = lb.cargar(dedup=False, hasta_sello=lb.CORTE_SECCION_2)
+    assert len(congelado[congelado["gap_pct"] == 0]) == 5
+
     df = lb.cargar(dedup=False)
     ceros = df[df["gap_pct"] == 0]
-    assert len(ceros) == 5
+    assert len(ceros) >= 5          # una fila sellada no se borra nunca
     con_pred_al_alza = ceros[ceros["apertura_estimada_pct"] >= 0]
     assert (con_pred_al_alza["acierto_gap"] == 1).all()
-    # y la regla de deduplicación no toca ninguna de las cinco
-    assert len(lb.cargar()[lb.cargar()["gap_pct"] == 0]) == 5
+    # y la regla de deduplicación no retira ninguna fila de gap cero
+    assert len(lb.cargar()[lb.cargar()["gap_pct"] == 0]) == len(ceros)
 
 
 # ------------------------------------------------------------
@@ -417,7 +428,13 @@ def test_la_regla_esta_activa_por_defecto():
 
 @solo_con_base
 def test_la_regla_retira_exactamente_diez_filas_y_separa_los_dos_grupos():
-    aud = lb.auditar_dedup(lb.cargar(dedup=False))
+    """La auditoría es una MEDICIÓN fechada: el estado de la regla al
+    firmarse. Se fija sobre la ventana congelada para que un sello nuevo no
+    la vuelva roja por crecer; lo que se afirma sobre la base VIVA, abajo,
+    es el invariante que no puede caer nunca. Los nueve valores son hoy
+    idénticos en las dos ventanas: fijarlos no cambia lo que el test dice."""
+    aud = lb.auditar_dedup(lb.cargar(dedup=False,
+                                     hasta_sello=lb.CORTE_REGLA_FIRMADA))
     assert aud["pares"] == 15
     assert aud["pares_resueltos"] == 10
     assert aud["pares_las_dos_calzan"] == 5
@@ -430,6 +447,14 @@ def test_la_regla_retira_exactamente_diez_filas_y_separa_los_dos_grupos():
     assert aud["filas_sin_pareja_que_no_calzan"] == 15
     assert aud["filas_que_no_calzan_total"] == 25
 
+    # Sobre la base VIVA: la regla siempre tiene criterio —un par nuevo sin
+    # criterio es un hallazgo, no un test roto— y el censo del hueco sólo
+    # puede crecer, porque una fila sellada no se borra.
+    vivo = lb.auditar_dedup(lb.cargar(dedup=False))
+    assert vivo["pares_sin_criterio"] == 0
+    assert vivo["pares"] >= aud["pares"]
+    assert vivo["filas_que_no_calzan_total"] >= aud["filas_que_no_calzan_total"]
+
 
 @solo_con_base
 def test_las_diez_filas_retiradas_favorecian_todas_a_la_baseline():
@@ -438,8 +463,9 @@ def test_las_diez_filas_retiradas_favorecian_todas_a_la_baseline():
     son discordantes y las 7 favorecen a la baseline; ninguna al modelo.
     La justificación es distinta —corrección demostrable, no frescura—
     pero el efecto sobre el conteo es del mismo signo."""
-    crudo = lb.aplicar_convencion(lb.cargar(dedup=False), lb.CONVENCION_OFICIAL)
-    quedan = lb.deduplicar_por_sesion(lb.cargar(dedup=False))
+    congelado = lb.cargar(dedup=False, hasta_sello=lb.CORTE_REGLA_FIRMADA)
+    crudo = lb.aplicar_convencion(congelado, lb.CONVENCION_OFICIAL)
+    quedan = lb.deduplicar_por_sesion(congelado)
     clave = set(zip(quedan["fecha"], quedan["ticker"]))
     fuera = crudo[[k not in clave
                    for k in zip(crudo["fecha"], crudo["ticker"])]]
