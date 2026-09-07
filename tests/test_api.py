@@ -42,6 +42,7 @@ def test_envelope_en_todos_los_endpoints():
 # ------------------------------------------------------------
 # Paridad con motor.py
 # ------------------------------------------------------------
+@pytest.mark.red  # censo del 7-sep-2026: el auditor los cazó; el de la suite completa no, porque yfinance cachea en memoria y el orden los enmascaró
 def test_paridad_regimen():
     esperado = motor.regimen_al(date.today())
     servido = cliente.get("/api/hoy").json()["datos"]["regimen"]
@@ -83,6 +84,7 @@ def test_roca_chip_identico_entre_vistas():
         assert en_cadena["fecha"] == en_hoy["fecha"]
 
 
+@pytest.mark.red  # censo del 7-sep-2026: el auditor los cazó; el de la suite completa no, porque yfinance cachea en memoria y el orden los enmascaró
 def test_paridad_betas():
     esperado = motor.betas_al(date.today())
     servido = cliente.get("/api/mercados").json()["datos"]["betas"]

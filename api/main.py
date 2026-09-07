@@ -875,3 +875,164 @@ def detalle(ticker: str):
         "senal_apertura": senal,
         "correlaciones_top": corr_top,
     })
+
+
+# ============================================================
+# RIEL DE DINERO (Etapa 7.0.0, corrida 10) — CONTRATO.md, enmienda 7.0.0
+#
+# Tres endpoints de solo lectura sobre artefactos YA GENERADOS. No computan
+# nada: leen los JSON que producen `python -m dinero.mapa`,
+# `python -m dinero.cuenta_papel` y `python -m dinero.senal_larga_reporte`,
+# más el árbitro `cifras.py` para el estado del riel de medición.
+#
+# La regla propia de estos tres, porque sirven cifras de un riel que no
+# tiene NINGUNA fila sellada: cada objeto lleva su `estatus`, y todo
+# estimador puntual viaja con su intervalo en el mismo objeto. Un número
+# suelto no sale por acá.
+# ============================================================
+import json as _json  # noqa: E402
+import os as _os  # noqa: E402
+
+_RAIZ = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+_DIR_DINERO = _os.path.join(_RAIZ, "dinero", "resultados")
+
+
+def _meta_simple() -> dict:
+    """Meta reducido: estos endpoints no dependen del motor ni del régimen,
+    y llamarlo sólo para rellenar un campo sería trabajo (y red) por nada."""
+    return {
+        "generado_en": datetime.now(timezone.utc).isoformat(),
+        "modelo_version": MODELO_VERSION,
+        "plataforma_version": PLATAFORMA_VERSION,
+    }
+
+
+def _artefacto(nombre: str) -> dict | None:
+    ruta = _os.path.join(_DIR_DINERO, nombre)
+    if not _os.path.exists(ruta):
+        return None
+    with open(ruta, encoding="utf-8") as f:
+        return _json.load(f)
+
+
+@app.get("/api/dinero/universo")
+def dinero_universo():
+    datos = _artefacto("universo_operable.json")
+    if datos is None:
+        raise HTTPException(
+            status_code=404,
+            detail=("todavía no se generó el mapa operable; se genera con "
+                    "`python -m dinero.mapa`"))
+    return {"meta": _meta_simple(), "datos": datos}
+
+
+@app.get("/api/dinero/cuenta")
+def dinero_cuenta():
+    datos = _artefacto("cuenta_papel.json")
+    if datos is None:
+        raise HTTPException(
+            status_code=404,
+            detail=("todavía no se corrió la cuenta en papel; se corre con "
+                    "`python -m dinero.cuenta_papel`"))
+    return {"meta": _meta_simple(), "datos": datos}
+
+
+@cache_ttl(600)
+def _estado_rieles() -> dict:
+    """Los dos rieles, uno al lado del otro. El de medición se lee del
+    ÁRBITRO (`cifras.sellada()`), nunca de un número escrito a mano."""
+    import cifras
+    c = cifras.sellada()
+    mapa = _artefacto("universo_operable.json") or {}
+    cuenta = _artefacto("cuenta_papel.json") or {}
+    larga = _artefacto("senal_larga_v1.json") or {}
+    medicion = {
+        "nombre": "Riel de medición",
+        "estatus": "MEDIDO",
+        "que_mide": ("si la apertura de Tokio, Taipéi y Seúl se puede "
+                     "anticipar desde el cierre del SOX, con la predicción "
+                     "sellada ANTES de la apertura que intenta predecir"),
+        "horizonte": "una noche",
+        "vara": "«siempre al alza», sobre las mismas filas",
+        "mueve_plata": False,
+        "muestra": {"n": c["n"], "dias": c["dias"],
+                    "hasta_sello": c["hasta_sello"]},
+        "cifras": [
+            {"nombre": "acierto del modelo", "valor_pct": c["modelo_pct"],
+             "intervalo": c["modelo_wilson"], "tipo_intervalo": "Wilson 95 %"},
+            {"nombre": "acierto de la base", "valor_pct": c["base_pct"],
+             "intervalo": c["base_wilson"], "tipo_intervalo": "Wilson 95 %"},
+            {"nombre": "ventaja sobre la base", "valor_pct": c["ventaja_pp"],
+             "intervalo": c["ventaja_ic_dia"],
+             "tipo_intervalo": "IC95 de clúster de día",
+             "cruza_cero": c["ventaja_ic_dia"][0] <= 0 <= c["ventaja_ic_dia"][1]},
+            {"nombre": "ganancia de MAE sobre predecir cero",
+             "valor_pct": c["mae_ganancia_pp"],
+             "intervalo": c["mae_ganancia_ic_t_dia"],
+             "tipo_intervalo": "IC95 t de clúster de día",
+             "cruza_cero": (c["mae_ganancia_ic_t_dia"][0] <= 0 <=
+                            c["mae_ganancia_ic_t_dia"][1])},
+        ],
+        "cobertura_80_pct": c["cobertura_80_pct"],
+        "n_efectivo": c["n_efectivo"], "icc": c["icc"], "deff": c["deff"],
+        "falta_para_veredicto": (
+            "El veredicto 5.1 está pre-registrado en backtest/DISEÑO.md y su "
+            "ejecución es decisión humana. Gatillo: N ≥ 150 filas selladas "
+            "más un cambio de régimen, o 3 meses, lo que llegue primero."),
+        "que_lo_mata": (
+            "V1–V7 y R1–R3 de GEMELO/DISEÑO.md §6, fijados antes de cualquier "
+            "resultado. R2 —excluir la ventana 15–23 jul— ya deja al campeón "
+            "en ventaja −3,3 pp (p = 0,60): no pierde la ventaja, la vuelve "
+            "negativa. La valla no se bajó."),
+        "procedencia": c["procedencia"],
+    }
+    dinero = {
+        "nombre": "Riel de dinero",
+        "estatus": "SIMULADO",
+        "que_mide": ("si un movimiento en un eslabón anticipa el de otro "
+                     "aguas abajo, y si actuar sobre eso supera a comprar un "
+                     "ETF del sector todas las semanas sin decidir nada"),
+        "horizonte": "semanas (20 y 60 días hábiles)",
+        "vara": "aporte fijo semanal a SMH, con los mismos costos",
+        "mueve_plata": False,
+        "muestra": {"filas_selladas": 0,
+                    "nota": ("CERO filas selladas. El track record "
+                             "prospectivo es del riel de medición, no de "
+                             "éste. Nada de este riel es evidencia del mismo "
+                             "tipo.")},
+        "mapa": (mapa.get("resumen") if mapa else None),
+        "cuenta_en_papel": ({
+            "aportado_usd": cuenta.get("aportado_usd"),
+            "falsos_positivos": cuenta.get("falsos_positivos"),
+            "advertencia": cuenta.get("advertencia"),
+        } if cuenta else None),
+        "senal_larga": (larga.get("resumen") if larga else None),
+        "falta_para_veredicto": (
+            "52 semanas de cuenta en papel hacia adelante, con la señal "
+            "congelada, UNA comparación declarada y una sola mirada al final "
+            "(dinero/preregistro_dinero.md §2). Hoy: 0 semanas."),
+        "que_lo_mata": (
+            "M1: 104 semanas sin distinguirse del cero y con punto negativo. "
+            "M2: comisión acumulada sobre el 25 % del capital — medido, los "
+            "tres juegos gastan entre 14 % y 43 %, así que M2 está a punto de "
+            "dispararse antes de empezar. M3: cualquier fuga. M4: que la "
+            "señal larga no supere ninguna vara."),
+        "potencia": {
+            "sigma_dif_semanal_pp": 2.54,
+            "nota": ("Con σ = 2,54 pp/semana, α = 0,05 y potencia 0,80, las 52 "
+                     "semanas del criterio sólo alcanzan para una ventaja de "
+                     "≈ +1,00 pp/semana. Detectar +0,25 pp/semana pediría 809 "
+                     "semanas (16 años). Una ventaja del tamaño detectable no "
+                     "es plausible con datos públicos: si el criterio se "
+                     "cumple, la primera reacción es sospechar un error."),
+        },
+    }
+    return {"rieles": [medicion, dinero],
+            "por_que_son_dos": (
+                "El proyecto mide una noche y quiere operar en semanas. Las "
+                "dos cosas son legítimas y no son la misma. Ver VISION.md.")}
+
+
+@app.get("/api/rieles")
+def rieles():
+    return {"meta": _meta_simple(), "datos": _estado_rieles()}

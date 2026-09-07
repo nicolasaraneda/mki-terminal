@@ -19,6 +19,9 @@ const VISTAS = [
   { ruta: '/analisis', etiqueta: 'Análisis IA' },
   { ruta: '/historial', etiqueta: 'Historial' },
   { ruta: '/laboratorio', etiqueta: 'Laboratorio' },
+  { ruta: '/rieles', etiqueta: 'Rieles' },
+  { ruta: '/operable', etiqueta: 'Operable' },
+  { ruta: '/dinero', etiqueta: 'Dinero' },
   { ruta: '/salud', etiqueta: 'Salud' },
 ]
 

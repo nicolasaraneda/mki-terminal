@@ -130,3 +130,70 @@ Esto se escribe por adelantado para que no se lea después como una excusa:
   `dinero/datos/cierres_congelados.csv`. Si hiciera falta una fuente nueva,
   se declara como necesidad y el bloque se detiene ahí en vez de improvisar
   una descarga.
+
+
+---
+
+## 9. ERRATA FECHADA — 7-sep-2026, tras la auditoría de fuga y ANTES de la primera medición
+
+`auditor-lookahead` corrió sobre la implementación v1, como manda el §8, y
+encontró **una fuga demostrada y tres sesgos con signo**. Las correcciones se
+escriben acá, con fecha, **sin que se haya calculado un solo MAE, acierto ni
+CRPS**: el orden está verificable en git —`dinero/senal_larga_reporte.py` no
+se había ejecutado— y es lo que hace legítima esta enmienda. Ninguna corrección
+ablanda una vara; dos de ellas la endurecen.
+
+**E1 — La composición de los eslabones ya no se decide con el final de la
+muestra.** La v1 componía cada eslabón con los instrumentos «comprables con
+500 USD» según `construir_mapa`, que mira el ÚLTIMO cierre del archivo. Eso
+fijaba la membresía de ocho años con el renglón del 2026-09-04, y el filtro
+expulsa a los que subieron (excluidos: retorno total mediano 847 % contra
+547 % de los incluidos). Medido: truncar el archivo en 2025-12-31 cambiaba el
+**42,9 %** de las filas del panel, desde la primera. La membresía se decide
+ahora por **cobertura ≥ 98 % del período de AJUSTE** —al principio de la
+muestra, y sin mirar el nivel del precio—. Efecto sobre el §3: los eslabones
+recuperan sus dominantes (Micron vuelve a `memoria`, ASML a litografía, MSFT y
+META a demanda final) y salen ARM, GFS y SanDisk por no cubrir el ajuste, lo
+que además elimina el quiebre de composición que ARM producía nueve días
+después del inicio del período de prueba.
+
+**E2 — «Walk-forward» del §8 se reemplaza por ajuste único.** La v1 hacía
+walk-forward expansivo, que metía hasta el **36 %** del último ajuste dentro
+del período de prueba, mientras el §8 declaraba ajuste y prueba congelados.
+Las dos cosas no pueden ser ciertas a la vez y **gana el pre-registro**: un
+ajuste sobre 2018-09-05 → (2023-09-05 menos horizonte, retardo y embargo), y
+una sola evaluación sobre 2023-09-05 → 2026-09-04. Es además el protocolo más
+exigente de los dos: hay un holdout de verdad, evaluado una sola vez.
+
+**E3 — L2 estima la beta por eslabón.** La v1 usaba una beta pooleada sobre
+los siete pares; los residuos seguían cargando la cesta (beta residual medida
+entre −0,20 y +0,14 según eslabón), y con eso la regla del §6 —«si L1 gana y
+L2 no, era beta común»— no se podía leer en ninguna de las dos direcciones.
+
+**E4 — L3 excluye al eslabón objetivo de su propia dispersión.** La v1 lo
+incluía, con correlación de hasta **+0,57** entre la dispersión y el retorno
+del eslabón que L3 intenta predecir: un L3 positivo habría sido momento de la
+propia serie disfrazado de «la cadena se tensa».
+
+**E5 — Retardo de implementación de un día.** La etiqueta arrancaba en el
+mismo cierre con el que se decide. Nadie ejecuta al cierre que acaba de
+observar, y el auditor midió que un día de retardo mueve la etiqueta **3,6–4,0
+pp de media** — del mismo orden que el umbral de señal del juego conservador
+(3,49 pp). La etiqueta va ahora de t+1 a t+1+h. **Esto hace la vara más
+difícil, no más fácil.**
+
+**E6 — La dirección excluye los retornos exactamente cero.** `sign(0)==sign(0)`
+contaba como acierto; el proyecto ya congeló la convención `excluir_cero` por
+este mismo artefacto (`GEMELO/DISEÑO.md` §2.8).
+
+**Lo que NO se corrigió, porque estos datos no lo permiten**, y va declarado en
+el reporte: supervivencia (los 36 tickers son los que existen hoy; ninguna
+deslistada, ninguna quebrada); que la fuente no es point-in-time; que `VRT`
+fue un SPAC hasta feb-2020 y durante **358 sesiones (17,8 % de la muestra)** su
+σ diaria fue 0,59 % contra 3,86 % después; y la fuga por el analista, que sólo
+el sellado en vivo desmiente y este riel tiene **cero filas selladas**.
+
+**Ninguna de estas correcciones suma al registro de intentos**: no son
+especificaciones nuevas ni variantes probadas y descartadas. Son la misma L1,
+L2 y L3 declaradas en el §3, computadas sin la fuga que las habría vuelto
+ininterpretables. El registro sigue en 3.

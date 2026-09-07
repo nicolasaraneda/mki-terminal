@@ -301,3 +301,49 @@ Pura exposición de `universo.UNIVERSO` — sin lógica.
                      "tipo": "accion", "exchange": "XNYS"}]
 }
 ```
+
+
+---
+
+## Enmienda 7.0.0 — el riel de dinero (corrida 10)
+
+**Se enmienda ANTES de tocar los endpoints**, que es la regla de esta capa.
+
+Tres endpoints nuevos, todos de **SOLO LECTURA sobre artefactos ya
+generados**. No computan nada: leen los JSON que producen
+`python -m dinero.mapa`, `python -m dinero.cuenta_papel` y
+`python -m dinero.senal_larga_reporte`, y el árbitro `cifras.py` para el
+estado del riel de medición. No tocan la red, no escriben, no llaman a
+Anthropic.
+
+**Regla de honestidad propia de estos tres**, porque sirven cifras de un riel
+que no tiene ninguna fila sellada: **cada objeto lleva su `estatus`**
+(`MEDIDO` | `SIMULADO` | `PROPUESTA` | `REFUTADO` | `DECISION_PENDIENTE`) y,
+cuando lleva un estimador puntual, **lleva su intervalo en el mismo objeto**.
+Un número sin intervalo no viaja por esta API si es un estimador. Los `n` van
+siempre.
+
+### GET /api/dinero/universo
+El mapa de la cadena a instrumentos comprables. Sirve
+`dinero/resultados/universo_operable.json` tal cual, con su fuente
+(archivo congelado, sha256, rango de fechas) y su resumen de eslabones
+representados / sustituidos / huecos, en las dos lecturas (con y sin exigir
+liquidez verificada).
+
+### GET /api/dinero/cuenta
+La cuenta en papel. Sirve `dinero/resultados/cuenta_papel.json`.
+**Todo el objeto lleva `etiqueta: "SIMULADO"`** y la advertencia de que la
+señal que la alimenta no tiene información: lo medido es fricción. Incluye
+el barrido de deslizamiento, las comparaciones contra las dos líneas base con
+su intervalo, y el conteo de falsos positivos por construcción.
+
+### GET /api/rieles
+Estado de los dos rieles, uno al lado del otro. El de MEDICIÓN se lee del
+árbitro `cifras.sellada()` —n, días, ventaja con su IC de clúster de día,
+McNemar, cobertura— y el de DINERO del pre-registro y los artefactos. Cada
+riel declara: qué mide, en qué horizonte, contra qué vara, cuánta muestra
+lleva, qué le falta para veredicto y **qué lo mata**.
+
+Ninguno de los tres endpoints entra al envelope con `meta.regimen`: no
+dependen del motor ni del régimen. Llevan `meta` reducido
+(`generado_en`, `modelo_version`, `plataforma_version`).

@@ -400,3 +400,108 @@ def test_todo_lo_del_riel_de_dinero_se_declara_simulado():
         pytest.skip("la cuenta en papel todavía no se corrió")
     cabecera = open(ruta, encoding="utf-8").read()[:1500].upper()
     assert "SIMULADO" in cabecera
+
+
+# ------------------------------------------------------------
+# 6. La capa visual (bloque 7). Es texto publicado: se audita como tal.
+# ------------------------------------------------------------
+VISTAS_NUEVAS = ("frontend/src/vistas/Operable.tsx",
+                 "frontend/src/vistas/RielDinero.tsx",
+                 "frontend/src/vistas/Rieles.tsx",
+                 "frontend/src/componentes/CifraConIntervalo.tsx",
+                 "frontend/src/lib/tipos.ts")
+
+
+def test_la_palabra_confianza_sigue_prohibida_en_la_capa_visual():
+    """Constitución 5.0 #4. El test que lo verificaba cubría el payload de
+    la API y el reporte de Telegram; el encargo de la corrida 10 pide
+    explícitamente que cubra también los archivos nuevos."""
+    for rel in VISTAS_NUEVAS:
+        ruta = os.path.join(RAIZ, rel)
+        if not os.path.exists(ruta):
+            continue
+        assert "confianza" not in open(ruta, encoding="utf-8").read().lower(), rel
+
+
+def test_la_capa_visual_no_usa_emojis():
+    """Regla de 4.7: no hay emojis en la UI."""
+    import re
+    emoji = re.compile("[\U0001F300-\U0001FAFF✀-➿☀-⛿]")
+    for rel in VISTAS_NUEVAS:
+        ruta = os.path.join(RAIZ, rel)
+        if not os.path.exists(ruta):
+            continue
+        texto = open(ruta, encoding="utf-8").read()
+        assert not emoji.search(texto), f"{rel} usa emoji"
+
+
+def test_la_cuenta_en_papel_declara_SIMULADO_sin_scroll():
+    """La etiqueta va en el primer bloque de la vista, no enterrada."""
+    ruta = os.path.join(RAIZ, "frontend/src/vistas/RielDinero.tsx")
+    if not os.path.exists(ruta):
+        pytest.skip("la vista todavía no existe")
+    cabeza = open(ruta, encoding="utf-8").read()
+    primer_card = cabeza.index("<Card")
+    assert 'valor="SIMULADO"' in cabeza[primer_card:primer_card + 1200], (
+        "la etiqueta SIMULADO tiene que estar en el primer bloque de la vista")
+
+
+def test_el_componente_de_cifra_se_niega_a_mostrar_un_numero_sin_intervalo():
+    """La regla de la casa, hecha ejecutable en el componente: si no hay
+    intervalo, no se muestra el número — se muestra por qué falta."""
+    ruta = os.path.join(RAIZ, "frontend/src/componentes/CifraConIntervalo.tsx")
+    if not os.path.exists(ruta):
+        pytest.skip("el componente todavía no existe")
+    fuente = open(ruta, encoding="utf-8").read()
+    assert "if (!hay || !hayIC)" in fuente
+    assert "sin intervalo computado" in fuente
+    assert "contiene el cero" in fuente, (
+        "un intervalo que cruza el cero se dice con palabras, no sólo con "
+        "una banda")
+
+
+def test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice():
+    """Paridad de la capa nueva: lo que sirve la API es exactamente el
+    artefacto generado, sin recomputar nada."""
+    import json
+    from fastapi.testclient import TestClient
+
+    from api.main import app
+    c = TestClient(app)
+
+    r = c.get("/api/dinero/universo")
+    assert r.status_code == 200
+    disco = json.load(open(os.path.join(
+        RAIZ, "dinero/resultados/universo_operable.json"), encoding="utf-8"))
+    assert r.json()["datos"]["resumen"] == disco["resumen"]
+
+    r = c.get("/api/dinero/cuenta")
+    assert r.status_code == 200
+    assert r.json()["datos"]["etiqueta"] == "SIMULADO"
+
+    r = c.get("/api/rieles")
+    assert r.status_code == 200
+    rieles = r.json()["datos"]["rieles"]
+    assert [x["nombre"] for x in rieles] == ["Riel de medición", "Riel de dinero"]
+    for riel in rieles:
+        assert riel["que_lo_mata"], "todo riel declara qué lo mata"
+        assert riel["falta_para_veredicto"]
+    # y la regla dura: ningún estimador puntual sin intervalo
+    for cifra in rieles[0]["cifras"]:
+        assert len(cifra["intervalo"]) == 2
+        assert cifra["tipo_intervalo"]
+
+
+def test_las_cifras_del_riel_de_medicion_salen_del_arbitro():
+    """No se escriben a mano en la API: si el árbitro se mueve, la vista se
+    mueve con él o el test se pone rojo."""
+    from fastapi.testclient import TestClient
+
+    import cifras
+    from api.main import app
+    c = cifras.sellada()
+    datos = TestClient(app).get("/api/rieles").json()["datos"]["rieles"][0]
+    porn = {x["nombre"]: x for x in datos["cifras"]}
+    assert porn["acierto del modelo"]["valor_pct"] == c["modelo_pct"]
+    assert porn["ventaja sobre la base"]["intervalo"] == c["ventaja_ic_dia"]
+    assert datos["muestra"]["n"] == c["n"]

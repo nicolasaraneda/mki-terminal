@@ -323,3 +323,156 @@ export interface Instrumento {
   tipo: string
   exchange: string | null
 }
+
+// ============================================================
+// RIEL DE DINERO (Etapa 7.0.0, corrida 10). Espejo de la enmienda 7.0.0
+// de api/CONTRATO.md. El frontend NO computa ninguna señal ni ningún
+// intervalo: si un número difiere del de la API, el bug es de la API.
+//
+// Nótese que `intervalo` NO es opcional en ningún estimador de estos
+// tipos. Es a propósito: un número sin intervalo no se muestra, y el
+// tipo es el primer lugar donde esa regla se puede hacer cumplir.
+// ============================================================
+export type EstatusEvidencial =
+  | 'MEDIDO'
+  | 'SIMULADO'
+  | 'PROPUESTA'
+  | 'REFUTADO'
+  | 'DECISION_PENDIENTE'
+
+export interface CifraConIC {
+  nombre: string
+  valor_pct: number
+  intervalo: [number, number]
+  tipo_intervalo: string
+  cruza_cero?: boolean
+}
+
+export interface InstrumentoOperable {
+  ticker: string
+  nombre: string
+  forma: string
+  rol: string
+  sustituye_a: string
+  diferencia: string
+  liquidez_no_verificada: boolean
+  verificado: boolean
+  razon_no_verificado: string
+  precio_usd: number | null
+  fecha_precio: string | null
+  alcanza_con_techo: boolean
+  alcanza_con_piso: boolean
+  acciones_con_techo: number
+  comision_orden_minima_pct: number | null
+  comision_orden_techo_pct: number | null
+}
+
+export interface EslabonOperable {
+  clave: string
+  nombre: string
+  dominante_contexto_no_verificado: string
+  obstaculo: string
+  estado: 'REPRESENTADO' | 'SUSTITUIDO' | 'HUECO'
+  estado_exigiendo_liquidez: 'REPRESENTADO' | 'SUSTITUIDO' | 'HUECO'
+  huecos: { quien: string; clase: string; por_que: string }[]
+  instrumentos: InstrumentoOperable[]
+}
+
+export interface DatosUniversoOperable {
+  estatus: EstatusEvidencial
+  generado: string
+  fuente: { archivo: string; sha256?: string; desde?: string; hasta?: string; filas?: number }
+  presupuesto: { piso_usd: number; techo_usd: number }
+  costos: Record<string, number | boolean | string | number[]>
+  eslabones: EslabonOperable[]
+  resumen: {
+    candidatos: number
+    verificados: number
+    representados: number
+    sustituidos: number
+    huecos: number
+    representados_exigiendo_liquidez: number
+    sustituidos_exigiendo_liquidez: number
+    huecos_exigiendo_liquidez: number
+  }
+}
+
+export interface ComparacionSemanal {
+  semanas: number
+  dif_media_pp: number
+  ic_lo: number
+  ic_hi: number
+  cruza_cero: boolean
+  bloque_semanas: number
+  replicas: number
+  semilla: number
+}
+
+export interface FilaCuenta {
+  etf?: string
+  juego?: string
+  deslizamiento_pb: number
+  final_usd: number
+  aportado_usd: number
+  resultado_usd: number
+  resultado_pct: number
+  ordenes: number
+  comisiones_usd: number
+  deslizamiento_usd: number
+  contra?: Record<string, ComparacionSemanal>
+}
+
+export interface DatosCuentaPapel {
+  etiqueta: 'SIMULADO'
+  estatus: EstatusEvidencial
+  advertencia: string
+  ventana: { desde: string; hasta: string; dias_de_mercado: number }
+  aportado_usd: number
+  aportes: number
+  instrumentos_operables: number
+  barrido_deslizamiento_pb: number[]
+  linea_base: FilaCuenta[]
+  juegos: FilaCuenta[]
+  falsos_positivos: {
+    comparaciones: number
+    con_ic_que_excluye_cero: number
+    nota: string
+  }
+}
+
+export interface Riel {
+  nombre: string
+  estatus: EstatusEvidencial
+  que_mide: string
+  horizonte: string
+  vara: string
+  mueve_plata: boolean
+  muestra: Record<string, number | string | null>
+  cifras?: CifraConIC[]
+  cobertura_80_pct?: number
+  n_efectivo?: number
+  icc?: number
+  deff?: number
+  mapa?: DatosUniversoOperable['resumen'] | null
+  cuenta_en_papel?: {
+    aportado_usd: number
+    falsos_positivos: DatosCuentaPapel['falsos_positivos']
+    advertencia: string
+  } | null
+  senal_larga?: {
+    celdas: number
+    ganan_a_la_climatologia: number
+    L1_refutada: boolean
+    contrastes: number
+    nota: string
+  } | null
+  potencia?: { sigma_dif_semanal_pp: number; nota: string }
+  falta_para_veredicto: string
+  que_lo_mata: string
+  procedencia?: string
+}
+
+export interface DatosRieles {
+  rieles: Riel[]
+  por_que_son_dos: string
+}

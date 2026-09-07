@@ -15,6 +15,9 @@ import { Historial } from './vistas/Historial'
 import { Salud } from './vistas/Salud'
 import { Laboratorio } from './vistas/Laboratorio'
 import { Detalle } from './vistas/Detalle'
+import { Operable } from './vistas/Operable'
+import { RielDinero } from './vistas/RielDinero'
+import { Rieles } from './vistas/Rieles'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -34,6 +37,10 @@ const router = createBrowserRouter([
       { path: '/historial', element: <Historial /> },
       { path: '/salud', element: <Salud /> },
       { path: '/laboratorio', element: <Laboratorio /> },
+      // Riel de dinero (Etapa 7.0.0) — todo SIMULADO, ver VISION.md
+      { path: '/rieles', element: <Rieles /> },
+      { path: '/operable', element: <Operable /> },
+      { path: '/dinero', element: <RielDinero /> },
       { path: '/detalle/:ticker', element: <Detalle /> },
       // catálogo del sistema de diseño — oculto, sin enlace en la navegación
       { path: '/sistema', element: <Sistema /> },

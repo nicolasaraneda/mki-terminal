@@ -11,6 +11,7 @@
 # ============================================================
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timezone
 
@@ -19,6 +20,8 @@ from dinero import universo_dinero as U
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SALIDA = os.path.join(RAIZ, "docs", "universo_operable.md")
+SALIDA_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "resultados", "universo_operable.json")
 
 
 def _tabla_eslabon(e, filas, cfg):
@@ -206,11 +209,71 @@ def componer() -> str:
     return "\n".join(L) + "\n"
 
 
+def a_json() -> dict:
+    """El mismo mapa, en estructura, para la capa visual. Sale del mismo
+    `construir_mapa` que el documento: no hay dos fuentes."""
+    cfg = U.reglas()
+    cierres = precios.cargar_congelado()
+    meta = precios.meta_congelado()
+    filas = U.construir_mapa(cierres, cfg)
+    eslabones = []
+    for e in U.ESLABONES:
+        fe = [f for f in filas if f.candidato.eslabon == e.clave]
+        eslabones.append({
+            "clave": e.clave, "nombre": e.nombre,
+            "dominante_contexto_no_verificado": e.dominante,
+            "obstaculo": e.obstaculo,
+            "estado": U.estado_del_eslabon(fe),
+            "estado_exigiendo_liquidez": U.estado_del_eslabon(fe, True),
+            "huecos": [{"quien": q, "clase": c, "por_que": p}
+                       for cl, q, c, p in U.NO_COMPRABLES if cl == e.clave],
+            "instrumentos": [{
+                "ticker": f.candidato.ticker, "nombre": f.candidato.nombre,
+                "forma": f.candidato.forma, "rol": f.candidato.rol,
+                "sustituye_a": f.candidato.sustituye_a,
+                "diferencia": f.candidato.diferencia,
+                "liquidez_no_verificada": f.candidato.liquidez_no_verificada,
+                "verificado": f.verificado,
+                "razon_no_verificado": f.razon_no_verificado,
+                "precio_usd": f.precio, "fecha_precio": f.fecha_precio,
+                "alcanza_con_techo": f.alcanza_con_techo,
+                "alcanza_con_piso": f.alcanza_con_piso,
+                "acciones_con_techo": f.acciones_con_techo,
+                "comision_orden_minima_pct": f.comision_orden_minima_pct,
+                "comision_orden_techo_pct": f.comision_orden_techo_pct,
+            } for f in sorted(fe, key=lambda f: (f.candidato.rol != "dominante",
+                                                 f.candidato.ticker))],
+        })
+    estados = [e["estado"] for e in eslabones]
+    estrictos = [e["estado_exigiendo_liquidez"] for e in eslabones]
+    return {
+        "estatus": "MEDIDO",
+        "generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "fuente": {"archivo": "dinero/datos/cierres_congelados.csv", **meta},
+        "presupuesto": cfg["presupuesto"], "costos": cfg["costos"],
+        "eslabones": eslabones,
+        "resumen": {
+            "candidatos": len(filas),
+            "verificados": sum(1 for f in filas if f.verificado),
+            "representados": estados.count("REPRESENTADO"),
+            "sustituidos": estados.count("SUSTITUIDO"),
+            "huecos": estados.count("HUECO"),
+            "representados_exigiendo_liquidez": estrictos.count("REPRESENTADO"),
+            "sustituidos_exigiendo_liquidez": estrictos.count("SUSTITUIDO"),
+            "huecos_exigiendo_liquidez": estrictos.count("HUECO"),
+        },
+    }
+
+
 def main():
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
+    os.makedirs(os.path.dirname(SALIDA_JSON), exist_ok=True)
     with open(SALIDA, "w", encoding="utf-8") as f:
         f.write(componer())
-    print(f"escrito {SALIDA}")
+    with open(SALIDA_JSON, "w", encoding="utf-8") as f:
+        json.dump(a_json(), f, indent=1, ensure_ascii=False, default=float)
+        f.write("\n")
+    print(f"escrito {SALIDA} y {SALIDA_JSON}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,273 @@
+{
+ "estatus": "PROPUESTA",
+ "advertencia": "Ninguna cifra entra al README ni sostiene ninguna afirmación del proyecto. Cero filas selladas.",
+ "preregistro": "GEMELO/preregistro/senal_larga_v1.md (commit e368dad)",
+ "intentos_riel_largo": 3,
+ "celdas": [
+  {
+   "especificacion": "L1",
+   "horizonte_dias_habiles": 20,
+   "filas": 5131,
+   "fechas": 733,
+   "n_ajuste": 8477,
+   "corte_ajuste": "2023-07-28",
+   "prediccion_cambia_de_signo": true,
+   "mae_modelo_pp": 8.88549594292064,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 9.184736199271336,
+    "ganancia_mae_pp": 0.2992402563506964,
+    "intervalo": [
+     -0.12185267968443184,
+     0.6971072807527009
+    ],
+    "cruza_cero": true
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": 2.219948670964547,
+    "mae_pp": 8.697066074661212,
+    "ganancia_mae_pp": -0.1884298682594281,
+    "intervalo": [
+     -0.3359673235303814,
+     -0.03912772228726052
+    ],
+    "cruza_cero": false
+   },
+   "direccion": {
+    "acierto_pct": 63.39894757357241,
+    "climatologia_pct": 65.7376729682323,
+    "filas": 5131,
+    "ganancia_pp": -2.338725394659896,
+    "intervalo": [
+     -4.521535763009161,
+     -0.4287663223543169
+    ],
+    "cruza_cero": false,
+    "vacia": false
+   }
+  },
+  {
+   "especificacion": "L2",
+   "horizonte_dias_habiles": 20,
+   "filas": 5131,
+   "fechas": 733,
+   "n_ajuste": 8477,
+   "corte_ajuste": "2023-07-28",
+   "prediccion_cambia_de_signo": true,
+   "mae_modelo_pp": 5.339462466730907,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 5.350711946350736,
+    "ganancia_mae_pp": 0.011249479619828584,
+    "intervalo": [
+     -0.006857993965208219,
+     0.029973591363168194
+    ],
+    "cruza_cero": true
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": -0.053670600645417,
+    "mae_pp": 5.349526951322125,
+    "ganancia_mae_pp": 0.01006448459121767,
+    "intervalo": [
+     -0.008264131452526463,
+     0.028744865723612928
+    ],
+    "cruza_cero": true
+   },
+   "direccion": {
+    "acierto_pct": 51.56889495225102,
+    "climatologia_pct": 51.29604365620737,
+    "filas": 5131,
+    "ganancia_pp": 0.27285129604365466,
+    "intervalo": [
+     -4.658448645488209,
+     4.774897680763984
+    ],
+    "cruza_cero": true,
+    "vacia": false
+   }
+  },
+  {
+   "especificacion": "L3",
+   "horizonte_dias_habiles": 20,
+   "filas": 5131,
+   "fechas": 733,
+   "n_ajuste": 8477,
+   "corte_ajuste": "2023-07-28",
+   "prediccion_cambia_de_signo": false,
+   "mae_modelo_pp": 8.698884768577827,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 9.184736199271336,
+    "ganancia_mae_pp": 0.48585143069350956,
+    "intervalo": [
+     0.07570894806499967,
+     0.8795100664816285
+    ],
+    "cruza_cero": false
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": 2.219948670964547,
+    "mae_pp": 8.697066074661212,
+    "ganancia_mae_pp": -0.001818693916614933,
+    "intervalo": [
+     -0.05625692158974426,
+     0.04495754700758647
+    ],
+    "cruza_cero": true
+   },
+   "direccion": {
+    "acierto_pct": 65.7376729682323,
+    "climatologia_pct": 65.7376729682323,
+    "filas": 5131,
+    "ganancia_pp": 0.0,
+    "intervalo": [
+     0.0,
+     0.0
+    ],
+    "cruza_cero": true,
+    "vacia": true
+   }
+  },
+  {
+   "especificacion": "L1",
+   "horizonte_dias_habiles": 60,
+   "filas": 4851,
+   "fechas": 693,
+   "n_ajuste": 7917,
+   "corte_ajuste": "2023-05-31",
+   "prediccion_cambia_de_signo": false,
+   "mae_modelo_pp": 19.02557999161964,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 20.956085204085024,
+    "ganancia_mae_pp": 1.930505212465384,
+    "intervalo": [
+     -0.5111864996179847,
+     4.150434911730773
+    ],
+    "cruza_cero": true
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": 7.043786269051876,
+    "mae_pp": 18.836577575508425,
+    "ganancia_mae_pp": -0.18900241611121515,
+    "intervalo": [
+     -0.44689875084759034,
+     0.07764860433251966
+    ],
+    "cruza_cero": true
+   },
+   "direccion": {
+    "acierto_pct": 70.81014223871367,
+    "climatologia_pct": 70.81014223871367,
+    "filas": 4851,
+    "ganancia_pp": 0.0,
+    "intervalo": [
+     0.0,
+     0.0
+    ],
+    "cruza_cero": true,
+    "vacia": true
+   }
+  },
+  {
+   "especificacion": "L2",
+   "horizonte_dias_habiles": 60,
+   "filas": 4851,
+   "fechas": 693,
+   "n_ajuste": 7917,
+   "corte_ajuste": "2023-05-31",
+   "prediccion_cambia_de_signo": true,
+   "mae_modelo_pp": 11.670011693890462,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 11.93335404649433,
+    "ganancia_mae_pp": 0.2633423526038676,
+    "intervalo": [
+     0.07970842398233353,
+     0.4668642307116877
+    ],
+    "cruza_cero": false
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": -0.32682822513163373,
+    "mae_pp": 11.89934308956855,
+    "ganancia_mae_pp": 0.2293313956780878,
+    "intervalo": [
+     0.054293545019560956,
+     0.42381365202206916
+    ],
+    "cruza_cero": false
+   },
+   "direccion": {
+    "acierto_pct": 57.78190063904349,
+    "climatologia_pct": 55.7204700061843,
+    "filas": 4851,
+    "ganancia_pp": 2.0614306328591923,
+    "intervalo": [
+     -4.741805813234386,
+     10.225726654298079
+    ],
+    "cruza_cero": true,
+    "vacia": false
+   }
+  },
+  {
+   "especificacion": "L3",
+   "horizonte_dias_habiles": 60,
+   "filas": 4851,
+   "fechas": 693,
+   "n_ajuste": 7917,
+   "corte_ajuste": "2023-05-31",
+   "prediccion_cambia_de_signo": false,
+   "mae_modelo_pp": 18.684576948673016,
+   "vara_cero": {
+    "estatus": "PRE-REGISTRADA",
+    "mae_pp": 20.956085204085024,
+    "ganancia_mae_pp": 2.2715082554120087,
+    "intervalo": [
+     -0.23449500924371655,
+     4.727882921988913
+    ],
+    "cruza_cero": true
+   },
+   "vara_climatologia": {
+    "estatus": "POST-HOC, agregada tras ver el resultado",
+    "constante_pp": 7.043786269051876,
+    "mae_pp": 18.836577575508425,
+    "ganancia_mae_pp": 0.1520006268354095,
+    "intervalo": [
+     -0.5889736928778266,
+     0.9080724476104954
+    ],
+    "cruza_cero": true
+   },
+   "direccion": {
+    "acierto_pct": 70.81014223871367,
+    "climatologia_pct": 70.81014223871367,
+    "filas": 4851,
+    "ganancia_pp": 0.0,
+    "intervalo": [
+     0.0,
+     0.0
+    ],
+    "cruza_cero": true,
+    "vacia": true
+   }
+  }
+ ],
+ "resumen": {
+  "celdas": 6,
+  "ganan_a_la_climatologia": 1,
+  "L1_refutada": true,
+  "contrastes": 24,
+  "nota": "La forma simple de la hipótesis (L1, contagio directo) queda refutada por su propia regla pre-registrada. Lo que sobrevive a la climatología causal es una celda, con una mejora del orden del 2 % relativo, y no autoriza nada."
+ }
+}

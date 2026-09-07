@@ -8374,13 +8374,100 @@ El riel largo lleva su propia cuenta en `dinero/registro_intentos.py`, hoy en
 hermana escrito. **Si los dos registros deben fusionarse es decisión de Nicolás**
 y está en `espera_firma.md`.
 
-### 80.8 Cómo se revierte
+### 80.8 La señal larga: L1 refutada por su propia regla, y una vara que estaba mal elegida
+
+El orden del bloque 6 se respetó y es **verificable en git**: el pre-registro
+`GEMELO/preregistro/senal_larga_v1.md` entró en el commit `e368dad`; el módulo y el
+reporte, después. Cuando el auditor corrió, `git log --all -- dinero/senal_larga_reporte.py`
+salía vacío.
+
+**`auditor-lookahead` corrió antes de la primera medición, como manda el §8, y encontró
+una fuga DEMOSTRADA más tres sesgos con signo.** Los seis puntos se corrigieron **sin
+haber calculado un solo MAE**, y quedaron como errata fechada §9 del pre-registro:
+
+- **F1, fuga de selección (R3).** Yo mismo la introduje al reutilizar `construir_mapa`
+  para componer los eslabones: ese filtro pregunta «¿entra una acción en 500 USD?» usando
+  el **último** cierre del archivo, así que la membresía de ocho años quedaba fijada por
+  el renglón del 2026-09-04 — y el filtro **expulsa a los que subieron** (excluidos:
+  retorno total mediano 847 % contra 547 % de los incluidos). Microsoft quedaba fuera de
+  «demanda final» durante ocho años **por setenta centavos**. Medido: truncar el archivo
+  en 2025-12-31 cambiaba el **42,9 %** de las filas del panel, desde la primera.
+- **S1.** El protocolo ejecutado no era el pre-registrado: el walk-forward expansivo metía
+  hasta el 36 % del último ajuste **dentro** del período de prueba mientras el reporte
+  imprimía «ajuste y prueba congelados». **Ganó el pre-registro:** un ajuste, una
+  evaluación, un holdout de verdad.
+- **S2 y S3.** L2 no quitaba la beta común (beta pooleada sobre los siete pares; residuos
+  con beta de −0,20 a +0,14 según eslabón) y L3 medía su propio objetivo (la dispersión
+  incluía al eslabón de abajo, corr hasta +0,57).
+- **S7.** Retardo de implementación cero: la etiqueta arrancaba en el mismo cierre con que
+  se decide. Un día de retardo mueve la etiqueta **3,6–4,0 pp**, del mismo orden que el
+  umbral del juego conservador (3,49 pp). Ahora entra en t+1. **Endurece la vara.**
+- **S8.** `sign(0) == sign(0)` contaba como acierto — el mismo artefacto por el que el
+  proyecto ya congeló `excluir_cero`.
+
+Ninguna corrección suma al registro de intentos: son las mismas L1, L2 y L3 declaradas,
+computadas sin la fuga que las habría vuelto ininterpretables.
+
+**El resultado, y hay que leerlo entero.**
+
+- **L1 —el contagio directo, la forma simple de la hipótesis— queda REFUTADA por su propia
+  regla pre-registrada:** no le gana a predecir cero con intervalo que excluya el cero en
+  ninguno de los dos horizontes (+0,299 [−0,122, +0,697] a 20 días; +1,931 [−0,511,
+  +4,150] a 60). Y **a 20 días acierta MENOS que la climatología**: 63,4 % contra 65,7 %,
+  −2,339 pp con IC [−4,522, −0,429], que no contiene el cero.
+- **La vara pre-registrada resultó débil, y se dijo en vez de taparlo.** «Predecir cero»
+  no es neutro en un mercado que sube: cero está por debajo de la media incondicional, así
+  que cualquier modelo que aprenda el intercepto le gana sin saber nada de la cadena. El
+  propio adversario del proyecto ya lo había dictaminado en agosto (`espera_firma.md` §30)
+  y el pre-registro de esta corrida no lo recogió. Se agregó una tercera vara
+  —**climatología causal**, la media de la etiqueta en el ajuste— **DESPUÉS de ver el
+  resultado**, rotulada como post-hoc en el reporte. Se publica en vez de reescribir el
+  pre-registro, y se deja constancia de la dirección: **es una vara más difícil agregada
+  tras un positivo**, no una más fácil tras un negativo.
+- Contra esa vara, **sobrevive una sola celda de seis**: L2 a 60 días, +0,229 pp de MAE
+  con IC [+0,054, +0,424] — del orden del **2 % relativo**. La dirección en esa misma
+  celda no se distingue del cero.
+- **Tres celdas tienen la métrica de dirección vacía:** la predicción nunca cambia de
+  signo, así que el +0,000 pp con IC [0, 0] no es un empate. Publicarlo como resultado
+  sería el mismo error que publicar un PSR saturado en 1,0000 como certeza.
+
+**Conclusión publicada: no autoriza nada.** Una celda sobre 24 contrastes, en una página
+cuyo propio diseño produce un falso positivo el 21 % de las veces —medido en el bloque 4
+de esta misma corrida—, sin la ablación tipo R2 que el pre-registro del riel exige, y con
+tres sesgos no corregibles (supervivencia, fuente no point-in-time, `VRT` como SPAC
+durante el 17,8 % de la muestra) que **empujan todos en dirección optimista y son del
+orden de la mejora medida**.
+
+### 80.9 La capa visual: la regla del intervalo dejó de ser disciplina
+
+Primero se descubrió qué existía —`api/` de solo lectura y `frontend/` con once vistas— y
+`api/CONTRATO.md` se enmendó **antes** de tocar un endpoint, que es la regla de esa capa.
+Tres endpoints nuevos (`/api/dinero/universo`, `/api/dinero/cuenta`, `/api/rieles`) que no
+computan nada: sirven artefactos ya generados, más el árbitro `cifras.py` para el riel de
+medición. Tres vistas: `/rieles`, `/operable`, `/dinero`.
+
+La decisión de diseño que importa: **`CifraConIntervalo` no puede renderizar un número sin
+su intervalo.** Si no lo recibe, muestra por qué falta en lugar del número; y cuando el
+intervalo contiene el cero lo dice **con palabras**, no sólo con una banda —una banda que
+cruza el cero se lee como «casi significativo» si nadie la nombra—. La regla de la casa
+pasó de vivir en la disciplina de quien escribe cada vista a vivir en el ejecutable, que
+es el mismo movimiento que la corrida 09 hizo con las cifras retiradas.
+
+El test de la palabra prohibida cubre ahora los archivos nuevos —el encargo lo pedía
+explícitamente— y hay un test de que la etiqueta **SIMULADO** está en el primer bloque de
+la vista de la cuenta, no enterrada bajo scroll. `npm run build` (tsc + vite) en verde.
+
+### 80.10 Cómo se revierte
 
 `dinero/`, `VISION.md`, `docs/universo_operable.md`, `tests/conftest.py`,
-`tests/test_dinero.py`, `tests/test_guarda_red.py`, `scripts/guarda_red.sh` y
-`GEMELO/preregistro/senal_larga_v1.md` son archivos **nuevos**: borrarlos
-revierte. Los editados son `scripts/pre-commit`, `mki`, `tests/test_api.py` y
-`tests/test_backtest.py` (sólo el decorador `@pytest.mark.red`). El hook
+`tests/test_dinero.py`, `tests/test_guarda_red.py`, `tests/test_senal_larga.py`,
+`scripts/guarda_red.sh`, `GEMELO/preregistro/senal_larga_v1.md`,
+`frontend/src/vistas/{Operable,RielDinero,Rieles}.tsx` y
+`frontend/src/componentes/CifraConIntervalo.tsx` son archivos **nuevos**: borrarlos
+revierte. Los editados son `scripts/pre-commit`, `mki`, `tests/test_api.py`,
+`tests/test_backtest.py` (sólo el decorador `@pytest.mark.red`), `api/main.py` y
+`api/CONTRATO.md` (bloque añadido al final, nada existente cambió),
+`frontend/src/{main,Layout}.tsx` y `frontend/src/lib/tipos.ts` (tipos añadidos al final). El hook
 instalado en `.git/hooks/pre-commit` se refrescó con la copia nueva; devolverlo
 es `git show HEAD~1:scripts/pre-commit > .git/hooks/pre-commit`. Ninguna cifra
 publicada se movió y ninguna fila sellada se tocó.

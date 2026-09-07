@@ -14,6 +14,7 @@
 # ============================================================
 from __future__ import annotations
 
+import json
 import os
 from datetime import date, datetime, timezone
 
@@ -27,6 +28,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR_RESULTADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "resultados")
 SALIDA = os.path.join(DIR_RESULTADOS, "cuenta_papel.md")
+SALIDA_JSON = os.path.join(DIR_RESULTADOS, "cuenta_papel.json")
 
 # Congelados ANTES de correr, en este archivo y no como argumento suelto.
 DESDE = "2023-09-05"
@@ -278,12 +280,62 @@ def componer(cfg, res) -> str:
     return "\n".join(L) + "\n"
 
 
+def a_json(cfg, res) -> dict:
+    """La misma medición, en estructura, para que la capa visual no tenga
+    que parsear markdown. Se emite del mismo objeto que compone el .md: si
+    alguna vez difieren, es un bug y no una versión."""
+    aportado = sum(res["aportes"].values())
+    pbs = cfg["costos"]["barrido_deslizamiento_pb"]
+    salida = {
+        "etiqueta": "SIMULADO",
+        "estatus": "PROPUESTA",
+        "advertencia": (
+            "La señal que alimenta la estrategia NO tiene información: lo "
+            "medido es fricción, no habilidad. Ninguna cifra es un resultado "
+            "del proyecto."),
+        "ventana": {"desde": DESDE, "hasta": HASTA,
+                    "dias_de_mercado": int(len(res["cierres"]))},
+        "aportado_usd": aportado,
+        "aportes": len(res["aportes"]),
+        "instrumentos_operables": len(res["operables"]),
+        "barrido_deslizamiento_pb": pbs,
+        "linea_base": [], "juegos": [],
+    }
+    for etf in ETFS_BASE:
+        for pb in pbs:
+            libro, valor = res["base"][(etf, pb)]
+            r = _resumen(libro, valor, aportado)
+            salida["linea_base"].append(dict(etf=etf, deslizamiento_pb=pb, **r))
+    for nombre in ("conservador", "medio", "agresivo"):
+        for pb in pbs:
+            libro, valor = res["estrategia"][(nombre, pb)]
+            r = _resumen(libro, valor, aportado)
+            contra = {}
+            for etf in ETFS_BASE:
+                _, vb = res["base"][(etf, pb)]
+                contra[etf] = C.comparar(valor, vb, semilla=SEMILLA_COMPARACION)
+            salida["juegos"].append(dict(juego=nombre, deslizamiento_pb=pb,
+                                         contra=contra, **r))
+    total = sum(1 for j in salida["juegos"] for _ in j["contra"])
+    marcados = sum(1 for j in salida["juegos"]
+                   for c in j["contra"].values() if not c["cruza_cero"])
+    salida["falsos_positivos"] = {
+        "comparaciones": total, "con_ic_que_excluye_cero": marcados,
+        "nota": ("La respuesta verdadera es cero en todas: la señal no tiene "
+                 "información. Todos son falsos positivos por construcción.")}
+    return salida
+
+
 def main():
     cfg, res = correr()
     os.makedirs(DIR_RESULTADOS, exist_ok=True)
     with open(SALIDA, "w", encoding="utf-8") as f:
         f.write(componer(cfg, res))
-    print("escrito", SALIDA)
+    with open(SALIDA_JSON, "w", encoding="utf-8") as f:
+        json.dump(a_json(cfg, res), f, indent=1, ensure_ascii=False,
+                  default=float)
+        f.write("\n")
+    print("escrito", SALIDA, "y", SALIDA_JSON)
 
 
 if __name__ == "__main__":
