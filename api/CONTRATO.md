@@ -318,10 +318,31 @@ Anthropic.
 
 **Regla de honestidad propia de estos tres**, porque sirven cifras de un riel
 que no tiene ninguna fila sellada: **cada objeto lleva su `estatus`**
-(`MEDIDO` | `SIMULADO` | `PROPUESTA` | `REFUTADO` | `DECISION_PENDIENTE`) y,
-cuando lleva un estimador puntual, **lleva su intervalo en el mismo objeto**.
-Un número sin intervalo no viaja por esta API si es un estimador. Los `n` van
-siempre.
+(`MEDIDO` | `SIMULADO` | `PROPUESTA` | `REFUTADO` | `RETIRADO` |
+`DECISION_PENDIENTE`) y, cuando lleva un estimador puntual, **lleva su
+intervalo en el mismo objeto**. Un número sin intervalo no viaja por esta API
+si es un estimador. Los `n` van siempre.
+
+**Enmienda del 7-sep-2026 (dictámenes de cierre de la corrida 10).** Cuatro
+cosas que la primera versión prometía y no cumplía, o no había previsto:
+
+1. **`RETIRADO` es un estatus servible.** Cuando un artefacto queda retirado,
+   el endpoint **no sirve sus cifras con una advertencia al lado**: sirve el
+   motivo del retiro y `cifras_disponibles: false`. Servir el número con un
+   cartel es seguir haciéndolo circular.
+2. **Toda cifra declara si es una DIFERENCIA.** El campo `es_diferencia` va en
+   cada `CifraConIC`, más `comparar_contra` cuando corresponde. La frase «el
+   intervalo no contiene el cero» sólo significa algo sobre una diferencia: un
+   Wilson de una proporción no puede contener el cero nunca, y decirlo debajo
+   de una tasa de acierto insinúa una significancia que no existe.
+3. **El `meta` de estos tres declara el artefacto que los sirve.**
+   `meta.artefacto` lleva nombre, `generado_en` (mtime del archivo) y `sha256`.
+   `meta.generado_en` es la hora de la RESPUESTA, no la del dato, y estampar
+   hora fresca sobre un JSON que puede tener semanas es la misma zona ciega de
+   sellado que el proyecto ya conoce en producción.
+4. **`/api/rieles` sirve el McNemar que este contrato prometía** y no servía:
+   `mcnemar_p_filas` con su `mcnemar_caveat` (es un p de FILAS, y las filas de
+   un día no son independientes: manda el IC de clúster de día).
 
 ### GET /api/dinero/universo
 El mapa de la cadena a instrumentos comprables. Sirve
@@ -334,8 +355,13 @@ liquidez verificada).
 La cuenta en papel. Sirve `dinero/resultados/cuenta_papel.json`.
 **Todo el objeto lleva `etiqueta: "SIMULADO"`** y la advertencia de que la
 señal que la alimenta no tiene información: lo medido es fricción. Incluye
-el barrido de deslizamiento, las comparaciones contra las dos líneas base con
-su intervalo, y el conteo de falsos positivos por construcción.
+el barrido de deslizamiento y las comparaciones contra las dos líneas base con
+su intervalo.
+
+**Desde el 7-sep-2026 el artefacto está `estatus: "RETIRADO"`** y trae el
+objeto `retirado` (fecha, fuente, causa, consecuencia): tiene fuga temporal
+demostrada. El endpoint lo sirve entero para que se pueda auditar, pero
+`/api/rieles` **no reexpone ninguna de sus cifras**.
 
 ### GET /api/rieles
 Estado de los dos rieles, uno al lado del otro. El de MEDICIÓN se lee del
@@ -346,4 +372,6 @@ lleva, qué le falta para veredicto y **qué lo mata**.
 
 Ninguno de los tres endpoints entra al envelope con `meta.regimen`: no
 dependen del motor ni del régimen. Llevan `meta` reducido
-(`generado_en`, `modelo_version`, `plataforma_version`).
+(`generado_en`, `modelo_version`, `plataforma_version`) más `meta.artefacto`
+(nombre, `generado_en` del archivo y `sha256`) cuando la respuesta sale de un
+artefacto.

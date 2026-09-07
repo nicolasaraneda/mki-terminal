@@ -254,6 +254,12 @@ hizo en esta corrida para no agrandar el diff del bloque 0 pasada la medianoche.
   corredor, y si los dos registros de intentos se fusionan.
 - **La ablación tipo R2 de la señal larga no se hizo.** El pre-registro del
   riel la exige antes de cualquier monto, y esta corrida no la corrió.
+  *(Cerrado el 7-sep en la sesión de cierre: se corrió y la celda no la pasa —
+  sacando 2024, el intervalo contiene el cero.)*
+- **La segunda vara pre-registrada de la señal larga tampoco se evaluó**, y esta
+  bitácora no lo declaraba: el §5 del pre-registro declara dos varas de magnitud
+  y sólo se corrió la primera. Mientras la segunda no se corra, la regla de
+  refutación del §6 y el criterio M4 del riel **no se pueden dar por leídos**.
 - **`GEMELO/preregistro/senal_larga_v1.md` quedó con seis erratas** en su §9,
   todas anteriores a la medición. Un lector futuro tiene que leer el §9 junto
   con el §8, no el §8 solo.
@@ -264,8 +270,11 @@ hizo en esta corrida para no agrandar el diff del bloque 0 pasada la medianoche.
 
 - **Suite: 650 → 748 passed, 2 xfailed.** Verde al abrir y al cerrar.
 - `npm run build` del frontend en verde (tsc + vite).
-- Árbol commiteado en `main`, en dos commits: el pre-registro del bloque 6 **antes**
-  del cómputo, y el resto después. **Nada se pusheó**: el push es acto manual de
+- Árbol commiteado en `main`, en **tres** commits: el pre-registro del bloque 6
+  **antes** del cómputo (`e368dad`), el resto después (`062287f`), y un tercero
+  (`8dd0e0d`) que agrega a esta misma bitácora la falla de siete tests que no se
+  reprodujo. *(Errata del 7-sep, sesión de cierre: esta línea decía «dos commits», y
+  el tercero es el que la contiene.)* **Nada se pusheó**: el push es acto manual de
   Nicolás, después de leer el diff.
 - `.git/hooks/pre-commit` se refrescó con la copia nueva de `scripts/pre-commit`, para
   que la regla de la ventana esté de verdad instalada y no sólo escrita. Se declara

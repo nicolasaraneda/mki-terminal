@@ -622,3 +622,77 @@ def test_la_errata_del_registro_historico_esta_al_pie_y_no_reescribe():
     assert "NO-CONCLUYENTE" in texto
     # las cifras originales siguen ahí
     assert "B2 vs B1 | 0.384 | 2.57 | 35 | aporta" in texto
+
+
+# ============================================================
+# MULTIPLICIDAD — funciones agregadas el 7-sep-2026 al aplicar el dictamen
+# del `estadistico-adversario` de la corrida 10.
+#
+# Valores de referencia calculados por fuera de este código: el McNemar
+# exacto de 72/49 es la binomial exacta que el README ya publica para el
+# riel de medición (0.0451), y los tres de la señal larga los computó el
+# adversario con su propia implementación antes de que ésta existiera.
+# Que coincidan es la verificación, y no vale hacerla con el mismo
+# mecanismo que produjo la cifra.
+# ============================================================
+def test_no_hay_una_segunda_implementacion_de_mcnemar_en_inferencia():
+    """`.claude/rules/backtest.md`: no se reimplementan Wilson, McNemar, DSR
+    ni CRPS. El 7-sep-2026 esta sesión escribió un `mcnemar_exacto` acá y lo
+    sacó al descubrir que `evaluacion.mcnemar_exact` ya existía, ya estaba en
+    espacio logarítmico y ya documentaba el mismo desbordamiento de 2**n que
+    la copia acababa de encontrar por su cuenta. Este test es para que no
+    vuelva a pasar."""
+    import backtest.inferencia as I
+    assert not hasattr(I, "mcnemar_exacto"), (
+        "McNemar vive en evaluacion.mcnemar_exact; no se duplica acá")
+
+
+def test_holm_es_monotono_y_no_afloja_bonferroni():
+    from backtest.inferencia import holm
+    ajust = holm({"a": 0.001, "b": 0.02, "c": 0.03, "d": 0.5})
+    # El más chico se multiplica por m; el resto nunca puede bajar.
+    assert round(ajust["a"], 6) == 0.004
+    valores = [ajust[k] for k in ("a", "b", "c", "d")]
+    assert valores == sorted(valores), "los p ajustados tienen que ser monótonos"
+    assert all(v <= 1.0 for v in valores)
+    assert holm({}) == {}
+
+
+def test_holm_sobre_la_familia_de_la_senal_larga_no_deja_pasar_a_nadie():
+    """La cifra que gobierna la página de la señal larga: con la familia
+    completa de 30 contrastes, ninguno cruza alfa."""
+    from backtest.inferencia import holm
+    # Los cinco p crudos más chicos de la corrida, y 25 rellenos ≥ ellos.
+    crudos = {"L2 h=60 MAE vs cero": 0.0030,
+              "L2 h=60 CRPS vs cero": 0.0060,
+              "L2 h=60 MAE vs clima": 0.0060,
+              "L2 h=60 CRPS vs clima": 0.0060,
+              "L1 h=20 direccion": 0.0090}
+    for i in range(25):
+        crudos[f"relleno_{i}"] = 0.2 + i * 0.01
+    aj = holm(crudos)
+    assert round(aj["L2 h=60 MAE vs cero"], 4) == 0.0900
+    assert round(aj["L2 h=60 MAE vs clima"], 4) == 0.1740
+    assert round(aj["L1 h=20 direccion"], 4) == 0.2340
+    assert not [k for k, v in aj.items() if v < 0.05]
+
+
+def test_p_bootstrap_media_comparte_el_sorteo_con_el_intervalo():
+    """El p y el IC tienen que hablar del mismo remuestreo: si divergieran,
+    la página publicaría un p que contradice a su propio intervalo."""
+    import numpy as np
+
+    from backtest.inferencia import bootstrap_media, p_bootstrap_media
+    x = np.random.default_rng(11).normal(0.35, 1.0, 400)
+    ic = bootstrap_media(x, semilla=3, n_draws=2000, bloque=20)
+    p = p_bootstrap_media(x, semilla=3, n_draws=2000, bloque=20)
+    excluye_cero = not (ic["lo"] <= 0.0 <= ic["hi"])
+    assert excluye_cero == (p < 0.05)
+    # El piso es 1/n_draws: un cero exacto afirmaría más precisión que el
+    # sorteo. Y una muestra sin dispersión útil devuelve NaN, no un número.
+    assert p >= 1.0 / 2000
+    # Una muestra más corta que el bloque no tiene bootstrap posible: se
+    # devuelve NaN, nunca un número que parezca una medición.
+    import math
+    assert math.isnan(p_bootstrap_media([1.0, 2.0], semilla=1, n_draws=100,
+                                        bloque=20))

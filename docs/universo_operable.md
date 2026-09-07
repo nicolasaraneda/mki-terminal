@@ -67,7 +67,9 @@ regla se escribió antes de mirar los precios y está fijada en un test
 
 ### Lo que el presupuesto deja afuera
 
-Instrumentos verificados cuya **acción sola cuesta más de 500 USD**:
+Instrumentos verificados que **no entran en 500 USD**. El
+criterio es **precio más comisión**, no el precio solo: por eso hay
+instrumentos acá cuyo precio está por debajo del techo.
 
 - `SNDK` — SanDisk: 1,740.00 USD. Rol declarado: complemento.
 - `ASML` — ASML Holding: 1,714.88 USD. Rol declarado: dominante.
@@ -75,7 +77,12 @@ Instrumentos verificados cuya **acción sola cuesta más de 500 USD**:
 - `META` — Meta Platforms: 616.77 USD. Rol declarado: dominante.
 - `SMH` — VanEck Semiconductor ETF: 567.01 USD. Rol declarado: sustituto.
 - `SOXX` — iShares Semiconductor ETF: 519.86 USD. Rol declarado: sustituto.
-- `MSFT` — Microsoft: 499.70 USD. Rol declarado: dominante.
+- `MSFT` — Microsoft: 499.70 USD. Rol declarado: dominante. **Caso al borde:** su precio (499.70) está por DEBAJO del techo; lo que no entra es precio más comisión.
+
+**El censo es de un solo día** (los cierres del congelado) y por eso
+los casos al borde van declarados: a centavos del techo, la respuesta
+cambia con el cierre siguiente. Los que no están al borde sí son
+afirmaciones estables.
 
 ## Eslabón por eslabón
 

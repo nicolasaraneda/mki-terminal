@@ -16,6 +16,21 @@ Una mención con «retirad», «errata», «decía», «era», «refutad», «co
 «es falsa», «falso» o «desmont» a ±2 líneas no cuenta como reintroducción:
 es la historia (el README dice del 91,4% «es falsa» en la línea siguiente).
 
+> **Límite conocido del instrumento, medido el 7-sep-2026 (corrida 10).** La
+> ventana de ±2 líneas supone que la marca habla de la cifra que está al lado, y
+> eso no siempre es cierto: en `dinero/resultados/senal_larga_v1.md` la palabra
+> «corregida» de una línea vecina —que hablaba de otro tema— hizo que
+> `cifras.reintroducciones()` diera **falso verde** sobre una reintroducción real
+> del 91,4 %. La cazó el `curador-epistemico` leyendo, no la máquina. Desde esa
+> fecha la exención exige además que el contexto **nombre el patrón o traiga una
+> marca fuerte** (ver `cifras.MARCAS_FUERTES`), y hay contraprueba en
+> `tests/test_cifras_arbitro.py`.
+>
+> **Segundo límite, misma fecha:** los patrones se escriben en una sola
+> conjugación. «satura en 1,0000» no caza «saturó» ni «saturado», y las dos
+> formas circularon en la corrida 10. Un patrón nuevo se escribe pensando en
+> cómo se va a conjugar, no en cómo se escribió la primera vez.
+
 Formato: `| patrón | contexto | fecha de retiro | acta o expediente | reemplazo |`
 
 | `patrón` | contexto | retirada | acta / expediente | reemplazo |
@@ -41,3 +56,8 @@ Formato: `| patrón | contexto | fecha de retiro | acta o expediente | reemplazo
 | `269\s?(días\s?)?\[229,\s?275\]` | días para 0,80 a 9 pp con el Wilson invertido por bisección y UNA sola semilla: el intervalo no medía la incertidumbre que decía medir | 2026-09-03 | `bitacora_09.md` 12:20; acta §78.3 | ≈263 días, rango Monte Carlo [229, 296] sobre tres semillas (`horizonte.json`) |
 | `58\s?(días\s?)?\[54,\s?62\]` | días para 0,80 en magnitud «antes del 25-oct», condicional a un efecto que el observado no distingue de cero | 2026-09-03 | `bitacora_09.md` 12:20; acta §78.3 | 96 [20, ∞) días al efecto observado; ninguna fecha encabeza |
 | `ganancia[^\n]{0,30}93\s?%` | «la constante μ recupera el 93 % de la ganancia de MAE» | 2026-09-03 | `dictamen_08/E.md`, errata al pie; `bitacora_08.md` 15:03 | 7,2 % sobre n = 238 (7,3 % en `potencia_por_metrica.json`) |
+| `satur[oó]|saturad[oa]s?` | conjugaciones de «el PSR saturó / saturado en 1,0000»: el patrón original sólo cazaba el presente y las dos formas circularon igual en la corrida 10 | 2026-09-07 | `dictamen_10/curador_epistemico.md` O6; acta §80 errata | defecto de unidades del PSR/DSR; con la unidad correcta 0,95–0,96 |
+| `21\s?%[^\n]{0,60}falso|falso[^\n]{0,40}21\s?%` | «este diseño produce un falso positivo el 21 % de las veces» (5 de 24 comparaciones de la cuenta en papel) | 2026-09-07 | `dictamen_10/estadistico_adversario.md` exigencias 1 a 4; acta §80.4 errata | 1 de 24 sin explicación de fricción (el α nominal); la tasa de tipo I de ese diseño NO está medida y la página está retirada por fuga |
+| `14\s?%[^\n]{0,20}(a|–|-)[^\n]{0,5}43\s?%` | «las comisiones se comen 14 % a 43 % del capital», rango de un solo sorteo y medido con fuga F1/F2 adentro | 2026-09-07 | `dictamen_10/auditor_lookahead.md` E8 | sin cifra: el signo aguanta (rotar cuesta un orden de magnitud más que no rotar), el número no; sin fuga el juego medio gasta 57 % a 5 pb |
+| `−3[,.]3\s?pp|-3[,.]3\s?pp` | ventaja del campeón bajo la ablación R2, publicada como estado vigente | 2026-09-07 | `dictamen_10/curador_epistemico.md` B1 | bajo R2 la ventaja no se distingue de cero en las tres convenciones (+0,5 / −1,0 / −1,9 pp); sin recomputar bajo la regla firmada el 1-sep |
+| `sobrevive[^\n]{0,40}una (sola )?celda|una celda de seis` | «sobrevive una celda de seis a la climatología causal» | 2026-09-07 | `dictamen_10/estadistico_adversario.md` exigencias 9 y 14; acta §80.8 errata | ninguna celda sobrevive: no pasa Holm sobre 30 contrastes (p 0,1740) ni la ablación anual (sin 2024 el IC contiene el cero) |

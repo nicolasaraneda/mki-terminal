@@ -1,7 +1,14 @@
 {
  "etiqueta": "SIMULADO",
- "estatus": "PROPUESTA",
- "advertencia": "La señal que alimenta la estrategia NO tiene información: lo medido es fricción, no habilidad. Ninguna cifra es un resultado del proyecto.",
+ "estatus": "RETIRADO",
+ "retirado": {
+  "fecha": "2026-09-07",
+  "por": "dictamen de cierre de la corrida 10",
+  "fuente": "GEMELO/resultados/dictamen_10/auditor_lookahead.md",
+  "causa": "Cuatro mecanismos de fuga temporal demostrados ejecutando codigo (F1 universo elegido con el ultimo cierre; F2 senal sorteada de retornos futuros; F3 interruptor calibrado con futuro, materialidad nula; F4 retardo de implementacion cero). La cifra titular se mueve: el juego medio pasa de 27 % a 57 % del capital en comisiones a 5 pb.",
+  "consecuencia": "Ninguna cifra de este artefacto se puede citar hasta que las fugas se cierren y se republique. El signo de la conclusion aguanta; el numero no."
+ },
+ "advertencia": "RETIRADO por fuga temporal demostrada. La señal que alimenta la estrategia NO tiene información: lo medido es fricción, no habilidad. Ninguna cifra es un resultado del proyecto y ninguna se puede citar.",
  "ventana": {
   "desde": "2023-09-05",
   "hasta": "2026-09-04",
@@ -531,6 +538,6 @@
  "falsos_positivos": {
   "comparaciones": 24,
   "con_ic_que_excluye_cero": 5,
-  "nota": "La respuesta verdadera es cero en todas: la señal no tiene información. Todos son falsos positivos por construcción."
+  "nota": "La respuesta verdadera es cero en todas: la señal no tiene información. La lectura de la v1 (todos falsos positivos) está RETIRADA: cuatro de los marcados son el resultado verdadero de friccion. Ver el .md, sección 3."
  }
 }

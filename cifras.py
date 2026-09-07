@@ -215,8 +215,13 @@ def doce_bloques(c: dict) -> list:
 # Cifras retiradas: legibles por máquina desde GEMELO/cifras_retiradas.md
 # ------------------------------------------------------------
 RUTA_RETIRADAS = os.path.join(_RAIZ, "GEMELO", "cifras_retiradas.md")
+# VISION.md se agregó el 7-sep-2026 (exigencia 7 del `guardian-constitucion`):
+# nació en la corrida 10 con once cifras canónicas adentro y sin correa, o sea
+# un sitio publicado más donde una cifra puede desincronizarse sin que nadie se
+# entere. O entra al árbitro, o no publica cifras.
 DOCUMENTOS_PUBLICADOS = ("README.md", "GEMELO/resultados/estado_epistemico.md",
-                         ".claude/skills/cifras-canonicas/SKILL.md")
+                         ".claude/skills/cifras-canonicas/SKILL.md",
+                         "VISION.md")
 
 
 def cifras_retiradas() -> list:
@@ -241,10 +246,33 @@ MARCAS_DE_RETIRO = ("retirad", "errata", "decía", "decia", "era ", "refutad", "
                     "es falsa", "falso", "desmont", "derogad")
 
 
-def _tiene_marca_de_retiro(lineas: list, i: int) -> bool:
-    """¿Hay una marca de retiro a ±2 líneas de la línea i?"""
+# Marcas que hablan inequívocamente de un retiro. Las otras ("corregid",
+# "era ", "falso"…) son ambiguas: pueden estar hablando de cualquier cosa
+# que pase cerca. El 7-sep-2026 una "corregida" que hablaba de OTRO tema
+# exentó una reintroducción real del 91,4 % en
+# `dinero/resultados/senal_larga_v1.md`, y el falso verde lo tuvo que cazar
+# un lector. Desde entonces las ambiguas sólo exentan si el contexto además
+# NOMBRA la cifra retirada.
+MARCAS_FUERTES = ("retirad", "errata", "derogad", "desmont", "refutad")
+
+
+def _tiene_marca_de_retiro(lineas: list, i: int, patron: str | None = None) -> bool:
+    """¿Hay una marca de retiro a ±2 líneas de la línea i?
+
+    Una marca FUERTE exenta sola. Una marca ambigua exenta sólo si el
+    contexto menciona además el patrón retirado: si la marca no habla de
+    esta cifra, no es una marca de retiro de esta cifra.
+    """
     ctx = " ".join(lineas[max(0, i - 2):i + 3]).lower()
-    return any(m in ctx for m in MARCAS_DE_RETIRO)
+    if any(m in ctx for m in MARCAS_FUERTES):
+        return True
+    if not any(m in ctx for m in MARCAS_DE_RETIRO):
+        return False
+    if patron is None:
+        return True
+    # La marca es ambigua: sólo vale si el contexto habla de esta cifra en
+    # más de un lugar (la línea que la trae, más otra).
+    return len(re.findall(patron, ctx)) > 1
 
 
 def reintroducciones(texto: str, retiradas: list | None = None) -> list:
@@ -255,9 +283,10 @@ def reintroducciones(texto: str, retiradas: list | None = None) -> list:
     lineas = texto.split("\n")
     hallazgos = []
     for i, linea in enumerate(lineas):
-        if _tiene_marca_de_retiro(lineas, i):
-            continue
         for r in retiradas:
-            if re.search(r["patron"], linea):
-                hallazgos.append((i + 1, r["patron"], linea.strip()[:100]))
+            if not re.search(r["patron"], linea):
+                continue
+            if _tiene_marca_de_retiro(lineas, i, r["patron"]):
+                continue
+            hallazgos.append((i + 1, r["patron"], linea.strip()[:100]))
     return hallazgos

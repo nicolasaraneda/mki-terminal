@@ -108,9 +108,13 @@ Esto se escribe por adelantado para que no se lea después como una excusa:
   33 por par: no hay potencia para un Deflated Sharpe que signifique algo.
   Se reporta el número si se calcula, rotulado NO INTERPRETABLE, igual que
   el proyecto hizo en el WS2b cuando el PSR saturó en 1.0000 a 30 días.
+  **[Diagnóstico RETIRADO — errata §10 E8, 7-sep-2026: era defecto de
+  unidades, no muestra corta.]**
 - **Los datos NO son point-in-time.** `GEMELO/resultados/ventana_larga.md`
   ya midió la contaminación: sobre 198 filas comunes con el track record
+  **[la cifra que sigue está RETIRADA — errata §10 E7, 7-sep-2026]**
   sellado, la reconstrucción de hoy coincide en el **91.4 %** y difiere en
+  **[con la clave correcta: 100 % sobre 214 filas, 0 diferencias]**
   **17**, con un máximo de **31.2 pp** — y la contaminación va en dirección
   **optimista**. Todo lo que salga de acá hereda esa limitación. La ventana
   larga da potencia; sólo el sellado en vivo da validez.
@@ -197,3 +201,78 @@ el sellado en vivo desmiente y este riel tiene **cero filas selladas**.
 especificaciones nuevas ni variantes probadas y descartadas. Son la misma L1,
 L2 y L3 declaradas en el §3, computadas sin la fuga que las habría vuelto
 ininterpretables. El registro sigue en 3.
+
+---
+
+## §10 — Segunda errata fechada: 7-sep-2026, sesión de cierre de la corrida 10
+
+Este documento es un pre-registro congelado. Lo de abajo **no reescribe nada**
+de los §1 a §9: corrige, con fecha, lo que quedó mal escrito en ellos. Cuatro
+correcciones, ninguna de las cuales ablanda una vara y **tres de las cuales
+endurecen la lectura del resultado**.
+
+**E7 — La cifra del 91,4 % que cita el §7 está RETIRADA desde el
+1-sep-2026.** El §7 dice: «sobre 198 filas comunes con el track record sellado,
+la reconstrucción de hoy coincide en el 91.4 % y difiere en 17, con un máximo
+de 31.2 pp». Esa medición cruzaba las filas por `[fecha, ticker]` en vez de por
+`sesion_objetivo`, que es la clave correcta. Con la clave correcta da **100 %
+de coincidencia sobre 214 filas, 0 diferencias**
+(`GEMELO/cifras_retiradas.md`, acta §68, `espera_firma.md` §11a). Eso **no**
+prueba que la fuente no revise su historia hacia atrás: prueba que no la revisó
+en el tramo auditable de 2026. **La limitación que el §7 declara sigue en pie y
+sigue yendo en dirección optimista**; lo que se retira es el número que la
+cuantificaba.
+
+**E8 — El diagnóstico del PSR saturado que cita el §7 está RETIRADO.** El §7
+dice «igual que el proyecto hizo en el WS2b cuando el PSR saturó en 1.0000 a 30
+días», dando a entender que la saturación era un hecho de muestra corta. No lo
+era: `dictamen_08/A.md` A3 estableció que era un **defecto de unidades**, y con
+la unidad correcta daba 0,95–0,96. **Ese diagnóstico queda RETIRADO.** La
+conducta que el §7 invoca —no publicar un número saturado como si fuera
+certeza— sigue siendo correcta; **RETIRADA** queda sólo la explicación que se
+le ponía.
+
+**E9 — El §9 afirma de sí mismo algo que git no verifica.** Dice: «el orden
+está verificable en git —`dinero/senal_larga_reporte.py` no se había
+ejecutado—». Git verifica el **§8**: los §1 a §8 entraron en el commit
+`e368dad`, antes del cómputo. **El §9, el código y los resultados entraron
+todos juntos en `062287f`**, así que git no puede ordenarlos entre sí. Lo que
+corrobora el orden son los mtimes (§9 a las 23:39:55, el módulo 23:41:34, el
+reporte 23:44:32, el JSON 23:44:33), y **un mtime es evidencia corroborante y
+mutable, no una prueba**. Se declara explícitamente lo que el §9 afirmaba: **no
+se computó ninguna métrica sobre la v1 con fuga**, y por eso las seis
+correcciones del §9 no suman al registro de intentos. Regla para la próxima:
+**una enmienda a un pre-registro entra en su propio commit, anterior al del
+cómputo**, que es lo que el §9 decía de sí mismo y no cumplía.
+
+**E10 — La segunda vara del §5 nunca se evaluó, y hay que decirlo acá.** El §5
+declara dos varas de magnitud: predecir cero, y **la línea base aburrida
+(aporte fijo semanal a `SMH`, pasando la señal por `dinero/decision.py` y la
+cuenta en papel)**. La corrida 10 evaluó **sólo la primera**. Consecuencia
+directa, y es la que importa: la regla de refutación del §6 está escrita como
+«si ninguna de las tres supera a **ninguna de las dos varas**», así que
+**mientras la segunda no se corra, esa regla no se puede dar por leída**, ni en
+un sentido ni en el otro. Lo mismo vale para el criterio M4 de
+`dinero/preregistro_dinero.md`. Se agrega que, desde el mismo 7-sep, la cuenta
+en papel está **RETIRADA por fuga temporal demostrada**, así que esa vara no se
+puede correr hasta que la cuenta se reconstruya.
+
+**Y lo que esta errata NO cambia:** las tres especificaciones, los dos
+horizontes, la regla del §6, el embargo, el retardo de implementación y la
+composición por cobertura quedan exactamente como estaban. **El registro de
+intentos del riel largo sigue en 3 por especificaciones**, pero ver la §11.
+
+## §11 — Lo que la familia de contrastes es en realidad
+
+El §3 declara tres especificaciones por dos horizontes y el registro de
+intentos cuenta **3**. Eso es correcto como cuenta de *especificaciones* y es
+insuficiente como cuenta de *multiplicidad*: el reporte produce **cinco
+contrastes por celda** (MAE y CRPS contra cero, MAE y CRPS contra la
+climatología, y dirección), o sea **30**. La v1 publicaba «24 contrastes»,
+que dejaba los seis de dirección **fuera de su propia corrección**.
+
+Desde el 7-sep-2026 el reporte computa Holm sobre los 30 y publica el
+resultado salga lo que salga. **Con la familia completa, ninguno cruza
+α = 0,05.** Si el registro de intentos del riel largo debe pasar de 3 a 30, o
+llevar las dos cuentas por separado, es decisión de Nicolás y está en
+`espera_firma.md`: un agente no mueve un registro de intentos.

@@ -373,6 +373,10 @@ DOCUMENTOS_DEL_RIEL = (
     "docs/universo_operable.md",
     "dinero/preregistro_dinero.md",
     "dinero/resultados/cuenta_papel.md",
+    # El documento más consecuente que produjo la corrida 10 estaba fuera de
+    # esta lista: hoy está limpio, pero mañana no hay quien lo verifique.
+    # Exigencia 18 del `curador-epistemico`.
+    "dinero/resultados/senal_larga_v1.md",
     "GEMELO/preregistro/senal_larga_v1.md",
 )
 
@@ -458,6 +462,16 @@ def test_el_componente_de_cifra_se_niega_a_mostrar_un_numero_sin_intervalo():
     assert "contiene el cero" in fuente, (
         "un intervalo que cruza el cero se dice con palabras, no sólo con "
         "una banda")
+    # Y la corrección del 7-sep: esa frase sólo vale para DIFERENCIAS. El
+    # intervalo de Wilson de una proporción no puede contener el cero, así
+    # que decir «no contiene el cero» debajo de una tasa de acierto insinúa
+    # una significancia que no existe. El componente exige la declaración.
+    assert "esDiferencia" in fuente, (
+        "la frase sobre el cero sólo corresponde a una diferencia: el "
+        "componente tiene que exigir que se declare cuál es")
+    assert "es una proporción" in fuente, (
+        "sobre una proporción hay que decir qué es, no dejar la frase del "
+        "cero puesta")
 
 
 def test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice():
@@ -505,3 +519,124 @@ def test_las_cifras_del_riel_de_medicion_salen_del_arbitro():
     assert porn["acierto del modelo"]["valor_pct"] == c["modelo_pct"]
     assert porn["ventaja sobre la base"]["intervalo"] == c["ventaja_ic_dia"]
     assert datos["muestra"]["n"] == c["n"]
+
+
+# ============================================================
+# 6. LA PRUEBA MAESTRA DE TRUNCACIÓN SOBRE LA CUENTA EN PAPEL
+#
+# Exigencia E2 del `auditor-lookahead` en el cierre de la corrida 10, y va
+# ANTES que cualquier corrección: «escribir el test de truncación de la
+# cuenta en papel ANTES de volver a correrla».
+#
+# Los tres están marcados `xfail(strict=True)` a propósito, y eso NO es una
+# forma elegante de esconder un rojo: es el estado real del árbol. Las tres
+# fugas están DEMOSTRADAS (`GEMELO/resultados/dictamen_10/auditor_lookahead.md`
+# F1, F2 y F4) y todavía no corregidas, así que el test que las cierra tiene
+# que fallar hoy. `strict=True` es la parte que importa: el día que alguien
+# arregle la fuga, el test va a PASAR, el modo estricto va a convertir ese
+# éxito inesperado en un rojo, y quien lo arregló va a tener que venir acá a
+# sacar el marcador. Así la fuga deja de vivir en la memoria de nadie.
+#
+# Que estos tres existan es lo que separa «sabemos que hay fuga» de «la
+# máquina sabe que hay fuga».
+# ============================================================
+import pandas as _pd  # noqa: E402
+import pytest as _pytest  # noqa: E402
+
+
+def _cierres_de_la_ventana():
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    return CP._ventana(precios.cargar_congelado()), CP
+
+
+@_pytest.mark.xfail(strict=True, reason=(
+    "FUGA F1 DEMOSTRADA y no corregida: `cuenta_papel.correr()` elige el "
+    "universo operable con `construir_mapa` sobre el archivo ENTERO, o sea "
+    "con el cierre del último día de la ventana simulada. Cuando se corrija "
+    "(membresía como argumento acotado por la fecha), este test pasa y el "
+    "marcador estricto obliga a sacarlo."))
+def test_el_universo_operable_no_puede_depender_del_futuro():
+    """La membresía usada para simular desde DESDE no puede cambiar según
+    datos posteriores a DESDE."""
+    from dinero import precios
+    from dinero import universo_dinero as U
+    cfg = U.reglas()
+    completo = precios.cargar_congelado()
+    from dinero import cuenta_papel as CP
+    hasta_el_inicio = completo.loc[:CP.DESDE]
+
+    def operables(marco):
+        mapa = U.construir_mapa(marco, cfg)
+        return sorted(f.candidato.ticker for f in mapa
+                      if f.verificado and f.alcanza_con_techo)
+
+    assert operables(completo) == operables(hasta_el_inicio), (
+        "el universo operable cambia al truncar en el inicio de la ventana: "
+        "la membresía de tres años se está decidiendo con el último cierre")
+
+
+@_pytest.mark.xfail(strict=True, reason=(
+    "FUGA F2 DEMOSTRADA y no corregida: `senales_sin_informacion` sortea de "
+    "`shift(-horizonte)` sobre la ventana simulada, o sea de la distribución "
+    "de retornos FUTUROS de esa misma ventana. La corrección es sortear de "
+    "datos anteriores a DESDE, o de una paramétrica declarada en reglas.json."))
+def test_la_senal_sin_informacion_no_puede_sortearse_del_futuro():
+    """Truncar los datos posteriores a un corte no puede cambiar las señales
+    de los días anteriores a ese corte."""
+    from dinero import contabilidad as C
+    cierres, CP = _cierres_de_la_ventana()
+    corte = "2024-09-04"
+    tickers = [t for t in ("NVDA", "INTC", "AMD") if t in cierres.columns]
+    completo = C.senales_sin_informacion(
+        cierres, tickers, CP.HORIZONTE_SENAL_HABILES,
+        C.SEMILLA_SENAL_SIN_INFORMACION)
+    truncado = C.senales_sin_informacion(
+        cierres.loc[:corte], tickers, CP.HORIZONTE_SENAL_HABILES,
+        C.SEMILLA_SENAL_SIN_INFORMACION)
+    comunes = [d for d in truncado if d in completo]
+    assert comunes, "el corte no dejó días comunes; el test no probó nada"
+    distintos = [d for d in comunes
+                 if [s.magnitud_pp for s in completo[d]]
+                 != [s.magnitud_pp for s in truncado[d]]]
+    assert not distintos, (
+        f"{len(distintos)} de {len(comunes)} días cambian de señal al truncar "
+        "en %s: la señal se está sorteando de retornos futuros" % corte)
+
+
+@_pytest.mark.xfail(strict=True, reason=(
+    "FUGA F4 DEMOSTRADA y no corregida: `correr_estrategia` decide con el "
+    "cierre de d y ejecuta contra ESE MISMO cierre. `senal_larga.py` usa "
+    "RETARDO_IMPLEMENTACION = 1 en el mismo riel. La corrección es introducir "
+    "el retardo en las DOS patas de la comparación."))
+def test_la_orden_de_un_dia_no_puede_depender_del_cierre_de_ese_dia():
+    """Si se decide con el cierre de d, la ejecución tiene que ser contra el
+    cierre de d+1. Perturbar el cierre de d no puede cambiar la orden de d."""
+    from dinero import contabilidad as C
+    from dinero import universo_dinero as U
+    cierres, CP = _cierres_de_la_ventana()
+    cfg = U.reglas()
+    tickers = [t for t in ("NVDA", "INTC", "AMD", "AVGO", "VRT")
+               if t in cierres.columns]
+    cierres = cierres[tickers].dropna(how="all")
+    aportes = C.calendario_aportes([d.date() for d in cierres.index],
+                                   CP.APORTE_SEMANAL_USD,
+                                   cfg["presupuesto"]["techo_usd"])
+    senales = C.senales_sin_informacion(cierres, tickers,
+                                        CP.HORIZONTE_SENAL_HABILES,
+                                        C.SEMILLA_SENAL_SIN_INFORMACION)
+
+    def ordenes(marco):
+        libro = C.correr_estrategia(marco, senales, cfg, "conservador",
+                                    aportes, 0.0,
+                                    cfg["presupuesto"]["techo_usd"])
+        return [(m.fecha, m.ticker, m.acciones) for m in libro.movimientos]
+
+    base = ordenes(cierres)
+    assert base, "la corrida de referencia no generó ninguna orden"
+    dia = _pd.Timestamp(base[0][0])
+    perturbado = cierres.copy()
+    perturbado.loc[dia] = perturbado.loc[dia] * 1.10
+    assert ordenes(perturbado)[0] == base[0], (
+        "perturbar el cierre del día de la orden cambió esa misma orden: se "
+        "decide y se ejecuta contra el mismo cierre (retardo cero)")

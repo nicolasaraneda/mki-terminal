@@ -8144,6 +8144,21 @@ passed, 2 xfailed** en 323,63 s. No se tocó `motor.py`, `senales.py`,
 sellada. Nada se pusheó. Los dictámenes del guardián y del curador corren en
 sesión aparte, con contexto limpio.
 
+**Errata fechada 7-sep-2026 (sesión de cierre, exigencia 11 del
+`curador-epistemico`).** Este acta abría con la suite de apertura y no volvía a
+mencionarla: ni el cierre ni un episodio que la bitácora sí registra. Se agrega
+acá, porque el acta es el documento de historia y el negativo tiene que ocupar
+el mismo lugar que el positivo. **Suite al cerrar la corrida: 748 passed, 2
+xfailed** en 332,74 s. **Y el episodio: el primer intento del commit de cierre
+disparó el hook y la suite salió con SIETE fallas**, entre ellas
+`test_vigia.py::test_epilogo_retracta_tras_sello_tardio`. **No se
+reprodujeron** en cuatro corridas completas posteriores. No se conoce la causa y
+no se inventa una; la hipótesis más probable es la misma limitación que motiva
+el bloque 0 —la suite toca la red, y esa noche la fuente devolvió series vacías
+de forma intermitente al menos dos veces—. **El listado completo se perdió**
+porque el hook escribe a la salida estándar del `git commit` y no a un archivo:
+queda como deuda barata de pagar.
+
 ### 80.1 La decisión de arquitectura: dos rieles, no uno que se estira
 
 El proyecto construyó un instrumento que mide **una noche**: el cierre del SOX
@@ -8220,6 +8235,17 @@ censos independientes (suite completa y archivo por archivo) coinciden.
 **Es un piso, no un techo:** yfinance cachea en memoria dentro del proceso, así
 que el orden de ejecución puede enmascarar a otro. Por eso la guarda es
 permanente: si mañana aparece uno sin marcar, la suite se pone roja y lo nombra.
+
+> **Errata fechada 7-sep-2026 (sesión de cierre, exigencia 10 del
+> `curador-epistemico`; misma exigencia 4 del `guardian-constitucion`).** El
+> párrafo de arriba quedó con el censo anterior al hallazgo. **La máquina dice
+> 6, no 4:** son seis marcadores `@pytest.mark.red` en dos archivos. Los cuatro
+> de arriba los halló el censo del 6-sep; **los otros dos los halló el
+> `auditor-lookahead` el 7-sep corriendo la suite en otro orden**
+> (`test_api.py::test_paridad_regimen` y `::test_paridad_betas`). Que el número
+> se haya movido en menos de un día es exactamente el «piso, no techo» que este
+> mismo bloque declaró, cumpliéndose. La cifra vieja no se borra: se corrige acá
+> y se deja a la vista para que se pueda leer la historia.
 
 ### 80.3 El mapa de la cadena a instrumentos comprables (`docs/universo_operable.md`)
 
@@ -8321,12 +8347,26 @@ Cuatro resultados, con su estatus:
   cambia cuántas acciones enteras entran en el margen, y eso cambia **qué**
   instrumento se compra. Las filas del barrido son **caminos distintos**, no la
   misma estrategia a distinto costo.
-- **MEDIDO, y es la cifra más útil de la página.** De **24** comparaciones
-  contra las líneas base, **5 (21 %)** tienen un intervalo del 95 % que excluye
-  el cero — con una señal cuya respuesta verdadera es cero en las 24. Todos son
-  falsos positivos por construcción. Así de fácil es que este diseño produzca un
-  ✓ sin que haya nada; ése es el ruido contra el que una señal de verdad tendrá
-  que destacarse.
+- **RETIRADO el 7-sep-2026, y era la cifra que este bloque llamaba «la más útil
+  de la página».** Decía: de 24 comparaciones contra las líneas base, 5 (21 %)
+  tienen un intervalo del 95 % que excluye el cero con una señal cuya respuesta
+  verdadera es cero en las 24, así que todos son falsos positivos por
+  construcción. **Es incorrecto por tres razones independientes**, y las tres
+  las mostró el `estadistico-adversario` en el cierre. Primera: la respuesta
+  verdadera **no es cero**; la estrategia y la base son carteras distintas y la
+  estrategia paga entre 70 y 215 USD de comisión sobre 500 contra 2 o 3 de la
+  base, así que la diferencia verdadera es negativa y la nula correcta es «sin
+  habilidad», no «sin diferencia». Segunda: **cuatro de los cinco marcados son
+  `agresivo` contra `SMH` con signo negativo**, o sea exactamente los mismos
+  cuatro que la viñeta de abajo celebra como resultado verdadero; una página no
+  puede llamar al mismo intervalo falso positivo en un párrafo y hallazgo en el
+  siguiente. Queda **1 de 24**, el α nominal, que no dice nada. Tercera: **las
+  24 no son 24 pruebas y hay un solo sorteo**; una tasa de falso positivo
+  necesita K semillas y la distribución de la cuenta con su intervalo. Lo que
+  sobrevive es cualitativo: estas comparaciones comparten sorteo, instrumentos y
+  flujo de caja, y nada de eso está descontado en sus intervalos. **Cuán fácil
+  es que este diseño produzca un ✓ sin que haya nada sigue sin respuesta
+  medida.**
 - **MEDIDO y direccional.** El juego agresivo **pierde contra `SMH` en 4 de 4
   pasadas**, con el intervalo entero bajo cero. No hace falta una señal buena
   para perder: alcanza con operar seguido.
@@ -8424,19 +8464,45 @@ computadas sin la fuga que las habría vuelto ininterpretables.
   resultado**, rotulada como post-hoc en el reporte. Se publica en vez de reescribir el
   pre-registro, y se deja constancia de la dirección: **es una vara más difícil agregada
   tras un positivo**, no una más fácil tras un negativo.
-- Contra esa vara, **sobrevive una sola celda de seis**: L2 a 60 días, +0,229 pp de MAE
-  con IC [+0,054, +0,424] — del orden del **2 % relativo**. La dirección en esa misma
-  celda no se distingue del cero.
+- Contra esa vara, una sola celda de seis le gana **con el intervalo sin corregir**: L2 a
+  60 días, +0,229 pp de MAE con IC [+0,054, +0,424] — del orden del **2 % relativo**. La
+  dirección en esa misma celda no se distingue del cero. **Errata del 7-sep: el texto
+  original decía «sobrevive», y no sobrevive**: no pasa Holm sobre su propia familia de 30
+  contrastes (p ajustado 0,1740) ni la ablación anual (sacando 2024, el intervalo contiene
+  el cero). Ver la errata al pie de este bloque.
 - **Tres celdas tienen la métrica de dirección vacía:** la predicción nunca cambia de
   signo, así que el +0,000 pp con IC [0, 0] no es un empate. Publicarlo como resultado
   sería el mismo error que publicar un PSR saturado en 1,0000 como certeza.
 
-**Conclusión publicada: no autoriza nada.** Una celda sobre 24 contrastes, en una página
-cuyo propio diseño produce un falso positivo el 21 % de las veces —medido en el bloque 4
-de esta misma corrida—, sin la ablación tipo R2 que el pre-registro del riel exige, y con
-tres sesgos no corregibles (supervivencia, fuente no point-in-time, `VRT` como SPAC
-durante el 17,8 % de la muestra) que **empujan todos en dirección optimista y son del
-orden de la mejora medida**.
+**Conclusión publicada: no autoriza nada.**
+
+> **Errata fechada 7-sep-2026 (sesión de cierre): la conclusión de este bloque era
+> demasiado suave, y las dos razones que la sostenían estaban mal.** El texto original
+> decía «una celda sobre 24 contrastes, en una página cuyo propio diseño produce un falso
+> positivo el 21 % de las veces, sin la ablación tipo R2 que el pre-registro del riel
+> exige». Tres correcciones, todas computadas ahora por el propio reporte y no por un
+> dictamen:
+>
+> 1. **Los contrastes son 30, no 24.** `medir()` produce cinco intervalos por celda; la
+>    cuenta vieja dejaba los seis de dirección **fuera de su propia corrección de
+>    multiplicidad**.
+> 2. **Con Holm sobre la familia completa, NINGUNO de los 30 cruza α = 0,05.** El
+>    positivo llega a p ajustado 0,1740 y el negativo de dirección de L1 a 0,2340: bajo
+>    multiplicidad tampoco ese negativo es distinguible de cero. La refutación de L1 no
+>    depende de él: depende de la regla §6, que se cumple sola.
+> 3. **La ablación tipo R2 se corrió** y la celda no la pasa: sacando **2024** del
+>    período de prueba, la ganancia pasa a **+0,226 pp [−0,011, +0,497]**, que contiene
+>    el cero. La significancia cabalga una ventana, igual que en el riel de medición.
+>
+> Y el 21 % que se citaba como razón está **RETIRADO**: era de otro diseño y viene de una
+> página con fuga temporal demostrada. En su lugar va la corrección de Holm, medida sobre
+> esta familia.
+>
+> **Lectura corregida: no queda ninguna afirmación positiva en pie en el bloque 6.** Lo
+> que sigue vigente sin cambios son los tres sesgos no corregibles (supervivencia, fuente
+> no point-in-time, `VRT` como SPAC durante el 17,8 % de la muestra), que **empujan todos
+> en dirección optimista y son del orden de la mejora medida**, y la segunda vara
+> pre-registrada, que **no se evaluó**.
 
 ### 80.9 La capa visual: la regla del intervalo dejó de ser disciplina
 
@@ -8471,3 +8537,123 @@ revierte. Los editados son `scripts/pre-commit`, `mki`, `tests/test_api.py`,
 instalado en `.git/hooks/pre-commit` se refrescó con la copia nueva; devolverlo
 es `git show HEAD~1:scripts/pre-commit > .git/hooks/pre-commit`. Ninguna cifra
 publicada se movió y ninguna fila sellada se tocó.
+
+## 81. El cierre de la corrida 10: cuatro dictámenes rechazaron, y la corrección fue retirar antes que arreglar
+
+**7-sep-2026, sesión de cierre en contexto limpio**, sobre el árbol que dejó la
+corrida 10 y sin haber visto el razonamiento que lo produjo. Los cuatro
+dictámenes están en `GEMELO/resultados/dictamen_10/` y el registro de
+aplicación, exigencia por exigencia, en `aplicacion.md` del mismo directorio.
+**Los cuatro rechazaron:** el guardián con 10 exigencias, el curador con 18, el
+adversario estadístico con 24 y el auditor de fuga con 10 y un veredicto de
+«hay fuga». Suite verde al abrir (748) y al cerrar (754 passed, 5 xfailed);
+`tests/test_motor.py` verde; `npm run build` verde; nada pusheado; ningún
+intocable tocado; ninguna fila sellada rozada.
+
+Las decisiones de diseño que tomó esta sesión, que es para lo que existe este
+documento:
+
+### 81.1 Retirar la cuenta en papel en vez de arreglarla esta noche
+
+El auditor demostró **cuatro fugas temporales ejecutando código**, no leyéndolo,
+y midió que la cifra titular se mueve al quitarlas: el juego `medio` pasa de
+27 % a **57 %** del capital en comisiones a 5 pb. Había dos caminos: arreglar y
+republicar, o retirar y reconstruir después.
+
+**Se retiró.** La razón no es prudencia genérica: arreglar bien exige el orden
+que el propio auditor fija —el test de truncación **antes** que la corrección— y
+además el adversario mostró que, aun sin fuga, las cifras de esa página
+necesitan **K semillas** para poder publicarse como intervalos. Republicar
+números nuevos en una sesión de cierre, sin que ningún dictamen los haya visto,
+habría sido cambiar cifras contaminadas por cifras no auditadas. Retirar es
+más pobre y es verdadero.
+
+El retiro se hizo **donde se generan** los números: el generador, el `.json`
+(`estatus: "RETIRADO"` con causa y consecuencia), el endpoint —que ahora sirve
+el motivo del retiro y `cifras_disponibles: false`, no la cifra con un cartel al
+lado— y la vista. Un número retirado que sigue ofrecido desde el código vuelve a
+circular.
+
+### 81.2 Los tres `xfail` estrictos: que la fuga deje de vivir en la memoria de nadie
+
+`tests/test_dinero.py` clava F1 (universo elegido con el último cierre), F2
+(señal sorteada de retornos futuros) y F4 (retardo de implementación cero) con
+`xfail(strict=True)`. Hoy fallan, porque las fugas existen. **El día que alguien
+las arregle, van a pasar, el modo estricto va a convertir ese éxito inesperado
+en rojo, y quien las arregló va a tener que venir a sacar el marcador.**
+
+Un `xfail` no es una forma elegante de esconder un rojo cuando el rojo es el
+estado real del árbol y está declarado. Lo que sería inaceptable es que la fuga
+viviera sólo en la prosa de un dictamen.
+
+**Y hay una lección propia de esta sesión:** los tres se verificaron uno por uno
+con `--runxfail` para comprobar que fallan **por la fuga y no por otra cosa**.
+Uno fallaba por un atributo mal escrito (`magnitud_pct` en vez de
+`magnitud_pp`), o sea que no probaba nada, y el `xfail` lo habría escondido para
+siempre. Un test que falla no vale por fallar: vale por fallar donde dice.
+
+### 81.3 La multiplicidad y la ablación las computa el ejecutable, no un dictamen
+
+El adversario mostró, con su propia implementación, que la familia de contrastes
+de la señal larga son **30 y no 24** —la cuenta vieja dejaba los seis de
+dirección fuera de su propia corrección— y que con Holm **ninguno cruza
+α = 0,05**; y corrió la ablación anual que el pre-registro del riel exigía,
+encontrando que **sin 2024 el intervalo contiene el cero**.
+
+La corrección no fue anotar eso en un documento: fue meterlo en
+`dinero/senal_larga_reporte.py`, que ahora computa las dos cosas y las publica
+**salga lo que salga**. Las cifras que produce la máquina coinciden dígito a
+dígito con las del dictamen, calculadas por otro camino, y ésa es la
+verificación. Se agregaron también b, c y McNemar en toda métrica de dirección,
+los bloques efectivos del bootstrap y el CRPS en pp.
+
+**Consecuencia publicada: del bloque 6 no queda ninguna afirmación positiva en
+pie.** L1 sigue refutada por su propia regla, que se sostiene sola.
+
+### 81.4 La heurística del retiro, endurecida por un falso verde
+
+`cifras.reintroducciones()` exentaba cualquier línea con una marca ambigua a ±2
+líneas. En la corrida 10 una palabra «corregida» que hablaba de **otro tema**
+exentó una reintroducción real del 91,4 % en un documento generado, y el falso
+verde lo cazó un lector, no la máquina. Ahora las marcas fuertes (`retirad`,
+`errata`, `derogad`, `desmont`, `refutad`) exentan solas y las ambiguas sólo si
+el contexto **nombra la cifra**. Hay dos contrapruebas en
+`tests/test_cifras_arbitro.py`, una de las cuales reproduce el falso verde
+exacto. `VISION.md` entró a `DOCUMENTOS_PUBLICADOS`: había nacido con once
+cifras canónicas adentro y sin correa.
+
+### 81.5 Un error propio, y por qué se escribe acá
+
+Esta sesión escribió un `mcnemar_exacto` en `backtest/inferencia.py`, encontró
+por su cuenta que `2.0**n` desborda por encima de 1024 discordantes, y lo
+arregló en espacio logarítmico. Después descubrió que
+`evaluacion.mcnemar_exact` **ya existía**, ya estaba en logaritmos y **ya
+documentaba ese mismo desbordamiento con fecha**, corregido el 1-sep. Es
+exactamente lo que `.claude/rules/backtest.md` prohíbe: no se reimplementan
+Wilson, McNemar, DSR ni CRPS.
+
+La copia se borró, el reporte importa la que existe como hacen `veredicto_51.py`
+y `banco_clausulas.py`, y quedó un test que impide que vuelva a aparecer. Se
+escribe acá porque el proyecto registra sus errores propios con la misma
+firmeza que sus hallazgos, y porque encontrar dos veces el mismo bug es
+información sobre el repositorio: **una máquina de inferencia que se duplica
+duplica también sus defectos**.
+
+### 81.6 Los punteros de dos dictámenes, corregidos y declarados
+
+Escribir las erratas que las propias exigencias pedían hizo crecer este archivo
+y **desplazó las líneas que dos dictámenes citaban por número** — el error
+crónico que ya está registrado y que `tests/test_epistemico.py` vigila. Se
+actualizaron **sólo los punteros**, con nota fechada en cada dictamen; ni una
+cifra ni una exigencia cambió. Donde el puntero no se podía verificar solo, pasó
+a citar la sección. Un dictamen no se edita para que deje de exigir algo, y esto
+no fue eso, pero se declara igual.
+
+### 81.7 Lo que este cierre dejó a firma
+
+Cuatro ítems nuevos en `GEMELO/resultados/espera_firma.md`: **§42** si la cuenta
+en papel se reconstruye o se descarta —el más caro de postergar, porque hoy
+bloquea una vara pre-registrada—, **§43** el período de M2, **§44** M4 reescrita
+bajo multiplicidad, y **§45** si el registro de intentos del riel largo pasa de
+contar especificaciones a contar contrastes. Ninguno lo puede decidir un agente,
+y el §45 hay que decidirlo **antes** de que este riel calcule cualquier DSR.

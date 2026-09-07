@@ -156,6 +156,15 @@ export function Operable() {
           {d.presupuesto.piso_usd.toFixed(0)} a {d.presupuesto.techo_usd.toFixed(0)} dólares,
           y cuál no. No es una recomendación de compra y no hay cuenta de corredora abierta.
         </p>
+        {d.estatus_de_los_precios && (
+          <p className="mb-3 max-w-3xl text-[11px] leading-relaxed text-text-3">
+            El rótulo de arriba es el del mapa como objeto del riel de dinero. Los precios
+            que lo sostienen tienen su propio estatus:{' '}
+            <span className="text-text-2">{d.estatus_de_los_precios}</span>. El censo es de
+            un solo día: los casos al borde del presupuesto están declarados en{' '}
+            <span className="font-mono text-[10px]">docs/universo_operable.md</span>.
+          </p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ['Candidatos verificados', `${r.verificados} de ${r.candidatos}`],

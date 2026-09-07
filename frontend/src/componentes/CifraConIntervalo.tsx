@@ -11,6 +11,15 @@
 // Y cuando el intervalo contiene el cero, lo dice **con palabras**, no
 // sólo con una banda: una banda que cruza el cero se lee como «casi
 // significativo» si nadie la nombra.
+//
+// CORRECCIÓN DEL 7-SEP-2026 (exigencia 9 del `curador-epistemico`): esa
+// frase sólo significa algo sobre una DIFERENCIA. El intervalo de Wilson
+// de una tasa de acierto no puede contener el cero nunca, así que
+// imprimir «el intervalo no contiene el cero» debajo de un 67,6 % no era
+// información: era una insinuación de significancia al lado de la ventaja
+// de verdad, que sí lo contiene. Ahora hace falta declarar `esDiferencia`
+// para que la frase salga, y sobre una proporción se dice contra qué se
+// compara, que es lo único que ahí es cierto.
 // ============================================================
 export function CifraConIntervalo({
   etiqueta,
@@ -21,6 +30,8 @@ export function CifraConIntervalo({
   n,
   decimales = 2,
   faltaPorque,
+  esDiferencia,
+  compararContra,
 }: {
   etiqueta: string
   valor: number | null | undefined
@@ -30,6 +41,10 @@ export function CifraConIntervalo({
   n?: number | string | null
   decimales?: number
   faltaPorque?: string
+  // Sin valor por defecto permisivo: si nadie declara que la cifra es una
+  // diferencia, la frase sobre el cero NO se emite.
+  esDiferencia?: boolean
+  compararContra?: string | null
 }) {
   const hay = valor != null && Number.isFinite(valor)
   const hayIC =
@@ -52,7 +67,9 @@ export function CifraConIntervalo({
   }
 
   const cruza = intervalo[0] <= 0 && 0 <= intervalo[1]
-  const signo = valor > 0 ? '+' : ''
+  // Una proporción no lleva signo de más: un «+67.6 %» se lee como
+  // diferencia. El signo es de las diferencias.
+  const signo = esDiferencia === true && valor > 0 ? '+' : ''
   return (
     <div className="rounded border border-border bg-bg-2 px-3 py-2">
       <div className="mini-label text-text-3">{etiqueta}</div>
@@ -73,9 +90,13 @@ export function CifraConIntervalo({
         </div>
       )}
       <div className="mt-1 text-[11px] leading-snug text-text-2">
-        {cruza
-          ? 'El intervalo contiene el cero: la diferencia no se distingue de cero.'
-          : 'El intervalo no contiene el cero.'}
+        {esDiferencia === true
+          ? cruza
+            ? 'El intervalo contiene el cero: la diferencia no se distingue de cero.'
+            : 'El intervalo no contiene el cero.'
+          : compararContra
+            ? `No es una diferencia: es una proporción. Lo que hay que mirar es la comparación contra ${compararContra}.`
+            : 'No es una diferencia: es una proporción. Su intervalo no puede contener el cero, así que que no lo contenga no dice nada.'}
       </div>
     </div>
   )

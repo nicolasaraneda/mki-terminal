@@ -48,6 +48,8 @@ function Columna({ r }: { r: Riel }) {
               tipoIntervalo={c.tipo_intervalo}
               n={r.muestra.n as number}
               decimales={c.nombre.includes('MAE') ? 4 : 1}
+              esDiferencia={c.es_diferencia}
+              compararContra={c.comparar_contra}
             />
           ))}
         </div>
@@ -55,30 +57,60 @@ function Columna({ r }: { r: Riel }) {
 
       {r.senal_larga && (
         <div className="mb-3 rounded border border-border bg-bg-2 px-3 py-2">
-          <div className="mini-label text-text-3">Señal larga v1</div>
+          <div className="mb-1 flex flex-wrap items-baseline gap-2">
+            <div className="mini-label text-text-3">Señal larga v1</div>
+            {r.senal_larga.estatus && <Estatus valor={r.senal_larga.estatus} />}
+          </div>
           <div className="mt-1 text-[12px] leading-relaxed text-text-2">
-            {r.senal_larga.ganan_a_la_climatologia} de {r.senal_larga.celdas} celdas le ganan
-            a la climatología causal, sobre {r.senal_larga.contrastes} contrastes.{' '}
             {r.senal_larga.L1_refutada && (
               <span className="text-text-1">
                 L1 —el contagio directo, la forma simple de la hipótesis— queda REFUTADA por
-                su propia regla pre-registrada.
+                su propia regla pre-registrada.{' '}
               </span>
             )}
+            {r.senal_larga.ganan_a_la_climatologia_sin_corregir} de{' '}
+            {r.senal_larga.celdas} celdas le ganan a la climatología causal{' '}
+            <span className="text-text-1">sin corregir por multiplicidad</span>. Corregido
+            por Holm sobre la familia completa de {r.senal_larga.contrastes} contrastes,{' '}
+            <span className="text-text-1">
+              pasan {r.senal_larga.ganan_tras_multiplicidad}
+            </span>
+            . Y tras la ablación anual que el pre-registro del riel exige, quedan{' '}
+            <span className="text-text-1">{r.senal_larga.ganan_tras_ablacion_anual}</span>.
           </div>
+          {r.senal_larga.segunda_vara_preregistrada_evaluada === false && (
+            <div className="mt-1 text-[11px] leading-snug text-text-3">
+              La segunda vara pre-registrada (la línea base aburrida) NO se evaluó: mientras
+              no se corra, la regla de refutación del pre-registro no se puede dar por leída.
+            </div>
+          )}
+          {r.senal_larga.nota && (
+            <div className="mt-1 text-[11px] leading-snug text-text-2">
+              {r.senal_larga.nota}
+            </div>
+          )}
         </div>
       )}
 
       {r.cuenta_en_papel && (
         <div className="mb-3 rounded border border-border bg-bg-2 px-3 py-2">
-          <div className="mini-label text-text-3">Cuenta en papel</div>
-          <div className="mt-1 text-[12px] leading-relaxed text-text-2">
-            {r.cuenta_en_papel.aportado_usd.toFixed(0)} USD simulados.{' '}
-            {r.cuenta_en_papel.falsos_positivos.con_ic_que_excluye_cero} de{' '}
-            {r.cuenta_en_papel.falsos_positivos.comparaciones} comparaciones dan un intervalo
-            que excluye el cero <span className="text-text-1">con una señal sin
-            información</span>: todos falsos positivos por construcción.
+          <div className="mb-1 flex flex-wrap items-baseline gap-2">
+            <div className="mini-label text-text-3">Cuenta en papel</div>
+            {r.cuenta_en_papel.estatus && <Estatus valor={r.cuenta_en_papel.estatus} />}
           </div>
+          {r.cuenta_en_papel.cifras_disponibles === false ? (
+            <div className="mt-1 text-[12px] leading-relaxed text-text-2">
+              <span className="text-text-1">
+                Esta página no muestra ninguna cifra de la cuenta en papel.
+              </span>{' '}
+              {r.cuenta_en_papel.retirado?.causa}{' '}
+              {r.cuenta_en_papel.retirado?.consecuencia}
+            </div>
+          ) : (
+            <div className="mt-1 text-[12px] leading-relaxed text-text-2">
+              {r.cuenta_en_papel.advertencia}
+            </div>
+          )}
         </div>
       )}
 
@@ -106,7 +138,16 @@ function Columna({ r }: { r: Riel }) {
       <Campo k="Qué lo mata">
         <span className="text-text-1">{r.que_lo_mata}</span>
       </Campo>
-      {r.potencia && <Campo k="Potencia">{r.potencia.nota}</Campo>}
+      {r.potencia && (
+        <Campo k="Potencia">
+          {r.potencia.estatus && (
+            <span className="mr-2">
+              <Estatus valor={r.potencia.estatus} />
+            </span>
+          )}
+          {r.potencia.nota}
+        </Campo>
+      )}
       {r.procedencia && (
         <Campo k="Procedencia de las cifras">
           <span className="font-mono text-[11px]">{r.procedencia}</span>

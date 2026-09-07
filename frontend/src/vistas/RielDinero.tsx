@@ -41,6 +41,27 @@ export function RielDinero() {
           <Estatus valor="SIMULADO" />
           <Estatus valor={d.estatus} />
         </div>
+        {d.retirado && (
+          <div className="mb-3 rounded border border-acento-2 bg-bg-2 px-3 py-2">
+            <div className="mini-label text-text-1">
+              Cifras retiradas el {d.retirado.fecha}
+            </div>
+            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-2">
+              <span className="text-text-1">
+                Ninguna cifra de esta pantalla se puede citar.
+              </span>{' '}
+              {d.retirado.causa}
+            </p>
+            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-2">
+              {d.retirado.consecuencia} Fuente del retiro:{' '}
+              <span className="font-mono text-[11px]">{d.retirado.fuente}</span>.
+            </p>
+            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-3">
+              Lo que sigue se deja a la vista, sin reescribir, para que se pueda auditar
+              contra la versión corregida cuando exista.
+            </p>
+          </div>
+        )}
         <p className="max-w-3xl text-xs leading-relaxed text-text-2">
           <span className="text-text-1">Nada de esta pantalla movió un peso.</span> No hay
           cuenta de corredora, no se envió ninguna orden y ninguna cifra de acá entra al
@@ -134,7 +155,7 @@ export function RielDinero() {
         </div>
       </Card>
 
-      <Card titulo="Por qué no hay que creerle a un intervalo de esta página" className="capa-1">
+      <Card titulo="Por qué no hay que creerle a un intervalo de esta página — lectura corregida" className="capa-1">
         <div className="grid gap-3 lg:grid-cols-[auto_1fr] lg:items-center">
           <div className="rounded border border-border bg-bg-2 px-3 py-2">
             <div className="mini-label text-text-3">
@@ -148,12 +169,22 @@ export function RielDinero() {
             </div>
           </div>
           <p className="max-w-2xl text-[11px] leading-relaxed text-text-2">
-            La respuesta verdadera es <span className="text-text-1">cero en todas</span>: la
-            señal no tiene información. Así que todos esos intervalos son falsos positivos
-            por construcción. El número sirve para una sola cosa, y es útil:{' '}
-            <span className="text-text-1">así de fácil es que este diseño produzca un
-            resultado «significativo» sin que haya nada detrás</span>. Cuando exista una
-            señal de verdad, éste es el ruido contra el que va a tener que destacarse.
+            <span className="text-text-1">
+              La lectura que esta tarjeta tenía está RETIRADA.
+            </span>{' '}
+            Decía que los {fp.con_ic_que_excluye_cero} eran todos falsos positivos porque la
+            respuesta verdadera era cero. No lo es: la estrategia y la línea base son
+            carteras distintas y la estrategia paga mucha más comisión, así que la
+            diferencia verdadera es <span className="text-text-1">negativa</span>, no cero.
+            De hecho cuatro de los cinco marcados son{' '}
+            <span className="text-text-1">el resultado verdadero de fricción</span> que esta
+            misma página celebra más abajo. Queda uno sin explicar, o sea 1 de{' '}
+            {fp.comparaciones}: el α nominal, que no dice nada. Y las{' '}
+            {fp.comparaciones} comparten un solo sorteo, así que ni siquiera son{' '}
+            {fp.comparaciones} pruebas. Cuán fácil es que este diseño produzca un resultado
+            «significativo» sin que haya nada detrás{' '}
+            <span className="text-text-1">sigue sin respuesta medida</span>: hace falta
+            repetirlo con K semillas.
           </p>
         </div>
       </Card>

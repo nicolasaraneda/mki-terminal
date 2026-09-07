@@ -11,6 +11,36 @@
 #
 # La señal que alimenta la estrategia NO TIENE INFORMACIÓN, a propósito. Lo
 # que este reporte mide es fricción, no habilidad.
+#
+# ------------------------------------------------------------
+# RETIRADA — 7-sep-2026, dictamen de cierre de la corrida 10
+# ------------------------------------------------------------
+# `GEMELO/resultados/dictamen_10/auditor_lookahead.md` demostró CUATRO
+# mecanismos de fuga temporal en este módulo y en `contabilidad.py`,
+# ejecutando código y no leyéndolo:
+#
+#   F1  el universo operable de una ventana de tres años se elige con el
+#       cierre del ÚLTIMO día de esa misma ventana (`correr()`, abajo);
+#       truncar al inicio lo mueve de 29 a 33 tickers y los excluidos son
+#       los que más subieron.
+#   F2  la señal "sin información" se sortea de la distribución de
+#       retornos FUTUROS de la propia ventana simulada; 755 de 756 señales
+#       cambian al truncar.
+#   F3  `apagado_por_perdida_pct` sale de una sigma calculada con futuro
+#       (materialidad medida: nula, el interruptor nunca dispara).
+#   F4  retardo de implementación CERO: se decide y se ejecuta contra el
+#       mismo cierre, mientras `senal_larga.py` usa 1 día.
+#
+# Y el `estadistico-adversario` mostró, aparte, que la lectura de "5 de 24
+# falsos positivos" estaba mal: cuatro de esas cinco son el resultado
+# VERDADERO de fricción que la propia §4 celebra.
+#
+# Consecuencia, y es la regla de la casa: **un número retirado que sigue
+# ofrecido desde el código vuelve a circular**. Así que hasta que las
+# fugas se cierren, este módulo NO ofrece sus cifras como medición: las
+# imprime rotuladas RETIRADAS, con la causa al lado. La reconstrucción
+# (test de truncación primero, después las correcciones) es el primer
+# bloque de la corrida siguiente.
 # ============================================================
 from __future__ import annotations
 
@@ -52,6 +82,12 @@ def correr():
     aportes = C.calendario_aportes(dias, APORTE_SEMANAL_USD, techo)
 
     # Universo operable de la estrategia: sólo lo verificado Y comprable.
+    # FUGA F1, DEMOSTRADA Y NO CORREGIDA (dictamen_10/auditor_lookahead.md):
+    # `construir_mapa` decide la membresía con el ÚLTIMO cierre del archivo,
+    # que es posterior a toda la ventana simulada. La corrección es recibir
+    # la membresía como argumento acotado por la fecha, igual que hizo
+    # `senal_larga.construir_paneles` tras su errata E1. No se aplica acá
+    # porque el test de truncación va primero (exigencia E2 del auditor).
     mapa = U.construir_mapa(precios.cargar_congelado(), cfg)
     operables = [f.candidato.ticker for f in mapa
                  if f.verificado and f.alcanza_con_techo]
@@ -94,11 +130,39 @@ def componer(cfg, res) -> str:
     aportado = sum(res["aportes"].values())
     pbs = cfg["costos"]["barrido_deslizamiento_pb"]
     L = []
-    L.append("# Cuenta en papel del riel de dinero — **SIMULADO**\n")
+    L.append("# Cuenta en papel del riel de dinero — **SIMULADO y RETIRADO**\n")
+    L.append("> # ⚠ CIFRAS RETIRADAS — 7-sep-2026")
+    L.append(">")
+    L.append("> **Ninguna cifra de esta página se puede citar.** El dictamen de")
+    L.append("> cierre de la corrida 10 (`GEMELO/resultados/dictamen_10/`)")
+    L.append("> demostró, ejecutando código, **cuatro mecanismos de fuga temporal**")
+    L.append("> en el motor que produce estos números:")
+    L.append(">")
+    L.append("> - **F1** — el universo operable de la ventana 2023-2026 se elige con")
+    L.append(">   el cierre del **2026-09-04**, el último día de esa misma ventana.")
+    L.append(">   Truncar al inicio lo mueve de 29 a 33 tickers, y los excluidos son")
+    L.append(">   los que más subieron.")
+    L.append("> - **F2** — la señal «sin información» se sortea de la distribución de")
+    L.append(">   retornos **futuros** de la propia ventana simulada: 755 de 756")
+    L.append(">   señales cambian al truncar.")
+    L.append("> - **F3** — el interruptor de pérdida se calibra con una sigma que")
+    L.append(">   mira el futuro (materialidad medida: **nula**, nunca dispara).")
+    L.append("> - **F4** — retardo de implementación **cero**: se decide y se ejecuta")
+    L.append(">   contra el mismo cierre, mientras `senal_larga.py` usa un día.")
+    L.append(">")
+    L.append("> **La cifra titular se mueve al quitar la fuga:** el juego `medio`")
+    L.append("> pasa de 27 % a **57 %** del capital en comisiones a 5 pb, medido por")
+    L.append("> el auditor. El SIGNO de la conclusión aguanta —rotar una cartera de")
+    L.append("> 500 USD cuesta un orden de magnitud más que no rotarla— pero **el")
+    L.append("> número no**, y acá se publica el número, no sólo el signo.")
+    L.append(">")
+    L.append("> Lo que sigue se deja publicado tal como salió, sin reescribir, para")
+    L.append("> que se pueda auditar contra la versión corregida cuando exista. La")
+    L.append("> reconstrucción empieza por el **test de truncación** y recién")
+    L.append("> después toca el cálculo.\n")
     L.append("> **SIMULADO. PROPUESTA.** Ninguna cifra de este documento es un")
-    L.append("> resultado del proyecto, ninguna entra al README, y ninguna pasó")
-    L.append("> todavía por `estadistico-adversario`. No hay cuenta de corredora y")
-    L.append("> no se envió ninguna orden a ningún lado.")
+    L.append("> resultado del proyecto, ninguna entra al README. No hay cuenta de")
+    L.append("> corredora y no se envió ninguna orden a ningún lado.")
     L.append(">")
     L.append("> **Lo que esta cuenta mide es FRICCIÓN, no habilidad.** La estrategia")
     L.append("> se alimenta de una señal SIN INFORMACIÓN —sorteada de la distribución")
@@ -204,7 +268,11 @@ def componer(cfg, res) -> str:
     L.append("")
     L.append("Con un mínimo de 1 USD por orden y 500 dólares de capital, **rotar la")
     L.append("cartera cuesta entre una cuarta parte y casi la mitad del capital en")
-    L.append("comisiones**, contra menos del uno por ciento de no decidir nada. Este")
+    L.append("comisiones**, contra menos del uno por ciento de no decidir nada.")
+    L.append("**Esos rangos son el mínimo y el máximo sobre los cuatro niveles de")
+    L.append("deslizamiento de UN solo sorteo: no son intervalos y no se pueden leer")
+    L.append("como tales.** Y están medidos con la fuga F1/F2 adentro: sin ella el")
+    L.append("juego `medio` gasta el 57 %, no el 27 %. Este")
     L.append("número no depende del sorteo ni del deslizamiento: depende sólo de")
     L.append("cuántas órdenes emite cada juego, y por eso es lo único de esta página")
     L.append("que se sostiene solo.\n")
@@ -240,16 +308,41 @@ def componer(cfg, res) -> str:
                 total += 1
                 if not C.comparar(valor, vb, semilla=SEMILLA_COMPARACION)["cruza_cero"]:
                     marcados += 1
-    L.append("### 3. Los `✓` de la tabla son falsos positivos POR CONSTRUCCIÓN.\n")
-    L.append(f"De **{total}** comparaciones, **{marcados}** tienen un intervalo del 95 %")
-    L.append(f"que excluye el cero: {100.0*marcados/total:.0f} %. Bajo una señal sin")
-    L.append("información, la respuesta verdadera es cero en las 24, así que **todos**")
-    L.append("esos intervalos son falsos positivos. No es un defecto del bootstrap: las")
-    L.append("comparaciones comparten el sorteo, los instrumentos y el flujo de caja, y")
-    L.append("nada de eso está descontado. El número sirve para una sola cosa, y es")
-    L.append("útil: **así de fácil es que este diseño produzca un `✓` sin que haya nada**.")
-    L.append("Cuando exista una señal de verdad, este es el ruido contra el que va a")
-    L.append("tener que destacarse.\n")
+    L.append("### 3. Los `✓` de la tabla — **la lectura de la v1 estaba mal, "
+             "y se retira**\n")
+    L.append(f"De **{total}** comparaciones, **{marcados}** tienen un intervalo del")
+    L.append(f"95 % que excluye el cero. La cifra **RETIRADA**: la v1 de esta")
+    L.append(f"página llamó a eso «{100.0*marcados/total:.0f} % de falsos positivos» y")
+    L.append("lo publicó como la cifra más útil del documento. **Es incorrecto, lo "
+             "mostró el")
+    L.append("`estadistico-adversario` en el cierre de la corrida, y se retira.** Tres")
+    L.append("razones, cada una suficiente:")
+    L.append("")
+    L.append("1. **La nula no es cero.** La estrategia y la línea base son carteras")
+    L.append("   distintas y la estrategia paga entre 70 y 215 USD de comisión sobre")
+    L.append("   500 mientras la base paga 2 o 3. El arrastre de comisión garantiza")
+    L.append("   una diferencia verdadera **negativa**. La nula correcta es «sin")
+    L.append("   habilidad», no «sin diferencia».")
+    L.append("2. **Cuatro de los cinco marcados son el resultado verdadero, no un")
+    L.append("   falso positivo.** Son `agresivo` contra `SMH` con signo negativo:")
+    L.append("   exactamente los mismos cuatro que la sección 4 de esta página")
+    L.append("   celebra como «lo único direccional que sí se sostiene». Una página")
+    L.append("   no puede llamar al mismo intervalo falso positivo en un párrafo y")
+    L.append("   resultado verdadero en el siguiente. Queda **uno** sin explicación")
+    L.append("   de fricción, o sea 1 de 24: el α nominal, que no dice nada.")
+    L.append("3. **Las 24 no son 24 pruebas, y hay un solo sorteo.** Los cuatro")
+    L.append("   niveles de deslizamiento de un mismo juego contra un mismo ETF dan")
+    L.append("   prácticamente el mismo número cuatro veces, y las 24 comparten")
+    L.append("   sorteo, calendario de aportes e instrumentos. Una tasa de falso")
+    L.append("   positivo necesita **K semillas** y la distribución de la cuenta con")
+    L.append("   su intervalo; con una sola semilla es n = 1 en la dimensión que")
+    L.append("   importa.")
+    L.append("")
+    L.append("Lo que sobrevive de esta sección es cualitativo y hay que decirlo así:")
+    L.append("**estas comparaciones comparten sorteo, instrumentos y flujo de caja, y")
+    L.append("nada de eso está descontado en sus intervalos.** Cuánto de fácil es que")
+    L.append("este diseño produzca un `✓` sin que haya nada es una pregunta legítima")
+    L.append("y **sigue sin respuesta medida**.\n")
 
     L.append("### 4. Lo único direccional que sí se sostiene\n")
     agr = [not C.comparar(res["estrategia"][("agresivo", pb)][1],
@@ -288,11 +381,28 @@ def a_json(cfg, res) -> dict:
     pbs = cfg["costos"]["barrido_deslizamiento_pb"]
     salida = {
         "etiqueta": "SIMULADO",
-        "estatus": "PROPUESTA",
+        "estatus": "RETIRADO",
+        "retirado": {
+            "fecha": "2026-09-07",
+            "por": "dictamen de cierre de la corrida 10",
+            "fuente": "GEMELO/resultados/dictamen_10/auditor_lookahead.md",
+            "causa": ("Cuatro mecanismos de fuga temporal demostrados "
+                      "ejecutando codigo (F1 universo elegido con el ultimo "
+                      "cierre; F2 senal sorteada de retornos futuros; F3 "
+                      "interruptor calibrado con futuro, materialidad nula; "
+                      "F4 retardo de implementacion cero). La cifra titular "
+                      "se mueve: el juego medio pasa de 27 % a 57 % del "
+                      "capital en comisiones a 5 pb."),
+            "consecuencia": ("Ninguna cifra de este artefacto se puede citar "
+                             "hasta que las fugas se cierren y se republique. "
+                             "El signo de la conclusion aguanta; el numero "
+                             "no."),
+        },
         "advertencia": (
-            "La señal que alimenta la estrategia NO tiene información: lo "
-            "medido es fricción, no habilidad. Ninguna cifra es un resultado "
-            "del proyecto."),
+            "RETIRADO por fuga temporal demostrada. La señal que alimenta la "
+            "estrategia NO tiene información: lo medido es fricción, no "
+            "habilidad. Ninguna cifra es un resultado del proyecto y ninguna "
+            "se puede citar."),
         "ventana": {"desde": DESDE, "hasta": HASTA,
                     "dias_de_mercado": int(len(res["cierres"]))},
         "aportado_usd": aportado,
@@ -322,7 +432,9 @@ def a_json(cfg, res) -> dict:
     salida["falsos_positivos"] = {
         "comparaciones": total, "con_ic_que_excluye_cero": marcados,
         "nota": ("La respuesta verdadera es cero en todas: la señal no tiene "
-                 "información. Todos son falsos positivos por construcción.")}
+                 "información. La lectura de la v1 (todos falsos positivos) "
+                 "está RETIRADA: cuatro de los marcados son el resultado "
+                 "verdadero de friccion. Ver el .md, sección 3.")}
     return salida
 
 

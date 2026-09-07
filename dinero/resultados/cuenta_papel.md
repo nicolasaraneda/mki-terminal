@@ -1,9 +1,38 @@
-# Cuenta en papel del riel de dinero — **SIMULADO**
+# Cuenta en papel del riel de dinero — **SIMULADO y RETIRADO**
+
+> # ⚠ CIFRAS RETIRADAS — 7-sep-2026
+>
+> **Ninguna cifra de esta página se puede citar.** El dictamen de
+> cierre de la corrida 10 (`GEMELO/resultados/dictamen_10/`)
+> demostró, ejecutando código, **cuatro mecanismos de fuga temporal**
+> en el motor que produce estos números:
+>
+> - **F1** — el universo operable de la ventana 2023-2026 se elige con
+>   el cierre del **2026-09-04**, el último día de esa misma ventana.
+>   Truncar al inicio lo mueve de 29 a 33 tickers, y los excluidos son
+>   los que más subieron.
+> - **F2** — la señal «sin información» se sortea de la distribución de
+>   retornos **futuros** de la propia ventana simulada: 755 de 756
+>   señales cambian al truncar.
+> - **F3** — el interruptor de pérdida se calibra con una sigma que
+>   mira el futuro (materialidad medida: **nula**, nunca dispara).
+> - **F4** — retardo de implementación **cero**: se decide y se ejecuta
+>   contra el mismo cierre, mientras `senal_larga.py` usa un día.
+>
+> **La cifra titular se mueve al quitar la fuga:** el juego `medio`
+> pasa de 27 % a **57 %** del capital en comisiones a 5 pb, medido por
+> el auditor. El SIGNO de la conclusión aguanta —rotar una cartera de
+> 500 USD cuesta un orden de magnitud más que no rotarla— pero **el
+> número no**, y acá se publica el número, no sólo el signo.
+>
+> Lo que sigue se deja publicado tal como salió, sin reescribir, para
+> que se pueda auditar contra la versión corregida cuando exista. La
+> reconstrucción empieza por el **test de truncación** y recién
+> después toca el cálculo.
 
 > **SIMULADO. PROPUESTA.** Ninguna cifra de este documento es un
-> resultado del proyecto, ninguna entra al README, y ninguna pasó
-> todavía por `estadistico-adversario`. No hay cuenta de corredora y
-> no se envió ninguna orden a ningún lado.
+> resultado del proyecto, ninguna entra al README. No hay cuenta de
+> corredora y no se envió ninguna orden a ningún lado.
 >
 > **Lo que esta cuenta mide es FRICCIÓN, no habilidad.** La estrategia
 > se alimenta de una señal SIN INFORMACIÓN —sorteada de la distribución
@@ -115,7 +144,11 @@ contiene el cero; sin `✓`, la diferencia **no se distingue de cero**.
 
 Con un mínimo de 1 USD por orden y 500 dólares de capital, **rotar la
 cartera cuesta entre una cuarta parte y casi la mitad del capital en
-comisiones**, contra menos del uno por ciento de no decidir nada. Este
+comisiones**, contra menos del uno por ciento de no decidir nada.
+**Esos rangos son el mínimo y el máximo sobre los cuatro niveles de
+deslizamiento de UN solo sorteo: no son intervalos y no se pueden leer
+como tales.** Y están medidos con la fuga F1/F2 adentro: sin ella el
+juego `medio` gasta el 57 %, no el 27 %. Este
 número no depende del sorteo ni del deslizamiento: depende sólo de
 cuántas órdenes emite cada juego, y por eso es lo único de esta página
 que se sostiene solo.
@@ -135,17 +168,40 @@ una señal sin información, el resultado lo decide cuál de los
 filas del barrido **no son la misma estrategia a distinto costo: son
 caminos distintos**, y compararlas entre sí sería un error.
 
-### 3. Los `✓` de la tabla son falsos positivos POR CONSTRUCCIÓN.
+### 3. Los `✓` de la tabla — **la lectura de la v1 estaba mal, y se retira**
 
-De **24** comparaciones, **5** tienen un intervalo del 95 %
-que excluye el cero: 21 %. Bajo una señal sin
-información, la respuesta verdadera es cero en las 24, así que **todos**
-esos intervalos son falsos positivos. No es un defecto del bootstrap: las
-comparaciones comparten el sorteo, los instrumentos y el flujo de caja, y
-nada de eso está descontado. El número sirve para una sola cosa, y es
-útil: **así de fácil es que este diseño produzca un `✓` sin que haya nada**.
-Cuando exista una señal de verdad, este es el ruido contra el que va a
-tener que destacarse.
+De **24** comparaciones, **5** tienen un intervalo del
+95 % que excluye el cero. La cifra **RETIRADA**: la v1 de esta
+página llamó a eso «21 % de falsos positivos» y
+lo publicó como la cifra más útil del documento. **Es incorrecto, lo mostró el
+`estadistico-adversario` en el cierre de la corrida, y se retira.** Tres
+razones, cada una suficiente:
+
+1. **La nula no es cero.** La estrategia y la línea base son carteras
+   distintas y la estrategia paga entre 70 y 215 USD de comisión sobre
+   500 mientras la base paga 2 o 3. El arrastre de comisión garantiza
+   una diferencia verdadera **negativa**. La nula correcta es «sin
+   habilidad», no «sin diferencia».
+2. **Cuatro de los cinco marcados son el resultado verdadero, no un
+   falso positivo.** Son `agresivo` contra `SMH` con signo negativo:
+   exactamente los mismos cuatro que la sección 4 de esta página
+   celebra como «lo único direccional que sí se sostiene». Una página
+   no puede llamar al mismo intervalo falso positivo en un párrafo y
+   resultado verdadero en el siguiente. Queda **uno** sin explicación
+   de fricción, o sea 1 de 24: el α nominal, que no dice nada.
+3. **Las 24 no son 24 pruebas, y hay un solo sorteo.** Los cuatro
+   niveles de deslizamiento de un mismo juego contra un mismo ETF dan
+   prácticamente el mismo número cuatro veces, y las 24 comparten
+   sorteo, calendario de aportes e instrumentos. Una tasa de falso
+   positivo necesita **K semillas** y la distribución de la cuenta con
+   su intervalo; con una sola semilla es n = 1 en la dimensión que
+   importa.
+
+Lo que sobrevive de esta sección es cualitativo y hay que decirlo así:
+**estas comparaciones comparten sorteo, instrumentos y flujo de caja, y
+nada de eso está descontado en sus intervalos.** Cuánto de fácil es que
+este diseño produzca un `✓` sin que haya nada es una pregunta legítima
+y **sigue sin respuesta medida**.
 
 ### 4. Lo único direccional que sí se sostiene
 

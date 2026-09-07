@@ -312,3 +312,77 @@ def bootstrap_bloques(serie, semilla: int, n_draws: int = 1000,
         "n_validos": int(len(sh)),
         "bloque": bloque, "alpha": alpha, "semilla": semilla,
     }
+
+
+# ============================================================
+# MULTIPLICIDAD — agregado el 7-sep-2026 al aplicar el dictamen del
+# `estadistico-adversario` de la corrida 10 (exigencias 9, 10 y 11).
+#
+# POR QUÉ EXISTE: la corrida 10 publicó "una celda de seis le gana a la
+# vara dura" sobre una familia de 30 contrastes, sin corrección de
+# multiplicidad. El dictamen mostró que con Holm sobre la familia
+# completa NINGUNO cruza alfa. Que eso lo diga un ejecutable y no la
+# prosa de un dictamen es la diferencia entre una corrección y una nota.
+#
+# Las tres funciones son PURAS y sin estado. `p_bootstrap_media`
+# comparte el sorteo de `bootstrap_media`: misma semilla, mismos
+# bloques, mismas réplicas, así que el p y el intervalo hablan del
+# mismo remuestreo.
+# ============================================================
+def p_bootstrap_media(serie, semilla: int, n_draws: int = 1000,
+                      bloque: int = 20) -> float:
+    """p bilateral de que la media de `serie` sea cero, por bootstrap
+    circular de bloques.
+
+    Se computa como 2 x min(P(media* <= 0), P(media* >= 0)), acotado a 1.
+    Con `n_draws` réplicas el p más chico representable es 1/n_draws: un
+    0.0 exacto se devuelve como 1/n_draws y NO como cero, porque un cero
+    exacto afirmaría más precisión de la que el sorteo tiene.
+    """
+    r = np.asarray(serie, dtype=float)
+    r = r[~np.isnan(r)]
+    n = len(r)
+    if bloque < 1:
+        raise ValueError("bloque debe ser >= 1")
+    if n < 2 or n < bloque:
+        return float("nan")
+    medias = _remuestrear_circular(r, semilla, n_draws, bloque).mean(axis=1)
+    p_izq = float(np.mean(medias <= 0.0))
+    p_der = float(np.mean(medias >= 0.0))
+    p = 2.0 * min(p_izq, p_der)
+    piso = 1.0 / float(n_draws)
+    return float(min(1.0, max(piso, p)))
+
+
+def holm(p_por_nombre: dict) -> dict:
+    """Corrección de Holm-Bonferroni. Devuelve {nombre: p ajustado}.
+
+    Holm es uniformemente más potente que Bonferroni y no supone nada
+    sobre la dependencia entre contrastes, que es lo que hace falta acá:
+    los 30 contrastes de la señal larga comparten filas, fechas y
+    especificaciones, y no son independientes ni por asomo.
+
+    Los p ajustados se vuelven monótonos (máximo acumulado), que es la
+    definición correcta: si un contraste no pasa, ninguno con p mayor
+    puede pasar.
+    """
+    if not p_por_nombre:
+        return {}
+    items = sorted(p_por_nombre.items(), key=lambda kv: kv[1])
+    m = len(items)
+    ajustados = []
+    corriendo = 0.0
+    for i, (nombre, p) in enumerate(items):
+        cand = (m - i) * float(p)
+        corriendo = max(corriendo, cand)
+        ajustados.append((nombre, min(1.0, corriendo)))
+    return dict(ajustados)
+
+
+# McNemar NO se reimplementa acá: `evaluacion.mcnemar_exact` ya existe en
+# `.claude/skills/estadistica-evaluacion/scripts/`, ya está en espacio
+# logarítmico y ya documenta el desbordamiento de `2.0**n` que aparece por
+# encima de 1024 discordantes. La regla de `.claude/rules/backtest.md` es
+# explícita: no se reimplementan Wilson, McNemar, DSR ni CRPS. Quien
+# necesite el p pareado lo importa de ahí, como hacen `veredicto_51.py` y
+# `GEMELO/banco_clausulas.py`.

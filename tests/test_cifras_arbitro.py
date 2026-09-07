@@ -122,3 +122,49 @@ def test_contraprueba_el_detector_caza_una_reintroduccion():
     assert not cifras.reintroducciones(texto_ok)
     texto_d1 = "Sobre la ventana sellada (n=248) la ventaja es +6.5 pp con p = 0.1849.\n"
     assert cifras.reintroducciones(texto_d1), "la rama derogada por D1 no está registrada"
+
+
+# ============================================================
+# La heurística de la marca de retiro, endurecida el 7-sep-2026
+# (exigencia 3 del `guardian-constitucion`, corrida 10).
+#
+# La versión anterior exentaba cualquier línea con una palabra ambigua a ±2
+# líneas. En la corrida 10 una «corregida» que hablaba de OTRO tema exentó
+# una reintroducción real del 91,4 % en un documento generado, y el falso
+# verde lo cazó un lector y no la máquina. Estos dos tests son la
+# contraprueba: uno demuestra que el instrumento sabe ponerse rojo, el otro
+# que la exención legítima sigue funcionando.
+# ============================================================
+def test_una_marca_ambigua_que_habla_de_otra_cosa_ya_no_exenta():
+    """El falso verde del 7-sep, reproducido: la palabra «corregida» dos
+    líneas más abajo hablaba de supervivencia, no de la cifra."""
+    import cifras
+    retiradas = [{"patron": r"91[,.]4\s?%", "contexto": "x", "fecha": "y",
+                  "acta": "z", "reemplazo": "w"}]
+    texto = ("midió la contaminación en el riel de medición (198 filas,\n"
+             "91,4 % de coincidencia, máximo 31,2 pp) y va en dirección\n"
+             "optimista.\n"
+             "- **Supervivencia, NO corregida.** Los 36 tickers son los que\n"
+             "  existen hoy.\n")
+    hallazgos = cifras.reintroducciones(texto, retiradas)
+    assert hallazgos, (
+        "la marca ambigua «corregida», que habla de otro tema, no puede "
+        "exentar una reintroducción: ése fue el falso verde del 7-sep-2026")
+    assert hallazgos[0][0] == 2
+
+
+def test_una_marca_fuerte_sigue_exentando_la_historia():
+    """El README cuenta la historia de sus propias cifras retiradas y eso
+    no puede ponerse rojo."""
+    import cifras
+    retiradas = [{"patron": r"91[,.]4\s?%", "contexto": "x", "fecha": "y",
+                  "acta": "z", "reemplazo": "w"}]
+    texto = ("La cifra está RETIRADA desde el 1-sep-2026.\n"
+             "Decía 91,4 % de coincidencia sobre 198 filas.\n"
+             "Con la clave correcta da 100 % sobre 214.\n")
+    assert cifras.reintroducciones(texto, retiradas) == []
+    # Y una marca ambigua SÍ exenta cuando el contexto nombra la cifra dos
+    # veces, o sea cuando la marca habla de ella y no de otra cosa.
+    texto2 = ("El 91,4 % era el número anterior.\n"
+              "Hoy el 91,4 % no se usa.\n")
+    assert cifras.reintroducciones(texto2, retiradas) == []

@@ -44,10 +44,19 @@ misma**, así que desde la corrida 10 son dos rieles declarados y separados.
 - **Qué lo mata.** Está pre-registrado y no se inventa aquí: las barreras
   V1–V7 y los rechazos R1–R3 de `GEMELO/DISEÑO.md` §6, fijados antes de
   cualquier resultado. La más dura ya golpeó al titular: **R2** —excluir la
-  ventana 15–23 jul, que sostiene casi toda la ventaja— deja al campeón en
-  n = 184, modelo 62.0 %, base 65.2 %, **ventaja −3.3 pp (p = 0.60)**: no
-  pierde la ventaja, la vuelve negativa. Ese resultado está publicado y la
-  valla no se bajó.
+  ventana 15–23 jul, que sostiene casi toda la ventaja— deja la ventaja del
+  campeón **sin distinguirse de cero en ninguna de las tres convenciones de
+  conteo** (`GEMELO/resultados/concentracion.md` A3; al 31-ago: +0.5 pp con
+  n = 209 bajo `estricta`, −1.0 pp con n = 204 bajo `excluir_cero`, −1.9 pp
+  con n = 209 bajo `verificador`; ningún p se acerca a 0.05). Bajo la regla
+  de deduplicación firmada el 1-sep, **la ablación no está recomputada**.
+  Ese resultado está publicado y la valla no se bajó.
+  *(Corrección del 7-sep-2026, exigencia 2 del `curador-epistemico`: este
+  párrafo decía «deja al campeón en n = 184, ventaja −3.3 pp (p = 0.60): no
+  pierde la ventaja, la vuelve negativa». Esa cifra es del 26-ago, está bajo
+  convención `estricta` y ancla derogada, y el propio repositorio ya publicó
+  su corrección: bajo `estricta` el signo se da vuelta. «La vuelve negativa»
+  y «descalifica» decían más que un p = 0.60.)*
 
 ### 2.2 Riel de dinero — instrumentos de EE.UU. a semanas
 
@@ -94,7 +103,8 @@ información no pública se rechaza, y se escribe por qué.
 
 - **No es un vendedor.** No hay producto, no hay suscripción, no hay clientes.
 - **No promete retorno.** La única ventaja medida tiene un intervalo que
-  contiene el cero, y bajo R2 se vuelve negativa.
+  contiene el cero, y bajo R2 deja de distinguirse de cero en las tres
+  convenciones de conteo.
 - **El primer monto de plata real es costo de aprendizaje operativo**, no una
   apuesta con retorno esperado positivo demostrado. Lo que se compra con esos
   100 a 500 dólares es saber cómo se abre una cuenta, cómo se cursa una

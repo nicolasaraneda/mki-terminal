@@ -897,13 +897,41 @@ _RAIZ = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 _DIR_DINERO = _os.path.join(_RAIZ, "dinero", "resultados")
 
 
-def _meta_simple() -> dict:
+def _meta_simple(artefacto: str | None = None) -> dict:
     """Meta reducido: estos endpoints no dependen del motor ni del régimen,
-    y llamarlo sólo para rellenar un campo sería trabajo (y red) por nada."""
-    return {
+    y llamarlo sólo para rellenar un campo sería trabajo (y red) por nada.
+
+    `generado_en` es la hora de ESTA respuesta, no la del dato. Estampar
+    hora fresca sobre un JSON que puede tener semanas es la misma zona
+    ciega de sellado que el proyecto ya tiene identificada en producción
+    (exigencia E10 del `auditor-lookahead`, corrida 10), así que cuando la
+    respuesta sale de un artefacto se declara también CUÁNDO se generó ese
+    artefacto y con qué huella.
+    """
+    m = {
         "generado_en": datetime.now(timezone.utc).isoformat(),
         "modelo_version": MODELO_VERSION,
         "plataforma_version": PLATAFORMA_VERSION,
+    }
+    if artefacto:
+        m["artefacto"] = _sello_artefacto(artefacto)
+    return m
+
+
+def _sello_artefacto(nombre: str) -> dict | None:
+    """Fecha de modificación y sha256 del artefacto que sirve la respuesta."""
+    ruta = _os.path.join(_DIR_DINERO, nombre)
+    if not _os.path.exists(ruta):
+        return None
+    import hashlib
+    with open(ruta, "rb") as f:
+        crudo = f.read()
+    return {
+        "nombre": nombre,
+        "generado_en": datetime.fromtimestamp(
+            _os.path.getmtime(ruta), timezone.utc).isoformat(),
+        "sha256": hashlib.sha256(crudo).hexdigest(),
+        "bytes": len(crudo),
     }
 
 
@@ -923,7 +951,8 @@ def dinero_universo():
             status_code=404,
             detail=("todavía no se generó el mapa operable; se genera con "
                     "`python -m dinero.mapa`"))
-    return {"meta": _meta_simple(), "datos": datos}
+    return {"meta": _meta_simple("universo_operable.json"),
+            "datos": datos}
 
 
 @app.get("/api/dinero/cuenta")
@@ -934,7 +963,7 @@ def dinero_cuenta():
             status_code=404,
             detail=("todavía no se corrió la cuenta en papel; se corre con "
                     "`python -m dinero.cuenta_papel`"))
-    return {"meta": _meta_simple(), "datos": datos}
+    return {"meta": _meta_simple("cuenta_papel.json"), "datos": datos}
 
 
 @cache_ttl(600)
@@ -957,22 +986,39 @@ def _estado_rieles() -> dict:
         "mueve_plata": False,
         "muestra": {"n": c["n"], "dias": c["dias"],
                     "hasta_sello": c["hasta_sello"]},
+        # `es_diferencia` NO es decoración: la frase «el intervalo no
+        # contiene el cero» sólo significa algo sobre una DIFERENCIA. El
+        # intervalo de Wilson de una tasa de acierto no puede contener el
+        # cero nunca, así que decirlo debajo de un 67,6 % se lee como «el
+        # efecto existe» al lado de la ventaja de verdad, que sí lo
+        # contiene. Exigencia 9 del `curador-epistemico`, corrida 10.
         "cifras": [
             {"nombre": "acierto del modelo", "valor_pct": c["modelo_pct"],
-             "intervalo": c["modelo_wilson"], "tipo_intervalo": "Wilson 95 %"},
+             "intervalo": c["modelo_wilson"], "tipo_intervalo": "Wilson 95 %",
+             "es_diferencia": False, "comparar_contra": "acierto de la base"},
             {"nombre": "acierto de la base", "valor_pct": c["base_pct"],
-             "intervalo": c["base_wilson"], "tipo_intervalo": "Wilson 95 %"},
+             "intervalo": c["base_wilson"], "tipo_intervalo": "Wilson 95 %",
+             "es_diferencia": False, "comparar_contra": None},
             {"nombre": "ventaja sobre la base", "valor_pct": c["ventaja_pp"],
              "intervalo": c["ventaja_ic_dia"],
              "tipo_intervalo": "IC95 de clúster de día",
+             "es_diferencia": True,
              "cruza_cero": c["ventaja_ic_dia"][0] <= 0 <= c["ventaja_ic_dia"][1]},
             {"nombre": "ganancia de MAE sobre predecir cero",
              "valor_pct": c["mae_ganancia_pp"],
              "intervalo": c["mae_ganancia_ic_t_dia"],
              "tipo_intervalo": "IC95 t de clúster de día",
+             "es_diferencia": True,
              "cruza_cero": (c["mae_ganancia_ic_t_dia"][0] <= 0 <=
                             c["mae_ganancia_ic_t_dia"][1])},
         ],
+        # El contrato prometía McNemar y el endpoint no lo servía. Manda la
+        # máquina: se sirve, con el caveat que lo vuelve legible.
+        "mcnemar_p_filas": c["mcnemar_p"],
+        "mcnemar_caveat": ("Es un p de FILAS. Las ocho filas de un día no "
+                           "son observaciones independientes (ICC 0,39, "
+                           "DEFF 3,55): manda el intervalo de clúster de "
+                           "día, que contiene el cero."),
         "cobertura_80_pct": c["cobertura_80_pct"],
         "n_efectivo": c["n_efectivo"], "icc": c["icc"], "deff": c["deff"],
         "falta_para_veredicto": (
@@ -981,9 +1027,14 @@ def _estado_rieles() -> dict:
             "más un cambio de régimen, o 3 meses, lo que llegue primero."),
         "que_lo_mata": (
             "V1–V7 y R1–R3 de GEMELO/DISEÑO.md §6, fijados antes de cualquier "
-            "resultado. R2 —excluir la ventana 15–23 jul— ya deja al campeón "
-            "en ventaja −3,3 pp (p = 0,60): no pierde la ventaja, la vuelve "
-            "negativa. La valla no se bajó."),
+            "resultado. R2 —excluir la ventana 15–23 jul, que sostiene casi "
+            "toda la ventaja— ya golpeó al titular: sin esa ventana la "
+            "ventaja del campeón NO se distingue de cero en ninguna de las "
+            "tres convenciones de conteo (GEMELO/resultados/concentracion.md "
+            "A3; al 31-ago: +0,5 pp n=209 bajo `estricta`, −1,0 pp n=204 bajo "
+            "`excluir_cero`, −1,9 pp n=209 bajo `verificador`; ningún p cerca "
+            "de 0,05). Bajo la regla de deduplicación firmada el 1-sep NO "
+            "está recomputada. La valla no se bajó."),
         "procedencia": c["procedencia"],
     }
     dinero = {
@@ -1001,30 +1052,54 @@ def _estado_rieles() -> dict:
                              "éste. Nada de este riel es evidencia del mismo "
                              "tipo.")},
         "mapa": (mapa.get("resumen") if mapa else None),
+        # La cuenta en papel tiene fuga temporal DEMOSTRADA (dictamen 10,
+        # F1 a F4). Mientras no se republique sin fuga, este endpoint NO
+        # sirve sus cifras: sirve el motivo del retiro. Servir el número
+        # con una advertencia al lado sería seguir haciéndolo circular.
         "cuenta_en_papel": ({
-            "aportado_usd": cuenta.get("aportado_usd"),
-            "falsos_positivos": cuenta.get("falsos_positivos"),
+            "estatus": cuenta.get("estatus"),
+            "retirado": cuenta.get("retirado"),
             "advertencia": cuenta.get("advertencia"),
+            "cifras_disponibles": False,
         } if cuenta else None),
-        "senal_larga": (larga.get("resumen") if larga else None),
+        "senal_larga": ({
+            "estatus": larga.get("estatus"),
+            "multiplicidad": larga.get("multiplicidad", {}).get(
+                "familia_contrastes"),
+            "pasan_holm": larga.get("multiplicidad", {}).get("pasan"),
+            **(larga.get("resumen") or {}),
+        } if larga else None),
         "falta_para_veredicto": (
             "52 semanas de cuenta en papel hacia adelante, con la señal "
             "congelada, UNA comparación declarada y una sola mirada al final "
             "(dinero/preregistro_dinero.md §2). Hoy: 0 semanas."),
         "que_lo_mata": (
             "M1: 104 semanas sin distinguirse del cero y con punto negativo. "
-            "M2: comisión acumulada sobre el 25 % del capital — medido, los "
-            "tres juegos gastan entre 14 % y 43 %, así que M2 está a punto de "
-            "dispararse antes de empezar. M3: cualquier fuga. M4: que la "
-            "señal larga no supere ninguna vara."),
+            "M2: comisión acumulada sobre el 25 % del capital — la cifra que "
+            "sostenía este umbral (14 % a 43 %) está RETIRADA por fuga "
+            "temporal demostrada y además medía 156 semanas contra un umbral "
+            "escrito para 52, así que M2 no se puede leer como disparado ni "
+            "como no disparado hasta que se recompute. M3: cualquier fuga — "
+            "ya disparó en la cuenta en papel. M4: que la señal larga no "
+            "supere ninguna vara; hoy no se puede dar por leído, porque la "
+            "segunda vara pre-registrada no se evaluó."),
+        # σ salía de la cuenta en papel, que está retirada por fuga; y
+        # viajaba como número suelto, sin intervalo, contra la regla que
+        # este mismo bloque declara arriba. No viaja más hasta que se
+        # recompute con su intervalo sobre una cuenta sin fuga.
         "potencia": {
-            "sigma_dif_semanal_pp": 2.54,
-            "nota": ("Con σ = 2,54 pp/semana, α = 0,05 y potencia 0,80, las 52 "
-                     "semanas del criterio sólo alcanzan para una ventaja de "
-                     "≈ +1,00 pp/semana. Detectar +0,25 pp/semana pediría 809 "
-                     "semanas (16 años). Una ventaja del tamaño detectable no "
-                     "es plausible con datos públicos: si el criterio se "
-                     "cumple, la primera reacción es sospechar un error."),
+            "sigma_dif_semanal_pp": None,
+            "estatus": "RETIRADO",
+            "nota": ("La aritmética de potencia del pre-registro descansa en "
+                     "una σ semanal medida sobre la cuenta en papel, que está "
+                     "RETIRADA por fuga temporal demostrada (dictamen 10, F1 "
+                     "a F4). Además viajaba sin intervalo, que es lo que esta "
+                     "misma API se prohíbe. El razonamiento cualitativo "
+                     "sobrevive y hay que decirlo: con la σ de este riel, las "
+                     "52 semanas del criterio sólo alcanzan para una ventaja "
+                     "grande, y una ventaja así no es plausible con datos "
+                     "públicos. La cifra concreta vuelve cuando se recompute "
+                     "con su intervalo sobre una cuenta sin fuga."),
         },
     }
     return {"rieles": [medicion, dinero],

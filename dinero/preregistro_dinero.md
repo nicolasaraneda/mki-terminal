@@ -38,6 +38,7 @@ Cuatro condiciones, **todas**, evaluadas UNA sola vez al final del período:
    comparaciones, y la propia cuenta en papel de esta corrida midió que un
    diseño así produce un intervalo que excluye el cero en **5 de 24
    comparaciones (21 %) con una señal que no tiene ninguna información**.
+   **[Cifra RETIRADA y conteo corregido — errata §6 A y §6 B, 7-sep-2026.]**
 3. **La diferencia de retorno semanal medio debe tener un intervalo del 95 %
    —bootstrap circular de bloques sobre semanas, semilla declarada— que
    EXCLUYA el cero, y ser positiva.**
@@ -71,7 +72,7 @@ Por eso el pre-registro agrega una cláusula que normalmente no haría falta:
    cualquier dinero real, un resultado positivo debe sobrevivir: (a) la
    auditoría de fuga temporal (`auditor-lookahead`), (b) una ablación de la
    ventana que sostiene la ventaja —del mismo tipo que R2 en
-   `GEMELO/DISEÑO.md`, que hoy descalifica al propio campeón—, y (c) el
+   `GEMELO/DISEÑO.md`, que hoy el propio campeón no pasa (ver §6 H)—, y (c) el
    dictamen de `estadistico-adversario`. Sólo después se discute el monto.
 
 ## 3. Qué mata la pista
@@ -120,7 +121,8 @@ en él, si se toca de alguna de estas formas:
 - Cambiar la línea base declarada (`SMH`) por otra que la estrategia sí
   supere. Si `SMH` deja de ser el benchmark del proyecto, el cambio se
   documenta **antes** de la evaluación y con su razón.
-- Evaluar los tres juegos y reportar el mejor. La §2.2 existe exactamente
+- Evaluar los tres juegos y reportar el mejor. La §2 existe exactamente
+  **[cifra RETIRADA — errata §6 A, 7-sep-2026; y la §2.2 no existe, ver §6 D]**
   para impedir eso, y la medición del 21 % de falsos positivos es la prueba
   de por qué.
 - Convertir la magnitud en la métrica primaria si la dirección falla, o al
@@ -131,3 +133,80 @@ en él, si se toca de alguna de estas formas:
 Una enmienda legítima es posible y ya hay precedente en el proyecto: se
 escribe con fecha posterior, dice qué cambia y por qué, **y no borra lo que
 decía antes**.
+
+---
+
+## 6. Errata fechada — 7-sep-2026, sesión de cierre de la corrida 10
+
+Este documento es un pre-registro y **no se reescribe**: lo de abajo corrige,
+con fecha y sin borrar, lo que quedó mal en los §2, §2.1, §3 y §5. Ninguna de
+estas correcciones ablanda un criterio; **dos lo endurecen y una lo deja
+explícitamente sin poder leerse**.
+
+**A. La cifra del «21 % de falsos positivos» está RETIRADA.** La citan el §2
+condición 2 y el §5. La medición decía: 5 de 24 comparaciones dan un intervalo
+que excluye el cero con una señal sin información, y todas son falsos positivos
+porque la respuesta verdadera es cero. Es incorrecto por tres razones que
+mostró el `estadistico-adversario`: la nula no es cero (el arrastre de comisión
+garantiza una diferencia verdadera negativa); cuatro de los cinco marcados son
+el resultado verdadero de fricción que la propia página celebra; y las 24 no
+son 24 pruebas ni hay más que un sorteo. Queda 1 de 24, el α nominal.
+**Y hay una segunda razón, independiente y peor:** la cuenta en papel de la que
+salía esa cifra tiene **fuga temporal demostrada** (`dictamen_10/auditor_lookahead.md`,
+F1 a F4), así que ninguna de sus cifras se puede citar. **La cláusula que ese
+número justificaba —una comparación declarada, una sola mirada— es correcta por
+otras razones y se mantiene**: lo que se cae es la razón, no la regla.
+
+**B. «Doce comparaciones» son SEIS.** El §2 condición 2 dice que evaluar los
+tres juegos contra los dos ETF «son doce comparaciones». Son **3 × 2 = 6**. Las
+24 de la cuenta en papel salen de multiplicar además por los cuatro niveles de
+deslizamiento del barrido. El argumento no depende del número; el número estaba
+mal.
+
+**C. La línea base descrita no es la implementada.** El §2 dice «línea base
+`SMH` (aporte fijo semanal)». Lo implementado en
+`contabilidad.calendario_aportes` es **100 USD semanales hasta agotar el techo
+de 500, y después nada**: cinco aportes en 156 semanas, no un aporte semanal
+perpetuo. El código lo documenta bien; este documento, que es el que gobierna,
+no. **Rige lo implementado**, y cuando el riel corra hacia adelante 52 semanas
+el flujo de aportes tiene que quedar declarado acá antes de empezar.
+
+**D. Referencias colgantes.** Tres documentos citan un «§2.5» de este archivo
+que **no existe** (`ESTADO.md`, el reporte de la señal larga y el encargo de la
+corrida 10), y el §5 cita un «§2.2» que tampoco existe. Las secciones reales
+son §1, §2, §2.1, §3, §4, §5 y esta §6. La cláusula que todos querían citar es
+la del §2.1: **si el criterio se cumple, la primera reacción no es poner plata,
+es sospechar un error**. Sigue vigente, y es de las mejores frases de este
+documento.
+
+**E. M2 compara un porcentaje de 156 semanas contra un umbral escrito para
+52.** M2 dispara si la comisión acumulada supera el 25 % del capital aportado
+«en el período», y el documento concluía que estaba «a punto de dispararse»
+citando el 14 % a 43 % —cifra **RETIRADA**, ver §6 A—, que es de **156
+semanas**. Medido sobre la peor ventana
+móvil de 52 semanas, **ningún juego llega al 25 %** (10,1 %, 21,8 % y 14,8 %);
+recién se dispara a 104 semanas y sólo para dos juegos. **M2 no se puede leer
+como disparado ni como no disparado** hasta que se fije el período
+explícitamente y se recompute sobre una cuenta sin fuga. Qué período rige es
+decisión de Nicolás y está en `espera_firma.md`.
+
+**F. M4 no cierra nada como está escrito.** M4 dispara si la señal larga «no
+supera **ninguna** de sus dos varas». Con 30 contrastes correlacionados a
+α = 0,05, esa es una barra que el ruido puro pasa la mayoría de las veces: una
+cláusula que casi nunca dispara no es un criterio de rechazo. **Y hoy además no
+se puede evaluar**, porque la segunda vara declarada en el pre-registro de la
+señal larga —la línea base aburrida— **no se corrió**, y la cuenta en papel por
+la que habría que pasarla está retirada. Reescribir M4 en términos de la
+familia corregida por multiplicidad es decisión de Nicolás.
+
+**G. La ablación tipo R2 que el §2.1 exige ya se corrió, y la señal larga no la
+pasa.** Sacando 2024 del período de prueba, la única celda que ganaba sin
+corregir pasa a **+0,226 pp [−0,011, +0,497]**, que contiene el cero. Se anota
+acá porque este documento la exigía y quedaba pendiente.
+
+**H. Sobre R2 en el riel de medición.** El §2.1 decía que la ablación R2 «hoy
+descalifica al propio campeón». Dice más de lo que la cifra sostiene: bajo R2
+la ventaja del campeón **no se distingue de cero en ninguna de las tres
+convenciones de conteo**, con ningún p cerca de 0,05, y bajo la regla de
+deduplicación firmada el 1-sep **no está recomputada**. «No pasa» es correcto;
+«descalifica» y «la vuelve negativa», no.

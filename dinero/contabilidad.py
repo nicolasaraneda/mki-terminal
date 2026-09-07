@@ -180,10 +180,23 @@ def linea_base(cierres: pd.DataFrame, ticker: str, aportes: dict,
 # ------------------------------------------------------------
 def senales_sin_informacion(cierres: pd.DataFrame, tickers, horizonte: int,
                             semilla: int):
-    """Devuelve fecha -> [Senal]. La magnitud se sortea de la distribución
-    HISTÓRICA de retornos a `horizonte` días hábiles del propio instrumento,
-    de modo que la escala sea realista, y se sortea SIN relación con lo que
-    va a pasar después, de modo que la información sea exactamente cero.
+    """Devuelve fecha -> [Senal]. La magnitud se sortea de la distribución de
+    retornos a `horizonte` días hábiles del propio instrumento.
+
+    FUGA F2, DEMOSTRADA Y NO CORREGIDA (7-sep-2026,
+    `GEMELO/resultados/dictamen_10/auditor_lookahead.md`): esa distribución
+    NO es histórica, que es lo que esta docstring afirmaba. Sale de
+    `shift(-horizonte)` sobre el marco que se le pasa, y `cuenta_papel`
+    le pasa la ventana simulada entera, así que la escala de la señal está
+    calibrada con el futuro de la propia ventana que después se mide.
+    Medido: 755 de 756 señales cambian al truncar; P(sorteo > umbral) pasa
+    de 0,310 a 0,447 en INTC. La corrección es sortear de datos anteriores
+    al inicio de la ventana, o de una paramétrica declarada en reglas.json.
+    `tests/test_dinero.py` la tiene clavada con un xfail estricto.
+
+    La señal sigue sin tener información sobre la DIRECCIÓN de lo que pasa
+    después; lo contaminado es la ESCALA, y la escala es la que decide
+    cuántas órdenes se disparan.
 
     Es una sonda, no un modelo. Sirve para responder una sola pregunta: qué
     le cuesta a cada juego de parámetros existir."""

@@ -1,8 +1,9 @@
 # Lo que espera tu firma
 
-**Veinte ítems (quince de la sexta corrida, cinco nuevos de la séptima —
-§16 a §20, abajo del todo, pero el §16 va pegado al §1). Ninguno lo puede
-decidir un agente.** Cada uno trae qué hay
+**Cuarenta ítems. Los cuatro últimos (§42 a §45) los abrió el CIERRE de la
+corrida 10, no la corrida: salen de los dictámenes, y el §42 es el más caro de
+postergar de todos los abiertos, porque hoy bloquea una vara pre-registrada.
+Ninguno lo puede decidir un agente.** Cada uno trae qué hay
 que decidir en una frase, qué desbloquea, cuánto cuesta decidirlo, y las
 opciones con su consecuencia. Donde hay recomendación, va marcada como tal;
 donde no la hay, también se dice, y por qué.
@@ -1441,3 +1442,123 @@ universo. Y hay una razón operativa además de la conceptual: mover
 `dinero/registro_intentos.FAMILIA_HERMANA` para que la pregunta no se pierda. Si
 alguna vez el riel largo llega a un veredicto con DSR, **esta decisión hay que
 tomarla antes de calcularlo**, no después de verlo.
+
+---
+
+## 42. ¿La cuenta en papel se reconstruye o se descarta? (cierre de la corrida 10)
+
+**Qué hay que decidir en una frase.** El `auditor-lookahead` demostró cuatro
+fugas temporales en la cuenta en papel; la página está retirada y **ninguna de
+sus cifras se puede citar**. Hay que decidir si se reconstruye sin fuga, si se
+reemplaza por otra cosa, o si se descarta el bloque entero.
+
+**Qué desbloquea.** Tres cosas dependen de esa página y hoy están todas
+bloqueadas: la **segunda vara pre-registrada** de la señal larga (la línea base
+aburrida, a la que se llega pasando la señal por la cuenta), el criterio **M2**
+del riel, y la **σ** de la tabla de potencia. Mientras la cuenta esté retirada,
+la regla de refutación §6 de la señal larga **no se puede dar por leída**.
+
+**Cuánto cuesta decidirlo.** 10 minutos. Ejecutarlo, según la opción, entre
+media corrida y una corrida entera.
+
+**Lo que la máquina ya dejó hecho.** Las tres fugas están clavadas con `xfail`
+estricto en `tests/test_dinero.py` (F1 universo, F2 señal, F4 retardo). El día
+que alguien las arregle, los tests pasan, el modo estricto convierte ese éxito
+en rojo, y quien lo arregló tiene que venir a sacar el marcador. La fuga no vive
+en la memoria de nadie.
+
+**Opciones.**
+
+| | Qué implica | Consecuencia |
+|---|---|---|
+| **A. Reconstruir** (recomendada) | Orden obligatorio del auditor: **el test va primero y ya está**. Después: membresía acotada por fecha (E1), sorteo desde datos anteriores a la ventana (E3), retardo de implementación en las DOS patas (E4), sigma del interruptor sin futuro (E5), y cablear `ErrorLookAhead` al riel (E6). Republicar. | Es la única opción que devuelve la vara económica y M2. El signo de la conclusión ya se sabe que aguanta; el número va a cambiar mucho (27 % → 57 % en el juego medio). |
+| **B. Reemplazar por una cuenta más chica** | Sólo fricción, sin señal ni juegos: cuánto cuesta comprar y sostener. | Más barato y suficiente para M2, pero **no** devuelve la vara económica del §5 de la señal larga. |
+| **C. Descartar el bloque** | Se retira también del `VISION.md` la promesa de la vara económica. | Barato hoy y caro después: el pre-registro de la señal larga quedaría con una vara declarada que nunca se va a poder evaluar, y eso es peor que no haberla declarado. |
+
+**Recomendación: A**, y con el orden del auditor respetado. La razón no es que
+el número importe: es que **una vara declarada en un pre-registro y nunca
+evaluada envenena la regla de refutación que la nombra**.
+
+---
+
+## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10)
+
+**Qué hay que decidir en una frase.** M2 dispara si la comisión acumulada supera
+el 25 % del capital aportado «en el período», y hay que decir **qué período**.
+
+**Por qué no es cosmético.** El pre-registro concluía que M2 estaba «a punto de
+dispararse antes de empezar» citando el 14 % a 43 %, que está medido sobre **156
+semanas**. Sobre la ventana de **52 semanas** que la §2 declara como período de
+evaluación, **ningún juego llega al 25 %**: la peor ventana móvil de 52 semanas
+da 10,1 %, 21,8 % y 14,8 %. Recién a 104 semanas se dispara, y sólo para dos
+juegos. O sea que **la conclusión publicada estaba invertida**, y encima la
+cifra que la sostenía está retirada por fuga.
+
+**Cuánto cuesta decidirlo.** 5 minutos.
+
+**Opciones.** (a) M2 se mide sobre las mismas 52 semanas del criterio —coherente
+con el resto del §2, y entonces M2 **no** está por dispararse—. (b) M2 se mide
+sobre la vida entera de la cuenta —más conservador, y entonces sí dispara, pero
+compara contra un umbral pensado para un año—. (c) M2 se reescribe como tasa
+anualizada, que es lo que la pregunta de fondo quiere saber.
+
+**Recomendación: (c)**, porque una comisión acumulada sin período no es una
+cantidad comparable con nada. Pero requiere recomputar sobre una cuenta sin
+fuga, así que va **después** del §42.
+
+---
+
+## 44. M4 reescrita bajo multiplicidad, o M4 es decorativa (cierre de la corrida 10)
+
+**Qué hay que decidir en una frase.** M4 dispara si la señal larga «no supera
+**ninguna** de sus dos varas»; con 30 contrastes correlacionados a α = 0,05 esa
+es una barra que el ruido puro pasa la mayoría de las veces, así que **M4 casi
+nunca va a disparar**, y un criterio de rechazo que no rechaza no es un
+criterio.
+
+**Lo que ya se midió.** La familia real de esta página son **30 contrastes**
+(cinco por celda), no 24: la cuenta vieja dejaba los seis de dirección fuera de
+su propia corrección. Con Holm sobre los 30, **ninguno cruza α = 0,05**. El
+reporte ahora lo computa él mismo y lo publica salga lo que salga.
+
+**Cuánto cuesta decidirlo.** 15 minutos.
+
+**Opciones.** (a) M4 se reescribe sobre la familia **corregida**: dispara si
+ningún contraste sobrevive a Holm —hoy dispararía—. (b) M4 se reescribe sobre
+**una** métrica primaria declarada por adelantado, que es lo que la enmienda
+V1-bis (§30) decide para el otro riel: entonces M4 y V1-bis se firman juntas.
+(c) M4 se retira y se declara que el riel no tiene criterio de rechazo por esta
+vía.
+
+**Recomendación: (b)**, porque hace que las dos ramas del proyecto usen la misma
+convención y porque V1-bis ya está esperando firma. Y una nota que conviene no
+perder: **con la familia corregida, M4 dispararía hoy.**
+
+---
+
+## 45. ¿El registro de intentos del riel largo pasa de 3 a 30? (cierre de la corrida 10)
+
+**Complementa al §41, no lo reemplaza.** El §41 pregunta si los dos registros
+(gap asiático y riel largo) se fusionan. Éste pregunta otra cosa: **qué cuenta
+como un intento dentro del riel largo**.
+
+`registro_intentos.N_INTENTOS_RIEL_LARGO = 3` cuenta **especificaciones** (L1,
+L2, L3). Es correcto como cuenta de especificaciones e insuficiente como cuenta
+de multiplicidad: el reporte produce **cinco contrastes por celda**, la familia
+son **30**, y el resultado que se publicaba era el máximo sobre esos 30. Además
+la vara climatológica se agregó **después de ver el resultado**, y por la regla
+de la casa eso cuenta.
+
+**Cuánto cuesta decidirlo.** 10 minutos. **Y hay que tomarla ANTES** de que este
+riel llegue a cualquier DSR: un DSR con un N desactualizado miente hacia arriba,
+que es exactamente el error que el proyecto ya tiene registrado.
+
+**Opciones.** (a) Dos cuentas declaradas por separado: especificaciones (3) para
+el registro, familia de contrastes (30) para la multiplicidad —es lo que el
+código hace hoy de hecho—. (b) Una sola cuenta, 30, y el registro pasa a contar
+contrastes. (c) 3 + 1 por la vara post-hoc = 4, contando varas y no contrastes.
+
+**Recomendación: (a) escrita explícitamente**, porque son dos preguntas
+distintas y hoy la separación existe pero no está declarada. Lo que **no** es
+defendible es dejar el 3 solo, sin decir que la multiplicidad que gobierna el
+resultado se computa sobre 30.

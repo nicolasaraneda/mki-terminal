@@ -338,6 +338,7 @@ export type EstatusEvidencial =
   | 'SIMULADO'
   | 'PROPUESTA'
   | 'REFUTADO'
+  | 'RETIRADO'
   | 'DECISION_PENDIENTE'
 
 export interface CifraConIC {
@@ -346,6 +347,11 @@ export interface CifraConIC {
   intervalo: [number, number]
   tipo_intervalo: string
   cruza_cero?: boolean
+  // Una proporción con Wilson NO es una diferencia, y la frase «el
+  // intervalo no contiene el cero» sólo significa algo sobre diferencias.
+  // El servidor lo declara; la vista no lo adivina.
+  es_diferencia?: boolean
+  comparar_contra?: string | null
 }
 
 export interface InstrumentoOperable {
@@ -379,7 +385,11 @@ export interface EslabonOperable {
 }
 
 export interface DatosUniversoOperable {
+  // El mapa como objeto del riel de dinero es SIMULADO; los precios que lo
+  // sostienen son MEDIDO al día del congelado. Son dos afirmaciones y
+  // llevan dos etiquetas.
   estatus: EstatusEvidencial
+  estatus_de_los_precios?: string
   generado: string
   fuente: { archivo: string; sha256?: string; desde?: string; hasta?: string; filas?: number }
   presupuesto: { piso_usd: number; techo_usd: number }
@@ -422,9 +432,18 @@ export interface FilaCuenta {
   contra?: Record<string, ComparacionSemanal>
 }
 
+export interface RetiroDeCifras {
+  fecha: string
+  por: string
+  fuente: string
+  causa: string
+  consecuencia: string
+}
+
 export interface DatosCuentaPapel {
   etiqueta: 'SIMULADO'
   estatus: EstatusEvidencial
+  retirado?: RetiroDeCifras
   advertencia: string
   ventana: { desde: string; hasta: string; dias_de_mercado: number }
   aportado_usd: number
@@ -449,24 +468,36 @@ export interface Riel {
   mueve_plata: boolean
   muestra: Record<string, number | string | null>
   cifras?: CifraConIC[]
+  mcnemar_p_filas?: number
+  mcnemar_caveat?: string
   cobertura_80_pct?: number
   n_efectivo?: number
   icc?: number
   deff?: number
   mapa?: DatosUniversoOperable['resumen'] | null
   cuenta_en_papel?: {
-    aportado_usd: number
-    falsos_positivos: DatosCuentaPapel['falsos_positivos']
+    estatus?: EstatusEvidencial
+    retirado?: RetiroDeCifras
     advertencia: string
+    cifras_disponibles?: boolean
   } | null
   senal_larga?: {
+    estatus?: EstatusEvidencial
     celdas: number
-    ganan_a_la_climatologia: number
+    ganan_a_la_climatologia_sin_corregir: number
+    ganan_tras_multiplicidad: number
+    ganan_tras_ablacion_anual: number
     L1_refutada: boolean
     contrastes: number
+    segunda_vara_preregistrada_evaluada?: boolean
+    pasan_holm?: string[]
     nota: string
   } | null
-  potencia?: { sigma_dif_semanal_pp: number; nota: string }
+  potencia?: {
+    sigma_dif_semanal_pp: number | null
+    estatus?: EstatusEvidencial
+    nota: string
+  }
   falta_para_veredicto: string
   que_lo_mata: string
   procedencia?: string

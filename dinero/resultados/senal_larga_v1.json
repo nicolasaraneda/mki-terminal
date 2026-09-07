@@ -44,7 +44,65 @@
      -0.4287663223543169
     ],
     "cruza_cero": false,
+    "discordantes_b": 64,
+    "discordantes_c": 184,
+    "mcnemar_exacto_filas": 1.234741235074362e-14,
     "vacia": false
+   },
+   "bloques_efectivos_bootstrap": 36.65,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": -0.17222831360058058,
+      "lo": -0.3410697428424113,
+      "hi": -0.0050872698430454505,
+      "fechas": 651,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": -0.317054405855906,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": -0.27056930125043704,
+      "lo": -0.47923578154864793,
+      "hi": -0.06794386371469897,
+      "fechas": 481,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": -0.03164785528850012,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": -0.14003147391928267,
+      "lo": -0.3248664542147718,
+      "hi": 0.0367022880945132,
+      "fechas": 483,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.28193556612459497,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": -0.17886577456170386,
+      "lo": -0.31737071528240074,
+      "hi": -0.03125604317702957,
+      "fechas": 584,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": -0.22591598047065237,
+      "fechas": 149
+     }
+    }
    }
   },
   {
@@ -87,7 +145,65 @@
      4.774897680763984
     ],
     "cruza_cero": true,
+    "discordantes_b": 965,
+    "discordantes_c": 951,
+    "mcnemar_exacto_filas": 0.7664811729586141,
     "vacia": false
+   },
+   "bloques_efectivos_bootstrap": 36.65,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": 0.012301740630678463,
+      "lo": -0.008590717865686635,
+      "hi": 0.03344038635302788,
+      "fechas": 651,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.007697145673271723,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": 0.01838621252631204,
+      "lo": -0.008331959054357258,
+      "hi": 0.04480787423874943,
+      "fechas": 481,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.00581944849124085,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": 0.006658384748782039,
+      "lo": -0.01705869991524124,
+      "hi": 0.03196788432891302,
+      "fechas": 483,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.016645069486806698,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": 0.0035335623402409245,
+      "lo": -0.009564905529846962,
+      "hi": 0.019125459955634666,
+      "fechas": 584,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.035662193279615444,
+      "fechas": 149
+     }
+    }
    }
   },
   {
@@ -130,7 +246,65 @@
      0.0
     ],
     "cruza_cero": true,
+    "discordantes_b": 0,
+    "discordantes_c": 0,
+    "mcnemar_exacto_filas": 1.0,
     "vacia": true
+   },
+   "bloques_efectivos_bootstrap": 36.65,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": 0.013128656857750215,
+      "lo": -0.037485218755091254,
+      "hi": 0.06355122961596243,
+      "fechas": 651,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.1204860762838447,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": 0.010425949586846282,
+      "lo": -0.062457625395477424,
+      "hi": 0.08259202750428836,
+      "fechas": 481,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.02519041425457514,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": -0.039739651805317355,
+      "lo": -0.10782496888869293,
+      "hi": 0.024135969476121132,
+      "fechas": 483,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.07144459672435363,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": 0.0027967577631167924,
+      "lo": -0.04605795641078318,
+      "hi": 0.04895767999716232,
+      "fechas": 584,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.019908786406309296,
+      "fechas": 149
+     }
+    }
    }
   },
   {
@@ -173,7 +347,65 @@
      0.0
     ],
     "cruza_cero": true,
+    "discordantes_b": 0,
+    "discordantes_c": 0,
+    "mcnemar_exacto_filas": 1.0,
     "vacia": true
+   },
+   "bloques_efectivos_bootstrap": 11.55,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": -0.2328591422594873,
+      "lo": -0.4911232203601965,
+      "hi": 0.029851209377054166,
+      "fechas": 611,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.1377836775058077,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": -0.21013789699416002,
+      "lo": -0.5985563022378961,
+      "hi": 0.17418929812694764,
+      "fechas": 441,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.15201532456605532,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": -0.13176685282851455,
+      "lo": -0.4404131607110311,
+      "hi": 0.17959750192940704,
+      "fechas": 443,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.2904238342481543,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": -0.17057458698152103,
+      "lo": -0.3688226825286245,
+      "hi": 0.037811879162839034,
+      "fechas": 584,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -0.2877350052097452,
+      "fechas": 109
+     }
+    }
    }
   },
   {
@@ -216,7 +448,65 @@
      10.225726654298079
     ],
     "cruza_cero": true,
+    "discordantes_b": 771,
+    "discordantes_c": 671,
+    "mcnemar_exacto_filas": 0.009108785081099219,
     "vacia": false
+   },
+   "bloques_efectivos_bootstrap": 11.55,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": 0.26242053216876987,
+      "lo": 0.06303607976377353,
+      "hi": 0.485509022698248,
+      "fechas": 611,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": -0.01722302378294632,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": 0.22648017276083057,
+      "lo": -0.010752370609829675,
+      "hi": 0.49669153708201236,
+      "fechas": 441,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.23432103578329572,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": 0.21114411873103187,
+      "lo": 0.019427273517888213,
+      "hi": 0.4181455225999385,
+      "fechas": 443,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": 0.2615592504282788,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": 0.21066168779838804,
+      "lo": 0.03304831170177932,
+      "hi": 0.41249503645506447,
+      "fechas": 584,
+      "cruza_cero": false
+     },
+     "solo_ese_ano": {
+      "media": 0.3293599222996164,
+      "fechas": 109
+     }
+    }
    }
   },
   {
@@ -259,15 +549,146 @@
      0.0
     ],
     "cruza_cero": true,
+    "discordantes_b": 0,
+    "discordantes_c": 0,
+    "mcnemar_exacto_filas": 1.0,
     "vacia": true
+   },
+   "bloques_efectivos_bootstrap": 11.55,
+   "ablacion_anual_mae_climatologia": {
+    "2023": {
+     "sin_ese_ano": {
+      "media": 0.32253207128089373,
+      "lo": -0.4527291671623479,
+      "hi": 1.1406643037694404,
+      "fechas": 611,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": -1.118666599459571,
+      "fechas": 82
+     }
+    },
+    "2024": {
+     "sin_ese_ano": {
+      "media": 0.18322286368632404,
+      "lo": -0.8334066708575971,
+      "hi": 1.3311259335937144,
+      "fechas": 441,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.09736171234631867,
+      "fechas": 252
+     }
+    },
+    "2025": {
+     "sin_ese_ano": {
+      "media": 0.06152179348934454,
+      "lo": -0.9327090449454902,
+      "hi": 1.1811793058242808,
+      "fechas": 443,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.3123291195246464,
+      "fechas": 250
+     }
+    },
+    "2026": {
+     "sin_ese_ano": {
+      "media": 0.018641729857447092,
+      "lo": -0.491369162110707,
+      "hi": 0.4934480816569237,
+      "fechas": 584,
+      "cruza_cero": true
+     },
+     "solo_ese_ano": {
+      "media": 0.866510680368735,
+      "fechas": 109
+     }
+    }
    }
   }
  ],
+ "multiplicidad": {
+  "familia_contrastes": 30,
+  "metodo": "Holm-Bonferroni sobre la familia completa",
+  "alpha": 0.05,
+  "p_crudo": {
+   "L1 h=20 MAE vs cero": 0.148,
+   "L1 h=20 CRPS vs cero": 0.133,
+   "L1 h=20 MAE vs climatologia": 0.013,
+   "L1 h=20 CRPS vs climatologia": 0.025,
+   "L1 h=20 direccion vs climatologia": 0.009,
+   "L1 h=60 MAE vs cero": 0.131,
+   "L1 h=60 CRPS vs cero": 0.047,
+   "L1 h=60 MAE vs climatologia": 0.152,
+   "L1 h=60 CRPS vs climatologia": 0.111,
+   "L1 h=60 direccion vs climatologia": 1.0,
+   "L2 h=20 MAE vs cero": 0.245,
+   "L2 h=20 CRPS vs cero": 0.171,
+   "L2 h=20 MAE vs climatologia": 0.3,
+   "L2 h=20 CRPS vs climatologia": 0.192,
+   "L2 h=20 direccion vs climatologia": 0.915,
+   "L2 h=60 MAE vs cero": 0.003,
+   "L2 h=60 CRPS vs cero": 0.006,
+   "L2 h=60 MAE vs climatologia": 0.006,
+   "L2 h=60 CRPS vs climatologia": 0.006,
+   "L2 h=60 direccion vs climatologia": 0.614,
+   "L3 h=20 MAE vs cero": 0.017,
+   "L3 h=20 CRPS vs cero": 0.018,
+   "L3 h=20 MAE vs climatologia": 0.952,
+   "L3 h=20 CRPS vs climatologia": 0.963,
+   "L3 h=20 direccion vs climatologia": 1.0,
+   "L3 h=60 MAE vs cero": 0.083,
+   "L3 h=60 CRPS vs cero": 0.022,
+   "L3 h=60 MAE vs climatologia": 0.655,
+   "L3 h=60 CRPS vs climatologia": 0.566,
+   "L3 h=60 direccion vs climatologia": 1.0
+  },
+  "p_holm": {
+   "L2 h=60 MAE vs cero": 0.09,
+   "L2 h=60 CRPS vs cero": 0.17400000000000002,
+   "L2 h=60 MAE vs climatologia": 0.17400000000000002,
+   "L2 h=60 CRPS vs climatologia": 0.17400000000000002,
+   "L1 h=20 direccion vs climatologia": 0.23399999999999999,
+   "L1 h=20 MAE vs climatologia": 0.325,
+   "L3 h=20 MAE vs cero": 0.40800000000000003,
+   "L3 h=20 CRPS vs cero": 0.414,
+   "L3 h=60 CRPS vs cero": 0.484,
+   "L1 h=20 CRPS vs climatologia": 0.525,
+   "L1 h=60 CRPS vs cero": 0.94,
+   "L3 h=60 MAE vs cero": 1.0,
+   "L1 h=60 CRPS vs climatologia": 1.0,
+   "L1 h=60 MAE vs cero": 1.0,
+   "L1 h=20 CRPS vs cero": 1.0,
+   "L1 h=20 MAE vs cero": 1.0,
+   "L1 h=60 MAE vs climatologia": 1.0,
+   "L2 h=20 CRPS vs cero": 1.0,
+   "L2 h=20 CRPS vs climatologia": 1.0,
+   "L2 h=20 MAE vs cero": 1.0,
+   "L2 h=20 MAE vs climatologia": 1.0,
+   "L3 h=60 CRPS vs climatologia": 1.0,
+   "L2 h=60 direccion vs climatologia": 1.0,
+   "L3 h=60 MAE vs climatologia": 1.0,
+   "L2 h=20 direccion vs climatologia": 1.0,
+   "L3 h=20 MAE vs climatologia": 1.0,
+   "L3 h=20 CRPS vs climatologia": 1.0,
+   "L1 h=60 direccion vs climatologia": 1.0,
+   "L3 h=20 direccion vs climatologia": 1.0,
+   "L3 h=60 direccion vs climatologia": 1.0
+  },
+  "pasan": []
+ },
  "resumen": {
   "celdas": 6,
-  "ganan_a_la_climatologia": 1,
+  "ganan_a_la_climatologia_sin_corregir": 1,
+  "ganan_tras_multiplicidad": 0,
+  "ganan_tras_ablacion_anual": 0,
   "L1_refutada": true,
-  "contrastes": 24,
-  "nota": "La forma simple de la hipótesis (L1, contagio directo) queda refutada por su propia regla pre-registrada. Lo que sobrevive a la climatología causal es una celda, con una mejora del orden del 2 % relativo, y no autoriza nada."
+  "contrastes": 30,
+  "segunda_vara_preregistrada_evaluada": false,
+  "nota": "La forma simple de la hipótesis (L1, contagio directo) queda refutada por su propia regla pre-registrada. Ninguna celda sobrevive a la corrección de multiplicidad sobre su propia familia de 30 contrastes, y la única que gana sin corregir tampoco sobrevive a la ablación anual que el pre-registro del riel exige. La segunda vara pre-registrada no se evaluó. Nada de esta página autoriza nada."
  }
 }

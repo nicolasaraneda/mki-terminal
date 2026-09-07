@@ -161,10 +161,21 @@ def componer() -> str:
                    key=lambda f: -f.precio)
     if caros:
         L.append("### Lo que el presupuesto deja afuera\n")
-        L.append(f"Instrumentos verificados cuya **acción sola cuesta más de {techo:.0f} USD**:\n")
+        L.append(f"Instrumentos verificados que **no entran en {techo:.0f} USD**. El")
+        L.append("criterio es **precio más comisión**, no el precio solo: por eso hay")
+        L.append("instrumentos acá cuyo precio está por debajo del techo.\n")
         for f in caros:
+            borde = ""
+            if f.precio <= techo:
+                borde = (f" **Caso al borde:** su precio ({f.precio:,.2f}) está por"
+                         f" DEBAJO del techo; lo que no entra es precio más comisión.")
             L.append(f"- `{f.candidato.ticker}` — {f.candidato.nombre}: "
-                     f"{f.precio:,.2f} USD. Rol declarado: {f.candidato.rol}.")
+                     f"{f.precio:,.2f} USD. Rol declarado: {f.candidato.rol}.{borde}")
+        L.append("")
+        L.append("**El censo es de un solo día** (los cierres del congelado) y por eso")
+        L.append("los casos al borde van declarados: a centavos del techo, la respuesta")
+        L.append("cambia con el cierre siguiente. Los que no están al borde sí son")
+        L.append("afirmaciones estables.")
         L.append("")
 
     L.append("## Eslabón por eslabón\n")
@@ -247,7 +258,14 @@ def a_json() -> dict:
     estados = [e["estado"] for e in eslabones]
     estrictos = [e["estado_exigiendo_liquidez"] for e in eslabones]
     return {
-        "estatus": "MEDIDO",
+        # Dos estatus, porque son dos afirmaciones distintas y el mismo
+        # generador las escribía con una sola etiqueta: el .md decía
+        # "SIMULADO / PROPUESTA" y el .json decía "MEDIDO", y era el
+        # permisivo el que llegaba al badge de la vista /operable.
+        # Exigencia 12 del `curador-epistemico`, corrida 10.
+        "estatus": "SIMULADO",
+        "estatus_de_los_precios": ("MEDIDO al %s sobre el archivo congelado"
+                                   % meta.get("hasta", "?")),
         "generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "fuente": {"archivo": "dinero/datos/cierres_congelados.csv", **meta},
         "presupuesto": cfg["presupuesto"], "costos": cfg["costos"],
