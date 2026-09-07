@@ -105,8 +105,26 @@ PY
     source venv/bin/activate && python alertas.py reporte
     ;;
   tests)
+    # La ventana de sellado vale igual acá: `./mki tests` es la puerta
+    # humana a la misma suite que el hook corre sola, y la suite descarga
+    # (motor._datos_crudos -> yf.download). La regla se aplica en los dos
+    # lados o no se aplica. scripts/guarda_red.sh decide; sale 0 si estamos
+    # dentro de la ventana.
     source venv/bin/activate
-    python -m pytest tests/ -q && python tests/test_motor.py
+    if bash "$DIR/scripts/guarda_red.sh"; then
+      echo "REGLA DE LA VENTANA DE SELLADO: entre 17:50 y 20:30 de Chile,"
+      echo "en dia habil, el sistema sella y no corre nada que descargue."
+      if [ "${MKI_EN_VENTANA:-0}" != "1" ]; then
+        echo "No se corre la suite. Espera a las 20:30, o declaralo con:"
+        echo "  MKI_EN_VENTANA=1 ./mki tests   (sin los tests marcados 'red':"
+        echo "  verificacion PARCIAL, no equivale a la suite completa)."
+        exit 1
+      fi
+      echo "MKI_EN_VENTANA=1: suite SIN los tests 'red'. VERIFICACION PARCIAL."
+      python -m pytest tests/ -q -m "not red" && python tests/test_motor.py
+    else
+      python -m pytest tests/ -q && python tests/test_motor.py
+    fi
     ;;
   auditoria)
     echo "== Auditoría de solo lectura =="

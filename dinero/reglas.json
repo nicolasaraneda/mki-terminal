@@ -1,0 +1,79 @@
+{
+ "_": "Reglas del riel de dinero. VERSIONADO A PROPÓSITO: los números no viven en el código. Ninguno de estos valores está FIRMADO todavía; ver GEMELO/resultados/espera_firma.md.",
+ "version_reglas": "0.1.0-PROPUESTA",
+ "juego_activo": "conservador",
+ "costos": {
+  "_": "SUPUESTO NO VERIFICADO. No hay cuenta de corredora abierta, así que no hay tarifario que leer. Estos valores son de referencia (arancel tipo 'fixed' de un corredor internacional con acceso desde Chile) y el bloque 4b los barre en sensibilidad en vez de creerles. Confirmarlos contra el tarifario público del corredor que Nicolás abra es un ítem de firma.",
+  "comision_por_accion_usd": 0.005,
+  "comision_minima_usd": 1.0,
+  "comision_tope_pct_del_monto": 1.0,
+  "deslizamiento_pb_por_lado": 5.0,
+  "barrido_deslizamiento_pb": [
+   0.0,
+   2.0,
+   5.0,
+   10.0
+  ],
+  "acciones_fraccionarias": false
+ },
+ "presupuesto": {
+  "_": "El presupuesto real declarado por Nicolás: 100 a 500 dólares. Se usa el techo para el mapa del bloque 1 y el piso para el escenario conservador.",
+  "piso_usd": 100.0,
+  "techo_usd": 500.0
+ },
+ "juegos": {
+  "_": "Tres juegos DECLARADOS Y CONGELADOS antes de correr la cuenta en papel, para que el resultado no elija la vara. Ninguno está firmado: mientras no haya firma rige `conservador`, por la regla escrita del encargo y NO por su resultado. Cada número sale de una regla de derivación de dinero/derivacion.py, y tests/test_dinero.py recomputa la regla y la compara con lo guardado: si alguien mueve un número a mano, la suite se pone roja.",
+  "_derivaciones": {
+   "umbral_senal_pp": "k x costo de ida y vuelta de la orden de referencia del juego (= su tope de posicion). Con comision minima de 1 USD y tope de 1%, la comision de una orden entre 100 y 200 USD es exactamente 1 USD, asi que el costo no depende del precio de la accion. k = 2 / 1.5 / 1.",
+   "tope_posicion_pct": "1 / K, con K = posiciones simultaneas exigidas (4 / 3 / 2). Con 500 dolares y acciones enteras, K manda sobre la diversificacion real: medido sobre los 36 instrumentos verificados el 4-sep-2026, los topes dejan comprables 7, 8 y 13 instrumentos respectivamente.",
+   "tenencia_minima_dias_habiles": "De los horizontes PRE-REGISTRADOS del riel: 60 (largo) y 20 (corto). El agresivo usa 5, una semana bursatil, declarado como el minimo que no es operar intradia.",
+   "presupuesto_diario_usd": "Igual al tope de posicion: como maximo una posicion nueva por dia.",
+   "presupuesto_semanal_usd": "techo / semanas de despliegue (4 / 2 / 1 semanas).",
+   "presupuesto_mensual_usd": "El techo entero: no se puede gastar mas capital del que hay.",
+   "apagado_por_perdida_pct": "k x sigma del retorno a 60 dias habiles de SMH, MEDIDA sobre dinero/datos/cierres_congelados.csv: sigma = 15.62 %. k = 1 / 1.5 / 2. Un interruptor que salta con un vaiven normal del sector no es un interruptor: es ruido con autoridad.",
+   "exigir_intervalo_que_no_cruce_cero": "La regla de la casa aplicada a la accion: no se actua sobre un estimador cuyo intervalo contiene el cero. El juego agresivo la relaja a proposito, para que el costo de relajarla se pueda medir."
+  },
+  "conservador": {
+   "umbral_senal_pp": 3.49,
+   "tope_posicion_pct": 25.0,
+   "tenencia_minima_dias_habiles": 60,
+   "presupuesto_diario_usd": 125.0,
+   "presupuesto_semanal_usd": 125.0,
+   "presupuesto_mensual_usd": 500.0,
+   "apagado_por_perdida_pct": 15.6,
+   "exigir_intervalo_que_no_cruce_cero": true,
+   "_k_umbral": 2.0,
+   "_K_posiciones": 4,
+   "_semanas_despliegue": 4,
+   "_k_apagado": 1.0
+  },
+  "medio": {
+   "umbral_senal_pp": 1.99,
+   "tope_posicion_pct": 33.333333333333336,
+   "tenencia_minima_dias_habiles": 20,
+   "presupuesto_diario_usd": 166.66666666666669,
+   "presupuesto_semanal_usd": 250.0,
+   "presupuesto_mensual_usd": 500.0,
+   "apagado_por_perdida_pct": 23.4,
+   "exigir_intervalo_que_no_cruce_cero": true,
+   "_k_umbral": 1.5,
+   "_K_posiciones": 3,
+   "_semanas_despliegue": 2,
+   "_k_apagado": 1.5
+  },
+  "agresivo": {
+   "umbral_senal_pp": 0.91,
+   "tope_posicion_pct": 50.0,
+   "tenencia_minima_dias_habiles": 5,
+   "presupuesto_diario_usd": 250.0,
+   "presupuesto_semanal_usd": 500.0,
+   "presupuesto_mensual_usd": 500.0,
+   "apagado_por_perdida_pct": 31.2,
+   "exigir_intervalo_que_no_cruce_cero": false,
+   "_k_umbral": 1.0,
+   "_K_posiciones": 2,
+   "_semanas_despliegue": 1,
+   "_k_apagado": 2.0
+  }
+ }
+}

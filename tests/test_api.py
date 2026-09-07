@@ -25,6 +25,7 @@ cliente = TestClient(app)
 # ------------------------------------------------------------
 # Envelope común
 # ------------------------------------------------------------
+@pytest.mark.red  # censo del 6-sep-2026: llega a query*.finance.yahoo.com
 def test_envelope_en_todos_los_endpoints():
     for ruta in ["/api/salud", "/api/hoy", "/api/aperturas", "/api/mercados",
                  "/api/cadena", "/api/noticias", "/api/historial",
@@ -171,6 +172,7 @@ def test_paridad_estados():
 # ------------------------------------------------------------
 # Contrato: comparador y errores
 # ------------------------------------------------------------
+@pytest.mark.red  # censo del 6-sep-2026: llega a query*.finance.yahoo.com
 def test_comparador_base100():
     r = cliente.get("/api/comparador?tickers=NVDA,AMD")
     assert r.status_code == 200
@@ -189,6 +191,7 @@ def test_errores_parametros():
     assert cliente.get("/api/detalle/FALSO").status_code == 404
 
 
+@pytest.mark.red  # censo del 6-sep-2026: llega a query*.finance.yahoo.com
 def test_detalle_perfil():
     datos = cliente.get("/api/detalle/2330.TW").json()["datos"]
     assert datos["perfil"]["nombre"] == UNIVERSO["2330.TW"]["nombre"]

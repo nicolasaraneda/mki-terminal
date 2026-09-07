@@ -592,6 +592,7 @@ def test_bootstrap_sharpe_delega_en_inferencia():
     assert "rng.integers" not in fuente      # ya no remuestrea por su cuenta
 
 
+@pytest.mark.red  # censo del 6-sep-2026: llega a query*.finance.yahoo.com
 def test_la_corrida_sella_semilla_y_alpha_del_bootstrap():
     from datetime import date as _date
     r = motorbt.correr(_date(2026, 7, 1), _date(2026, 7, 8),

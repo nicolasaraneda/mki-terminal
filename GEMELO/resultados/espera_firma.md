@@ -1340,3 +1340,104 @@ agrupen `puntaje_ia` filtran por versión como ya hacen con `modelo_version`.
 Si es la 2: no se toca nada y este ítem se cierra como decisión tomada, no
 como pendiente olvidado.
 
+
+
+---
+
+## 39. Los tres juegos de parámetros del riel de dinero — cuál rige (corrida 10, bloque 3)
+
+**Qué se decide.** Cuál de los tres juegos de `dinero/reglas.json` rige el riel
+de dinero. Mientras no haya firma **rige `conservador`, por regla escrita del
+encargo y NO por su resultado en la cuenta en papel**.
+
+**Ninguno se inventó.** Cada número sale de una regla de derivación en
+`dinero/derivacion.py`, y `tests/test_dinero.py` la recomputa y compara: mover
+un número a mano pone la suite roja.
+
+| | conservador | medio | agresivo |
+|---|---:|---:|---:|
+| umbral de señal | 3,49 pp | 1,99 pp | 0,91 pp |
+| tope de posición | 25 % (K=4) | 33,3 % (K=3) | 50 % (K=2) |
+| tenencia mínima | 60 días hábiles | 20 | 5 |
+| presupuesto diario / semanal | 125 / 125 USD | 166,7 / 250 | 250 / 500 |
+| apaga a una pérdida de | 15,6 % (1σ) | 23,4 % (1,5σ) | 31,2 % (2σ) |
+| exige intervalo que no cruce cero | sí | sí | **no** |
+| **comisiones medidas, % del capital** | **14–25 %** | **27–31 %** | **43 %** |
+| instrumentos comprables con su tope | 7 de 36 | 8 de 36 | 13 de 36 |
+
+**Lo que la cuenta en papel midió, y hay que leerlo con su límite.** La señal
+que alimentó los tres **no tiene información** (sorteada, semilla declarada):
+lo medido es fricción, no habilidad. El agresivo pierde contra `SMH` en las 4
+pasadas del barrido con el intervalo entero bajo cero. Los otros dos no se
+distinguen del cero. **Las columnas de resultado del barrido no son comparables
+entre sí** —el deslizamiento cambia qué instrumento entra en el margen, o sea el
+camino— y por eso no hay ranking en la tabla ni lo va a haber.
+
+**Recomendación.** Ninguna. Este ítem existe precisamente para que la elección
+no la haga quien vio los resultados. Lo que sí se recomienda es leer antes el
+§40: con 500 dólares, el conservador gasta la cuarta parte del capital en
+comisiones, y eso condiciona la respuesta más que cualquier preferencia de
+riesgo.
+
+**El día después de la firma.** `juego_activo` en `dinero/reglas.json` toma el
+valor firmado y el acta lo declara con su fecha. Sin firma, no pasa nada: el
+conservador ya rige.
+
+---
+
+## 40. El arancel real del corredor — el supuesto que hoy sostiene todo el riel de dinero
+
+**Qué se decide.** Contra qué tarifario público se reemplaza el supuesto de
+costo de `dinero/reglas.json`, que hoy es **SUPUESTO NO VERIFICADO**: 0,005 USD
+por acción, mínimo 1,00 USD por orden, tope 1 % del monto, 5 pb de
+deslizamiento por lado.
+
+**Por qué no es un detalle.** Con esos números, **una orden de una acción de
+menos de 100 USD paga exactamente el 1 %**, y rotar la cartera con 500 dólares
+cuesta entre el 14 % y el 43 % del capital en comisiones. El criterio **M2** del
+pre-registro (`dinero/preregistro_dinero.md` §3) mata el riel si la comisión
+supera el 25 % del capital: **con el supuesto actual, M2 se dispara casi antes
+de empezar**. Si el arancel real es distinto, cambia la conclusión del riel
+entero, no un decimal.
+
+**Lo que hace falta.** El tarifario publicado del corredor que Nicolás abra —no
+hay cuenta, así que no hay tarifario que leer— y si ofrece **acciones
+fraccionarias**, que es la otra mitad del problema: el ETF que el proyecto usa
+de benchmark (`SMH`, 567,01 USD al 4-sep) **no se puede comprar entero con el
+techo del presupuesto**.
+
+**El día después de la firma.** Se actualiza la sección `costos` de
+`dinero/reglas.json`, se regeneran `docs/universo_operable.md` y la cuenta en
+papel con `python -m dinero.mapa` y `python -m dinero.cuenta_papel`, y el acta
+declara qué cambió. Nada más depende de esto.
+
+---
+
+## 41. ¿El registro de intentos del riel largo se fusiona con el del gap asiático? (corrida 10, bloque 6)
+
+**Qué se decide.** Si `dinero/registro_intentos.N_INTENTOS_RIEL_LARGO` (hoy **3**)
+y `GEMELO/relevo_asiatico.N_INTENTOS_ACUMULADO` (hoy **352**, del que cuelga
+`backtest/veredicto_51.N_INTENTOS_51` = **358**) cuentan la misma búsqueda y
+deben sumarse, o son dos familias de hipótesis y deben quedar separados.
+
+**Por qué esta corrida no lo resolvió sola.** El DSR deflacta por intentos sobre
+**la misma** búsqueda. El riel asiático prueba hipótesis sobre el gap de una
+noche en Tokio, Taipéi y Seúl; el riel largo, sobre retornos a 20 y 60 días
+hábiles de instrumentos de EE.UU. No comparten estimando, ni horizonte, ni
+universo. Y hay una razón operativa además de la conceptual: mover
+`N_INTENTOS_ACUMULADO` dispara la regla de los doce bloques dependientes.
+
+**Las dos lecturas.**
+
+1. **Separados** (lo que rige hoy). Cada familia deflacta por sus propios
+   intentos. Riesgo: si mañana alguien mira las dos búsquedas como una sola
+   exploración del mismo fenómeno —«¿la cadena de semiconductores es
+   predecible?»—, los DSR de ambas están inflados.
+2. **Fusionados.** Un solo registro, hoy 355. Es la lectura conservadora y la
+   que más cuesta pasar. Costo: mover los doce bloques dependientes en el mismo
+   acto, o no moverlo.
+
+**Recomendación.** Ninguna esta noche; el vínculo ya está escrito en
+`dinero/registro_intentos.FAMILIA_HERMANA` para que la pregunta no se pierda. Si
+alguna vez el riel largo llega a un veredicto con DSR, **esta decisión hay que
+tomarla antes de calcularlo**, no después de verlo.

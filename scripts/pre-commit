@@ -7,7 +7,11 @@
 #    (clave Anthropic completa, token de bot de Telegram). Los ejemplos
 #    de documentación y los secretos FALSOS de tests/test_seguridad.py
 #    no disparan (patrones exigen largo real; ese test se excluye).
-# 2. Corre la suite de tests, SALVO que:
+# 2. Rechaza el commit dentro de la VENTANA DE SELLADO (17:50-20:30 de
+#    Chile, dia habil), porque la suite toca la red — scripts/guarda_red.sh.
+#    Con MKI_EN_VENTANA=1 corre la suite sin los tests marcados
+#    `red` y lo anuncia como verificacion PARCIAL.
+# 3. Corre la suite de tests, SALVO que:
 #    - el commit sea SOLO de data/backups (el job diario de backup no
 #      puede quedar bloqueado por un test que falla por otra razón), o
 #    - se fuerce con SKIP_TESTS=1 (documentado en README-DEV.md).
@@ -40,7 +44,39 @@ fi
 
 cd "$RAIZ"
 source venv/bin/activate 2>/dev/null || true
-if ! python -m pytest tests/ -q; then
+
+# --- 3) la ventana de sellado (17:50-20:30 de Chile, día hábil) ---
+# La suite TOCA LA RED: motor._datos_crudos llama a yf.download con caché
+# sólo en memoria. Correrla mientras el sistema sella es competir con el
+# snapshot por la misma fuente. El 3-sep-2026 este hook la corrió a las
+# 17:57; el sello salió sano y la regla se cruzó igual.
+#
+# Dentro de la ventana el commit se RECHAZA, no se deja pasar con una suite
+# recortada haciéndose pasar por verde: un verde antes del sello no es un
+# verde. Quien necesite commitear igual lo declara con MKI_EN_VENTANA=1,
+# y entonces sí se corre la suite sin los tests marcados `red` — pero
+# anunciada como verificación PARCIAL, que es lo que es.
+SUITE=(python -m pytest tests/ -q)
+if bash "$RAIZ/scripts/guarda_red.sh"; then
+  echo "pre-commit: REGLA DE LA VENTANA DE SELLADO."
+  echo "  Entre 17:50 y 20:30 de Chile, en dia habil, el sistema sella"
+  echo "  (noticias 17:50 - snapshot 18:15 - reporte 18:25 - backup 18:40 -"
+  echo "  vigia 19:00 - re-chequeo 20:30) y no corre nada que descargue."
+  echo "  La suite descarga: motor._datos_crudos -> yf.download."
+  if [ "${MKI_EN_VENTANA:-0}" != "1" ]; then
+    echo "pre-commit BLOQUEADO: espera a las 20:30, o declaralo con"
+    echo "  MKI_EN_VENTANA=1 git commit ...  (corre la suite SIN los"
+    echo "  tests marcados 'red': verificacion PARCIAL, no un verde)."
+    exit 1
+  fi
+  echo "  MKI_EN_VENTANA=1: se corre la suite SIN los tests 'red'."
+  echo "  AVISO: VERIFICACION PARCIAL. Los tests que tocan la red NO se"
+  echo "  corrieron; esto no equivale a la suite completa en verde."
+  SUITE=(python -m pytest tests/ -q -m "not red")
+fi
+
+# --- 4) tests ---
+if ! "${SUITE[@]}"; then
   echo "pre-commit BLOQUEADO: la suite de tests falló."
   echo "(Para un commit de emergencia consciente: SKIP_TESTS=1 git commit ...)"
   exit 1

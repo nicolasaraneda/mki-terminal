@@ -8135,3 +8135,252 @@ Todo en un commit propio por tanda. Nada tocó `motor.py`, `senales.py`,
 `snapshot.py`, `universo.py`, `version.py`, `.env`, timers ni ninguna fila
 sellada. `cifras.py` sí cambió: revertirlo devuelve el árbitro y los doce bloques
 juntos, porque el test los ata. Nada se publicó.
+
+## 80. Los dos rieles: el proyecto mide una noche y quiere operar en semanas, así que desde acá son dos cosas declaradas y separadas
+
+**Corrida 10, 6/7-sep-2026, nocturna y sin supervisión.** Suite al abrir: **650
+passed, 2 xfailed** en 323,63 s. No se tocó `motor.py`, `senales.py`,
+`snapshot.py`, `universo.py`, `version.py`, `.env`, los timers ni ninguna fila
+sellada. Nada se pusheó. Los dictámenes del guardián y del curador corren en
+sesión aparte, con contexto limpio.
+
+### 80.1 La decisión de arquitectura: dos rieles, no uno que se estira
+
+El proyecto construyó un instrumento que mide **una noche**: el cierre del SOX
+contra la apertura asiática, unas horas después. La intención de Nicolás opera
+en **semanas**: reconocer el movimiento de un eslabón antes de que se vea aguas
+abajo, y tomar posición con un presupuesto acotado. Las dos cosas son legítimas
+y **no son la misma**, y hasta esta corrida el proyecto no lo decía en ninguna
+parte: la ambigüedad dejaba abierta la lectura de que el track record sellado
+avala una capacidad de inversión, que es exactamente lo que no avala.
+
+Desde acá son dos rieles con nombre, en `VISION.md`:
+
+- **Riel de medición** — el gap asiático sellado. Horizonte de una noche. No
+  mueve plata. Su vara es «siempre al alza» y lo que lo mata está pre-registrado
+  en `GEMELO/DISEÑO.md` §6 (V1–V7, R1–R3). Estado leído del árbitro: n = 238
+  sobre 34 días, ventaja +9,7 pp con IC95 de clúster de día **[−7,2, +26,6]**,
+  que contiene el cero.
+- **Riel de dinero** — `dinero/`. Instrumentos listados en EE.UU., horizonte de
+  semanas, presupuesto de 100 a 500 dólares, **todo simulado**. No existía; esta
+  corrida construyó su maquinaria. Lo que lo mata está en
+  `dinero/preregistro_dinero.md`, escrito antes de mirar resultados.
+
+**Por qué el riel de dinero opera sobre papeles de EE.UU. y no sobre los que el
+riel de medición predice:** los papeles que el modelo predice están en Tokio,
+Taipéi y Seúl, con lotes mínimos que 500 dólares no alcanzan, y no hay cuenta de
+corredora. No es una concesión de diseño: es la única forma en que presupuesto y
+horizonte encajan. Queda escrito para que dentro de seis meses nadie lo lea como
+una inconsistencia.
+
+**Aislamiento, en las dos direcciones y con test.** Nada de `dinero/` importa el
+camino de sellado —la adquisición se **duplica** a propósito, mismo criterio que
+GEMELO: trece instrumentos nuevos son trece formas nuevas de que una fuente
+caída se lleve puesto el sello de las 18:15— y nada del camino de sellado
+importa `dinero/`. Además, un test prohíbe en `dinero/` toda mención de API de
+corredora o de credencial: la prohibición de mandar una orden real es ejecutable
+y no una promesa.
+
+### 80.2 La deuda de la corrida 09: la suite tocaba la red dentro de la ventana
+
+El 3-sep el hook de pre-commit corrió la suite a las 17:57, dentro de la ventana
+de sellado (17:50–20:30 de Chile, día hábil). El sello salió sano; la regla se
+cruzó igual. La corrección va al ejecutable:
+
+- **`tests/conftest.py`** registra el marcador `red` y obliga a llevarlo a todo
+  test que abra conexiones salientes. No confía en que la excepción se propague
+  —yfinance se traga los errores de red y devuelve un DataFrame vacío—: registra
+  el intento y falla en el teardown.
+- **`scripts/guarda_red.sh`** decide si un instante cae en la ventana, con reloj
+  falso inyectable (`MKI_AHORA_PRUEBA`) para poder probarlo sin esperar a que
+  sean las 17:50 de un jueves. Día de la semana por Zeller en aritmética de
+  shell, porque `date -d` es de GNU y el Mac corre este mismo archivo.
+- **`scripts/pre-commit` y `./mki tests`** aplican la regla en los dos lados. Y
+  aquí se **desvió del encargo a propósito**: el encargo pedía que el hook «se
+  niegue a correr» los tests de red, pero un hook que corre una suite mutilada y
+  la reporta verde produce un verde antes del sello que no es un verde —el
+  `director-programa` lo marcó en el pre-mortem—. Así que dentro de la ventana
+  **el commit se rechaza**, y quien necesite commitear igual lo declara con
+  `MKI_EN_VENTANA=1`, que entonces sí corre `-m "not red"` **anunciado como
+  verificación PARCIAL**.
+
+**El hallazgo del bloque, que no estaba en el encargo:** la primera versión de la
+guarda espiaba `socket.socket.connect` y el censo de la suite entera salió
+**vacío** — cero tests tocando la red, en una suite que sabemos que descarga.
+La razón es que **yfinance 1.5.1 habla por `curl_cffi`, o sea libcurl, en C**:
+abre sus sockets dentro de la biblioteca nativa y el `socket` de Python no se
+entera nunca. Un instrumento que mide donde el tráfico no pasa informa paz. La
+guarda escucha ahora en dos niveles.
+
+**Lo medido, con el instrumento arreglado:** tocan la red **4 tests en 2
+archivos** — `test_api.py::{test_comparador_base100, test_detalle_perfil,
+test_envelope_en_todos_los_endpoints}` y
+`test_backtest.py::test_la_corrida_sella_semilla_y_alpha_del_bootstrap`. Dos
+censos independientes (suite completa y archivo por archivo) coinciden.
+**Es un piso, no un techo:** yfinance cachea en memoria dentro del proceso, así
+que el orden de ejecución puede enmascarar a otro. Por eso la guarda es
+permanente: si mañana aparece uno sin marcar, la suite se pone roja y lo nombra.
+
+### 80.3 El mapa de la cadena a instrumentos comprables (`docs/universo_operable.md`)
+
+Ningún ticker escrito de memoria: los 36 candidatos entraron sólo tras devolver
+al menos un cierre, y **los 36 lo devolvieron**. El documento **se genera** con
+`python -m dinero.mapa` desde `dinero/datos/cierres_congelados.csv` (2011 filas,
+2018-09-05 a 2026-09-04, sha256 sellado en su metadato y verificado por test).
+
+**El congelado se versiona a propósito**, aunque `GEMELO/cache/` esté en
+.gitignore por regenerable: éste no es una caché, es la **base de evidencia** de
+todo lo que el riel de dinero mide. Sin él la cuenta en papel no se reproduce, y
+regenerarlo mañana daría otros números —la fuente reajusta la historia hacia
+atrás—. Mismo criterio por el que se versionan `data/backups/*.csv` y los JSON de
+`micro/resultados/`: la evidencia medida entra al repositorio; el caché no. Son
+1,3 MB de texto plano y su huella está en un test.
+
+**MEDIDO al 2026-09-04:** de los 8 eslabones, **6 quedan representados, 2
+sustituidos, 0 huecos**; exigiendo además liquidez verificada —que esta corrida
+**no** verificó para los ADR de mostrador `SHECY` y `TOELY`— pasan a **5, 3 y
+0**. «Representado» significa *un dominante comprable con el techo del
+presupuesto*, no *un dominante listado*: la regla se escribió antes de ver los
+precios y está fijada en un test.
+
+Lo que el presupuesto deja afuera, y es el hallazgo del bloque: **`ASML` (1714,88
+USD), `SNDK`, `MU`, `META`, `MSFT`, `SMH` y `SOXX` valen más que los 500 dólares
+de techo.** Es decir: **el ETF del sector que el propio proyecto usa de benchmark
+no se puede comprar entero con el presupuesto declarado.** Con el piso de 100
+dólares alcanzan 7 de 36 instrumentos.
+
+Y la aritmética que ordena todo el riel: con comisión mínima de 1 USD y tope de
+1 % del monto, **una orden de una acción de menos de 100 USD paga exactamente el
+1 %**. A este tamaño de cuenta la comisión no es un detalle: es el primer
+obstáculo. El arancel es un **SUPUESTO NO VERIFICADO** —no hay cuenta abierta, no
+hay tarifario que leer— y confirmarlo es ítem de firma.
+
+### 80.4 La capa que faltaba: de predicción a orden (`dinero/decision.py`)
+
+Función pura: entran señales, cartera, presupuesto, reglas y el día; sale una
+lista de órdenes propuestas y **los descartes con su razón** —un motor que sólo
+devuelve lo que hizo es un motor imposible de auditar—. Sin red, sin escribir en
+ninguna base, sin leer el reloj. Tests de **propiedad sobre entradas generadas
+con semilla declarada** (400 casos por invariante), no de ejemplo: la suma de
+compras nunca excede el presupuesto ni los topes diario/semanal/mensual, ninguna
+posición supera su tope, con el interruptor apagado no sale ninguna orden, sin
+señal sobre el umbral no se opera, y la salida no cambia si se revuelve el orden
+de entrada de las señales.
+
+La tenencia mínima se cuenta en **días hábiles**, no corridos: 20 hábiles son 28
+corridos y contarlos mal acorta la tenencia un 40 % sin que se note.
+
+**Los tres juegos de parámetros no se inventaron.** Cada número sale de una regla
+de derivación escrita en `dinero/derivacion.py`, y un test la recomputa y la
+compara con lo guardado —si alguien mueve un número a mano, la suite se pone
+roja—. El umbral es *k* × el costo de ida y vuelta de la orden de referencia del
+propio juego; el tope de posición es 1/K con K posiciones simultáneas exigidas;
+la tenencia sale de los horizontes pre-registrados; el interruptor es *k* × la σ
+del retorno a 60 días hábiles de `SMH`, **medida** en 15,62 %. Los tres están en
+`espera_firma.md` y **ninguno está firmado: rige el conservador por regla
+escrita, no por su resultado.**
+
+### 80.5 La cuenta en papel (`dinero/resultados/cuenta_papel.md`) — SIMULADO
+
+Orden respetado: **la línea base primero**. Y una desviación declarada: el
+encargo pedía correr «contra los precios ya guardados, sin descargas nuevas», y
+**el proyecto no guardaba precios** —`motor._datos_crudos` cachea en memoria,
+`data/backups/*.csv` son filas selladas, `GEMELO/cache/` está en .gitignore y no
+tiene estos instrumentos—. La salida honesta no era llamar «ya guardados» a lo
+que uno mismo bajó: se bajó **una** vez, se congeló con fecha y huella, y todo
+lo que mide lee el congelado. El `director-programa` había marcado justamente
+este bloque como el más probable de fallar, y por esta razón exacta.
+
+Segunda desviación: el encargo pedía medir el costo de los tres juegos sobre la
+cuenta en papel, pero elegir entre ellos mirando esa cuenta es elegir la vara
+después de ver el tiro. Los tres se declararon y congelaron **antes**, se
+publican **los tres sin ranking**, y el default lo fija la regla escrita.
+
+También hubo que acotar el flujo de caja: el encargo pide «un monto fijo cada
+semana», pero el presupuesto son 100 a 500 dólares **en total**. Aportar
+semanalmente tres años serían 15.600 dólares que no existen. El calendario aporta
+100 USD por semana **hasta agotar los 500**, y la línea base y la estrategia
+reciben el mismo flujo, que es lo que las hace comparables.
+
+**Qué se midió, y con qué señal.** La estrategia se alimentó de una señal **sin
+información** —sorteada de la distribución histórica de retornos a 20 días
+hábiles de cada instrumento, semilla 20260906, sin relación con lo que pasa
+después—, a propósito: lo que la página mide es **fricción**, no habilidad.
+
+Cuatro resultados, con su estatus:
+
+- **MEDIDO y robusto.** Con 500 dólares y mínimo de 1 USD por orden, rotar la
+  cartera cuesta en comisiones **14 %–25 % del capital (conservador), 27 %–31 %
+  (medio) y 43 % (agresivo)**, contra **0,4 %–0,6 % de no decidir nada**. No
+  depende del sorteo ni del deslizamiento: depende de cuántas órdenes emite cada
+  juego.
+- **MEDIDO, y es una advertencia sobre el método.** El barrido de deslizamiento
+  **no es una curva de sensibilidad al costo**: entre 5 y 10 pb el juego
+  conservador pasa de +158 % a +357 % con 227 órdenes contra 133. Diez puntos
+  básicos no mueven un resultado 199 pp. Lo que pasa es que el deslizamiento
+  cambia cuántas acciones enteras entran en el margen, y eso cambia **qué**
+  instrumento se compra. Las filas del barrido son **caminos distintos**, no la
+  misma estrategia a distinto costo.
+- **MEDIDO, y es la cifra más útil de la página.** De **24** comparaciones
+  contra las líneas base, **5 (21 %)** tienen un intervalo del 95 % que excluye
+  el cero — con una señal cuya respuesta verdadera es cero en las 24. Todos son
+  falsos positivos por construcción. Así de fácil es que este diseño produzca un
+  ✓ sin que haya nada; ése es el ruido contra el que una señal de verdad tendrá
+  que destacarse.
+- **MEDIDO y direccional.** El juego agresivo **pierde contra `SMH` en 4 de 4
+  pasadas**, con el intervalo entero bajo cero. No hace falta una señal buena
+  para perder: alcanza con operar seguido.
+
+Ninguna cifra de esta cuenta entra al README ni a ninguna afirmación del
+proyecto. Todas van rotuladas **SIMULADO**, y un test lo exige.
+
+### 80.6 El pre-registro del riel de dinero, y el número que lo vuelve incómodo
+
+`dinero/preregistro_dinero.md`, escrito antes de mirar el bloque 6. Lo que
+autoriza pasar de papel a plata real está escrito **como número**: 52 semanas de
+papel, **una** comparación declarada (el juego por defecto contra `SMH`), una
+sola mirada al final, e intervalo del 95 % que excluya el cero.
+
+Y entonces aparece lo que hay que decir completo. La dispersión medida de la
+diferencia semanal es **σ = 2,54 pp por semana**. Con α = 0,05 y potencia 0,80,
+detectar +0,25 pp/semana pide **809 semanas (16 años)**; +0,50 pide **203 (3,9
+años)**; **52 semanas sólo alcanzan para una ventaja de ≈ +1,00 pp/semana**, del
+orden de +50 pp anuales sobre la línea base. Una ventaja así no es plausible con
+datos públicos en un mercado líquido. Por eso el pre-registro agrega una cláusula
+que normalmente no haría falta: **si el criterio se cumple, la primera reacción
+no es poner plata, es sospechar un error** — y el resultado debe sobrevivir
+auditoría de fuga, ablación tipo R2 y el dictamen del adversario antes de que se
+discuta un monto.
+
+Qué mata la pista: **M1** 104 semanas sin distinguirse del cero y con punto
+negativo; **M2** comisión acumulada sobre el 25 % del capital —que, medido arriba,
+**está por dispararse antes de empezar**, y eso es información sobre el tamaño de
+la cuenta, no sobre la señal—; **M3** cualquier fuga; **M4** que la señal larga no
+supere ninguna vara.
+
+Y la declaración que ordena todo: **los primeros 100 a 500 dólares son costo de
+aprendizaje operativo, no una apuesta con retorno esperado positivo demostrado.**
+
+### 80.7 El registro de intentos del riel largo es NUEVO, y por qué
+
+El encargo pedía incrementar «el registro de intentos del DSR» por cada hipótesis
+probada. **No se tocó `GEMELO/relevo_asiatico.N_INTENTOS_ACUMULADO` (352) ni
+`backtest/veredicto_51.N_INTENTOS_51` (358)**, por dos razones que el
+`director-programa` marcó y que se comparten: ese registro cuenta hipótesis sobre
+el **gap asiático de una noche**, y el DSR deflacta por intentos sobre la **misma**
+búsqueda; y mover ese entero dispara la regla de los doce bloques dependientes.
+El riel largo lleva su propia cuenta en `dinero/registro_intentos.py`, hoy en
+**3** —las tres especificaciones de la señal larga—, con el vínculo a la familia
+hermana escrito. **Si los dos registros deben fusionarse es decisión de Nicolás**
+y está en `espera_firma.md`.
+
+### 80.8 Cómo se revierte
+
+`dinero/`, `VISION.md`, `docs/universo_operable.md`, `tests/conftest.py`,
+`tests/test_dinero.py`, `tests/test_guarda_red.py`, `scripts/guarda_red.sh` y
+`GEMELO/preregistro/senal_larga_v1.md` son archivos **nuevos**: borrarlos
+revierte. Los editados son `scripts/pre-commit`, `mki`, `tests/test_api.py` y
+`tests/test_backtest.py` (sólo el decorador `@pytest.mark.red`). El hook
+instalado en `.git/hooks/pre-commit` se refrescó con la copia nueva; devolverlo
+es `git show HEAD~1:scripts/pre-commit > .git/hooks/pre-commit`. Ninguna cifra
+publicada se movió y ninguna fila sellada se tocó.
