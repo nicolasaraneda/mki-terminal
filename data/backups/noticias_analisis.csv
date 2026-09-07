@@ -539,7 +539,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 614,0.5,NVDA,bajo,"CEO de Nvidia cultiva relaciones diplomáticas con proveedores japoneses, relevancia principalmente geopolítica.",2026-07-26T02:35:44.009072+00:00,0.5
 615,-0.85,000660.KS,alto,"SK Hynix cae 11% por presión de mercado, afectando severamente a mayor fabricante de memoria DRAM surcoreano.",2026-07-26T02:35:44.009079+00:00,0.9
 619,0.5,,medio,Recuperación del sector semiconductor tras caída previa indica resiliencia y posible rebalanceo alcista en acciones del segmento.,2026-07-26T02:35:32.496187+00:00,0.85
-620,0.5,6857.T,medio,"Advantest expande ecosistema de pruebas de semiconductores, mejorando posición en equipamiento especializado.",2026-07-26T02:35:44.009062+00:00,0.8
 621,-0.5,,alto,Pérdida masiva en acciones japonesas incluyendo chips subraya volatilidad sectorial y dudas sobre continuidad del rally de IA.,2026-07-26T02:35:56.864389+00:00,0.8
 622,0.65,,medio,"Teradyne aprovecha crecimiento fuerte en centros de datos, indicando demanda robusta de equipos de prueba de semiconductores.",2026-07-26T02:35:56.864541+00:00,0.75
 623,0.5,IFX.DE,medio,Posible alianza de fabricantes japoneses de chips de potencia en septiembre para competir con Infineon aumenta competencia pero diversifica mercado.,2026-07-26T02:35:32.496290+00:00,0.7
@@ -3387,7 +3386,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 3647,-0.35,ASML,bajo,Venta de acciones por fondo sugiere presión táctica pero tiene bajo impacto fundamental en proveedor crítico de equipos de litografía.,2026-08-19T22:15:07.198310+00:00,0.2
 3648,0.2,,bajo,Desdoble accionario de Tokyo Electron es evento corporativo neutral sin implicaciones operativas para equipamiento semiconductor.,2026-08-19T22:15:20.361820+00:00,0.4
 3651,0.25,6857.T,medio,"Advantest genera atención en temporada de ganancias, fabricante de equipos de prueba con relevancia en cadena semiconductor.",2026-08-19T22:14:17.445861+00:00,0.75
-3653,0.3,6857.T,medio,"Advantest supera ganancias a pesar de costos energéticos elevados, proveedor clave de equipos de prueba para semiconductores.",2026-08-19T22:13:54.322777+00:00,0.7
 3657,0.55,IFX,medio,"Infineon y Synaptics lideran adopción de Wi-Fi 7 en microcontroladores, reflejando expansión de oportunidades en conectividad avanzada.",2026-08-19T22:15:20.361579+00:00,0.7
 3658,-0.2,IFX.DE,bajo,Resultados récord de Infineon se ven opacados por presiones del mercado de bonos y preocupaciones macroeconómicas del sector.,2026-08-19T22:14:28.824689+00:00,0.6
 3659,0.5,BHP,bajo,BHP diversifica hacia cobre con éxito; relevancia tangencial como proveedor de materias primas para cadena de semiconductores.,2026-08-19T22:15:33.530287+00:00,0.15
@@ -3859,7 +3857,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 4177,-0.5,AVGO,medio,Riesgo de crédito elevado de Broadcom por financiamiento de deuda para IA genera preocupación en mercado.,2026-08-24T22:07:38.979787+00:00,0.6
 4178,-0.5,AVGO,medio,Deuda masiva de $60B para IA cuestiona valuación de Broadcom y genera preocupación sobre sostenibilidad de inversiones en chips IA.,2026-08-24T22:08:17.688628+00:00,0.7
 4179,0.4,"NVDA,AMD,INTC,QCOM",medio,"Artículo que posiciona alternativas a Nvidia en la carrera de chips de IA, generando interés en competidores.",2026-08-24T22:07:38.979861+00:00,0.75
-4180,0.45,TXN,medio,Inclusión de componentes TI y Microchip para satélites de grado espacial valida nicho de mercado especializado en semiconductores.,2026-08-24T22:08:05.252103+00:00,0.6
 4181,0.7,TXN,medio,Aumento de precio objetivo para Texas Instruments por analistas refleja confianza positiva en el fabricante de semiconductores analógicos.,2026-08-24T22:09:20.169539+00:00,0.8
 4182,0.3,ARM,medio,ARM muestra fuerte crecimiento pero valuación elevada genera cautela; crítico para arquitectura de chips en dispositivos móviles e IA.,2026-08-24T22:08:17.688859+00:00,0.9
 4183,0.4,ARM,medio,"Arm expande estrategia a chips de datacenter con competencia creciente, abriendo nuevo segmento de ingresos en IA.",2026-08-24T22:08:29.793040+00:00,0.75
@@ -5631,18 +5628,8 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 6716,0.7,"TSM,2330.TW",alto,TSMC y Marvell posicionados como ganadores en ciclo de oro de IA destaca liderazgo de TSMC en manufactura de vanguardia.,2026-09-04T21:55:16.355157+00:00,0.85
 6717,0.7,"TSM,2330.TW",medio,"Recomendación alcista sobre TSMC como inversión superior a Magnificent Seven, reflejando confianza en fabricante líder.",2026-09-04T21:56:10.711258+00:00,0.75
 6718,0.0,UMC,bajo,Noticia neutra sobre reporte de ventas de UMC sin contexto o análisis de resultados.,2026-09-04T21:56:10.711211+00:00,0.5
-6719,0.75,8035.T,alto,Tokyo Electron potencialmente infravalorado en narrativa de demanda de chips IA sugiere oportunidad de revaluación significativa.,2026-09-04T21:57:15.324411+00:00,0.85
-6720,0.7,8035.T,alto,Alianza entre Teradyne y Tokyo Electron en pruebas de IA posiciona a ambas como beneficiarios clave de la demanda de chips de nueva generación.,2026-09-04T21:57:15.324385+00:00,0.85
-6721,0.75,6857.T,medio,Mejora de calificación a Strong Buy para Advantest refleja confianza en su desempeño futuro en equipos de prueba de semiconductores.,2026-09-04T21:57:15.324186+00:00,0.7
-6722,0.65,6857.T,medio,Expansión de SiConic con nuevo entorno DFT refuerza capacidades tecnológicas de Advantest en equipos de prueba críticos.,2026-09-04T21:57:15.324404+00:00,0.75
-6723,0.55,6857.T,medio,Comparación de desempeño relativo de Advantest versus pares es análisis de rentabilidad sin nuevos catalizadores operacionales.,2026-09-04T21:57:15.324407+00:00,0.5
-6724,0.85,IFX.DE,alto,"Infineon alcanza ingresos récord en IA impulsados por centros de datos, demostrando fortaleza fundamental en demanda de semiconductores críticos.",2026-09-04T21:57:15.324353+00:00,0.95
-6725,0.8,IFX.DE,alto,Récord de ingresos de Infineon con centros de datos de IA como motor principal confirma tendencia estructural de crecimiento en semiconductores.,2026-09-04T21:57:15.324367+00:00,0.95
 6726,0.0,,bajo,Análisis comparativo de Freeport-McMoRan con pares de cobre no tiene relevancia para semiconductores; es sector diferente.,2026-09-04T21:55:16.355102+00:00,0.05
 6727,0.0,,bajo,Noticia sobre cobre no tiene relación con semiconductores.,2026-09-04T21:53:25.081819+00:00,0.0
-6728,0.65,4063.T,alto,Programa de recompra y estrategia de tierras raras profundas de Shin-Etsu redefinen perspectiva de retorno para inversores.,2026-09-04T21:57:15.324441+00:00,0.7
-6729,0.3,3436.T,medio,Conflicto de opiniones de analistas sobre valuación de Sumco refleja incertidumbre en sector de obleas de silicio.,2026-09-04T21:57:15.324424+00:00,0.6
-6730,0.55,3436.T,medio,Dinámicas de compra previa a ganancias en Sumco sugieren reposicionamiento de narrativa pero con fundamentos débiles.,2026-09-04T21:57:15.324448+00:00,0.6
 6731,0.2,MSFT,bajo,Reajuste de precio objetivo de Microsoft por Stifel es actualizacion analítica con contexto limitado sobre semiconductores.,2026-09-04T21:53:12.825844+00:00,0.3
 6732,-0.3,MSFT,bajo,"Caída de MSFT del 1.6% es contrarrestada por apertura de oportunidades en Azure, impacto mixto para el sector.",2026-09-04T21:53:25.081735+00:00,0.4
 6733,0.75,MSFT,medio,Incremento de precio objetivo de Stifel para Microsoft refleja confianza en su estrategia de computación en nube.,2026-09-04T21:53:25.081771+00:00,0.5
@@ -5766,9 +5753,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 6852,-0.3,FCX,bajo,"Rebaja de FCX (minería de cobre) no es relevante para semiconductores, solo mención tangencial de un broker.",2026-09-04T21:55:43.941296+00:00,0.1
 6853,0.2,FCX,bajo,Aumento de posición en FCX por TD Waterhouse no guarda relación significativa con la industria de semiconductores.,2026-09-04T21:55:43.941548+00:00,0.05
 6854,-0.1,FCX,bajo,Compra de acciones de Freeport-McMoRan (minería de cobre) sin relevancia directa al sector semiconductor.,2026-09-04T21:56:10.710985+00:00,0.1
-6855,0.45,4063.T,bajo,Desglose de ingresos de Shin-Etsu es información técnica sin señal clara de dirección del mercado o cambios operacionales.,2026-09-04T21:57:15.324373+00:00,0.4
-6856,0.5,4063.T,medio,Resultados de Q1 de Shin-Etsu con proyecciones de analistas proporciona contexto pero sin catalalizadores inmediatos evidentes.,2026-09-04T21:57:15.324399+00:00,0.5
-6857,0.6,4063.T,medio,Plan de Shin-Etsu para refinería de tierras raras asegura cadena de suministro estratégica para materiales semiconductores.,2026-09-04T21:57:15.324430+00:00,0.65
 6858,0.5,3436.T,medio,Presentación de resultados Q1 2026 de Sumco proporciona datos operacionales sin señal clara de cambio en demanda de obleas.,2026-09-04T21:57:15.324444+00:00,0.55
 6859,-0.2,MSFT,bajo,"Microsoft enfrenta escrutinio legal por prácticas de contenido, impacto legal moderado no relacionado directamente con semiconductores.",2026-09-04T21:54:20.252700+00:00,0.3
 6860,0.4,"MSFT,NVDA,INTC",bajo,Anuncio de Project Zenith es iniciativa de software con impacto indirecto limitado en fabricantes de semiconductores.,2026-09-04T21:54:47.949882+00:00,0.4
