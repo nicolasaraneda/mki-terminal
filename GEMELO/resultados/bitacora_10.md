@@ -229,6 +229,25 @@ la vista de la cuenta. `npm run build` en verde.
    mueve. La aserción estaba mal y la corregí a la inversa, que es lo que
    prueba que el retardo existe.
 
+## Una falla observada y NO reproducida, que hay que dejar escrita
+
+El primer intento del commit de cierre disparó el hook y la suite salió con **7 fallas**,
+entre ellas `test_vigia.py::test_epilogo_retracta_tras_sello_tardio`. **No se
+reprodujeron**: cuatro corridas completas antes y después —dos a mano, una ejecutando el
+hook directamente, y la del commit que finalmente entró— dieron **748 passed, 2 xfailed**.
+
+No se sabe la causa y no se va a inventar una. La hipótesis más probable es la misma
+limitación que motiva el bloque 0: **la suite toca la red**, y esta noche Yahoo devolvió
+series vacías de forma intermitente al menos dos veces (a las 23:30 aproximadamente todos
+los tickers salieron «possibly delisted» durante algunos minutos, y minutos después
+volvieron). Una suite que depende de una fuente externa no es determinista, y eso vale
+como hallazgo aunque la falla puntual no se haya podido capturar.
+
+Queda como deuda: **el listado completo de las 7 fallas se perdió** —sólo se vio el final
+del volcado— porque el hook escribe a la salida estándar del `git commit` y no a un
+archivo. Hacer que el hook guarde su salida en `data/` sería una mejora barata, y no se
+hizo en esta corrida para no agrandar el diff del bloque 0 pasada la medianoche.
+
 ## Lo que queda abierto
 
 - **`espera_firma.md` §39, §40, §41**: qué juego rige, el arancel real del
