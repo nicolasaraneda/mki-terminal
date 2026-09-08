@@ -76,6 +76,32 @@ def chequear_descarga() -> tuple:
     return False, f"descarga: {ok_n}/{total} DEGRADADA (caídos: {caidos})"
 
 
+def chequear_ancla_temporal(hoy: date = None) -> tuple:
+    """Guardia del acta §82.2 (c), corrida 11: ninguna predicción sellada
+    hoy puede tener `available_at` igual a su `timestamp_utc`. Si lo tiene,
+    la rama del `except` de snapshot.py (available_at) se tomó —sox_fecha
+    vacío o `cierre_utc` falló—, el ancla temporal es reloj de pared, y con
+    el parche del §26 aplicado la sesión objetivo se eligió como en el
+    defecto. Se lee de la base, no del log: la evidencia es la igualdad."""
+    import senales
+    senales.init_db()
+    hoy = hoy or date.today()
+    conn = senales.get_connection()
+    filas = conn.execute(
+        "SELECT ticker, timestamp_utc, available_at FROM senales_ticker "
+        "WHERE fecha = ? AND apertura_estimada_pct IS NOT NULL",
+        (hoy.isoformat(),)).fetchall()
+    conn.close()
+    if not filas:
+        return True, "ancla temporal: sin predicciones selladas hoy que revisar"
+    de_pared = [t for t, ts, av in filas if av is None or av == ts]
+    if de_pared:
+        return False, (f"ancla temporal: {len(de_pared)}/{len(filas)} filas con "
+                       f"available_at = reloj de pared ({', '.join(de_pared)}) — "
+                       f"la rama del except de snapshot.py se tomó; ver snapshot.log")
+    return True, f"ancla temporal: {len(filas)}/{len(filas)} filas con cierre del SOX"
+
+
 def _proceso_noticias_colgado() -> str | None:
     """5.0.2 — si hay un mki_noticias.py vivo, launchd NO vuelve a disparar
     el job (un label = un proceso): el 3-ago un fetch sin timeout quedó
@@ -386,7 +412,7 @@ def main(argv=None) -> int:
     rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
     _log("mki_vigia.py — revisión del día operativo")
     resultados = [chequear_snapshot(), chequear_descarga(), chequear_noticias(),
-                  chequear_reporte(), chequear_backup()]
+                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy)]
     for ok, detalle in resultados:
         _log(f"  {'OK ' if ok else 'FALLA'} {detalle}")
     if all(ok for ok, _ in resultados):

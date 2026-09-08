@@ -310,12 +310,21 @@ def verificar_apertura_pendientes() -> dict:
         ORDER BY fecha
     """).fetchall()
 
-    verificadas, descartadas, atascadas = 0, 0, 0
+    verificadas, descartadas, atascadas, sin_calendario = 0, 0, 0, 0
     for (id_, fecha_senal, ticker, est_pct, ts_utc, exchange,
          sesion_obj, modelo_ver) in pendientes:
         try:
             apertura = calendarios.apertura_utc(exchange, sesion_obj)
-        except Exception:
+        except Exception as e:
+            # Guardia (corrida 11, acta §82.2 c): un fallo del calendario
+            # dejaba la fila pendiente para siempre en silencio. Sigue
+            # quedando pendiente —no se inventa nada—, pero se cuenta y se
+            # dice, para que el atasco no viva en la memoria de nadie.
+            sin_calendario += 1
+            from seguridad import enmascarar_secretos
+            print(f"  AVISO verificador: calendario falló para {ticker} "
+                  f"{exchange} {sesion_obj} (fila {id_}), queda pendiente: "
+                  f"{enmascarar_secretos(str(e))}", flush=True)
             continue
         emitida = datetime.fromisoformat(ts_utc)
         if emitida.tzinfo is None:
@@ -379,7 +388,7 @@ def verificar_apertura_pendientes() -> dict:
     conn.commit()
     conn.close()
     return {"verificadas": verificadas, "no_verificables": descartadas,
-            "sin_datos_mercado": atascadas}
+            "sin_datos_mercado": atascadas, "sin_calendario": sin_calendario}
 
 
 def verificar_puntaje_pendientes() -> int:

@@ -37,4 +37,4 @@ UNIVERSO_VERSION = "4.6.0"
 #   LEGÍTIMA (el código difiere mientras `migracion-wsl` no se funda con
 #   `main`) y `comparar_sombra.py` debe esperarla, no reportarla como
 #   divergencia. Detalle en DECISIONES.md, Etapa 5.0.3 §8.
-PLATAFORMA_VERSION = "5.0.3"
+PLATAFORMA_VERSION = "5.1.0"

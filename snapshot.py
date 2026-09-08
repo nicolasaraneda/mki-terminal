@@ -131,13 +131,36 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
         if sox_fecha:
             try:
                 available_at = calendarios.cierre_utc("XNYS", sox_fecha).isoformat()
-            except Exception:
-                pass
+            except Exception as e:
+                # Guardia (corrida 11, acta §82.2 c): si esta rama se toma,
+                # `available_at` queda en reloj de pared y el parche del §26
+                # se comporta idéntico al defecto sin dejar marca. La marca
+                # es esta línea en el log; el vigía lo lee de la base
+                # (available_at == timestamp_utc) y alerta.
+                from seguridad import enmascarar_secretos
+                print(f"  AVISO ancla temporal: available_at cayó al reloj de pared "
+                      f"— cierre_utc('XNYS', {sox_fecha!r}) falló: "
+                      f"{enmascarar_secretos(str(e))}", flush=True)
+        else:
+            print("  AVISO ancla temporal: available_at cayó al reloj de pared "
+                  "— la predicción no trae sox_fecha", flush=True)
         for _, fila in pred.iterrows():
             t = fila["Ticker"]
             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")
             try:
-                sesion_obj, _, _ = calendarios.proxima_sesion_despues_de(exchange, ahora_utc)
+                # Parche snapshot140 (corrida 09): la sesión objetivo se ancla
+                # en `available_at` (cuándo era conocible el insumo: cierre UTC
+                # del SOX usado), NUNCA en el reloj de pared del proceso. Con
+                # `ahora_utc` un sello tardío que cruza medianoche/01h UTC
+                # salta a la sesión siguiente porque la asiática ya abrió.
+                # `timestamp_utc` sigue siendo el reloj de pared: es el
+                # instante real de emisión, y la regla maestra del verificador
+                # lo compara contra la apertura de la sesión elegida aquí. Si
+                # no hubo sox_fecha, available_at == ts_emision y el resultado
+                # es idéntico al anterior. Expediente:
+                # DECISIONES.md, acta 84.1 (8-sep-2026); la tabla de las 25 filas vive fuera del camino de sellado.
+                sesion_obj, _, _ = calendarios.proxima_sesion_despues_de(
+                    exchange, datetime.fromisoformat(available_at))
             except Exception:
                 continue
             predicciones.append({
