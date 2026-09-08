@@ -4490,7 +4490,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 5509,0.75,"NVDA,005930.KS",alto,"Samsung Foundry produce Grok 3 de Nvidia en nodo 4nm, confirmando demanda masiva de chips avanzados para IA.",2026-08-26T22:10:40.244806+00:00,0.95
 5510,0.7,005930.KS,alto,Samsung presenta Processing DRAM como alternativa HBM; innovación tecnológica disruptiva en memoria de alto ancho de banda.,2026-08-26T22:10:53.819764+00:00,0.9
 5511,0.6,,medio,Recomendación de BofA sobre oportunidades de compra en grandes productores de chips es positiva pero sin tickers específicos.,2026-08-26T22:10:27.994091+00:00,0.65
-5512,0.5,,medio,Proyección de crecimiento del mercado de semiconductores de IA al 2035 es positiva pero genérica sin tickers específicos.,2026-08-26T22:10:27.994027+00:00,0.6
 5513,-0.65,NVDA,medio,Crítica de Michael Burry sobre esquema de financiamiento de Nvidia sugiere preocupaciones sobre sostenibilidad de modelo de negocios y estructura de transacciones.,2026-08-27T22:12:18.553305+00:00,0.75
 5514,0.7,NVDA,alto,Salto significativo de Nvidia en futuro del Dow Jones indica fortaleza del sector semiconductor en contexto de recuperación macroeconómica.,2026-08-27T22:12:18.553323+00:00,0.85
 5515,0.85,NVDA,alto,Resultados excepcionales y guidance sorpresivamente optimista de Nvidia son catalizadores muy positivos para líder indiscutible en semiconductores de IA.,2026-08-27T22:12:18.553389+00:00,0.95
