@@ -1,0 +1,1281 @@
+{
+ "generado_en_utc": "2026-09-08T04:36:40.086633+00:00",
+ "etiqueta": "PROPUESTA — bloque 1 de la corrida 11; hasta el dictamen del estadistico-adversario",
+ "instrumento": "dinero.contabilidad.comparar (bootstrap circular de bloques de 4 semanas, 2000 réplicas, α = 0.05) + regla §2.3 del pre-registro: IC excluye 0 y punto > 0",
+ "dgp": {
+  "d_t": "delta + sigma * eps_t",
+  "eps": "t de Student nu=4 estandarizada",
+  "ar1": "rho sobre eps, varianza marginal conservada",
+  "base": "retornos semanales reales de SMH remuestreados iid (irrelevantes para el estadístico)"
+ },
+ "declarado_antes": {
+  "deltas_pp_semana": [
+   0.0,
+   0.25,
+   0.5,
+   1.0
+  ],
+  "horizontes_semanas": [
+   52,
+   104,
+   156
+  ],
+  "factores_sigma": [
+   0.5,
+   1.0,
+   2.0
+  ],
+  "rhos": [
+   0.0,
+   0.2
+  ],
+  "replicas_por_celda": 2000,
+  "semilla": 20260908,
+  "semilla_bootstrap": "por réplica",
+  "procedencia_deltas": "dinero/preregistro_dinero.md §2.1, tabla del 7-sep-2026"
+ },
+ "sigma_medida": {
+  "sigma_pp_semana": 2.7042,
+  "ic95_bootstrap_semanas": [
+   2.4773,
+   2.8951
+  ],
+  "banda_entre_sorteos_p2_5_p97_5": [
+   1.9108,
+   4.0162
+  ],
+  "rho_medido_ac1_mediana": 0.0,
+  "rho_medido_ac1_banda_p2_5_p97_5": [
+   -0.1904,
+   0.1637
+  ],
+  "semanas": 156,
+  "sorteos": 200,
+  "K": 4,
+  "instrumentos_sorteables": 33,
+  "ventana": [
+   "2023-09-05",
+   "2026-09-04"
+  ],
+  "bloque_bootstrap_semanas": 4,
+  "definicion": "sd de (media equiponderada de los retornos semanales de K operables sorteados − retorno semanal de SMH), ddof=1"
+ },
+ "precios": {
+  "archivo": "cierres_congelados.csv",
+  "sha256": "69ca7283ae18fd37736827e1b19a79d3557e2e8177dbfd05c9685be22502402b",
+  "congelado_en_utc": "2026-09-07T01:47:34+00:00"
+ },
+ "celdas": [
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.0465,
+    "wilson95": [
+     0.038,
+     0.057
+    ],
+    "k": 93
+   },
+   "excluye_cero": {
+    "tasa": 0.086,
+    "wilson95": [
+     0.074,
+     0.099
+    ],
+    "k": 172
+   },
+   "cobertura_ic95": {
+    "tasa": 0.914,
+    "wilson95": [
+     0.901,
+     0.926
+    ],
+    "k": 1828
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7835,
+    "wilson95": [
+     0.765,
+     0.801
+    ],
+    "k": 1567
+   },
+   "punto_medio_pp": -0.0063,
+   "punto_sd_pp": 0.3776,
+   "ancho_medio_pp": 1.3607,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.136,
+    "wilson95": [
+     0.122,
+     0.152
+    ],
+    "k": 272
+   },
+   "excluye_cero": {
+    "tasa": 0.1425,
+    "wilson95": [
+     0.128,
+     0.159
+    ],
+    "k": 285
+   },
+   "cobertura_ic95": {
+    "tasa": 0.921,
+    "wilson95": [
+     0.908,
+     0.932
+    ],
+    "k": 1842
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.784,
+    "wilson95": [
+     0.765,
+     0.801
+    ],
+    "k": 1568
+   },
+   "punto_medio_pp": 0.2487,
+   "punto_sd_pp": 0.3756,
+   "ancho_medio_pp": 1.3717,
+   "potencia_normal_cerrada": 0.098,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.3435,
+    "wilson95": [
+     0.323,
+     0.365
+    ],
+    "k": 687
+   },
+   "excluye_cero": {
+    "tasa": 0.3455,
+    "wilson95": [
+     0.325,
+     0.367
+    ],
+    "k": 691
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9215,
+    "wilson95": [
+     0.909,
+     0.932
+    ],
+    "k": 1843
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7725,
+    "wilson95": [
+     0.754,
+     0.79
+    ],
+    "k": 1545
+   },
+   "punto_medio_pp": 0.4945,
+   "punto_sd_pp": 0.3751,
+   "ancho_medio_pp": 1.3633,
+   "potencia_normal_cerrada": 0.2654,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.7905,
+    "wilson95": [
+     0.772,
+     0.808
+    ],
+    "k": 1581
+   },
+   "excluye_cero": {
+    "tasa": 0.7905,
+    "wilson95": [
+     0.772,
+     0.808
+    ],
+    "k": 1581
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9245,
+    "wilson95": [
+     0.912,
+     0.935
+    ],
+    "k": 1849
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7805,
+    "wilson95": [
+     0.762,
+     0.798
+    ],
+    "k": 1561
+   },
+   "punto_medio_pp": 0.9926,
+   "punto_sd_pp": 0.37,
+   "ancho_medio_pp": 1.3648,
+   "potencia_normal_cerrada": 0.7601,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 104,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.0335,
+    "wilson95": [
+     0.026,
+     0.042
+    ],
+    "k": 67
+   },
+   "excluye_cero": {
+    "tasa": 0.0665,
+    "wilson95": [
+     0.056,
+     0.078
+    ],
+    "k": 133
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9335,
+    "wilson95": [
+     0.922,
+     0.944
+    ],
+    "k": 1867
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8205,
+    "wilson95": [
+     0.803,
+     0.837
+    ],
+    "k": 1641
+   },
+   "punto_medio_pp": -0.003,
+   "punto_sd_pp": 0.2674,
+   "ancho_medio_pp": 0.9961,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 104,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.182,
+    "wilson95": [
+     0.166,
+     0.2
+    ],
+    "k": 364
+   },
+   "excluye_cero": {
+    "tasa": 0.1855,
+    "wilson95": [
+     0.169,
+     0.203
+    ],
+    "k": 371
+   },
+   "cobertura_ic95": {
+    "tasa": 0.938,
+    "wilson95": [
+     0.927,
+     0.948
+    ],
+    "k": 1876
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.821,
+    "wilson95": [
+     0.804,
+     0.837
+    ],
+    "k": 1642
+   },
+   "punto_medio_pp": 0.2511,
+   "punto_sd_pp": 0.2582,
+   "ancho_medio_pp": 0.9961,
+   "potencia_normal_cerrada": 0.1545,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 104,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.5015,
+    "wilson95": [
+     0.48,
+     0.523
+    ],
+    "k": 1003
+   },
+   "excluye_cero": {
+    "tasa": 0.5015,
+    "wilson95": [
+     0.48,
+     0.523
+    ],
+    "k": 1003
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9365,
+    "wilson95": [
+     0.925,
+     0.946
+    ],
+    "k": 1873
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8345,
+    "wilson95": [
+     0.818,
+     0.85
+    ],
+    "k": 1669
+   },
+   "punto_medio_pp": 0.4893,
+   "punto_sd_pp": 0.2615,
+   "ancho_medio_pp": 0.9979,
+   "potencia_normal_cerrada": 0.4704,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 104,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.957,
+    "wilson95": [
+     0.947,
+     0.965
+    ],
+    "k": 1914
+   },
+   "excluye_cero": {
+    "tasa": 0.957,
+    "wilson95": [
+     0.947,
+     0.965
+    ],
+    "k": 1914
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9405,
+    "wilson95": [
+     0.929,
+     0.95
+    ],
+    "k": 1881
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8185,
+    "wilson95": [
+     0.801,
+     0.835
+    ],
+    "k": 1637
+   },
+   "punto_medio_pp": 1.002,
+   "punto_sd_pp": 0.2663,
+   "ancho_medio_pp": 0.9975,
+   "potencia_normal_cerrada": 0.9649,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 156,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.0315,
+    "wilson95": [
+     0.025,
+     0.04
+    ],
+    "k": 63
+   },
+   "excluye_cero": {
+    "tasa": 0.0635,
+    "wilson95": [
+     0.054,
+     0.075
+    ],
+    "k": 127
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9365,
+    "wilson95": [
+     0.925,
+     0.946
+    ],
+    "k": 1873
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8495,
+    "wilson95": [
+     0.833,
+     0.865
+    ],
+    "k": 1699
+   },
+   "punto_medio_pp": 0.0037,
+   "punto_sd_pp": 0.2206,
+   "ancho_medio_pp": 0.827,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 156,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.2265,
+    "wilson95": [
+     0.209,
+     0.245
+    ],
+    "k": 453
+   },
+   "excluye_cero": {
+    "tasa": 0.2275,
+    "wilson95": [
+     0.21,
+     0.246
+    ],
+    "k": 455
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9345,
+    "wilson95": [
+     0.923,
+     0.945
+    ],
+    "k": 1869
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8525,
+    "wilson95": [
+     0.836,
+     0.867
+    ],
+    "k": 1705
+   },
+   "punto_medio_pp": 0.2416,
+   "punto_sd_pp": 0.2216,
+   "ancho_medio_pp": 0.8289,
+   "potencia_normal_cerrada": 0.2103,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 156,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.6485,
+    "wilson95": [
+     0.627,
+     0.669
+    ],
+    "k": 1297
+   },
+   "excluye_cero": {
+    "tasa": 0.6485,
+    "wilson95": [
+     0.627,
+     0.669
+    ],
+    "k": 1297
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9355,
+    "wilson95": [
+     0.924,
+     0.945
+    ],
+    "k": 1871
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8555,
+    "wilson95": [
+     0.839,
+     0.87
+    ],
+    "k": 1711
+   },
+   "punto_medio_pp": 0.4933,
+   "punto_sd_pp": 0.2223,
+   "ancho_medio_pp": 0.827,
+   "potencia_normal_cerrada": 0.6366,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.0,
+   "semanas": 156,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.9905,
+    "wilson95": [
+     0.985,
+     0.994
+    ],
+    "k": 1981
+   },
+   "excluye_cero": {
+    "tasa": 0.9905,
+    "wilson95": [
+     0.985,
+     0.994
+    ],
+    "k": 1981
+   },
+   "cobertura_ic95": {
+    "tasa": 0.946,
+    "wilson95": [
+     0.935,
+     0.955
+    ],
+    "k": 1892
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.8385,
+    "wilson95": [
+     0.822,
+     0.854
+    ],
+    "k": 1677
+   },
+   "punto_medio_pp": 1.0007,
+   "punto_sd_pp": 0.2137,
+   "ancho_medio_pp": 0.8278,
+   "potencia_normal_cerrada": 0.9961,
+   "grupo": "base"
+  },
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 1.3521,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.0385,
+    "wilson95": [
+     0.031,
+     0.048
+    ],
+    "k": 77
+   },
+   "excluye_cero": {
+    "tasa": 0.075,
+    "wilson95": [
+     0.064,
+     0.087
+    ],
+    "k": 150
+   },
+   "cobertura_ic95": {
+    "tasa": 0.925,
+    "wilson95": [
+     0.913,
+     0.936
+    ],
+    "k": 1850
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.776,
+    "wilson95": [
+     0.757,
+     0.794
+    ],
+    "k": 1552
+   },
+   "punto_medio_pp": -0.0048,
+   "punto_sd_pp": 0.1852,
+   "ancho_medio_pp": 0.681,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "sigma_x0.5"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 1.3521,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.336,
+    "wilson95": [
+     0.316,
+     0.357
+    ],
+    "k": 672
+   },
+   "excluye_cero": {
+    "tasa": 0.337,
+    "wilson95": [
+     0.317,
+     0.358
+    ],
+    "k": 674
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9105,
+    "wilson95": [
+     0.897,
+     0.922
+    ],
+    "k": 1821
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7875,
+    "wilson95": [
+     0.769,
+     0.805
+    ],
+    "k": 1575
+   },
+   "punto_medio_pp": 0.2438,
+   "punto_sd_pp": 0.1916,
+   "ancho_medio_pp": 0.6818,
+   "potencia_normal_cerrada": 0.2654,
+   "grupo": "sigma_x0.5"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 1.3521,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.794,
+    "wilson95": [
+     0.776,
+     0.811
+    ],
+    "k": 1588
+   },
+   "excluye_cero": {
+    "tasa": 0.794,
+    "wilson95": [
+     0.776,
+     0.811
+    ],
+    "k": 1588
+   },
+   "cobertura_ic95": {
+    "tasa": 0.931,
+    "wilson95": [
+     0.919,
+     0.941
+    ],
+    "k": 1862
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7775,
+    "wilson95": [
+     0.759,
+     0.795
+    ],
+    "k": 1555
+   },
+   "punto_medio_pp": 0.5003,
+   "punto_sd_pp": 0.1844,
+   "ancho_medio_pp": 0.6819,
+   "potencia_normal_cerrada": 0.7601,
+   "grupo": "sigma_x0.5"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 1.3521,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.993,
+    "wilson95": [
+     0.988,
+     0.996
+    ],
+    "k": 1986
+   },
+   "excluye_cero": {
+    "tasa": 0.993,
+    "wilson95": [
+     0.988,
+     0.996
+    ],
+    "k": 1986
+   },
+   "cobertura_ic95": {
+    "tasa": 0.922,
+    "wilson95": [
+     0.909,
+     0.933
+    ],
+    "k": 1844
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7885,
+    "wilson95": [
+     0.77,
+     0.806
+    ],
+    "k": 1577
+   },
+   "punto_medio_pp": 0.9966,
+   "punto_sd_pp": 0.1852,
+   "ancho_medio_pp": 0.6871,
+   "potencia_normal_cerrada": 0.9996,
+   "grupo": "sigma_x0.5"
+  },
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 5.4084,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.047,
+    "wilson95": [
+     0.039,
+     0.057
+    ],
+    "k": 94
+   },
+   "excluye_cero": {
+    "tasa": 0.0925,
+    "wilson95": [
+     0.081,
+     0.106
+    ],
+    "k": 185
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9075,
+    "wilson95": [
+     0.894,
+     0.919
+    ],
+    "k": 1815
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.774,
+    "wilson95": [
+     0.755,
+     0.792
+    ],
+    "k": 1548
+   },
+   "punto_medio_pp": -0.027,
+   "punto_sd_pp": 0.7734,
+   "ancho_medio_pp": 2.7293,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "sigma_x2.0"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 5.4084,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.078,
+    "wilson95": [
+     0.067,
+     0.091
+    ],
+    "k": 156
+   },
+   "excluye_cero": {
+    "tasa": 0.0985,
+    "wilson95": [
+     0.086,
+     0.112
+    ],
+    "k": 197
+   },
+   "cobertura_ic95": {
+    "tasa": 0.916,
+    "wilson95": [
+     0.903,
+     0.927
+    ],
+    "k": 1832
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.796,
+    "wilson95": [
+     0.778,
+     0.813
+    ],
+    "k": 1592
+   },
+   "punto_medio_pp": 0.2535,
+   "punto_sd_pp": 0.7477,
+   "ancho_medio_pp": 2.7359,
+   "potencia_normal_cerrada": 0.0519,
+   "grupo": "sigma_x2.0"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 5.4084,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.136,
+    "wilson95": [
+     0.122,
+     0.152
+    ],
+    "k": 272
+   },
+   "excluye_cero": {
+    "tasa": 0.14,
+    "wilson95": [
+     0.125,
+     0.156
+    ],
+    "k": 280
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9255,
+    "wilson95": [
+     0.913,
+     0.936
+    ],
+    "k": 1851
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.774,
+    "wilson95": [
+     0.755,
+     0.792
+    ],
+    "k": 1548
+   },
+   "punto_medio_pp": 0.4999,
+   "punto_sd_pp": 0.7459,
+   "ancho_medio_pp": 2.73,
+   "potencia_normal_cerrada": 0.098,
+   "grupo": "sigma_x2.0"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 5.4084,
+   "rho": 0.0,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.345,
+    "wilson95": [
+     0.324,
+     0.366
+    ],
+    "k": 690
+   },
+   "excluye_cero": {
+    "tasa": 0.3465,
+    "wilson95": [
+     0.326,
+     0.368
+    ],
+    "k": 693
+   },
+   "cobertura_ic95": {
+    "tasa": 0.92,
+    "wilson95": [
+     0.907,
+     0.931
+    ],
+    "k": 1840
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7895,
+    "wilson95": [
+     0.771,
+     0.807
+    ],
+    "k": 1579
+   },
+   "punto_medio_pp": 0.9916,
+   "punto_sd_pp": 0.7406,
+   "ancho_medio_pp": 2.7379,
+   "potencia_normal_cerrada": 0.2654,
+   "grupo": "sigma_x2.0"
+  },
+  {
+   "delta_pp_semana": 0.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.2,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.054,
+    "wilson95": [
+     0.045,
+     0.065
+    ],
+    "k": 108
+   },
+   "excluye_cero": {
+    "tasa": 0.101,
+    "wilson95": [
+     0.089,
+     0.115
+    ],
+    "k": 202
+   },
+   "cobertura_ic95": {
+    "tasa": 0.899,
+    "wilson95": [
+     0.885,
+     0.911
+    ],
+    "k": 1798
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7735,
+    "wilson95": [
+     0.755,
+     0.791
+    ],
+    "k": 1547
+   },
+   "punto_medio_pp": 0.0045,
+   "punto_sd_pp": 0.4602,
+   "ancho_medio_pp": 1.5798,
+   "potencia_normal_cerrada": 0.025,
+   "grupo": "rho_0.2"
+  },
+  {
+   "delta_pp_semana": 0.25,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.2,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.1335,
+    "wilson95": [
+     0.119,
+     0.149
+    ],
+    "k": 267
+   },
+   "excluye_cero": {
+    "tasa": 0.1445,
+    "wilson95": [
+     0.13,
+     0.161
+    ],
+    "k": 289
+   },
+   "cobertura_ic95": {
+    "tasa": 0.8945,
+    "wilson95": [
+     0.88,
+     0.907
+    ],
+    "k": 1789
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7655,
+    "wilson95": [
+     0.746,
+     0.784
+    ],
+    "k": 1531
+   },
+   "punto_medio_pp": 0.2303,
+   "punto_sd_pp": 0.454,
+   "ancho_medio_pp": 1.5644,
+   "potencia_normal_cerrada": 0.098,
+   "grupo": "rho_0.2"
+  },
+  {
+   "delta_pp_semana": 0.5,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.2,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.2965,
+    "wilson95": [
+     0.277,
+     0.317
+    ],
+    "k": 593
+   },
+   "excluye_cero": {
+    "tasa": 0.2995,
+    "wilson95": [
+     0.28,
+     0.32
+    ],
+    "k": 599
+   },
+   "cobertura_ic95": {
+    "tasa": 0.909,
+    "wilson95": [
+     0.896,
+     0.921
+    ],
+    "k": 1818
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7645,
+    "wilson95": [
+     0.745,
+     0.783
+    ],
+    "k": 1529
+   },
+   "punto_medio_pp": 0.5003,
+   "punto_sd_pp": 0.453,
+   "ancho_medio_pp": 1.5613,
+   "potencia_normal_cerrada": 0.2654,
+   "grupo": "rho_0.2"
+  },
+  {
+   "delta_pp_semana": 1.0,
+   "sigma_pp_semana": 2.7042,
+   "rho": 0.2,
+   "semanas": 52,
+   "replicas": 2000,
+   "deteccion": {
+    "tasa": 0.6765,
+    "wilson95": [
+     0.656,
+     0.697
+    ],
+    "k": 1353
+   },
+   "excluye_cero": {
+    "tasa": 0.6765,
+    "wilson95": [
+     0.656,
+     0.697
+    ],
+    "k": 1353
+   },
+   "cobertura_ic95": {
+    "tasa": 0.9075,
+    "wilson95": [
+     0.894,
+     0.919
+    ],
+    "k": 1815
+   },
+   "cobertura_ic95_sd": {
+    "tasa": 0.7605,
+    "wilson95": [
+     0.741,
+     0.779
+    ],
+    "k": 1521
+   },
+   "punto_medio_pp": 0.9846,
+   "punto_sd_pp": 0.4506,
+   "ancho_medio_pp": 1.5581,
+   "potencia_normal_cerrada": 0.7601,
+   "grupo": "rho_0.2"
+  }
+ ],
+ "veredicto": {
+  "criterio": "piso de Wilson de la detección bajo δ > 0 supera el techo de Wilson de la falsa detección bajo δ = 0, celda base a 52 semanas, para al menos una de las tres magnitudes declaradas",
+  "falsa_deteccion_nula": {
+   "tasa": 0.0465,
+   "wilson95": [
+    0.038,
+    0.057
+   ],
+   "k": 93
+  },
+  "por_delta": {
+   "0.25": {
+    "piso_wilson_deteccion": 0.122,
+    "techo_wilson_falsa_deteccion": 0.057,
+    "discrimina": true
+   },
+   "0.5": {
+    "piso_wilson_deteccion": 0.323,
+    "techo_wilson_falsa_deteccion": 0.057,
+    "discrimina": true
+   },
+   "1.0": {
+    "piso_wilson_deteccion": 0.772,
+    "techo_wilson_falsa_deteccion": 0.057,
+    "discrimina": true
+   }
+  },
+  "instrumento_discrimina": true,
+  "consecuencia": "la corrida sigue"
+ },
+ "calibracion": {
+  "52": {
+   "tamano_bilateral": {
+    "tasa": 0.086,
+    "wilson95": [
+     0.074,
+     0.099
+    ],
+    "k": 172
+   },
+   "cobertura": {
+    "tasa": 0.914,
+    "wilson95": [
+     0.901,
+     0.926
+    ],
+    "k": 1828
+   },
+   "cobertura_ic_sd": {
+    "tasa": 0.7835,
+    "wilson95": [
+     0.765,
+     0.801
+    ],
+    "k": 1567
+   },
+   "usable_a_alpha_005": false,
+   "alpha_real": 0.086,
+   "z_al_alpha_real": 1.7169,
+   "potencia_cerrada_al_alpha_real": {
+    "0.25": 0.1468,
+    "0.5": 0.3506,
+    "1.0": 0.8289
+   },
+   "mde80_pp_semana": 1.0506,
+   "mde80_pp_anio_aprox": 54.6
+  },
+  "104": {
+   "tamano_bilateral": {
+    "tasa": 0.0665,
+    "wilson95": [
+     0.056,
+     0.078
+    ],
+    "k": 133
+   },
+   "cobertura": {
+    "tasa": 0.9335,
+    "wilson95": [
+     0.922,
+     0.944
+    ],
+    "k": 1867
+   },
+   "cobertura_ic_sd": {
+    "tasa": 0.8205,
+    "wilson95": [
+     0.803,
+     0.837
+    ],
+    "k": 1641
+   },
+   "usable_a_alpha_005": false,
+   "alpha_real": 0.0665,
+   "z_al_alpha_real": 1.835,
+   "potencia_cerrada_al_alpha_real": {
+    "0.25": 0.1861,
+    "0.5": 0.5202,
+    "1.0": 0.9736
+   },
+   "mde80_pp_semana": 0.7429,
+   "mde80_pp_anio_aprox": 38.6
+  },
+  "156": {
+   "tamano_bilateral": {
+    "tasa": 0.0635,
+    "wilson95": [
+     0.054,
+     0.075
+    ],
+    "k": 127
+   },
+   "cobertura": {
+    "tasa": 0.9365,
+    "wilson95": [
+     0.925,
+     0.946
+    ],
+    "k": 1873
+   },
+   "cobertura_ic_sd": {
+    "tasa": 0.8495,
+    "wilson95": [
+     0.833,
+     0.865
+    ],
+    "k": 1699
+   },
+   "usable_a_alpha_005": false,
+   "alpha_real": 0.0635,
+   "z_al_alpha_real": 1.8557,
+   "potencia_cerrada_al_alpha_real": {
+    "0.25": 0.2417,
+    "0.5": 0.675,
+    "1.0": 0.9971
+   },
+   "mde80_pp_semana": 0.6066,
+   "mde80_pp_anio_aprox": 31.5
+  }
+ },
+ "sigma_cuenta_reconstruida": {
+  "juego": "conservador",
+  "base": "SMH",
+  "deslizamiento_pb": 5.0,
+  "semanas": 156,
+  "sigma_pp_semana": 2.3362,
+  "ic95": [
+   1.9952,
+   2.6686
+  ],
+  "metodo": "sd (ddof=1) de la diferencia semanal, IC por bootstrap circular de bloques de 4 semanas, 2000 réplicas, semilla 20260913",
+  "advertencia": "El IC es un percentil de bootstrap de bloques de una DESVIACIÓN; el bloque 1 midió su cobertura aparte (instrumento_dinero.md, columna «cobertura IC sd»), y el punto refleja UN sorteo de señal. Ver el barrido de semillas."
+ },
+ "intentos_dsr": 0,
+ "no_valida": "el camino que produce las series de valor (cuenta_papel, correr_estrategia, valorizar): eso es de los bloques 2 y 3"
+}

@@ -570,14 +570,20 @@ def _filas_selladas_excluir_cero():
 
 
 @pytest.mark.xfail(
-    reason="DECISIONES.md §56 punto 1: los 30 duplicados existen y la regla "
-           "de deduplicación NO está congelada. keep='first' da +6,64 pp "
-           "(p=0,1847) y keep='last' da +9,96 pp (p=0,0323): elegir cuál "
-           "conservar mueve el veredicto, así que es decisión de Nicolás y "
-           "está en cola_decisiones.md. Este test queda ROJO a propósito "
-           "hasta que esa decisión se tome; ablandarlo para que pase sería "
-           "borrar el hallazgo. Si pasa a XPASS, el problema se resolvió y "
-           "hay que sacar este marcador.")
+    reason="Razón VIGENTE (corregida el 8-sep-2026, corrida 11, bloque 9): "
+           "la regla de deduplicación SÍ está firmada y aplicada desde el "
+           "1-sep (acta §78 cerró el §56 punto 1 el 3-sep), pero actúa AL "
+           "CARGAR — `backtest.linea_base.cargar(dedup=True)` — y no borra "
+           "las filas físicas. Este test lee la base por SQL directo "
+           "(`_filas_selladas_excluir_cero`, sin pasar por `cargar()`), así "
+           "que sigue viendo los duplicados físicos por (ticker, "
+           "sesion_objetivo). Queda ROJO a propósito porque documenta que "
+           "senales.db conserva las filas duplicadas: reescribirlas o "
+           "borrarlas está prohibido (filas selladas jamás se reescriben). "
+           "Si pasa a XPASS, alguien tocó filas selladas o cambió la consulta, "
+           "y hay que averiguar cuál. La razón anterior citaba el §56 punto 1 "
+           "como pendiente: estaba podrida desde el 3-sep. "
+           "tests/test_razones_xfail.py verifica que esta razón siga cierta.")
 def test_ninguna_prediccion_sellada_comparte_sesion_objetivo_con_otra():
     """31-ago-2026, cuarta corrida autónoma.
 
@@ -772,15 +778,12 @@ def detectar_p_publicadas_sin_metodo(readme: str):
     return hallazgos
 
 
-@pytest.mark.xfail(
-    reason="DECISIONES.md §55 y GEMELO/resultados/mcnemar_dos_rutas.md: las "
-           "dos rutas son CORRECTAS y son tests distintos, así que no hay "
-           "cifra errónea que arreglar — falta declarar el método. Elegir "
-           "entre la opción A (declarar y no mover nada, recomendada), la B "
-           "(migrar al árbitro y mover cuatro cifras publicadas) y la C "
-           "(migrar hacia adelante, congelar hacia atrás) es decisión de "
-           "Nicolás, y mover una cifra publicada lleva su firma. Rojo a "
-           "propósito hasta entonces.")
+# Del 31-ago al 8-sep-2026 este test llevó `xfail`: las dos rutas son
+# correctas y faltaba DECLARAR el método, y elegir entre declarar (A),
+# migrar al árbitro (B) o migrar hacia adelante (C) era decisión de Nicolás.
+# El acta §82.5 firmó la A el 7-sep; la corrida 11 (bloque 8) declaró el
+# método al lado de cada p del README sin mover ninguna cifra, y el
+# marcador se sacó.
 def test_toda_p_publicada_declara_con_que_test_se_computo():
     """31-ago-2026, cuarta corrida autónoma, Frente D.
 

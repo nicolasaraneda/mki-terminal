@@ -457,6 +457,15 @@ export interface DatosCuentaPapel {
     con_ic_que_excluye_cero: number
     nota: string
   }
+  reconstruccion?: {
+    fecha: string
+    costo?: { comision_minima_usd: number; comision_por_accion_usd: number }
+  }
+  barrido_semillas?: {
+    K: number
+    deslizamiento_pb: number
+    comisiones_pct_del_aportado: Record<string, { mediana: number; banda_p2_5_p97_5: [number, number] }>
+  }
 }
 
 export interface Riel {

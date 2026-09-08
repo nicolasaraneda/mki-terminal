@@ -1,52 +1,50 @@
 # ESTADO
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es historia
-(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 7-sep-2026 (corrida 10).
+(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 8-sep-2026 (corrida 11).
 
 ## Producción
 - **Titular: este PC (WSL), en `main`**, 6 timers, emite; el modo se le pregunta a
-  `modo.py`. Modelo 4.6.0 congelado. El sello vigente se lee de `./mki estado`, no de
-  aquí. `.env` en 600. **La corrida 10 no tocó nada del camino de sellado.**
-- `noticias.py` corregido (O(n²) → lineal) desde el 3-sep; el bump de `FEATURE_VERSION`
-  es de Nicolás (`espera` §38).
+  `modo.py`. Modelo 4.6.0 congelado. El sello vigente se lee de `./mki estado`. `.env` en 600.
+  **La corrida 11 no tocó nada del camino de sellado.** `noticias.py` corregido desde el 3-sep;
+  el bump de `FEATURE_VERSION` es de Nicolás (§38).
 
 ## Los dos rieles (detalle en `VISION.md`, acta §80)
-- **Medición** (el de siempre): gap asiático sellado, una noche, no mueve plata. n 238 /
-  34 días, ventaja +9,7 pp, **IC95 de día [−7,2, +26,6] contiene el cero**. Lo que lo
-  mata: V1–V7 / R1–R3 de `GEMELO/DISEÑO.md` §6.
-- **Dinero** (`dinero/`): instrumentos de EE.UU., semanas, 100–500 USD, **todo SIMULADO,
-  cero filas selladas**. Aislado del sellado en las dos direcciones, con test.
+- **Medición:** gap asiático sellado, una noche. n 238 / 34 días, +9,7 pp, **IC95 de día
+  [−7,2, +26,6] contiene el cero**. La rama de coherencia (n 223, +14,3 pp, firmada en §82.3,
+  NO cableada) tiene ya su intervalo: **también contiene el cero en las tres rutas**, y bajo R2
+  cae a +7,8 pp (p 0,43). Cablearla y mover el README es decisión aparte (`espera` §46).
+- **Dinero** (`dinero/`): todo SIMULADO, cero filas selladas. Aislado del sellado con test.
 
-## Corrida 10, DESPUÉS de los cuatro dictámenes (`GEMELO/resultados/dictamen_10/`)
-**Los cuatro rechazaron.** Lo de abajo ya tiene aplicadas sus exigencias. Nada al README.
-- **Mapa operable (en pie):** 36/36 verificados; 6 representados / 2 sustituidos / 0
-  huecos (5/3/0 con liquidez). `SMH` no cabe en 500 USD; con 100 USD alcanzan 7 de 36.
-  Censo de **un solo día**, casos al borde declarados (`MSFT`, por 30 centavos).
-- **Cuenta en papel: RETIRADA.** Cuatro fugas temporales demostradas ejecutando código; la
-  cifra titular se mueve (el juego medio pasa de 27 % a **57 %** a 5 pb). **Ninguna de sus
-  cifras se puede citar.** El signo aguanta, el número no. Clavadas con **xfail estricto**
-  en `tests/test_dinero.py`: el día que se arreglen, el test obliga a volver acá.
-- **Señal larga: no queda ninguna afirmación positiva en pie.** L1 **REFUTADA** por su
-  regla pre-registrada, y eso se sostiene solo. Lo demás se cayó: la familia son **30
-  contrastes, no 24**, y con Holm **ninguno cruza α = 0,05**; la celda que ganaba sin
-  corregir no pasa la ablación anual (sin 2024 el IC contiene el cero); el −2,339 pp de
-  dirección, bajo Holm, tampoco. **La segunda vara pre-registrada no se evaluó**, así que
-  ni la regla §6 ni M4 se pueden dar por leídos.
-- **Potencia del riel: RETIRADA.** σ salía de la cuenta con fuga y viajaba sin intervalo.
-  Sobrevive lo cualitativo: 52 semanas sólo alcanzan para una ventaja grande, y una así no
-  es plausible; si el criterio se cumple, sospechar un error (`preregistro_dinero.md`
-  §2.1 — el «§2.5» que se citaba **no existe**, errata §6 D).
+## Corrida 11 (8-sep): las seis firmas del §82, ejecutadas (acta §83)
+- **El instrumento del riel de dinero, validado con verdad conocida:** DISCRIMINA (criterio
+  pre-declarado), pero **no está calibrado a α = 0,05** (tamaño 0,086 y cobertura 0,914 a 52
+  semanas; α real 0,064 a 156) y el IC de la sd cubre 0,78 a 0,85. MDE80 a 52 semanas: 1,05
+  pp/semana. PROPUESTA con dictamen «sostiene con exigencias» (aplicadas).
+- **Cuenta en papel RECONSTRUIDA (v2), PROPUESTA:** E1 a E6, gate de invariancia INVARIANTE en
+  25 cortes por regla con contraprueba; el auditor no encontró fuga (`dictamen_11/`), y que no
+  queden es indemostrable. Fricción del juego por defecto 12,4 % de los 500 USD aportados **sobre
+  156 semanas** (mediana de 20 semillas, banda [6,4, 13,2]); la manda el número de órdenes
+  (~210), no el arancel. Cobertura causal (MEDIDA) 0 % → 28 % / 84,5 %. Arancel del §40 (sin
+  firma) en `reglas.json`; umbrales recomputados por su regla (`espera` §48).
+- **§82.1, §82.5 ejecutadas:** el generador de la señal larga emite «3 especificaciones, 30
+  contrastes»; el README declara el método de cada p; un xfail menos.
+- **Guardia del `except` (§82.2 c): parche NO aplicado** `guardia_ancla_temporal.diff` (alerta
+  del vigía + log + conteo en el verificador), con 6 tests; aplica junto al del §26. Conteo (d),
+  MEDIDO en `senales.db` (`mode=ro`): **0 de 319 filas 4.6.0** con `available_at` de reloj de
+  pared (8 legacy con NULL, no evaluables): agujero teórico hoy.
+- **Censo por presupuesto y modo (MEDIDO sobre el congelado del 4-sep):** enteras 7 / 13 / 29 /
+  33 de 36 a 100 / 250 / 500 / 1000 USD; fraccionarias 36 de 36 con 2 % de ida y vuelta. El
+  «segundo día» no aportó sesión (7-sep feriado NYSE): sigue siendo censo de un solo día.
+- Guardia nuevo: `tests/test_razones_xfail.py` (cada xfail con predicado ejecutable).
 
 ## Deuda
-- **Pagada:** la suite ya no corre en la ventana de sellado (`red`, `guarda_red.sh`,
-  hook, `./mki tests`). **6 tests marcados en 2 archivos.**
-- **La grande, nueva: reconstruir la cuenta en papel sin fuga.** Orden del auditor: el
-  test de truncación va **antes** que la corrección; los tres xfail ya están escritos.
-- Registro de intentos del riel largo: **3**, propio. Asiático intacto (352 / 358).
+- Registro de intentos del riel largo: **3** (30 contrastes en la familia). Asiático intacto
+  (352 / 358). La corrida 11 no sumó intentos.
+- `inventario_abierto_2026-09-07.md`, citado por §82 y el encargo, **no existe en el repo**. El
+  IC de σ de la cuenta no es un 95 % y el estimador del riel sub-cubre: decisión (`espera` §50).
 
 ## Lo más urgente, que sigue siendo de Nicolás
-Firmar **V1-bis** (cero vs climatología — la corrida 10 tropezó con eso en el bloque 6) y
-el parche `snapshot.py:140`. De la 10: **§39** qué juego rige, **§40** el arancel real del
-corredor, **§41** si los registros de intentos se fusionan. Del cierre: **§42** si la
-cuenta en papel se reconstruye o se descarta, **§43** el período de M2, **§44** M4
-reescrita bajo multiplicidad.
+Aplicar **§26 + guardia §49** en el mismo acto (con bump). Decidir **§46** (cablear la
+coherencia y el README), **§47** presupuesto con la tabla a la vista, **§48** arancel §40 y
+umbrales, **§43** período de M2, **§44** M4, **V1-bis** (§30).

@@ -40,7 +40,9 @@ sys.path.insert(0, RAIZ)
 from dinero import senal_larga as SL
 from dinero import universo_dinero as U
 
-CORTES = ("2023-09-04", "2024-12-31", "2025-12-31")
+# E7 (auditor, corridas 10 y 11): cortes DENTRO del período de ajuste, no
+# sólo en o después de su borde, para que esta vía pueda ponerse roja.
+CORTES = ("2020-12-31", "2022-12-30", "2023-09-04", "2024-12-31", "2025-12-31")
 TOL = 1e-12
 
 

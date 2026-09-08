@@ -1,0 +1,387 @@
+{
+ "mediciones": [
+  {
+   "generado_en_utc": "2026-09-08T03:57:32.502423+00:00",
+   "etiqueta": "antes de la reconstruccion (corrida 11, bloque 3a)",
+   "definicion": "cobertura por causalidad = líneas ejecutables que ejecuta al menos un test de invariancia al truncado QUE PASA / líneas ejecutables. 'tocada' cuenta también los tests que fallan o están en xfail.",
+   "tests": [
+    {
+     "test": "tests.test_dinero::test_el_universo_operable_no_puede_depender_del_futuro",
+     "estado": "FALLA",
+     "xfail_declarado": true,
+     "error": "AssertionError: el universo operable cambia al truncar en el inicio de la ventana: la membresía de tres años se está decidiendo con el último cierre",
+     "lineas_tocadas": {
+      "cuenta_papel": 26,
+      "contabilidad": 44
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_senal_sin_informacion_no_puede_sortearse_del_futuro",
+     "estado": "FALLA",
+     "xfail_declarado": true,
+     "error": "AssertionError: 252 de 252 días cambian de señal al truncar en 2024-09-04: la señal se está sorteando de retornos futuros",
+     "lineas_tocadas": {
+      "cuenta_papel": 1,
+      "contabilidad": 17
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_orden_de_un_dia_no_puede_depender_del_cierre_de_ese_dia",
+     "estado": "FALLA",
+     "xfail_declarado": true,
+     "error": "AssertionError: perturbar el cierre del día de la orden cambió esa misma orden: se decide y se ejecuta contra el mismo cierre (retardo cero)",
+     "lineas_tocadas": {
+      "cuenta_papel": 1,
+      "contabilidad": 107
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_cuenta_en_papel_es_invariante_al_truncado",
+     "estado": "NO EXISTE"
+    },
+    {
+     "test": "tests.test_dinero::test_contraprueba_una_fuga_inyectada_rompe_la_invariancia",
+     "estado": "NO EXISTE"
+    }
+   ],
+   "modulos": {
+    "cuenta_papel": {
+     "lineas_ejecutables": 344,
+     "tocadas_por_tests_de_truncado": 27,
+     "cubiertas_por_tests_de_truncado_que_pasan": 0,
+     "tocada_pct": 7.8,
+     "cobertura_causal_pct": 0.0,
+     "funciones": {
+      "_ventana": {
+       "lineas": 2,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 0.0
+      },
+      "correr": {
+       "lineas": 28,
+       "tocada_pct": 3.6,
+       "cubierta_pct": 0.0
+      },
+      "_resumen": {
+       "lineas": 10,
+       "tocada_pct": 10.0,
+       "cubierta_pct": 0.0
+      },
+      "componer": {
+       "lineas": 230,
+       "tocada_pct": 0.4,
+       "cubierta_pct": 0.0
+      },
+      "a_json": {
+       "lineas": 43,
+       "tocada_pct": 2.3,
+       "cubierta_pct": 0.0
+      },
+      "main": {
+       "lineas": 10,
+       "tocada_pct": 10.0,
+       "cubierta_pct": 0.0
+      }
+     },
+     "sin_cubrir": [
+      "_resumen",
+      "_ventana",
+      "a_json",
+      "componer",
+      "correr",
+      "main"
+     ]
+    },
+    "contabilidad": {
+     "lineas_ejecutables": 216,
+     "tocadas_por_tests_de_truncado": 151,
+     "cubiertas_por_tests_de_truncado_que_pasan": 0,
+     "tocada_pct": 69.9,
+     "cobertura_causal_pct": 0.0,
+     "funciones": {
+      "Libro.aportar": {
+       "lineas": 3,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 0.0
+      },
+      "Libro.comprar": {
+       "lineas": 17,
+       "tocada_pct": 82.4,
+       "cubierta_pct": 0.0
+      },
+      "Libro.vender": {
+       "lineas": 16,
+       "tocada_pct": 81.2,
+       "cubierta_pct": 0.0
+      },
+      "Libro.valor": {
+       "lineas": 7,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 0.0
+      },
+      "_comision": {
+       "lineas": 7,
+       "tocada_pct": 85.7,
+       "cubierta_pct": 0.0
+      },
+      "calendario_aportes": {
+       "lineas": 13,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 0.0
+      },
+      "linea_base": {
+       "lineas": 17,
+       "tocada_pct": 5.9,
+       "cubierta_pct": 0.0
+      },
+      "senales_sin_informacion": {
+       "lineas": 19,
+       "tocada_pct": 94.7,
+       "cubierta_pct": 0.0
+      },
+      "correr_estrategia": {
+       "lineas": 45,
+       "tocada_pct": 91.1,
+       "cubierta_pct": 0.0
+      },
+      "valorizar": {
+       "lineas": 22,
+       "tocada_pct": 4.5,
+       "cubierta_pct": 0.0
+      },
+      "retornos_semanales": {
+       "lineas": 3,
+       "tocada_pct": 33.3,
+       "cubierta_pct": 0.0
+      },
+      "comparar": {
+       "lineas": 17,
+       "tocada_pct": 17.6,
+       "cubierta_pct": 0.0
+      }
+     },
+     "sin_cubrir": [
+      "Libro.aportar",
+      "Libro.comprar",
+      "Libro.valor",
+      "Libro.vender",
+      "_comision",
+      "calendario_aportes",
+      "comparar",
+      "correr_estrategia",
+      "linea_base",
+      "retornos_semanales",
+      "senales_sin_informacion",
+      "valorizar"
+     ]
+    }
+   }
+  },
+  {
+   "generado_en_utc": "2026-09-08T04:09:35.882079+00:00",
+   "etiqueta": "despues de la reconstruccion (corrida 11, bloque 3b)",
+   "definicion": "cobertura por causalidad = líneas ejecutables que ejecuta al menos un test de invariancia al truncado QUE PASA / líneas ejecutables. 'tocada' cuenta también los tests que fallan o están en xfail.",
+   "tests": [
+    {
+     "test": "tests.test_dinero::test_el_universo_operable_no_puede_depender_del_futuro",
+     "estado": "PASA",
+     "xfail_declarado": false,
+     "error": null,
+     "lineas_tocadas": {
+      "cuenta_papel": 43,
+      "contabilidad": 51
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_senal_sin_informacion_no_puede_sortearse_del_futuro",
+     "estado": "PASA",
+     "xfail_declarado": false,
+     "error": null,
+     "lineas_tocadas": {
+      "cuenta_papel": 0,
+      "contabilidad": 23
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_orden_de_un_dia_no_puede_depender_del_cierre_de_ese_dia",
+     "estado": "PASA",
+     "xfail_declarado": false,
+     "error": null,
+     "lineas_tocadas": {
+      "cuenta_papel": 1,
+      "contabilidad": 129
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_la_cuenta_en_papel_es_invariante_al_truncado",
+     "estado": "PASA",
+     "xfail_declarado": false,
+     "error": null,
+     "lineas_tocadas": {
+      "cuenta_papel": 66,
+      "contabilidad": 178
+     }
+    },
+    {
+     "test": "tests.test_dinero::test_contraprueba_una_fuga_inyectada_rompe_la_invariancia",
+     "estado": "PASA",
+     "xfail_declarado": false,
+     "error": null,
+     "lineas_tocadas": {
+      "cuenta_papel": 58,
+      "contabilidad": 180
+     }
+    }
+   ],
+   "modulos": {
+    "cuenta_papel": {
+     "lineas_ejecutables": 389,
+     "tocadas_por_tests_de_truncado": 109,
+     "cubiertas_por_tests_de_truncado_que_pasan": 109,
+     "tocada_pct": 28.0,
+     "cobertura_causal_pct": 28.0,
+     "funciones": {
+      "_ventana": {
+       "lineas": 2,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "universo_operable": {
+       "lineas": 7,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "correr": {
+       "lineas": 29,
+       "tocada_pct": 93.1,
+       "cubierta_pct": 93.1
+      },
+      "_huella_movimientos": {
+       "lineas": 15,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "verificar_invariancia": {
+       "lineas": 28,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "_resumen": {
+       "lineas": 15,
+       "tocada_pct": 6.7,
+       "cubierta_pct": 6.7
+      },
+      "sigma_diferencia_semanal": {
+       "lineas": 20,
+       "tocada_pct": 5.0,
+       "cubierta_pct": 5.0
+      },
+      "componer": {
+       "lineas": 177,
+       "tocada_pct": 0.6,
+       "cubierta_pct": 0.6
+      },
+      "a_json": {
+       "lineas": 58,
+       "tocada_pct": 1.7,
+       "cubierta_pct": 1.7
+      },
+      "main": {
+       "lineas": 12,
+       "tocada_pct": 8.3,
+       "cubierta_pct": 8.3
+      }
+     },
+     "sin_cubrir": [
+      "_resumen",
+      "a_json",
+      "componer",
+      "correr",
+      "main",
+      "sigma_diferencia_semanal"
+     ]
+    },
+    "contabilidad": {
+     "lineas_ejecutables": 278,
+     "tocadas_por_tests_de_truncado": 235,
+     "cubiertas_por_tests_de_truncado_que_pasan": 235,
+     "tocada_pct": 84.5,
+     "cobertura_causal_pct": 84.5,
+     "funciones": {
+      "Libro.aportar": {
+       "lineas": 3,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "Libro.comprar": {
+       "lineas": 21,
+       "tocada_pct": 85.7,
+       "cubierta_pct": 85.7
+      },
+      "Libro.vender": {
+       "lineas": 20,
+       "tocada_pct": 80.0,
+       "cubierta_pct": 80.0
+      },
+      "Libro.valor": {
+       "lineas": 7,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "_comision": {
+       "lineas": 7,
+       "tocada_pct": 85.7,
+       "cubierta_pct": 85.7
+      },
+      "calendario_aportes": {
+       "lineas": 13,
+       "tocada_pct": 100.0,
+       "cubierta_pct": 100.0
+      },
+      "linea_base": {
+       "lineas": 34,
+       "tocada_pct": 88.2,
+       "cubierta_pct": 88.2
+      },
+      "senales_sin_informacion": {
+       "lineas": 25,
+       "tocada_pct": 96.0,
+       "cubierta_pct": 96.0
+      },
+      "correr_estrategia": {
+       "lineas": 71,
+       "tocada_pct": 81.7,
+       "cubierta_pct": 81.7
+      },
+      "valorizar": {
+       "lineas": 22,
+       "tocada_pct": 95.5,
+       "cubierta_pct": 95.5
+      },
+      "retornos_semanales": {
+       "lineas": 3,
+       "tocada_pct": 33.3,
+       "cubierta_pct": 33.3
+      },
+      "comparar": {
+       "lineas": 17,
+       "tocada_pct": 17.6,
+       "cubierta_pct": 17.6
+      }
+     },
+     "sin_cubrir": [
+      "Libro.comprar",
+      "Libro.vender",
+      "_comision",
+      "comparar",
+      "correr_estrategia",
+      "linea_base",
+      "retornos_semanales",
+      "senales_sin_informacion",
+      "valorizar"
+     ]
+    }
+   }
+  }
+ ]
+}

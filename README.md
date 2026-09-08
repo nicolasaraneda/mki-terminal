@@ -20,7 +20,7 @@
 > **The hand-off to Asia was refuted too.** The step is measured; the
 > mechanism is a PROPOSAL. On the point-in-time sealed window (n=238) the edge is
 > **+9.7 pp, day-cluster 95% CI [-7.2, +26.6]: still not distinguishable
-> from zero** (nominal 95%, measured coverage ~0.93; cluster-t [-8.1, +27.4]) (row-level McNemar p = 0.0455, but the eight rows of a day
+> from zero** (nominal 95%, measured coverage ~0.93; cluster-t [-8.1, +27.4]) (row-level McNemar p = 0.0455, χ² with Edwards continuity correction; exact binomial 0.0451, but the eight rows of a day
 > share one SOX move: the day is the unit, and with it the interval
 > contains zero). Until 2-sep it read n=248, +6.5 pp, p = 0.1849 under a
 > convention since repealed (errata, D1).
@@ -170,7 +170,7 @@ Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 
 ### Larga — reconstruida, 59× la muestra
 
-**n = 14.618 · +15.66 pp · McNemar p ≈ 0**, sobre ocho años y cuatro
+**n = 14.618 · +15.66 pp · McNemar p ≈ 0** (χ² con corrección de continuidad, `GEMELO/control_lineal._mcnemar`; la binomial exacta no se computó a este n), sobre ocho años y cuatro
 bolsas, con el modelo de producción reconstruido (misma función, misma
 ventana rodante de 120 sesiones; solo se amplía el rango de fechas). Sin IC
 de clúster de día computado; reconstrucción sobre el caché v1, que omite

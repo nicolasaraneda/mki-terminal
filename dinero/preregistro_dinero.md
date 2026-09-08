@@ -49,7 +49,7 @@ Cuatro condiciones, **todas**, evaluadas UNA sola vez al final del período:
 
 La dispersión medida de la diferencia semanal, sobre las 156 semanas de la
 cuenta en papel de esta corrida (juego conservador contra `SMH`), es
-**σ = 2.54 pp por semana**. Con esa dispersión, α = 0.05 y potencia 0.80, el
+**σ = 2.54 pp por semana** *(errata 8-sep-2026, §7 C: cifra RETIRADA por fuga; la v2 mide 2,336)*. Con esa dispersión, α = 0.05 y potencia 0.80, el
 tamaño de efecto detectable a 52 semanas es:
 
 | Ventaja verdadera | Semanas necesarias | Años |
@@ -210,3 +210,38 @@ la ventaja del campeón **no se distingue de cero en ninguna de las tres
 convenciones de conteo**, con ningún p cerca de 0,05, y bajo la regla de
 deduplicación firmada el 1-sep **no está recomputada**. «No pasa» es correcto;
 «descalifica» y «la vuelve negativa», no.
+
+---
+
+## 7. Errata fechada, 8-sep-2026 (corrida 11, bloque 2), sobre M2 y la §2.1
+
+Aditiva, sin borrar. La cuenta en papel se reconstruyó sin fuga (acta §82.4,
+`dinero/resultados/cuenta_papel.md` v2, PROPUESTA hasta los dictámenes). Lo que
+eso corrige de este documento:
+
+**A. M2 no está «a punto de dispararse».** La banda «14 % a 43 %» del §3 y esa
+frase son de la v1 RETIRADA. Con la v2, el juego por defecto (`conservador`,
+5 pb) gasta en comisiones del orden del 12 % de lo aportado sobre **156
+semanas** (un sorteo; la banda entre 20 semillas está en la página), la mitad
+de la vara del 25 %. El juego `medio` sí la cruza, pero no es el que rige. La
+reversión se documenta acá con fecha, no se absorbe en silencio.
+
+**B. M2 sigue sin poder leerse hasta cuatro precisiones**, y son de Nicolás
+(`espera_firma.md` §43): (i) la base temporal, porque 12 % es sobre 156
+semanas y la §2 declara 52 (M1, 104); (ii) si el deslizamiento cuenta como
+«comisión»; (iii) el intervalo por K semillas, porque el número de órdenes es
+función del sorteo; (iv) la cifra sobre 52 semanas hacia adelante, que es la
+única que el criterio nombra.
+
+**C. La σ de la §2.1 (2,54 pp/semana) es cifra RETIRADA.** La v2 mide
+σ = 2,336 pp/semana con intervalo [1,995, 2,669] de bootstrap de bloques de
+una desviación **cuya cobertura medida es 0,850, o sea NO es un 95 %**
+(`GEMELO/resultados/instrumento_dinero.md`), y el
+instrumento validado da un MDE80 a 52 semanas del orden de 1 pp/semana con
+la σ ancla de 2,70: la conclusión cualitativa de la §2.1 (el criterio de 52
+semanas sólo lo pasa una ventaja implausible) **se mantiene**; la tabla de
+semanas necesarias se recomputa con el simulador y no acá.
+
+**D. El arancel.** La v2 usa el arancel publicado del insumo §40 (columna de
+enteras), que espera firma. Los umbrales derivados de `reglas.json` cambiaron
+con él por su regla (`espera_firma.md` §48).

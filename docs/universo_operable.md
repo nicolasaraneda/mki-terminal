@@ -9,7 +9,7 @@
 > salen de `dinero/datos/cierres_congelados.csv` (congelado
 > 2026-09-07T01:47:34+00:00 UTC, sha256 `69ca7283ae18fd37…`,
 > 2011 filas, 2018-09-05 a 2026-09-04).
-> Regenerado el 2026-09-07.
+> Regenerado el 2026-09-08.
 
 ## Las dos clases de afirmación de este documento
 
@@ -26,18 +26,19 @@ Un cierre demuestra que el instrumento cotiza, no que sea líquido.
 
 ## El supuesto de costo, a la vista
 
-- Comisión: 0.005 USD por acción, mínimo
-  1.00 USD por orden, tope 1.0 %
+- Comisión: 0.0035 USD por acción, mínimo
+  0.35 USD por orden, tope 1.0 %
   del monto. Deslizamiento supuesto: 5.0 pb por lado.
-- **SUPUESTO NO VERIFICADO.** No hay cuenta abierta, así que no hay
-  tarifario que leer. Confirmarlo contra el arancel público del corredor
-  que se abra es un ítem de firma (`GEMELO/resultados/espera_firma.md`).
-- Consecuencia aritmética que ordena todo el mapa: **con mínimo de 1 USD y
-  tope de 1 %, una orden de UNA acción de menos de 100 USD paga
-  exactamente el 1 %.** La comisión no es un detalle a este tamaño de
-  cuenta: es el primer obstáculo.
-- Se asumen **acciones enteras**. Las fraccionarias dependen del corredor y
-  no hay corredor.
+- **Arancel PUBLICADO, no supuesto** (desde el 8-sep-2026): es la columna de
+  acciones enteras del insumo del §40 (`GEMELO/propuestas/insumo_40_aranceles_*.md`,
+  Pro Tiered, consultado el 7-sep-2026). El insumo es PROPUESTA y espera firma;
+  hasta el 7-sep esto era un supuesto sin verificar (0,005 / 1,00 USD / 1 %).
+- Consecuencia aritmética que ordena el mapa: **con mínimo de 0.35 USD y
+  tope de 1.0 %, el cruce está en 35 USD por orden**: por debajo
+  manda el tope proporcional, por encima el mínimo fijo.
+- Las tablas por eslabón asumen **acciones enteras** con el techo de reglas.json;
+  el censo por presupuesto y modo de compra (más abajo) computa también
+  fraccionarias.
 
 ## Resumen
 
@@ -93,10 +94,10 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `UMC` | United Microelectronics (ADR) | ADR | dominante | 20.77 | sí | 24 | 1.00 % | 0.20 % |
-| `GFS` | GlobalFoundries | accion | complemento | 45.21 | sí | 11 | 1.00 % | 0.20 % |
-| `GSM` | Ferroglobe | accion | sustituto | 4.67 | sí | 106 | 1.00 % | 0.20 % |
-| `TSEM` | Tower Semiconductor | accion | complemento | 222.34 | sí | 2 | 0.45 % | 0.22 % |
+| `UMC` | United Microelectronics (ADR) | ADR | dominante | 20.77 | sí | 24 | 1.00 % | 0.07 % |
+| `GFS` | GlobalFoundries | accion | complemento | 45.21 | sí | 11 | 0.77 % | 0.07 % |
+| `GSM` | Ferroglobe | accion | sustituto | 4.67 | sí | 106 | 1.00 % | 0.07 % |
+| `TSEM` | Tower Semiconductor | accion | complemento | 222.34 | sí | 2 | 0.16 % | 0.08 % |
 
 - `GFS`: Nodos maduros, listado en EE.UU.
 - **`GSM` sustituye a los productores de silicio metálico y cuarzo de grado semiconductor, casi todos privados (Sibelco, Quartz Corp).** Ferroglobe vende silicio metálico y ferroaleaciones a muchos sectores; el semiconductor es una fracción menor de su demanda. Comprarlo no es comprar la materia prima del chip.
@@ -114,10 +115,10 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `SHECY` | Shin-Etsu Chemical (ADR OTC) | ADR | dominante | 18.61 | sí | 26 | 1.00 % | 0.21 % |
-| `ENTG` | Entegris | accion | sustituto | 138.74 | sí | 3 | 0.72 % | 0.24 % |
-| `LIN` | Linde | accion | sustituto | 477.57 | sí | 1 | 0.21 % | 0.21 % |
-| `MKSI` | MKS Instruments | accion | complemento | 260.31 | sí | 1 | 0.38 % | 0.38 % |
+| `SHECY` | Shin-Etsu Chemical (ADR OTC) | ADR | dominante | 18.61 | sí | 26 | 1.00 % | 0.07 % |
+| `ENTG` | Entegris | accion | sustituto | 138.74 | sí | 3 | 0.25 % | 0.08 % |
+| `LIN` | Linde | accion | sustituto | 477.57 | sí | 1 | 0.07 % | 0.07 % |
+| `MKSI` | MKS Instruments | accion | complemento | 260.31 | sí | 1 | 0.13 % | 0.13 % |
 
 - **`ENTG` sustituye a Shin-Etsu (4063.T) y SUMCO (3436.T), los dos fabricantes de obleas de silicio.** Entegris vende materiales de proceso, filtración y manejo de obleas: es proveedor de la fábrica, no fabricante de la oblea. La correlación es de sector, no de producto.
 - **`LIN` sustituye a los gases de proceso de grado electrónico.** Linde es un gigante de gases industriales diversificado; el electrónico es una línea, no la empresa.
@@ -135,12 +136,12 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `ASML` | ASML Holding | ADR | dominante | 1,714.88 | **no** | **0** | 0.06 % | — |
-| `AMAT` | Applied Materials | accion | complemento | 454.71 | sí | 1 | 0.22 % | 0.22 % |
-| `KLAC` | KLA Corporation | accion | complemento | 185.60 | sí | 2 | 0.54 % | 0.27 % |
-| `LRCX` | Lam Research | accion | complemento | 307.65 | sí | 1 | 0.33 % | 0.33 % |
-| `TER` | Teradyne | accion | complemento | 357.03 | sí | 1 | 0.28 % | 0.28 % |
-| `TOELY` | Tokyo Electron (ADR OTC) | ADR | sustituto | 176.49 | sí | 2 | 0.57 % | 0.28 % |
+| `ASML` | ASML Holding | ADR | dominante | 1,714.88 | **no** | **0** | 0.02 % | — |
+| `AMAT` | Applied Materials | accion | complemento | 454.71 | sí | 1 | 0.08 % | 0.08 % |
+| `KLAC` | KLA Corporation | accion | complemento | 185.60 | sí | 2 | 0.19 % | 0.09 % |
+| `LRCX` | Lam Research | accion | complemento | 307.65 | sí | 1 | 0.11 % | 0.11 % |
+| `TER` | Teradyne | accion | complemento | 357.03 | sí | 1 | 0.10 % | 0.10 % |
+| `TOELY` | Tokyo Electron (ADR OTC) | ADR | sustituto | 176.49 | sí | 2 | 0.20 % | 0.10 % |
 
 - **`ASML` sustituye a ASML.AS, el listado principal en Ámsterdam.** El ADR de ASML es de nivel III y cotiza en Nasdaq con liquidez propia; la diferencia con el original es horario y moneda, no profundidad.
 - `TER`: Equipo de prueba.
@@ -157,8 +158,8 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `TSM` | TSMC (ADR) | ADR | dominante | 428.91 | sí | 1 | 0.23 % | 0.23 % |
-| `INTC` | Intel | accion | complemento | 95.80 | sí | 5 | 1.00 % | 0.21 % |
+| `TSM` | TSMC (ADR) | ADR | dominante | 428.91 | sí | 1 | 0.08 % | 0.08 % |
+| `INTC` | Intel | accion | complemento | 95.80 | sí | 5 | 0.37 % | 0.07 % |
 
 - `INTC`: Intel Foundry como segundo intento occidental.
 - **`TSM` sustituye a 2330.TW, el listado principal en Taipéi.** El riel de medición usa 2330.TW y trata al ADR como DUPLICADO (universo.py, `duplicado_de`), justamente porque no son el mismo instrumento: distinto horario, distinta moneda, prima variable. Para comprar desde Chile con 500 dólares, el ADR es lo único disponible.
@@ -173,9 +174,9 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `MU` | Micron Technology | accion | dominante | 1,016.59 | **no** | **0** | 0.10 % | — |
-| `SNDK` | SanDisk | accion | complemento | 1,740.00 | **no** | **0** | 0.06 % | — |
-| `WDC` | Western Digital | accion | complemento | 467.46 | sí | 1 | 0.21 % | 0.21 % |
+| `MU` | Micron Technology | accion | dominante | 1,016.59 | **no** | **0** | 0.03 % | — |
+| `SNDK` | SanDisk | accion | complemento | 1,740.00 | **no** | **0** | 0.02 % | — |
+| `WDC` | Western Digital | accion | complemento | 467.46 | sí | 1 | 0.07 % | 0.07 % |
 
 - `MU`: Tercero mundial en DRAM; el único de los grandes con listado principal en EE.UU.
 - `SNDK`: NAND, escindida de Western Digital. Verificar: si el ticker no responde, no entra.
@@ -191,8 +192,8 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `ASX` | ASE Technology (ADR) | ADR | dominante | 37.51 | sí | 13 | 1.00 % | 0.21 % |
-| `AMKR` | Amkor Technology | accion | complemento | 47.77 | sí | 10 | 1.00 % | 0.21 % |
+| `ASX` | ASE Technology (ADR) | ADR | dominante | 37.51 | sí | 13 | 0.93 % | 0.07 % |
+| `AMKR` | Amkor Technology | accion | complemento | 47.77 | sí | 10 | 0.73 % | 0.07 % |
 
 - **`ASX` sustituye a 3711.TW, el listado principal en Taipéi.** Mismas diferencias que cualquier ADR: horario, moneda, prima.
 
@@ -206,16 +207,16 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `CDNS` | Cadence Design Systems | accion | dominante | 292.70 | sí | 1 | 0.34 % | 0.34 % |
-| `NVDA` | NVIDIA | accion | dominante | 230.36 | sí | 2 | 0.43 % | 0.22 % |
-| `SNPS` | Synopsys | accion | dominante | 393.84 | sí | 1 | 0.25 % | 0.25 % |
-| `AMD` | AMD | accion | complemento | 477.57 | sí | 1 | 0.21 % | 0.21 % |
-| `ARM` | Arm Holdings (ADR) | ADR | complemento | 252.09 | sí | 1 | 0.40 % | 0.40 % |
-| `AVGO` | Broadcom | accion | complemento | 357.90 | sí | 1 | 0.28 % | 0.28 % |
-| `QCOM` | Qualcomm | accion | complemento | 168.74 | sí | 2 | 0.59 % | 0.30 % |
-| `SMH` | VanEck Semiconductor ETF | ETF | sustituto | 567.01 | **no** | **0** | 0.18 % | — |
-| `SOXX` | iShares Semiconductor ETF | ETF | sustituto | 519.86 | **no** | **0** | 0.19 % | — |
-| `XSD` | SPDR S&P Semiconductor ETF | ETF | sustituto | 491.45 | sí | 1 | 0.20 % | 0.20 % |
+| `CDNS` | Cadence Design Systems | accion | dominante | 292.70 | sí | 1 | 0.12 % | 0.12 % |
+| `NVDA` | NVIDIA | accion | dominante | 230.36 | sí | 2 | 0.15 % | 0.08 % |
+| `SNPS` | Synopsys | accion | dominante | 393.84 | sí | 1 | 0.09 % | 0.09 % |
+| `AMD` | AMD | accion | complemento | 477.57 | sí | 1 | 0.07 % | 0.07 % |
+| `ARM` | Arm Holdings (ADR) | ADR | complemento | 252.09 | sí | 1 | 0.14 % | 0.14 % |
+| `AVGO` | Broadcom | accion | complemento | 357.90 | sí | 1 | 0.10 % | 0.10 % |
+| `QCOM` | Qualcomm | accion | complemento | 168.74 | sí | 2 | 0.21 % | 0.10 % |
+| `SMH` | VanEck Semiconductor ETF | ETF | sustituto | 567.01 | **no** | **0** | 0.06 % | — |
+| `SOXX` | iShares Semiconductor ETF | ETF | sustituto | 519.86 | **no** | **0** | 0.07 % | — |
+| `XSD` | SPDR S&P Semiconductor ETF | ETF | sustituto | 491.45 | sí | 1 | 0.07 % | 0.07 % |
 
 - **`ARM` sustituye a ARM.L / la matriz SoftBank.** El ADR de Arm es el vehículo listado tras la salida a bolsa de 2023; SoftBank retiene la mayoría.
 - `CDNS`: La otra mitad.
@@ -235,11 +236,11 @@ afirmaciones estables.
 
 | Ticker | Instrumento | Forma | Rol | Cierre USD | 1 acción | 500 USD | Comisión 1 acción | Comisión al techo |
 |---|---|---|---|---:|:---:|:---:|---:|---:|
-| `GOOGL` | Alphabet | accion | dominante | 338.46 | sí | 1 | 0.30 % | 0.30 % |
-| `META` | Meta Platforms | accion | dominante | 616.77 | **no** | **0** | 0.16 % | — |
-| `MSFT` | Microsoft | accion | dominante | 499.70 | **no** | **0** | 0.20 % | — |
-| `AMZN` | Amazon | accion | complemento | 258.51 | sí | 1 | 0.39 % | 0.39 % |
-| `VRT` | Vertiv Holdings | accion | complemento | 280.53 | sí | 1 | 0.36 % | 0.36 % |
+| `GOOGL` | Alphabet | accion | dominante | 338.46 | sí | 1 | 0.10 % | 0.10 % |
+| `META` | Meta Platforms | accion | dominante | 616.77 | **no** | **0** | 0.06 % | — |
+| `MSFT` | Microsoft | accion | dominante | 499.70 | **no** | **0** | 0.07 % | — |
+| `AMZN` | Amazon | accion | complemento | 258.51 | sí | 1 | 0.14 % | 0.14 % |
+| `VRT` | Vertiv Holdings | accion | complemento | 280.53 | sí | 1 | 0.12 % | 0.12 % |
 
 - `GOOGL`: Nivel 4 del riel de medición.
 - `META`: Nivel 4 del riel de medición.
@@ -267,11 +268,101 @@ se le compra en su lugar, y en qué se diferencia.
 
 **Ninguno.** Los 36 candidatos devolvieron al menos un cierre.
 
+## Censo por presupuesto y modo de compra (corrida 11, bloque 10)
+
+El presupuesto del riel quedó sin decidir porque el censo original se computó
+con piso de 100 USD y acciones enteras (§82.7). Acá el modo de compra y el
+presupuesto son **parámetros explícitos** y el censo se produce para los
+cuatro montos en discusión. Arancel del insumo §40: enteras 0.0035 USD/acción, mínimo 0.35 USD, tope 1.0 %; fraccionarias 1.0 % del monto, mínimo 0.01 USD.
+«Alcanzable» = con ese presupuesto entra al menos una unidad, comisión incluida.
+Con fraccionarias todo instrumento con precio es alcanzable por construcción:
+lo que separa los modos no es el alcance sino la **fricción**.
+
+| Presupuesto | Modo | Alcanzables | Representados / sustituidos / huecos | Exigiendo liquidez | Casos al borde (enteras) |
+|---:|---|---:|---|---|---|
+| 100 USD | enteras | **7 de 36** | 3 / 1 / 4 | 2 / 1 / 5 | — |
+| 100 USD | fraccionarias | **36 de 36** | 8 / 0 / 0 | 7 / 1 / 0 | — |
+| 250 USD | enteras | **13 de 36** | 4 / 2 / 2 | 3 / 3 / 2 | — |
+| 250 USD | fraccionarias | **36 de 36** | 8 / 0 / 0 | 7 / 1 / 0 | — |
+| 500 USD | enteras | **29 de 36** | 6 / 2 / 0 | 5 / 3 / 0 | `MSFT` |
+| 500 USD | fraccionarias | **36 de 36** | 8 / 0 / 0 | 7 / 1 / 0 | — |
+| 1000 USD | enteras | **33 de 36** | 6 / 2 / 0 | 5 / 3 / 0 | — |
+| 1000 USD | fraccionarias | **36 de 36** | 8 / 0 / 0 | 7 / 1 / 0 | — |
+
+### Fricción de ida y vuelta por instrumento
+
+Comisión de compra más comisión de venta, sin deslizamiento, para una posición
+que usa el presupuesto entero en ese instrumento. Enteras: «unidades (fricción %)».
+Fraccionarias: la fricción es la misma a cualquier presupuesto y se muestra una vez.
+
+| Ticker | Cierre USD | 100 USD enteras | 250 USD enteras | 500 USD enteras | 1000 USD enteras | fraccionarias |
+|---|---:|---:|---:|---:|---:|---:|
+| `AMAT` | 454.71 | **0** | **0** | 1 (0.15 %) | 2 (0.08 %) | 2.00 % |
+| `AMD` | 477.57 | **0** | **0** | 1 (0.15 %) | 2 (0.07 %) | 2.00 % |
+| `AMKR` | 47.77 | 2 (0.73 %) | 5 (0.29 %) | 10 (0.15 %) | 20 (0.07 %) | 2.00 % |
+| `AMZN` | 258.51 | **0** | **0** | 1 (0.27 %) | 3 (0.09 %) | 2.00 % |
+| `ARM` | 252.09 | **0** | **0** | 1 (0.28 %) | 3 (0.09 %) | 2.00 % |
+| `ASML` | 1,714.88 | **0** | **0** | **0** | **0** | 2.00 % |
+| `ASX` | 37.51 | 2 (0.93 %) | 6 (0.31 %) | 13 (0.14 %) | 26 (0.07 %) | 2.00 % |
+| `AVGO` | 357.90 | **0** | **0** | 1 (0.20 %) | 2 (0.10 %) | 2.00 % |
+| `CDNS` | 292.70 | **0** | **0** | 1 (0.24 %) | 3 (0.08 %) | 2.00 % |
+| `ENTG` | 138.74 | **0** | 1 (0.50 %) | 3 (0.17 %) | 7 (0.07 %) | 2.00 % |
+| `GFS` | 45.21 | 2 (0.77 %) | 5 (0.31 %) | 11 (0.14 %) | 22 (0.07 %) | 2.00 % |
+| `GOOGL` | 338.46 | **0** | **0** | 1 (0.21 %) | 2 (0.10 %) | 2.00 % |
+| `GSM` | 4.67 | 21 (0.71 %) | 53 (0.28 %) | 106 (0.15 %) | 213 (0.15 %) | 2.00 % |
+| `INTC` | 95.80 | 1 (0.73 %) | 2 (0.37 %) | 5 (0.15 %) | 10 (0.07 %) | 2.00 % |
+| `KLAC` | 185.60 | **0** | 1 (0.38 %) | 2 (0.19 %) | 5 (0.08 %) | 2.00 % |
+| `LIN` | 477.57 | **0** | **0** | 1 (0.15 %) | 2 (0.07 %) | 2.00 % |
+| `LRCX` | 307.65 | **0** | **0** | 1 (0.23 %) | 3 (0.08 %) | 2.00 % |
+| `META` | 616.77 | **0** | **0** | **0** | 1 (0.11 %) | 2.00 % |
+| `MKSI` | 260.31 | **0** | **0** | 1 (0.27 %) | 3 (0.09 %) | 2.00 % |
+| `MSFT` | 499.70 | **0** | **0** | **0** | 2 (0.07 %) | 2.00 % |
+| `MU` | 1,016.59 | **0** | **0** | **0** | **0** | 2.00 % |
+| `NVDA` | 230.36 | **0** | 1 (0.30 %) | 2 (0.15 %) | 4 (0.08 %) | 2.00 % |
+| `QCOM` | 168.74 | **0** | 1 (0.41 %) | 2 (0.21 %) | 5 (0.08 %) | 2.00 % |
+| `SHECY` | 18.61 | 5 (0.75 %) | 13 (0.29 %) | 26 (0.14 %) | 53 (0.07 %) | 2.00 % |
+| `SMH` | 567.01 | **0** | **0** | **0** | 1 (0.12 %) | 2.00 % |
+| `SNDK` | 1,740.00 | **0** | **0** | **0** | **0** | 2.00 % |
+| `SNPS` | 393.84 | **0** | **0** | 1 (0.18 %) | 2 (0.09 %) | 2.00 % |
+| `SOXX` | 519.86 | **0** | **0** | **0** | 1 (0.13 %) | 2.00 % |
+| `TER` | 357.03 | **0** | **0** | 1 (0.20 %) | 2 (0.10 %) | 2.00 % |
+| `TOELY` | 176.49 | **0** | 1 (0.40 %) | 2 (0.20 %) | 5 (0.08 %) | 2.00 % |
+| `TSEM` | 222.34 | **0** | 1 (0.31 %) | 2 (0.16 %) | 4 (0.08 %) | 2.00 % |
+| `TSM` | 428.91 | **0** | **0** | 1 (0.16 %) | 2 (0.08 %) | 2.00 % |
+| `UMC` | 20.77 | 4 (0.84 %) | 12 (0.28 %) | 24 (0.14 %) | 48 (0.07 %) | 2.00 % |
+| `VRT` | 280.53 | **0** | **0** | 1 (0.25 %) | 3 (0.08 %) | 2.00 % |
+| `WDC` | 467.46 | **0** | **0** | 1 (0.15 %) | 2 (0.07 %) | 2.00 % |
+| `XSD` | 491.45 | **0** | **0** | 1 (0.14 %) | 2 (0.07 %) | 2.00 % |
+
+**Lectura, y lo que no se puede leer.** La fricción de enteras es un peaje fijo
+(0,70 USD de ida y vuelta mientras la orden tenga menos de 100 acciones) y se
+diluye con el tamaño; la de fraccionarias es proporcional y no se diluye. El
+cruce está en 35 USD por orden (§40 §6). Esto es aritmética del arancel, no una
+medición: las tarifas de terceros y de bolsa por venue no están, y la liquidez de
+los ADR de mostrador sigue sin verificar. **La decisión del presupuesto se toma
+con esta tabla a la vista y es de Nicolás**; este documento no la recomienda.
+
+## El segundo congelado no aportó sesión: el censo sigue siendo de un solo día
+
+**Los dos congelados terminan en la MISMA sesión (2026-09-04): el segundo
+congelado no aporta una sesión nueva y esto NO cuenta como segundo día de censo.**
+Se deja registrado con su fecha y su sha256 para que la comparación se pueda
+repetir cuando exista una sesión posterior; hasta entonces el censo sigue siendo
+de un solo día.
+
+Día 1: congelado 2026-09-07T01:47:34+00:00 UTC, hasta 2026-09-04, sha256 `69ca7283ae18fd37…`. Día 2: congelado 2026-09-08T04:21:27+00:00 UTC, hasta 2026-09-04, sha256 `4222c8ecd0607497…`. **La comparación entre los dos días es el dato, no el segundo día solo.**
+
+La comparación entre los dos congelados es **trivialmente idéntica** (misma sesión final) y
+no verifica estabilidad de nada; se deja el sha256 para repetirla cuando exista una sesión
+posterior.
+
 ## Lo que este mapa NO resuelve
 
 - **La liquidez de los ADR de mostrador** (`SHECY`, `TOELY`). Devuelven
   precio; el diferencial de compra-venta no se midió.
-- **El arancel real.** Todo el costo de arriba es un supuesto declarado.
+- **El arancel real, medido en una cuenta.** El costo de arriba es el arancel
+  PUBLICADO del insumo §40, no el observado en una orden real: faltan tarifas de
+  terceros y de bolsa por venue, y el insumo espera firma.
 - **El tratamiento tributario** de dividendos de ADR para un residente
   chileno, que cambia el retorno neto y no es objeto de esta corrida.
 - **Que comprar un eslabón sea buena idea.** Este documento dice qué se

@@ -3,6 +3,9 @@
  "advertencia": "Ninguna cifra entra al README ni sostiene ninguna afirmación del proyecto. Cero filas selladas.",
  "preregistro": "GEMELO/preregistro/senal_larga_v1.md (commit e368dad)",
  "intentos_riel_largo": 3,
+ "intentos_riel_largo_cuenta": "especificaciones (L1, L2, L3)",
+ "familia_contrastes_que_gobierna": 30,
+ "nota_dos_contadores": "La multiplicidad que gobierna el resultado NO se computa sobre ese 3: se computa con Holm sobre la familia completa de **30 contrastes** de esta página. Son dos contadores distintos y ninguno reemplaza al otro (acta §82.1).",
  "celdas": [
   {
    "especificacion": "L1",

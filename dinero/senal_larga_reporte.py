@@ -300,6 +300,20 @@ def _fila_clima(espec, h, m):
             f"{celda(m['ic_crps_clima'], m['crps_clima'] - m['crps_modelo'], 'pp')} |")
 
 
+def nota_dos_contadores(mult: dict) -> str:
+    """El aviso del §82.1, emitido por el generador y con los dos números
+    COMPUTADOS, no pegados: el 3 sale de `registro_intentos` (una suma) y la
+    familia de `multiplicidad()` (el largo real de la familia de Holm).
+    Acta §82.1: donde el 3 aparezca publicado tiene que aparecer al lado que
+    la multiplicidad que gobierna el resultado se computa sobre la familia
+    completa de contrastes; un lector que ve un 3 solo se lleva una idea
+    equivocada de cuánto se buscó."""
+    return (f"La multiplicidad que gobierna el resultado NO se computa sobre ese "
+            f"{registro_intentos.N_INTENTOS_RIEL_LARGO}: se computa con Holm sobre la "
+            f"familia completa de **{mult['familia']} contrastes** de esta página. Son dos "
+            f"contadores distintos y ninguno reemplaza al otro (acta §82.1).")
+
+
 def componer(todo: dict, mult: dict) -> str:
     L = []
     L.append("# Señal larga v1 — resultado\n")
@@ -311,7 +325,8 @@ def componer(todo: dict, mult: dict) -> str:
     L.append("antes del cómputo** (commit `e368dad`). Tres especificaciones declaradas")
     L.append("por nombre, dos horizontes, agregación sobre todos los pares adyacentes")
     L.append("de la cadena. Registro de intentos del riel largo: "
-             f"**{registro_intentos.N_INTENTOS_RIEL_LARGO}**.\n")
+             f"**{registro_intentos.N_INTENTOS_RIEL_LARGO}** — cuenta ESPECIFICACIONES "
+             f"(L1, L2, L3). {nota_dos_contadores(mult)}\n")
     L.append(f"Generado {datetime.now(timezone.utc).strftime('%Y-%m-%d')} UTC por "
              "`python -m dinero.senal_larga_reporte`.\n")
 
@@ -758,6 +773,9 @@ def a_json(todo: dict, mult: dict) -> dict:
                         "afirmación del proyecto. Cero filas selladas."),
         "preregistro": "GEMELO/preregistro/senal_larga_v1.md (commit e368dad)",
         "intentos_riel_largo": registro_intentos.N_INTENTOS_RIEL_LARGO,
+        "intentos_riel_largo_cuenta": "especificaciones (L1, L2, L3)",
+        "familia_contrastes_que_gobierna": mult["familia"],
+        "nota_dos_contadores": nota_dos_contadores(mult),
         "celdas": celdas,
         "multiplicidad": {
             "familia_contrastes": mult["familia"],

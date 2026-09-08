@@ -23,6 +23,180 @@ SALIDA = os.path.join(RAIZ, "docs", "universo_operable.md")
 SALIDA_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "resultados", "universo_operable.json")
 
+# Bloque 10 de la corrida 11: el censo se computa para estos presupuestos y
+# en los DOS modos de compra, porque el presupuesto está sin decidir
+# justamente porque el censo se había computado para otro rango (§82.7).
+PRESUPUESTOS_USD = (100.0, 250.0, 500.0, 1000.0)
+MODOS = (("enteras", False), ("fraccionarias", True))
+# Segundo día de censo: otro congelado, con fecha y sha256 como el primero.
+# Si no existe, la sección se declara no disponible; nunca se descarga acá.
+RUTA_CIERRES_DIA2 = os.path.join(precios.DIR_DATOS, "cierres_congelados_dia2.csv")
+RUTA_META_DIA2 = os.path.splitext(RUTA_CIERRES_DIA2)[0] + ".meta.json"
+
+
+def censo(cierres, cfg) -> dict:
+    """El censo por presupuesto × modo: cuántos instrumentos verificados se
+    pueden comprar, el estado de cada eslabón, y la fricción de ida y vuelta
+    por instrumento. Sale de `construir_mapa` con sus dos parámetros nuevos;
+    no hay una segunda fuente de verdad."""
+    salida = {"presupuestos_usd": list(PRESUPUESTOS_USD), "celdas": [], "instrumentos": {}}
+    for presupuesto in PRESUPUESTOS_USD:
+        for nombre_modo, frac in MODOS:
+            filas = U.construir_mapa(cierres, cfg, presupuesto=presupuesto, fraccionarias=frac)
+            por_eslabon = {e.clave: [f for f in filas if f.candidato.eslabon == e.clave]
+                           for e in U.ESLABONES}
+            estados = [U.estado_del_eslabon(por_eslabon[e.clave]) for e in U.ESLABONES]
+            estrictos = [U.estado_del_eslabon(por_eslabon[e.clave], True) for e in U.ESLABONES]
+            verificados = [f for f in filas if f.verificado]
+            salida["celdas"].append({
+                "presupuesto_usd": presupuesto, "modo": nombre_modo,
+                "verificados": len(verificados),
+                "alcanzables": sum(1 for f in verificados if f.alcanza_con_techo),
+                "representados": estados.count("REPRESENTADO"),
+                "sustituidos": estados.count("SUSTITUIDO"),
+                "huecos": estados.count("HUECO"),
+                "representados_exigiendo_liquidez": estrictos.count("REPRESENTADO"),
+                "sustituidos_exigiendo_liquidez": estrictos.count("SUSTITUIDO"),
+                "huecos_exigiendo_liquidez": estrictos.count("HUECO"),
+                "al_borde": [f.candidato.ticker for f in verificados
+                             if not frac and not f.alcanza_con_techo
+                             and f.precio <= presupuesto],
+            })
+            for f in verificados:
+                d = salida["instrumentos"].setdefault(f.candidato.ticker, {
+                    "precio_usd": f.precio, "eslabon": f.candidato.eslabon,
+                    "rol": f.candidato.rol, "celdas": {}})
+                d["celdas"][f"{presupuesto:.0f}_{nombre_modo}"] = {
+                    "unidades": f.acciones_con_techo,
+                    "alcanza": f.alcanza_con_techo,
+                    "friccion_ida_vuelta_usd": f.friccion_ida_vuelta_usd,
+                    "friccion_ida_vuelta_pct": f.friccion_ida_vuelta_pct,
+                }
+    return salida
+
+
+def _seccion_censo(cen: dict, cfg: dict) -> list:
+    c = cfg["costos"]
+    fr = c.get("fraccionarias_no_usadas", {})
+    L = []
+    L.append("## Censo por presupuesto y modo de compra (corrida 11, bloque 10)\n")
+    L.append("El presupuesto del riel quedó sin decidir porque el censo original se computó")
+    L.append("con piso de 100 USD y acciones enteras (§82.7). Acá el modo de compra y el")
+    L.append("presupuesto son **parámetros explícitos** y el censo se produce para los")
+    L.append(f"cuatro montos en discusión. Arancel del insumo §40: enteras "
+             f"{c['comision_por_accion_usd']} USD/acción, mínimo {c['comision_minima_usd']:.2f} USD, "
+             f"tope {c['comision_tope_pct_del_monto']} %; fraccionarias "
+             f"{fr.get('comision_pct_del_monto', '?')} % del monto, mínimo {fr.get('comision_minima_usd', '?')} USD.")
+    L.append("«Alcanzable» = con ese presupuesto entra al menos una unidad, comisión incluida.")
+    L.append("Con fraccionarias todo instrumento con precio es alcanzable por construcción:")
+    L.append("lo que separa los modos no es el alcance sino la **fricción**.\n")
+    L.append("| Presupuesto | Modo | Alcanzables | Representados / sustituidos / huecos | Exigiendo liquidez | Casos al borde (enteras) |")
+    L.append("|---:|---|---:|---|---|---|")
+    for x in cen["celdas"]:
+        L.append(f"| {x['presupuesto_usd']:.0f} USD | {x['modo']} | **{x['alcanzables']} de {x['verificados']}** | "
+                 f"{x['representados']} / {x['sustituidos']} / {x['huecos']} | "
+                 f"{x['representados_exigiendo_liquidez']} / {x['sustituidos_exigiendo_liquidez']} / "
+                 f"{x['huecos_exigiendo_liquidez']} | {', '.join('`%s`' % t for t in x['al_borde']) or '—'} |")
+    L.append("")
+    L.append("### Fricción de ida y vuelta por instrumento\n")
+    L.append("Comisión de compra más comisión de venta, sin deslizamiento, para una posición")
+    L.append("que usa el presupuesto entero en ese instrumento. Enteras: «unidades (fricción %)».")
+    L.append("Fraccionarias: la fricción es la misma a cualquier presupuesto y se muestra una vez.\n")
+    cab = "| Ticker | Cierre USD | " + " | ".join(f"{p:.0f} USD enteras" for p in cen["presupuestos_usd"]) + " | fraccionarias |"
+    L.append(cab)
+    L.append("|---|---:|" + "---:|" * len(cen["presupuestos_usd"]) + "---:|")
+    for t, d in sorted(cen["instrumentos"].items()):
+        celdas = []
+        for p in cen["presupuestos_usd"]:
+            x = d["celdas"][f"{p:.0f}_enteras"]
+            celdas.append(f"{x['unidades']} ({x['friccion_ida_vuelta_pct']:.2f} %)" if x["alcanza"] else "**0**")
+        xf = d["celdas"][f"{cen['presupuestos_usd'][0]:.0f}_fraccionarias"]
+        L.append(f"| `{t}` | {d['precio_usd']:,.2f} | " + " | ".join(celdas) +
+                 f" | {xf['friccion_ida_vuelta_pct']:.2f} % |")
+    L.append("")
+    L.append("**Lectura, y lo que no se puede leer.** La fricción de enteras es un peaje fijo")
+    L.append("(0,70 USD de ida y vuelta mientras la orden tenga menos de 100 acciones) y se")
+    L.append("diluye con el tamaño; la de fraccionarias es proporcional y no se diluye. El")
+    L.append("cruce está en 35 USD por orden (§40 §6). Esto es aritmética del arancel, no una")
+    L.append("medición: las tarifas de terceros y de bolsa por venue no están, y la liquidez de")
+    L.append("los ADR de mostrador sigue sin verificar. **La decisión del presupuesto se toma")
+    L.append("con esta tabla a la vista y es de Nicolás**; este documento no la recomienda.\n")
+    return L
+
+
+def comparar_dias(cierres_dia1, cierres_dia2, cfg) -> dict:
+    """Segundo día de censo: qué cambió entre los dos congelados. La
+    comparación es el dato, no el segundo día solo."""
+    salida = {"instrumentos": [], "cambios_de_alcance": []}
+    for presupuesto in PRESUPUESTOS_USD:
+        m1 = {f.candidato.ticker: f for f in U.construir_mapa(cierres_dia1, cfg, presupuesto=presupuesto)}
+        m2 = {f.candidato.ticker: f for f in U.construir_mapa(cierres_dia2, cfg, presupuesto=presupuesto)}
+        for t in sorted(set(m1) & set(m2)):
+            a, b = m1[t], m2[t]
+            if a.verificado and b.verificado and a.alcanza_con_techo != b.alcanza_con_techo:
+                salida["cambios_de_alcance"].append({
+                    "ticker": t, "presupuesto_usd": presupuesto,
+                    "dia1": a.alcanza_con_techo, "dia2": b.alcanza_con_techo,
+                    "precio_dia1": a.precio, "precio_dia2": b.precio})
+    m1 = {f.candidato.ticker: f for f in U.construir_mapa(cierres_dia1, cfg)}
+    m2 = {f.candidato.ticker: f for f in U.construir_mapa(cierres_dia2, cfg)}
+    for t in sorted(set(m1) & set(m2)):
+        a, b = m1[t], m2[t]
+        if a.verificado and b.verificado:
+            salida["instrumentos"].append({
+                "ticker": t, "precio_dia1": a.precio, "fecha_dia1": a.fecha_precio,
+                "precio_dia2": b.precio, "fecha_dia2": b.fecha_precio,
+                "variacion_pct": 100.0 * (b.precio / a.precio - 1.0)})
+        elif a.verificado != b.verificado:
+            salida["cambios_de_alcance"].append({"ticker": t, "presupuesto_usd": None,
+                                                 "dia1": a.verificado, "dia2": b.verificado,
+                                                 "nota": "cambió la VERIFICACIÓN, no el precio"})
+    return salida
+
+
+def _seccion_dia2(cfg, cierres_dia1) -> list:
+    L = ["## El segundo congelado no aportó sesión: el censo sigue siendo de un solo día\n"]
+    if not os.path.exists(RUTA_CIERRES_DIA2):
+        L.append("**No disponible:** no hay segundo congelado en "
+                 "`dinero/datos/cierres_congelados_dia2.csv`. El censo sigue siendo de un solo día.\n")
+        return L
+    cierres2 = precios.cargar_congelado(RUTA_CIERRES_DIA2)
+    meta2 = precios.meta_congelado(RUTA_META_DIA2)
+    meta1 = precios.meta_congelado()
+    comp = comparar_dias(cierres_dia1, cierres2, cfg)
+    if meta1.get("hasta") == meta2.get("hasta"):
+        L.append(f"**Los dos congelados terminan en la MISMA sesión ({meta1.get('hasta')}): el segundo")
+        L.append("congelado no aporta una sesión nueva y esto NO cuenta como segundo día de censo.**")
+        L.append("Se deja registrado con su fecha y su sha256 para que la comparación se pueda")
+        L.append("repetir cuando exista una sesión posterior; hasta entonces el censo sigue siendo")
+        L.append("de un solo día.\n")
+    L.append(f"Día 1: congelado {meta1.get('congelado_en_utc','?')} UTC, hasta {meta1.get('hasta','?')}, "
+             f"sha256 `{meta1.get('sha256','?')[:16]}…`. Día 2: congelado {meta2.get('congelado_en_utc','?')} UTC, "
+             f"hasta {meta2.get('hasta','?')}, sha256 `{meta2.get('sha256','?')[:16]}…`. "
+             f"**La comparación entre los dos días es el dato, no el segundo día solo.**\n")
+    if comp["cambios_de_alcance"]:
+        L.append("| Ticker | Presupuesto | Día 1 | Día 2 | Precio día 1 | Precio día 2 |")
+        L.append("|---|---:|---|---|---:|---:|")
+        for x in comp["cambios_de_alcance"]:
+            L.append(f"| `{x['ticker']}` | {x['presupuesto_usd'] or '—'} | {x['dia1']} | {x['dia2']} | "
+                     f"{x.get('precio_dia1', float('nan')):,.2f} | {x.get('precio_dia2', float('nan')):,.2f} |")
+        L.append("")
+        L.append(f"**{len(comp['cambios_de_alcance'])} cambio(s) de alcance** entre los dos días: son los casos al "
+                 "borde haciendo lo que se declaró que harían.\n")
+    elif meta1.get("hasta") == meta2.get("hasta"):
+        L.append("La comparación entre los dos congelados es **trivialmente idéntica** (misma sesión final) y")
+        L.append("no verifica estabilidad de nada; se deja el sha256 para repetirla cuando exista una sesión")
+        L.append("posterior.\n")
+    else:
+        L.append("**Ningún instrumento cambió de alcance** en ninguno de los cuatro presupuestos "
+                 "(acciones enteras). Los casos al borde declarados no cruzaron.\n")
+    vs = [x["variacion_pct"] for x in comp["instrumentos"]]
+    if vs and meta1.get("hasta") != meta2.get("hasta"):
+        L.append(f"Variación de precio entre los dos días sobre {len(vs)} instrumentos: mínima "
+                 f"{min(vs):+.2f} %, máxima {max(vs):+.2f} %, mediana "
+                 f"{sorted(vs)[len(vs)//2]:+.2f} %.\n")
+    return L
+
 
 def _tabla_eslabon(e, filas, cfg):
     out = []
@@ -119,15 +293,17 @@ def componer() -> str:
     L.append(f"- Comisión: {c['comision_por_accion_usd']} USD por acción, mínimo")
     L.append(f"  {c['comision_minima_usd']:.2f} USD por orden, tope {c['comision_tope_pct_del_monto']} %")
     L.append(f"  del monto. Deslizamiento supuesto: {c['deslizamiento_pb_por_lado']} pb por lado.")
-    L.append("- **SUPUESTO NO VERIFICADO.** No hay cuenta abierta, así que no hay")
-    L.append("  tarifario que leer. Confirmarlo contra el arancel público del corredor")
-    L.append("  que se abra es un ítem de firma (`GEMELO/resultados/espera_firma.md`).")
-    L.append("- Consecuencia aritmética que ordena todo el mapa: **con mínimo de 1 USD y")
-    L.append("  tope de 1 %, una orden de UNA acción de menos de 100 USD paga")
-    L.append("  exactamente el 1 %.** La comisión no es un detalle a este tamaño de")
-    L.append("  cuenta: es el primer obstáculo.")
-    L.append("- Se asumen **acciones enteras**. Las fraccionarias dependen del corredor y")
-    L.append("  no hay corredor.\n")
+    L.append("- **Arancel PUBLICADO, no supuesto** (desde el 8-sep-2026): es la columna de")
+    L.append("  acciones enteras del insumo del §40 (`GEMELO/propuestas/insumo_40_aranceles_*.md`,")
+    L.append("  Pro Tiered, consultado el 7-sep-2026). El insumo es PROPUESTA y espera firma;")
+    L.append("  hasta el 7-sep esto era un supuesto sin verificar (0,005 / 1,00 USD / 1 %).")
+    L.append(f"- Consecuencia aritmética que ordena el mapa: **con mínimo de {c['comision_minima_usd']:.2f} USD y")
+    L.append(f"  tope de {c['comision_tope_pct_del_monto']} %, el cruce está en "
+             f"{100.0 * c['comision_minima_usd'] / c['comision_tope_pct_del_monto']:.0f} USD por orden**: por debajo")
+    L.append("  manda el tope proporcional, por encima el mínimo fijo.")
+    L.append("- Las tablas por eslabón asumen **acciones enteras** con el techo de reglas.json;")
+    L.append("  el censo por presupuesto y modo de compra (más abajo) computa también")
+    L.append("  fraccionarias.\n")
 
     L.append("## Resumen\n")
     L.append(f"- Presupuesto declarado: {piso:.0f} a {techo:.0f} USD.")
@@ -208,10 +384,15 @@ def componer() -> str:
         L.append("**Ninguno.** Los %d candidatos devolvieron al menos un cierre.\n"
                  % len(filas))
 
+    L.extend(_seccion_censo(censo(cierres, cfg), cfg))
+    L.extend(_seccion_dia2(cfg, cierres))
+
     L.append("## Lo que este mapa NO resuelve\n")
     L.append("- **La liquidez de los ADR de mostrador** (`SHECY`, `TOELY`). Devuelven")
     L.append("  precio; el diferencial de compra-venta no se midió.")
-    L.append("- **El arancel real.** Todo el costo de arriba es un supuesto declarado.")
+    L.append("- **El arancel real, medido en una cuenta.** El costo de arriba es el arancel")
+    L.append("  PUBLICADO del insumo §40, no el observado en una orden real: faltan tarifas de")
+    L.append("  terceros y de bolsa por venue, y el insumo espera firma.")
     L.append("- **El tratamiento tributario** de dividendos de ADR para un residente")
     L.append("  chileno, que cambia el retorno neto y no es objeto de esta corrida.")
     L.append("- **Que comprar un eslabón sea buena idea.** Este documento dice qué se")
@@ -257,7 +438,14 @@ def a_json() -> dict:
         })
     estados = [e["estado"] for e in eslabones]
     estrictos = [e["estado_exigiendo_liquidez"] for e in eslabones]
+    cen = censo(cierres, cfg)
+    dia2 = None
+    if os.path.exists(RUTA_CIERRES_DIA2):
+        dia2 = {"meta": precios.meta_congelado(RUTA_META_DIA2),
+                **comparar_dias(cierres, precios.cargar_congelado(RUTA_CIERRES_DIA2), cfg)}
     return {
+        "censo_por_presupuesto_y_modo": cen,
+        "segundo_dia": dia2,
         # Dos estatus, porque son dos afirmaciones distintas y el mismo
         # generador las escribía con una sola etiqueta: el .md decía
         # "SIMULADO / PROPUESTA" y el .json decía "MEDIDO", y era el

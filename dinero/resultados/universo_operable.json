@@ -1,7 +1,2446 @@
 {
+ "censo_por_presupuesto_y_modo": {
+  "presupuestos_usd": [
+   100.0,
+   250.0,
+   500.0,
+   1000.0
+  ],
+  "celdas": [
+   {
+    "presupuesto_usd": 100.0,
+    "modo": "enteras",
+    "verificados": 36,
+    "alcanzables": 7,
+    "representados": 3,
+    "sustituidos": 1,
+    "huecos": 4,
+    "representados_exigiendo_liquidez": 2,
+    "sustituidos_exigiendo_liquidez": 1,
+    "huecos_exigiendo_liquidez": 5,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 100.0,
+    "modo": "fraccionarias",
+    "verificados": 36,
+    "alcanzables": 36,
+    "representados": 8,
+    "sustituidos": 0,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 7,
+    "sustituidos_exigiendo_liquidez": 1,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 250.0,
+    "modo": "enteras",
+    "verificados": 36,
+    "alcanzables": 13,
+    "representados": 4,
+    "sustituidos": 2,
+    "huecos": 2,
+    "representados_exigiendo_liquidez": 3,
+    "sustituidos_exigiendo_liquidez": 3,
+    "huecos_exigiendo_liquidez": 2,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 250.0,
+    "modo": "fraccionarias",
+    "verificados": 36,
+    "alcanzables": 36,
+    "representados": 8,
+    "sustituidos": 0,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 7,
+    "sustituidos_exigiendo_liquidez": 1,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 500.0,
+    "modo": "enteras",
+    "verificados": 36,
+    "alcanzables": 29,
+    "representados": 6,
+    "sustituidos": 2,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 5,
+    "sustituidos_exigiendo_liquidez": 3,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": [
+     "MSFT"
+    ]
+   },
+   {
+    "presupuesto_usd": 500.0,
+    "modo": "fraccionarias",
+    "verificados": 36,
+    "alcanzables": 36,
+    "representados": 8,
+    "sustituidos": 0,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 7,
+    "sustituidos_exigiendo_liquidez": 1,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 1000.0,
+    "modo": "enteras",
+    "verificados": 36,
+    "alcanzables": 33,
+    "representados": 6,
+    "sustituidos": 2,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 5,
+    "sustituidos_exigiendo_liquidez": 3,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": []
+   },
+   {
+    "presupuesto_usd": 1000.0,
+    "modo": "fraccionarias",
+    "verificados": 36,
+    "alcanzables": 36,
+    "representados": 8,
+    "sustituidos": 0,
+    "huecos": 0,
+    "representados_exigiendo_liquidez": 7,
+    "sustituidos_exigiendo_liquidez": 1,
+    "huecos_exigiendo_liquidez": 0,
+    "al_borde": []
+   }
+  ],
+  "instrumentos": {
+   "UMC": {
+    "precio_usd": 20.770000457763672,
+    "eslabon": "materias_primas",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 4,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.8425613680455472
+     },
+     "100_fraccionarias": {
+      "unidades": 4.7669667216155425,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 12,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.28085378934851574
+     },
+     "250_fraccionarias": {
+      "unidades": 11.917416804038856,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 24,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14042689467425787
+     },
+     "500_fraccionarias": {
+      "unidades": 23.834833608077712,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 48,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07021344733712893
+     },
+     "1000_fraccionarias": {
+      "unidades": 47.669667216155425,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "GFS": {
+    "precio_usd": 45.209999084472656,
+    "eslabon": "materias_primas",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.7741650234189172
+     },
+     "100_fraccionarias": {
+      "unidades": 2.190000066248705,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.3096660093675669
+     },
+     "250_fraccionarias": {
+      "unidades": 5.475000165621762,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 11,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14075727698525767
+     },
+     "500_fraccionarias": {
+      "unidades": 10.950000331243524,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 22,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07037863849262883
+     },
+     "1000_fraccionarias": {
+      "unidades": 21.90000066248705,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "TSEM": {
+    "precio_usd": 222.33999633789065,
+    "eslabon": "materias_primas",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.44530854826332467,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.3148331436221705
+     },
+     "250_fraccionarias": {
+      "unidades": 1.1132713706583115,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.15741657181108526
+     },
+     "500_fraccionarias": {
+      "unidades": 2.226542741316623,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 4,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07870828590554263
+     },
+     "1000_fraccionarias": {
+      "unidades": 4.453085482633246,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "GSM": {
+    "precio_usd": 4.670000076293945,
+    "eslabon": "materias_primas",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 21,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.7137758627144661
+     },
+     "100_fraccionarias": {
+      "unidades": 21.20126324894454,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 53,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2828168512642224
+     },
+     "250_fraccionarias": {
+      "unidades": 53.00315812236134,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 106,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.742,
+      "friccion_ida_vuelta_pct": 0.14989293117003788
+     },
+     "500_fraccionarias": {
+      "unidades": 106.00631624472268,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 213,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.491,
+      "friccion_ida_vuelta_pct": 0.1498929311700379
+     },
+     "1000_fraccionarias": {
+      "unidades": 212.01263248944537,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "ENTG": {
+    "precio_usd": 138.74000549316406,
+    "eslabon": "materiales_obleas",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.7136362769927769,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.5045408478338932
+     },
+     "250_fraccionarias": {
+      "unidades": 1.784090692481942,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.16818028261129775
+     },
+     "500_fraccionarias": {
+      "unidades": 3.568181384963884,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 7,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07207726397627046
+     },
+     "1000_fraccionarias": {
+      "unidades": 7.136362769927768,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "MKSI": {
+    "precio_usd": 260.3099975585937,
+    "eslabon": "materiales_obleas",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.3803538162909501,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.9508845407273752,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2689101481177017
+     },
+     "500_fraccionarias": {
+      "unidades": 1.9017690814547503,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.08963671603923391
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.8035381629095006,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "LIN": {
+    "precio_usd": 477.5700073242188,
+    "eslabon": "materiales_obleas",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.20732018232225774,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.5183004558056443,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14657536890183623
+     },
+     "500_fraccionarias": {
+      "unidades": 1.0366009116112886,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07328768445091811
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.0732018232225773,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "SHECY": {
+    "precio_usd": 18.61000061035156,
+    "eslabon": "materiales_obleas",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.7522836937583275
+     },
+     "100_fraccionarias": {
+      "unidades": 5.320252431105569,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.98019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 13,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2893398822147414
+     },
+     "250_fraccionarias": {
+      "unidades": 13.300631077763923,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 26,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.1446699411073707
+     },
+     "500_fraccionarias": {
+      "unidades": 26.601262155527845,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 53,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07097015978852146
+     },
+     "1000_fraccionarias": {
+      "unidades": 53.20252431105569,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "ASML": {
+    "precio_usd": 1714.8800048828125,
+    "eslabon": "litografia_equipos",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.057735760349520736,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.14433940087380182,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.28867880174760363,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "1000_fraccionarias": {
+      "unidades": 0.5773576034952073,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "AMAT": {
+    "precio_usd": 454.7099914550781,
+    "eslabon": "litografia_equipos",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.21774296331880896,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.5443574082970224,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.15394427506639793
+     },
+     "500_fraccionarias": {
+      "unidades": 1.0887148165940448,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07697213753319897
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.1774296331880896,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     }
+    }
+   },
+   "LRCX": {
+    "precio_usd": 307.6499938964844,
+    "eslabon": "litografia_equipos",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.3218264357366218,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.8045660893415544,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2275312900657916
+     },
+     "500_fraccionarias": {
+      "unidades": 1.6091321786831088,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07584376335526387
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.2182643573662175,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "KLAC": {
+    "precio_usd": 185.6000061035156,
+    "eslabon": "litografia_equipos",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.5334585007226655,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.98019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.3771551600109246
+     },
+     "250_fraccionarias": {
+      "unidades": 1.3336462518066639,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.1885775800054623
+     },
+     "500_fraccionarias": {
+      "unidades": 2.6672925036133277,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07543103200218491
+     },
+     "1000_fraccionarias": {
+      "unidades": 5.334585007226655,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "TER": {
+    "precio_usd": 357.0299987792969,
+    "eslabon": "litografia_equipos",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.27731535537243013,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.6932883884310753,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.1960619562483081
+     },
+     "500_fraccionarias": {
+      "unidades": 1.3865767768621506,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.09803097812415405
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.7731535537243013,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "TOELY": {
+    "precio_usd": 176.49000549316406,
+    "eslabon": "litografia_equipos",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.5609943787663032,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.39662302578777636
+     },
+     "250_fraccionarias": {
+      "unidades": 1.4024859469157578,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.19831151289388818
+     },
+     "500_fraccionarias": {
+      "unidades": 2.8049718938315156,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07932460515755527
+     },
+     "1000_fraccionarias": {
+      "unidades": 5.609943787663031,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "TSM": {
+    "precio_usd": 428.9100036621094,
+    "eslabon": "fabricacion_vanguardia",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.2308407361561516,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.577101840390379,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.16320440046239917
+     },
+     "500_fraccionarias": {
+      "unidades": 1.154203680780758,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.08160220023119959
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.308407361561516,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     }
+    }
+   },
+   "INTC": {
+    "precio_usd": 95.8000030517578,
+    "eslabon": "fabricacion_vanguardia",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.7306889120053697
+     },
+     "100_fraccionarias": {
+      "unidades": 1.0335062404602118,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.36534445600268484
+     },
+     "250_fraccionarias": {
+      "unidades": 2.583765601150529,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14613778240107392
+     },
+     "500_fraccionarias": {
+      "unidades": 5.167531202301058,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 10,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07306889120053696
+     },
+     "1000_fraccionarias": {
+      "unidades": 10.335062404602116,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "MU": {
+    "precio_usd": 1016.5900268554688,
+    "eslabon": "memoria",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.09739412976178598,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.2434853244044649,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.4869706488089298,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "1000_fraccionarias": {
+      "unidades": 0.9739412976178596,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "SNDK": {
+    "precio_usd": 1740.0,
+    "eslabon": "memoria",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.056902241948332766,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.14225560487083191,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.28451120974166383,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     },
+     "1000_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "1000_fraccionarias": {
+      "unidades": 0.5690224194833277,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 1.9999999999999998
+     }
+    }
+   },
+   "WDC": {
+    "precio_usd": 467.4599914550781,
+    "eslabon": "memoria",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.21180401061042173,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.5295100265260543,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14974543550156816
+     },
+     "500_fraccionarias": {
+      "unidades": 1.0590200530521086,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07487271775078408
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.118040106104217,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "ASX": {
+    "precio_usd": 37.5099983215332,
+    "eslabon": "ensamblaje_prueba",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.9330845525500251
+     },
+     "100_fraccionarias": {
+      "unidades": 2.6395602618105376,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 6,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.31102818418334166
+     },
+     "250_fraccionarias": {
+      "unidades": 6.598900654526344,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 13,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14355146962308077
+     },
+     "500_fraccionarias": {
+      "unidades": 13.197801309052688,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 26,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07177573481154038
+     },
+     "1000_fraccionarias": {
+      "unidades": 26.395602618105375,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "AMKR": {
+    "precio_usd": 47.77000045776367,
+    "eslabon": "ensamblaje_prueba",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.732677405581053
+     },
+     "100_fraccionarias": {
+      "unidades": 2.0726376395503623,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019806,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2930709622324212
+     },
+     "250_fraccionarias": {
+      "unidades": 5.181594098875904,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 10,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.1465354811162106
+     },
+     "500_fraccionarias": {
+      "unidades": 10.363188197751809,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 20,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.0732677405581053
+     },
+     "1000_fraccionarias": {
+      "unidades": 20.726376395503618,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "NVDA": {
+    "precio_usd": 230.3600006103516,
+    "eslabon": "diseno_eda",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.4298050908480934,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.303872199229602
+     },
+     "250_fraccionarias": {
+      "unidades": 1.0745127271202333,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.151936099614801
+     },
+     "500_fraccionarias": {
+      "unidades": 2.1490254542404665,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 4,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.0759680498074005
+     },
+     "1000_fraccionarias": {
+      "unidades": 4.298050908480933,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "AVGO": {
+    "precio_usd": 357.8999938964844,
+    "eslabon": "diseno_eda",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.27664124805415813,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.6916031201353953,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.19558536237428978
+     },
+     "500_fraccionarias": {
+      "unidades": 1.3832062402707905,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.09779268118714489
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.766412480541581,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "AMD": {
+    "precio_usd": 477.5700073242188,
+    "eslabon": "diseno_eda",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.20732018232225774,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.5183004558056443,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14657536890183623
+     },
+     "500_fraccionarias": {
+      "unidades": 1.0366009116112886,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07328768445091811
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.0732018232225773,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "QCOM": {
+    "precio_usd": 168.74000549316406,
+    "eslabon": "diseno_eda",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.586760091068683,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.41483938438555884
+     },
+     "250_fraccionarias": {
+      "unidades": 1.4669002276717074,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.20741969219277942
+     },
+     "500_fraccionarias": {
+      "unidades": 2.9338004553434147,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 5,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.08296787687711177
+     },
+     "1000_fraccionarias": {
+      "unidades": 5.867600910686829,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "ARM": {
+    "precio_usd": 252.08999633789065,
+    "eslabon": "diseno_eda",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.3927561681479434,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.9818904203698584,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.277678610880596
+     },
+     "500_fraccionarias": {
+      "unidades": 1.9637808407397168,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.09255953696019865
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.9275616814794336,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "SNPS": {
+    "precio_usd": 393.8399963378906,
+    "eslabon": "diseno_eda",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.251396257136755,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.98019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.6284906428418875,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.95049504950495,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.1777371537956858
+     },
+     "500_fraccionarias": {
+      "unidades": 1.256981285683775,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.9009900990099,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.0888685768978429
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.51396257136755,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.8019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "CDNS": {
+    "precio_usd": 292.70001220703125,
+    "eslabon": "diseno_eda",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.3382640822032757,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.8456602055081891,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.23915270611771589
+     },
+     "500_fraccionarias": {
+      "unidades": 1.6913204110163782,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.0797175687059053
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.3826408220327564,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "MSFT": {
+    "precio_usd": 499.7000122070313,
+    "eslabon": "demanda_final",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.1981386803510385,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.4953467008775962,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.9906934017551924,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07004202350409211
+     },
+     "1000_fraccionarias": {
+      "unidades": 1.9813868035103848,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "GOOGL": {
+    "precio_usd": 338.4599914550781,
+    "eslabon": "demanda_final",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.2925305899951251,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.98019801980198,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.7313264749878128,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.20681912712655345
+     },
+     "500_fraccionarias": {
+      "unidades": 1.4626529499756256,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.10340956356327673
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.925305899951251,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "META": {
+    "precio_usd": 616.77001953125,
+    "eslabon": "demanda_final",
+    "rol": "dominante",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.16052969154588173,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.4013242288647043,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.8026484577294086,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.11349449192293838
+     },
+     "1000_fraccionarias": {
+      "unidades": 1.6052969154588173,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "AMZN": {
+    "precio_usd": 258.510009765625,
+    "eslabon": "demanda_final",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.38300219430522303,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.9575054857630575,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.2707825513737927
+     },
+     "500_fraccionarias": {
+      "unidades": 1.915010971526115,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.09026085045793089
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.83002194305223,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "VRT": {
+    "precio_usd": 280.5299987792969,
+    "eslabon": "demanda_final",
+    "rol": "complemento",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.35293872819638694,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019806,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.8823468204909672,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.24952768083484553
+     },
+     "500_fraccionarias": {
+      "unidades": 1.7646936409819345,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 3,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.08317589361161518
+     },
+     "1000_fraccionarias": {
+      "unidades": 3.529387281963869,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "SMH": {
+    "precio_usd": 567.010009765625,
+    "eslabon": "diseno_eda",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.17461755398467305,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.43654388496168256,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.8730877699233651,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.12345461066716384
+     },
+     "1000_fraccionarias": {
+      "unidades": 1.7461755398467302,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "SOXX": {
+    "precio_usd": 519.8599853515625,
+    "eslabon": "diseno_eda",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.19045493744463174,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.47613734361157933,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "500_fraccionarias": {
+      "unidades": 0.9522746872231587,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.13465164077335465
+     },
+     "1000_fraccionarias": {
+      "unidades": 1.9045493744463173,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   },
+   "XSD": {
+    "precio_usd": 491.4500122070313,
+    "eslabon": "diseno_eda",
+    "rol": "sustituto",
+    "celdas": {
+     "100_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "100_fraccionarias": {
+      "unidades": 0.20146484592697392,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 1.9801980198019804,
+      "friccion_ida_vuelta_pct": 2.0000000000000004
+     },
+     "250_enteras": {
+      "unidades": 0,
+      "alcanza": false,
+      "friccion_ida_vuelta_usd": null,
+      "friccion_ida_vuelta_pct": null
+     },
+     "250_fraccionarias": {
+      "unidades": 0.5036621148174347,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 4.9504950495049505,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "500_enteras": {
+      "unidades": 1,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.14243564607037054
+     },
+     "500_fraccionarias": {
+      "unidades": 1.0073242296348695,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 9.900990099009901,
+      "friccion_ida_vuelta_pct": 2.0
+     },
+     "1000_enteras": {
+      "unidades": 2,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 0.7,
+      "friccion_ida_vuelta_pct": 0.07121782303518527
+     },
+     "1000_fraccionarias": {
+      "unidades": 2.014648459269739,
+      "alcanza": true,
+      "friccion_ida_vuelta_usd": 19.801980198019802,
+      "friccion_ida_vuelta_pct": 2.0
+     }
+    }
+   }
+  }
+ },
+ "segundo_dia": {
+  "meta": {
+   "congelado_en_utc": "2026-09-08T04:21:27+00:00",
+   "motivo": "bloque 10 de la corrida 11 (8-sep-2026): segundo congelado para el censo, descargado a las 04:21 UTC. TERMINA EN LA MISMA SESION que el primero (2026-09-04; el 7-sep fue feriado en NYSE): NO cuenta como segundo dia de censo. Se conserva como evidencia contra revision silenciosa de la fuente en 26 h (precios identicos, dif. rel. max. 8,4e-7).",
+   "fuente": "yfinance (mismo proveedor que ya ingiere el proyecto)",
+   "tickers": [
+    "UMC",
+    "GFS",
+    "TSEM",
+    "GSM",
+    "ENTG",
+    "MKSI",
+    "LIN",
+    "SHECY",
+    "ASML",
+    "AMAT",
+    "LRCX",
+    "KLAC",
+    "TER",
+    "TOELY",
+    "TSM",
+    "INTC",
+    "MU",
+    "SNDK",
+    "WDC",
+    "ASX",
+    "AMKR",
+    "NVDA",
+    "AVGO",
+    "AMD",
+    "QCOM",
+    "ARM",
+    "SNPS",
+    "CDNS",
+    "MSFT",
+    "GOOGL",
+    "META",
+    "AMZN",
+    "VRT",
+    "SMH",
+    "SOXX",
+    "XSD"
+   ],
+   "filas": 2011,
+   "desde": "2018-09-05",
+   "hasta": "2026-09-04",
+   "sha256": "4222c8ecd0607497bf06e856e8a0debf8e84e6959e03dadeae5a8deceacec99d",
+   "advertencia": "Los cierres de yfinance son AJUSTADOS retroactivamente por splits y dividendos: la serie NO es point-in-time. Para el riel de dinero eso sesga a favor y está declarado como limitación, no corregido."
+  },
+  "instrumentos": [
+   {
+    "ticker": "AMAT",
+    "precio_dia1": 454.7099914550781,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 454.7099914550781,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "AMD",
+    "precio_dia1": 477.5700073242188,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 477.5700073242188,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "AMKR",
+    "precio_dia1": 47.77000045776367,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 47.77000045776367,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "AMZN",
+    "precio_dia1": 258.510009765625,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 258.510009765625,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "ARM",
+    "precio_dia1": 252.08999633789065,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 252.08999633789065,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "ASML",
+    "precio_dia1": 1714.8800048828125,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 1714.8800048828125,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "ASX",
+    "precio_dia1": 37.5099983215332,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 37.5099983215332,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "AVGO",
+    "precio_dia1": 357.8999938964844,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 357.8999938964844,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "CDNS",
+    "precio_dia1": 292.70001220703125,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 292.70001220703125,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "ENTG",
+    "precio_dia1": 138.74000549316406,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 138.74000549316406,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "GFS",
+    "precio_dia1": 45.209999084472656,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 45.209999084472656,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "GOOGL",
+    "precio_dia1": 338.4599914550781,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 338.4599914550781,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "GSM",
+    "precio_dia1": 4.670000076293945,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 4.670000076293945,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "INTC",
+    "precio_dia1": 95.8000030517578,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 95.8000030517578,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "KLAC",
+    "precio_dia1": 185.6000061035156,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 185.6000061035156,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "LIN",
+    "precio_dia1": 477.5700073242188,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 477.5700073242188,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "LRCX",
+    "precio_dia1": 307.6499938964844,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 307.6499938964844,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "META",
+    "precio_dia1": 616.77001953125,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 616.77001953125,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "MKSI",
+    "precio_dia1": 260.3099975585937,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 260.3099975585937,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "MSFT",
+    "precio_dia1": 499.7000122070313,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 499.7000122070313,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "MU",
+    "precio_dia1": 1016.5900268554688,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 1016.5900268554688,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "NVDA",
+    "precio_dia1": 230.3600006103516,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 230.3600006103516,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "QCOM",
+    "precio_dia1": 168.74000549316406,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 168.74000549316406,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "SHECY",
+    "precio_dia1": 18.61000061035156,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 18.61000061035156,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "SMH",
+    "precio_dia1": 567.010009765625,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 567.010009765625,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "SNDK",
+    "precio_dia1": 1740.0,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 1740.0,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "SNPS",
+    "precio_dia1": 393.8399963378906,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 393.8399963378906,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "SOXX",
+    "precio_dia1": 519.8599853515625,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 519.8599853515625,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "TER",
+    "precio_dia1": 357.0299987792969,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 357.0299987792969,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "TOELY",
+    "precio_dia1": 176.49000549316406,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 176.49000549316406,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "TSEM",
+    "precio_dia1": 222.33999633789065,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 222.33999633789065,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "TSM",
+    "precio_dia1": 428.9100036621094,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 428.9100036621094,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "UMC",
+    "precio_dia1": 20.770000457763672,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 20.770000457763672,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "VRT",
+    "precio_dia1": 280.5299987792969,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 280.5299987792969,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "WDC",
+    "precio_dia1": 467.4599914550781,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 467.4599914550781,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   },
+   {
+    "ticker": "XSD",
+    "precio_dia1": 491.4500122070313,
+    "fecha_dia1": "2026-09-04",
+    "precio_dia2": 491.4500122070313,
+    "fecha_dia2": "2026-09-04",
+    "variacion_pct": 0.0
+   }
+  ],
+  "cambios_de_alcance": []
+ },
  "estatus": "SIMULADO",
  "estatus_de_los_precios": "MEDIDO al 2026-09-04 sobre el archivo congelado",
- "generado": "2026-09-07T04:23:45+00:00",
+ "generado": "2026-09-08T04:57:50+00:00",
  "fuente": {
   "archivo": "dinero/datos/cierres_congelados.csv",
   "congelado_en_utc": "2026-09-07T01:47:34+00:00",
@@ -57,9 +2496,9 @@
   "techo_usd": 500.0
  },
  "costos": {
-  "_": "SUPUESTO NO VERIFICADO. No hay cuenta de corredora abierta, así que no hay tarifario que leer. Estos valores son de referencia (arancel tipo 'fixed' de un corredor internacional con acceso desde Chile) y el bloque 4b los barre en sensibilidad en vez de creerles. Confirmarlos contra el tarifario público del corredor que Nicolás abra es un ítem de firma.",
-  "comision_por_accion_usd": 0.005,
-  "comision_minima_usd": 1.0,
+  "_": "Arancel PUBLICADO del insumo del §40 (GEMELO/propuestas/insumo_40_aranceles_ibkr.md, IBKR Pro Tiered, tabla 'United States', consultado el 7-sep-2026), columna de acciones ENTERAS: 0,0035 USD por accion, minimo 0,35 USD por orden, tope 1 % del valor operado (la fila de EE.UU.; la vineta de 0,5 % de la misma pagina se declara como contradiccion de la fuente y se adopta el conservador). Hasta el 7-sep-2026 esto era un supuesto sin verificar (0,005 / 1,00 / 1 %); lo cambio la corrida 11 (acta §83) por orden del encargo. El §40 sigue ESPERANDO FIRMA: lo que esta firmado es reconstruir la cuenta con este insumo, no el insumo. Tarifas de terceros (SEC, FINRA, compensacion, bolsa por venue) NO estan en el modelo: a estos tamanos suman centavos y el insumo lo declara. El ruteo tiene que ser SmartRouting (una orden dirigida por API cae a Fixed, minimo 1,00 USD).",
+  "comision_por_accion_usd": 0.0035,
+  "comision_minima_usd": 0.35,
   "comision_tope_pct_del_monto": 1.0,
   "deslizamiento_pb_por_lado": 5.0,
   "barrido_deslizamiento_pb": [
@@ -68,7 +2507,12 @@
    5.0,
    10.0
   ],
-  "acciones_fraccionarias": false
+  "acciones_fraccionarias": false,
+  "fraccionarias_no_usadas": {
+   "_": "Columna del insumo §40 que NO aplica a esta cuenta (compra enteras): 1 % del valor operado, minimo 0,01 USD.",
+   "comision_pct_del_monto": 1.0,
+   "comision_minima_usd": 0.01
+  }
  },
  "eslabones": [
   {
@@ -102,7 +2546,7 @@
      "alcanza_con_piso": true,
      "acciones_con_techo": 24,
      "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20060984953465408
+     "comision_orden_techo_pct": 0.07021344733712893
     },
     {
      "ticker": "GFS",
@@ -119,8 +2563,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": true,
      "acciones_con_techo": 11,
-     "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20108182426465382
+     "comision_orden_minima_pct": 0.7741650234189172,
+     "comision_orden_techo_pct": 0.07037863849262883
     },
     {
      "ticker": "GSM",
@@ -138,7 +2582,7 @@
      "alcanza_con_piso": true,
      "acciones_con_techo": 106,
      "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20201203661730172
+     "comision_orden_techo_pct": 0.07494646558501894
     },
     {
      "ticker": "TSEM",
@@ -155,8 +2599,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 2,
-     "comision_orden_minima_pct": 0.4497616337459579,
-     "comision_orden_techo_pct": 0.22488081687297895
+     "comision_orden_minima_pct": 0.15741657181108526,
+     "comision_orden_techo_pct": 0.07870828590554263
     }
    ]
   },
@@ -191,7 +2635,7 @@
      "alcanza_con_piso": true,
      "acciones_con_techo": 26,
      "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20667134443910096
+     "comision_orden_techo_pct": 0.07233497055368535
     },
     {
      "ticker": "ENTG",
@@ -208,8 +2652,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 3,
-     "comision_orden_minima_pct": 0.7207726397627046,
-     "comision_orden_techo_pct": 0.2402575465875682
+     "comision_orden_minima_pct": 0.2522704239169466,
+     "comision_orden_techo_pct": 0.08409014130564887
     },
     {
      "ticker": "LIN",
@@ -226,8 +2670,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.2093933841454803,
-     "comision_orden_techo_pct": 0.2093933841454803
+     "comision_orden_minima_pct": 0.07328768445091811,
+     "comision_orden_techo_pct": 0.07328768445091811
     },
     {
      "ticker": "MKSI",
@@ -244,8 +2688,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.38415735445385957,
-     "comision_orden_techo_pct": 0.38415735445385957
+     "comision_orden_minima_pct": 0.13445507405885085,
+     "comision_orden_techo_pct": 0.13445507405885085
     }
    ]
   },
@@ -279,7 +2723,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.05831311795301594,
+     "comision_orden_minima_pct": 0.02040959128355558,
      "comision_orden_techo_pct": null
     },
     {
@@ -297,8 +2741,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.21992039295199706,
-     "comision_orden_techo_pct": 0.21992039295199706
+     "comision_orden_minima_pct": 0.07697213753319897,
+     "comision_orden_techo_pct": 0.07697213753319897
     },
     {
      "ticker": "KLAC",
@@ -315,8 +2759,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 2,
-     "comision_orden_minima_pct": 0.5387930857298923,
-     "comision_orden_techo_pct": 0.26939654286494613
+     "comision_orden_minima_pct": 0.1885775800054623,
+     "comision_orden_techo_pct": 0.09428879000273115
     },
     {
      "ticker": "LRCX",
@@ -333,8 +2777,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.325044700093988,
-     "comision_orden_techo_pct": 0.325044700093988
+     "comision_orden_minima_pct": 0.1137656450328958,
+     "comision_orden_techo_pct": 0.1137656450328958
     },
     {
      "ticker": "TER",
@@ -351,8 +2795,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.28008850892615444,
-     "comision_orden_techo_pct": 0.28008850892615444
+     "comision_orden_minima_pct": 0.09803097812415405,
+     "comision_orden_techo_pct": 0.09803097812415405
     },
     {
      "ticker": "TOELY",
@@ -369,8 +2813,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 2,
-     "comision_orden_minima_pct": 0.5666043225539662,
-     "comision_orden_techo_pct": 0.2833021612769831
+     "comision_orden_minima_pct": 0.19831151289388818,
+     "comision_orden_techo_pct": 0.09915575644694409
     }
    ]
   },
@@ -404,8 +2848,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.23314914351771313,
-     "comision_orden_techo_pct": 0.23314914351771313
+     "comision_orden_minima_pct": 0.08160220023119959,
+     "comision_orden_techo_pct": 0.08160220023119959
     },
     {
      "ticker": "INTC",
@@ -422,8 +2866,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": true,
      "acciones_con_techo": 5,
-     "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20876826057296274
+     "comision_orden_minima_pct": 0.36534445600268484,
+     "comision_orden_techo_pct": 0.07306889120053696
     }
    ]
   },
@@ -462,7 +2906,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.09836807105940383,
+     "comision_orden_minima_pct": 0.03442882487079134,
      "comision_orden_techo_pct": null
     },
     {
@@ -480,7 +2924,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.05747126436781609,
+     "comision_orden_minima_pct": 0.020114942528735632,
      "comision_orden_techo_pct": null
     },
     {
@@ -498,8 +2942,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.21392205071652592,
-     "comision_orden_techo_pct": 0.21392205071652592
+     "comision_orden_minima_pct": 0.07487271775078408,
+     "comision_orden_techo_pct": 0.07487271775078408
     }
    ]
   },
@@ -533,8 +2977,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": true,
      "acciones_con_techo": 13,
-     "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20507352803297255
+     "comision_orden_minima_pct": 0.9330845525500251,
+     "comision_orden_techo_pct": 0.07177573481154038
     },
     {
      "ticker": "AMKR",
@@ -551,8 +2995,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": true,
      "acciones_con_techo": 10,
-     "comision_orden_minima_pct": 1.0,
-     "comision_orden_techo_pct": 0.20933640159458655
+     "comision_orden_minima_pct": 0.732677405581053,
+     "comision_orden_techo_pct": 0.0732677405581053
     }
    ]
   },
@@ -586,8 +3030,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.3416467230253084,
-     "comision_orden_techo_pct": 0.3416467230253084
+     "comision_orden_minima_pct": 0.11957635305885794,
+     "comision_orden_techo_pct": 0.11957635305885794
     },
     {
      "ticker": "NVDA",
@@ -604,8 +3048,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 2,
-     "comision_orden_minima_pct": 0.43410314175657433,
-     "comision_orden_techo_pct": 0.21705157087828716
+     "comision_orden_minima_pct": 0.151936099614801,
+     "comision_orden_techo_pct": 0.0759680498074005
     },
     {
      "ticker": "SNPS",
@@ -622,8 +3066,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.25391021970812255,
-     "comision_orden_techo_pct": 0.25391021970812255
+     "comision_orden_minima_pct": 0.0888685768978429,
+     "comision_orden_techo_pct": 0.0888685768978429
     },
     {
      "ticker": "AMD",
@@ -640,8 +3084,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.2093933841454803,
-     "comision_orden_techo_pct": 0.2093933841454803
+     "comision_orden_minima_pct": 0.07328768445091811,
+     "comision_orden_techo_pct": 0.07328768445091811
     },
     {
      "ticker": "ARM",
@@ -658,8 +3102,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.3966837298294228,
-     "comision_orden_techo_pct": 0.3966837298294228
+     "comision_orden_minima_pct": 0.138839305440298,
+     "comision_orden_techo_pct": 0.138839305440298
     },
     {
      "ticker": "AVGO",
@@ -676,8 +3120,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.2794076605346997,
-     "comision_orden_techo_pct": 0.2794076605346997
+     "comision_orden_minima_pct": 0.09779268118714489,
+     "comision_orden_techo_pct": 0.09779268118714489
     },
     {
      "ticker": "QCOM",
@@ -694,8 +3138,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 2,
-     "comision_orden_minima_pct": 0.5926276919793698,
-     "comision_orden_techo_pct": 0.2963138459896849
+     "comision_orden_minima_pct": 0.20741969219277942,
+     "comision_orden_techo_pct": 0.10370984609638971
     },
     {
      "ticker": "SMH",
@@ -712,7 +3156,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.17636372952451976,
+     "comision_orden_minima_pct": 0.06172730533358192,
      "comision_orden_techo_pct": null
     },
     {
@@ -730,7 +3174,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.19235948681907805,
+     "comision_orden_minima_pct": 0.06732582038667732,
      "comision_orden_techo_pct": null
     },
     {
@@ -748,8 +3192,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.20347949438624366,
-     "comision_orden_techo_pct": 0.20347949438624366
+     "comision_orden_minima_pct": 0.07121782303518527,
+     "comision_orden_techo_pct": 0.07121782303518527
     }
    ]
   },
@@ -777,8 +3221,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.29545589589507637,
-     "comision_orden_techo_pct": 0.29545589589507637
+     "comision_orden_minima_pct": 0.10340956356327673,
+     "comision_orden_techo_pct": 0.10340956356327673
     },
     {
      "ticker": "META",
@@ -795,7 +3239,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.16213498846134053,
+     "comision_orden_minima_pct": 0.05674724596146919,
      "comision_orden_techo_pct": null
     },
     {
@@ -813,7 +3257,7 @@
      "alcanza_con_techo": false,
      "alcanza_con_piso": false,
      "acciones_con_techo": 0,
-     "comision_orden_minima_pct": 0.2001200671545489,
+     "comision_orden_minima_pct": 0.07004202350409211,
      "comision_orden_techo_pct": null
     },
     {
@@ -831,8 +3275,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.38683221624827524,
-     "comision_orden_techo_pct": 0.38683221624827524
+     "comision_orden_minima_pct": 0.13539127568689635,
+     "comision_orden_techo_pct": 0.13539127568689635
     },
     {
      "ticker": "VRT",
@@ -849,8 +3293,8 @@
      "alcanza_con_techo": true,
      "alcanza_con_piso": false,
      "acciones_con_techo": 1,
-     "comision_orden_minima_pct": 0.3564681154783508,
-     "comision_orden_techo_pct": 0.3564681154783508
+     "comision_orden_minima_pct": 0.12476384041742276,
+     "comision_orden_techo_pct": 0.12476384041742276
     }
    ]
   }

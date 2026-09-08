@@ -1,0 +1,232 @@
+{
+ "generado_en_utc": "2026-09-08T04:31:22.253305+00:00",
+ "etiqueta": "PROPUESTA — bloque 4 de la corrida 11; computado, NO cableado; ninguna cifra publicada se mueve",
+ "corte": "2026-08-28",
+ "convencion": "excluir_cero",
+ "prediccion_previa": "el intervalo de clúster de día de la rama de coherencia contiene el cero, como lo contiene el de la regla firmada (§82.3, escrito antes de computar)",
+ "identidad_de_conjuntos": {
+  "n_regla_firmada": 238,
+  "n_coherencia_informe": 223,
+  "n_coherencia_sobre_firmada": 223,
+  "coherencia_es_subconjunto_de_firmada": true,
+  "los_dos_ordenes_dan_el_mismo_conjunto": true,
+  "retiradas_n": 15,
+  "retiradas_por_fecha": {
+   "2026-07-05": [
+    "000660.KS",
+    "005930.KS",
+    "2330.TW",
+    "3436.T",
+    "4063.T",
+    "6857.T",
+    "8035.T",
+    "IFX.DE"
+   ],
+   "2026-08-05": [
+    "000660.KS",
+    "005930.KS",
+    "2330.TW",
+    "3436.T",
+    "4063.T",
+    "6857.T",
+    "8035.T"
+   ]
+  },
+  "ok": true
+ },
+ "dias_retirados": {
+  "2026-07-05": {
+   "filas_en_regla_firmada": 8,
+   "retiradas": 8,
+   "quedan": 0,
+   "dia_entero": true,
+   "suma_diff_del_dia_en_firmada": -4,
+   "era_informativo": true
+  },
+  "2026-08-05": {
+   "filas_en_regla_firmada": 8,
+   "retiradas": 7,
+   "quedan": 1,
+   "dia_entero": false,
+   "suma_diff_del_dia_en_firmada": -4,
+   "era_informativo": true
+  }
+ },
+ "ramas": [
+  {
+   "rama": "regla firmada (publicada)",
+   "n": 238,
+   "dias": 34,
+   "dias_informativos": 16,
+   "clusteres_de_tamano_1": 2,
+   "suma_por_dia_ordenada": [
+    -8,
+    -4,
+    -4,
+    -4,
+    -4,
+    -2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    2,
+    4,
+    6,
+    6,
+    6,
+    6,
+    8,
+    8
+   ],
+   "R2_sin_15_23_jul": {
+    "n": 194,
+    "dias": 28,
+    "ventaja_pp": 2.6,
+    "ic95_percentil_dia": [
+     -14.4,
+     20.5
+    ],
+    "ic95_t_cluster": [
+     -15.7,
+     20.9
+    ],
+    "p_permutacion_dia": 0.821,
+    "b": 48,
+    "c": 43,
+    "mcnemar_exacta": 0.6752
+   },
+   "modelo_pct": 67.6,
+   "base_pct": 58.0,
+   "ventaja_pp": 9.7,
+   "ventaja_pp_exacta": 9.66,
+   "ic95_percentil_dia": [
+    -7.2,
+    26.6
+   ],
+   "ic95_t_cluster": [
+    -8.1,
+    27.4
+   ],
+   "p_permutacion_dia": 0.294,
+   "icc": 0.392,
+   "deff": 3.55,
+   "n_efectivo": 67.0,
+   "b": 72,
+   "c": 49,
+   "mcnemar_chi2cc": 0.0455,
+   "mcnemar_exacta": 0.0451,
+   "contiene_cero": {
+    "percentil_dia": true,
+    "t_cluster": true
+   }
+  },
+  {
+   "rama": "+ coherencia (NO aplicada)",
+   "n": 223,
+   "dias": 33,
+   "dias_informativos": 15,
+   "clusteres_de_tamano_1": 3,
+   "suma_por_dia_ordenada": [
+    -8,
+    -4,
+    -4,
+    -2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    4,
+    6,
+    6,
+    6,
+    6,
+    8,
+    8
+   ],
+   "R2_sin_15_23_jul": {
+    "n": 179,
+    "dias": 27,
+    "ventaja_pp": 7.8,
+    "ic95_percentil_dia": [
+     -9.1,
+     25.6
+    ],
+    "ic95_t_cluster": [
+     -10.8,
+     26.5
+    ],
+    "p_permutacion_dia": 0.433,
+    "b": 45,
+    "c": 31,
+    "mcnemar_exacta": 0.1354
+   },
+   "modelo_pct": 70.9,
+   "base_pct": 56.5,
+   "ventaja_pp": 14.3,
+   "ventaja_pp_exacta": 14.35,
+   "ic95_percentil_dia": [
+    -1.4,
+    32.1
+   ],
+   "ic95_t_cluster": [
+    -3.5,
+    32.2
+   ],
+   "p_permutacion_dia": 0.111,
+   "icc": 0.421,
+   "deff": 3.71,
+   "n_efectivo": 60.0,
+   "b": 69,
+   "c": 37,
+   "mcnemar_chi2cc": 0.0026,
+   "mcnemar_exacta": 0.0024,
+   "contiene_cero": {
+    "percentil_dia": true,
+    "t_cluster": true
+   }
+  }
+ ],
+ "prediccion_se_cumple": {
+  "percentil_dia": true,
+  "t_cluster": true,
+  "permutacion_dia_p_mayor_005": true
+ },
+ "cableado": "filtrar_sesion_coherente sigue SIN aplicarse por defecto; cablearlo es decisión aparte, no firmada",
+ "procedencia": "backtest.linea_base.{cargar(dedup=...),filtrar_sesion_coherente,aplicar_convencion,duelo} mode=ro; GEMELO.bifurcaciones.{_bootstrap_dia,_ic_t_cluster,_p_permutacion_dia,icc_y_deff}; N_BOOT_DIA=4000, N_PERM_DIA=4000",
+ "intentos_dsr": 0
+}

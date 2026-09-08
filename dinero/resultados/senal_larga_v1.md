@@ -8,9 +8,9 @@
 Pre-registrado en `GEMELO/preregistro/senal_larga_v1.md`, **commiteado
 antes del cómputo** (commit `e368dad`). Tres especificaciones declaradas
 por nombre, dos horizontes, agregación sobre todos los pares adyacentes
-de la cadena. Registro de intentos del riel largo: **3**.
+de la cadena. Registro de intentos del riel largo: **3** — cuenta ESPECIFICACIONES (L1, L2, L3). La multiplicidad que gobierna el resultado NO se computa sobre ese 3: se computa con Holm sobre la familia completa de **30 contrastes** de esta página. Son dos contadores distintos y ninguno reemplaza al otro (acta §82.1).
 
-Generado 2026-09-07 UTC por `python -m dinero.senal_larga_reporte`.
+Generado 2026-09-08 UTC por `python -m dinero.senal_larga_reporte`.
 
 ## Procedimiento
 

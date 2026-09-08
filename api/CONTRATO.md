@@ -358,10 +358,19 @@ señal que la alimenta no tiene información: lo medido es fricción. Incluye
 el barrido de deslizamiento y las comparaciones contra las dos líneas base con
 su intervalo.
 
-**Desde el 7-sep-2026 el artefacto está `estatus: "RETIRADO"`** y trae el
-objeto `retirado` (fecha, fuente, causa, consecuencia): tiene fuga temporal
-demostrada. El endpoint lo sirve entero para que se pueda auditar, pero
-`/api/rieles` **no reexpone ninguna de sus cifras**.
+**Del 7 al 8-sep-2026 el artefacto estuvo `estatus: "RETIRADO"`** con el
+objeto `retirado` (fecha, fuente, causa, consecuencia): tenía fuga temporal
+demostrada, y `/api/rieles` no reexponía ninguna de sus cifras.
+
+**Desde el 8-sep-2026 (corrida 11, acta §82.4) es la v2 reconstruida:**
+`version: 2`, `estatus: "PROPUESTA"`, y el objeto `reconstruccion` (fecha,
+acta, correcciones E1–E6, `gate_invariancia` con su resultado y cortes, y
+`costo` con la fuente del arancel y la columna usada). Trae además
+`sigma_dif_semanal` (σ de la diferencia semanal del juego por defecto contra
+SMH, con `ic95`, `semanas` y método) y, por juego, `ordenes_reducidas_al_ejecutar`
+y `comisiones_pct_del_aportado`. Si un artefacto futuro vuelve a
+`estatus: "RETIRADO"`, `/api/rieles` vuelve a no reexponer sus cifras: la
+regla vive en el código, no en este texto.
 
 ### GET /api/rieles
 Estado de los dos rieles, uno al lado del otro. El de MEDICIÓN se lee del
@@ -369,6 +378,14 @@ Estado de los dos rieles, uno al lado del otro. El de MEDICIÓN se lee del
 McNemar, cobertura— y el de DINERO del pre-registro y los artefactos. Cada
 riel declara: qué mide, en qué horizonte, contra qué vara, cuánta muestra
 lleva, qué le falta para veredicto y **qué lo mata**.
+
+Enmienda 8-sep-2026 (corrida 11): en el riel de dinero, `cuenta_en_papel`
+lleva `cifras_disponibles` **leído del artefacto** (falso sólo si el estatus
+es RETIRADO), `version`, `reconstruccion` (fecha y resultado del gate) y
+`comisiones_pct_del_aportado_juego_activo`; y `potencia` sale del
+`sigma_dif_semanal` del artefacto —`sigma_dif_semanal_pp` con `intervalo`,
+`tipo_intervalo`, `semanas`, `juego`, `base`— o queda `estatus: RETIRADO`
+sin número si el artefacto no lo trae con intervalo.
 
 Ninguno de los tres endpoints entra al envelope con `meta.regimen`: no
 dependen del motor ni del régimen. Llevan `meta` reducido

@@ -1,14 +1,214 @@
 {
  "etiqueta": "SIMULADO",
- "estatus": "RETIRADO",
- "retirado": {
-  "fecha": "2026-09-07",
-  "por": "dictamen de cierre de la corrida 10",
-  "fuente": "GEMELO/resultados/dictamen_10/auditor_lookahead.md",
-  "causa": "Cuatro mecanismos de fuga temporal demostrados ejecutando codigo (F1 universo elegido con el ultimo cierre; F2 senal sorteada de retornos futuros; F3 interruptor calibrado con futuro, materialidad nula; F4 retardo de implementacion cero). La cifra titular se mueve: el juego medio pasa de 27 % a 57 % del capital en comisiones a 5 pb.",
-  "consecuencia": "Ninguna cifra de este artefacto se puede citar hasta que las fugas se cierren y se republique. El signo de la conclusion aguanta; el numero no."
+ "estatus": "PROPUESTA",
+ "version": 2,
+ "reconstruccion": {
+  "fecha": "2026-09-08",
+  "acta": "DECISIONES.md §82.4 (opción A) y §83",
+  "reemplaza": "v1 del 2026-09-07, RETIRADA por fuga temporal demostrada (dictamen 10, F1 a F4)",
+  "correcciones": {
+   "E1": "membresía del universo operable decidida con los cierres hasta 2023-09-05",
+   "E3": "señal sin información sorteada de retornos anteriores a 2023-09-05",
+   "E4": "retardo de implementación de 1 sesión en las dos patas",
+   "E5": "sigma del interruptor medida hasta 2023-09-05 (dinero/derivacion.py)",
+   "E6": "gate de invariancia al truncado cableado (verificar_invariancia) y corrido antes de escribir"
+  },
+  "gate_invariancia": {
+   "ejecutado": true,
+   "resultado": "INVARIANTE",
+   "cortes": [
+    "2023-10-17",
+    "2023-11-29",
+    "2024-01-12",
+    "2024-02-27",
+    "2024-04-10",
+    "2024-05-22",
+    "2024-07-08",
+    "2024-08-19",
+    "2024-10-01",
+    "2024-11-12",
+    "2024-12-26",
+    "2025-02-11",
+    "2025-03-26",
+    "2025-05-08",
+    "2025-06-23",
+    "2025-08-05",
+    "2025-09-17",
+    "2025-10-29",
+    "2025-12-11",
+    "2026-01-27",
+    "2026-03-11",
+    "2026-04-23",
+    "2026-06-05",
+    "2026-07-21",
+    "2026-09-01"
+   ],
+   "comparaciones": [
+    {
+     "corte": "2023-10-17",
+     "libros": 20,
+     "movimientos_comparados": 245,
+     "decisiones_comparadas": 253
+    },
+    {
+     "corte": "2023-11-29",
+     "libros": 20,
+     "movimientos_comparados": 400,
+     "decisiones_comparadas": 404
+    },
+    {
+     "corte": "2024-01-12",
+     "libros": 20,
+     "movimientos_comparados": 644,
+     "decisiones_comparadas": 654
+    },
+    {
+     "corte": "2024-02-27",
+     "libros": 20,
+     "movimientos_comparados": 772,
+     "decisiones_comparadas": 778
+    },
+    {
+     "corte": "2024-04-10",
+     "libros": 20,
+     "movimientos_comparados": 938,
+     "decisiones_comparadas": 944
+    },
+    {
+     "corte": "2024-05-22",
+     "libros": 20,
+     "movimientos_comparados": 1084,
+     "decisiones_comparadas": 1088
+    },
+    {
+     "corte": "2024-07-08",
+     "libros": 20,
+     "movimientos_comparados": 1284,
+     "decisiones_comparadas": 1290
+    },
+    {
+     "corte": "2024-08-19",
+     "libros": 20,
+     "movimientos_comparados": 1424,
+     "decisiones_comparadas": 1428
+    },
+    {
+     "corte": "2024-10-01",
+     "libros": 20,
+     "movimientos_comparados": 1580,
+     "decisiones_comparadas": 1600
+    },
+    {
+     "corte": "2024-11-12",
+     "libros": 20,
+     "movimientos_comparados": 1748,
+     "decisiones_comparadas": 1756
+    },
+    {
+     "corte": "2024-12-26",
+     "libros": 20,
+     "movimientos_comparados": 1926,
+     "decisiones_comparadas": 1928
+    },
+    {
+     "corte": "2025-02-11",
+     "libros": 20,
+     "movimientos_comparados": 2102,
+     "decisiones_comparadas": 2108
+    },
+    {
+     "corte": "2025-03-26",
+     "libros": 20,
+     "movimientos_comparados": 2268,
+     "decisiones_comparadas": 2270
+    },
+    {
+     "corte": "2025-05-08",
+     "libros": 20,
+     "movimientos_comparados": 2463,
+     "decisiones_comparadas": 2470
+    },
+    {
+     "corte": "2025-06-23",
+     "libros": 20,
+     "movimientos_comparados": 2623,
+     "decisiones_comparadas": 2632
+    },
+    {
+     "corte": "2025-08-05",
+     "libros": 20,
+     "movimientos_comparados": 2816,
+     "decisiones_comparadas": 2833
+    },
+    {
+     "corte": "2025-09-17",
+     "libros": 20,
+     "movimientos_comparados": 2964,
+     "decisiones_comparadas": 2979
+    },
+    {
+     "corte": "2025-10-29",
+     "libros": 20,
+     "movimientos_comparados": 3120,
+     "decisiones_comparadas": 3123
+    },
+    {
+     "corte": "2025-12-11",
+     "libros": 20,
+     "movimientos_comparados": 3261,
+     "decisiones_comparadas": 3268
+    },
+    {
+     "corte": "2026-01-27",
+     "libros": 20,
+     "movimientos_comparados": 3417,
+     "decisiones_comparadas": 3421
+    },
+    {
+     "corte": "2026-03-11",
+     "libros": 20,
+     "movimientos_comparados": 3574,
+     "decisiones_comparadas": 3581
+    },
+    {
+     "corte": "2026-04-23",
+     "libros": 20,
+     "movimientos_comparados": 3702,
+     "decisiones_comparadas": 3709
+    },
+    {
+     "corte": "2026-06-05",
+     "libros": 20,
+     "movimientos_comparados": 3840,
+     "decisiones_comparadas": 3847
+    },
+    {
+     "corte": "2026-07-21",
+     "libros": 20,
+     "movimientos_comparados": 3973,
+     "decisiones_comparadas": 3979
+    },
+    {
+     "corte": "2026-09-01",
+     "libros": 20,
+     "movimientos_comparados": 4098,
+     "decisiones_comparadas": 4118
+    }
+   ],
+   "metodo": "se reconstruye la cuenta entera (membresía, señales, línea base, tres juegos, cuatro deslizamientos) con la fuente cortada en D y se exige que todo movimiento ejecutado hasta D (fecha, ticker, lado, acciones, precio, comisión, fecha de decisión y acciones decididas) y toda DECISIÓN tomada hasta D, ejecutada o no, sea idéntica a la de la fuente completa",
+   "alcance": "invariancia al truncado en 25 cortes por regla (una sesión de cada 30). Una fuga de k días sólo deja huella en los k días previos a cada corte: el poder contra fugas cortas es la probabilidad de que en esos días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa ausencia de fuga: significa que ninguna entró por las vías que estos cortes ven. La contraprueba de precios_ref (G3) está pendiente para la corrida 12.",
+   "cubre_solo_la_semilla_0": true,
+   "contraprueba": "tests/test_dinero.py inyecta una señal que mira un día adelante y exige que este gate dispare"
+  },
+  "costo": {
+   "fuente": "GEMELO/propuestas/insumo_40_aranceles_*.md (corredor del §40, Pro Tiered, 7-sep-2026)",
+   "columna": "acciones enteras",
+   "comision_por_accion_usd": 0.0035,
+   "comision_minima_usd": 0.35,
+   "comision_tope_pct_del_monto": 1.0
+  }
  },
- "advertencia": "RETIRADO por fuga temporal demostrada. La señal que alimenta la estrategia NO tiene información: lo medido es fricción, no habilidad. Ninguna cifra es un resultado del proyecto y ninguna se puede citar.",
+ "advertencia": "La señal que alimenta la estrategia NO tiene información: lo medido es fricción, no habilidad. Ninguna cifra es un resultado del proyecto y ninguna entra al README. PROPUESTA hasta el dictamen del adversario.",
  "ventana": {
   "desde": "2023-09-05",
   "hasta": "2026-09-04",
@@ -16,7 +216,43 @@
  },
  "aportado_usd": 500.0,
  "aportes": 5,
- "instrumentos_operables": 29,
+ "instrumentos_operables": 33,
+ "operables": [
+  "AMAT",
+  "AMD",
+  "AMKR",
+  "AMZN",
+  "ASX",
+  "AVGO",
+  "CDNS",
+  "ENTG",
+  "GFS",
+  "GOOGL",
+  "GSM",
+  "INTC",
+  "KLAC",
+  "LIN",
+  "LRCX",
+  "META",
+  "MKSI",
+  "MSFT",
+  "MU",
+  "NVDA",
+  "QCOM",
+  "SHECY",
+  "SMH",
+  "SNPS",
+  "SOXX",
+  "TER",
+  "TOELY",
+  "TSEM",
+  "TSM",
+  "UMC",
+  "VRT",
+  "WDC",
+  "XSD"
+ ],
+ "retardo_implementacion": 1,
  "barrido_deslizamiento_pb": [
   0.0,
   2.0,
@@ -27,90 +263,106 @@
   {
    "etf": "SMH",
    "deslizamiento_pb": 0.0,
-   "final_usd": 1759.980972290039,
+   "final_usd": 1767.5049926757813,
    "aportado_usd": 500.0,
-   "resultado_usd": 1259.980972290039,
-   "resultado_pct": 251.9961944580078,
+   "resultado_usd": 1267.5049926757813,
+   "resultado_pct": 253.50099853515627,
    "ordenes": 3,
-   "comisiones_usd": 3.0,
-   "deslizamiento_usd": 0.0
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 1.0499999999999998,
+   "deslizamiento_usd": 0.0,
+   "comisiones_pct_del_aportado": 0.20999999999999996
   },
   {
    "etf": "SMH",
    "deslizamiento_pb": 2.0,
-   "final_usd": 1759.8933624786378,
+   "final_usd": 1767.4184976684571,
    "aportado_usd": 500.0,
-   "resultado_usd": 1259.8933624786378,
-   "resultado_pct": 251.97867249572755,
+   "resultado_usd": 1267.4184976684571,
+   "resultado_pct": 253.4836995336914,
    "ordenes": 3,
-   "comisiones_usd": 3.0,
-   "deslizamiento_usd": 0.08760981140136437
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 1.0499999999999998,
+   "deslizamiento_usd": 0.08649500732420279,
+   "comisiones_pct_del_aportado": 0.20999999999999996
   },
   {
    "etf": "SMH",
    "deslizamiento_pb": 5.0,
-   "final_usd": 1759.7619477615358,
+   "final_usd": 1767.2887551574709,
    "aportado_usd": 500.0,
-   "resultado_usd": 1259.7619477615358,
-   "resultado_pct": 251.95238955230715,
+   "resultado_usd": 1267.2887551574709,
+   "resultado_pct": 253.45775103149418,
    "ordenes": 3,
-   "comisiones_usd": 3.0,
-   "deslizamiento_usd": 0.2190245285033825
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 1.0499999999999998,
+   "deslizamiento_usd": 0.21623751831052118,
+   "comisiones_pct_del_aportado": 0.20999999999999996
   },
   {
    "etf": "SMH",
    "deslizamiento_pb": 10.0,
-   "final_usd": 1759.5429232330323,
+   "final_usd": 1767.0725176391602,
    "aportado_usd": 500.0,
-   "resultado_usd": 1259.5429232330323,
-   "resultado_pct": 251.90858464660647,
+   "resultado_usd": 1267.0725176391602,
+   "resultado_pct": 253.41450352783204,
    "ordenes": 3,
-   "comisiones_usd": 3.0,
-   "deslizamiento_usd": 0.438049057006765
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 1.0499999999999998,
+   "deslizamiento_usd": 0.43247503662104236,
+   "comisiones_pct_del_aportado": 0.20999999999999996
   },
   {
    "etf": "XSD",
    "deslizamiento_pb": 0.0,
-   "final_usd": 1089.624526977539,
+   "final_usd": 1094.6186187744142,
    "aportado_usd": 500.0,
-   "resultado_usd": 589.6245269775391,
-   "resultado_pct": 117.92490539550782,
+   "resultado_usd": 594.6186187744142,
+   "resultado_pct": 118.92372375488284,
    "ordenes": 2,
-   "comisiones_usd": 2.0,
-   "deslizamiento_usd": 0.0
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 0.7,
+   "deslizamiento_usd": 0.0,
+   "comisiones_pct_del_aportado": 0.14
   },
   {
    "etf": "XSD",
    "deslizamiento_pb": 2.0,
-   "final_usd": 1089.5462718780518,
+   "final_usd": 1094.5411024932864,
    "aportado_usd": 500.0,
-   "resultado_usd": 589.5462718780518,
-   "resultado_pct": 117.90925437561035,
+   "resultado_usd": 594.5411024932864,
+   "resultado_pct": 118.9082204986573,
    "ordenes": 2,
-   "comisiones_usd": 2.0,
-   "deslizamiento_usd": 0.07825509948730769
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 0.7,
+   "deslizamiento_usd": 0.07751628112791309,
+   "comisiones_pct_del_aportado": 0.14
   },
   {
    "etf": "XSD",
    "deslizamiento_pb": 5.0,
-   "final_usd": 1089.428889228821,
+   "final_usd": 1094.4248280715944,
    "aportado_usd": 500.0,
-   "resultado_usd": 589.4288892288209,
-   "resultado_pct": 117.88577784576417,
+   "resultado_usd": 594.4248280715944,
+   "resultado_pct": 118.8849656143189,
    "ordenes": 2,
-   "comisiones_usd": 2.0,
-   "deslizamiento_usd": 0.1956377487182408
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 0.7,
+   "deslizamiento_usd": 0.19379070281982536,
+   "comisiones_pct_del_aportado": 0.14
   },
   {
    "etf": "XSD",
    "deslizamiento_pb": 10.0,
-   "final_usd": 1090.047770629883,
+   "final_usd": 1094.2310373687747,
    "aportado_usd": 500.0,
-   "resultado_usd": 590.047770629883,
-   "resultado_pct": 118.0095541259766,
+   "resultado_usd": 594.2310373687747,
+   "resultado_pct": 118.84620747375494,
    "ordenes": 2,
-   "comisiones_usd": 2.0,
-   "deslizamiento_usd": 0.39046179199215203
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 0.7,
+   "deslizamiento_usd": 0.38758140563959387,
+   "comisiones_pct_del_aportado": 0.14
   }
  ],
  "juegos": [
@@ -120,9 +372,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.19042641865431914,
-     "ic_lo": -0.581480217429873,
-     "ic_hi": 0.18839217894537263,
+     "dif_media_pp": -0.22010606357721124,
+     "ic_lo": -0.63161264009519,
+     "ic_hi": 0.16814401992910155,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -131,9 +383,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.10848207503104025,
-     "ic_lo": -0.35253627767389917,
-     "ic_hi": 0.5274607086050647,
+     "dif_media_pp": 0.08145230766187954,
+     "ic_lo": -0.4706166234656663,
+     "ic_hi": 0.563675739884026,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -141,13 +393,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1298.772704677582,
+   "final_usd": 1294.3327697372424,
    "aportado_usd": 500.0,
-   "resultado_usd": 798.7727046775819,
-   "resultado_pct": 159.7545409355164,
-   "ordenes": 227,
-   "comisiones_usd": 125.85866205215457,
-   "deslizamiento_usd": 0.0
+   "resultado_usd": 794.3327697372424,
+   "resultado_pct": 158.8665539474485,
+   "ordenes": 205,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 62.13981403350844,
+   "deslizamiento_usd": 0.0,
+   "comisiones_pct_del_aportado": 12.42796280670169
   },
   {
    "juego": "conservador",
@@ -155,9 +409,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.19135478236617343,
-     "ic_lo": -0.5809924781590675,
-     "ic_hi": 0.1873838008367828,
+     "dif_media_pp": -0.22186344745964823,
+     "ic_lo": -0.6319831063676168,
+     "ic_hi": 0.16628198054562485,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -166,9 +420,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.10757960992237223,
-     "ic_lo": -0.35259907277093233,
-     "ic_hi": 0.5270513061910173,
+     "dif_media_pp": 0.0797209964977167,
+     "ic_lo": -0.4695456453773522,
+     "ic_hi": 0.5580858831813548,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -176,13 +430,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1295.9740066593008,
+   "final_usd": 1290.1979118543895,
    "aportado_usd": 500.0,
-   "resultado_usd": 795.9740066593008,
-   "resultado_pct": 159.19480133186016,
-   "ordenes": 227,
-   "comisiones_usd": 125.86327683193025,
-   "deslizamiento_usd": 2.7940832385058996
+   "resultado_usd": 790.1979118543895,
+   "resultado_pct": 158.03958237087792,
+   "ordenes": 208,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 62.98493212077344,
+   "deslizamiento_usd": 2.809700675868642,
+   "comisiones_pct_del_aportado": 12.59698642415469
   },
   {
    "juego": "conservador",
@@ -190,9 +446,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.1927499400794038,
-     "ic_lo": -0.5826642055322037,
-     "ic_hi": 0.18586661659634945,
+     "dif_media_pp": -0.2362713598860084,
+     "ic_lo": -0.5804483466066427,
+     "ic_hi": 0.10011557325441561,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -201,9 +457,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.10622326285793939,
-     "ic_lo": -0.3520341606505267,
-     "ic_hi": 0.5245203424785481,
+     "dif_media_pp": 0.0653521555336166,
+     "ic_lo": -0.43095931829558937,
+     "ic_hi": 0.4997360567572012,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -211,13 +467,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1291.7759596318776,
+   "final_usd": 1247.8133866610801,
    "aportado_usd": 500.0,
-   "resultado_usd": 791.7759596318776,
-   "resultado_pct": 158.35519192637554,
-   "ordenes": 227,
-   "comisiones_usd": 125.87019900159359,
-   "deslizamiento_usd": 6.985208096264916
+   "resultado_usd": 747.8133866610801,
+   "resultado_pct": 149.56267733221603,
+   "ordenes": 202,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 62.495987772796276,
+   "deslizamiento_usd": 6.866680759071477,
+   "comisiones_pct_del_aportado": 12.499197554559256
   },
   {
    "juego": "conservador",
@@ -225,9 +483,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": 0.27147916011503853,
-     "ic_lo": -0.27039313115087654,
-     "ic_hi": 0.8325743882276572,
+     "dif_media_pp": -0.23857688218751485,
+     "ic_lo": -0.5833290758476289,
+     "ic_hi": 0.09893088582723832,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -236,23 +494,25 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.5683149752214716,
-     "ic_lo": 0.04934857230267965,
-     "ic_hi": 1.15642996289438,
-     "cruza_cero": false,
+     "dif_media_pp": 0.06311165192550938,
+     "ic_lo": -0.43168938565761206,
+     "ic_hi": 0.49660076233242834,
+     "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
      "semilla": 20260906
     }
    },
-   "final_usd": 2286.748469633942,
+   "final_usd": 1241.3785987749657,
    "aportado_usd": 500.0,
-   "resultado_usd": 1786.748469633942,
-   "resultado_pct": 357.34969392678846,
-   "ordenes": 133,
-   "comisiones_usd": 69.62078469621656,
-   "deslizamiento_usd": 7.253370543956367
+   "resultado_usd": 741.3785987749657,
+   "resultado_pct": 148.27571975499313,
+   "ordenes": 205,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 63.07719441313042,
+   "deslizamiento_usd": 13.73026151847764,
+   "comisiones_pct_del_aportado": 12.615438882626083
   },
   {
    "juego": "medio",
@@ -260,9 +520,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.21072415471481235,
-     "ic_lo": -0.6513784677324338,
-     "ic_hi": 0.24490569106757837,
+     "dif_media_pp": -0.34204365234987305,
+     "ic_lo": -0.6975798962051444,
+     "ic_hi": 0.02414517648969776,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -271,9 +531,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.08818433897054703,
-     "ic_lo": -0.39747859199266544,
-     "ic_hi": 0.5546830819457946,
+     "dif_media_pp": -0.0404852811107822,
+     "ic_lo": -0.4620746985887139,
+     "ic_hi": 0.3420043775830297,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -281,13 +541,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1183.9912210655211,
+   "final_usd": 1033.54499149084,
    "aportado_usd": 500.0,
-   "resultado_usd": 683.9912210655211,
-   "resultado_pct": 136.79824421310425,
-   "ordenes": 255,
-   "comisiones_usd": 154.8915904808045,
-   "deslizamiento_usd": 0.0
+   "resultado_usd": 533.54499149084,
+   "resultado_pct": 106.70899829816798,
+   "ordenes": 447,
+   "ordenes_reducidas_al_ejecutar": 1,
+   "comisiones_usd": 138.34383416414178,
+   "deslizamiento_usd": 0.0,
+   "comisiones_pct_del_aportado": 27.668766832828357
   },
   {
    "juego": "medio",
@@ -295,10 +557,10 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.09670424911587694,
-     "ic_lo": -0.6434800106676776,
-     "ic_hi": 0.47862436477881193,
-     "cruza_cero": true,
+     "dif_media_pp": -0.4067585182780157,
+     "ic_lo": -0.8318300368342381,
+     "ic_hi": -0.00012673081209929919,
+     "cruza_cero": false,
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
@@ -306,9 +568,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.20223014317266866,
-     "ic_lo": -0.32110980144342416,
-     "ic_hi": 0.7560583667680658,
+     "dif_media_pp": -0.10517407432065082,
+     "ic_lo": -0.6826734325318522,
+     "ic_hi": 0.3875278376652028,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -316,13 +578,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1355.777880238729,
+   "final_usd": 938.7170521651215,
    "aportado_usd": 500.0,
-   "resultado_usd": 855.777880238729,
-   "resultado_pct": 171.1555760477458,
-   "ordenes": 252,
-   "comisiones_usd": 149.98166014437194,
-   "deslizamiento_usd": 3.35097258877714
+   "resultado_usd": 438.71705216512146,
+   "resultado_pct": 87.7434104330243,
+   "ordenes": 443,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 137.6319913093158,
+   "deslizamiento_usd": 6.89574493384268,
+   "comisiones_pct_del_aportado": 27.52639826186316
   },
   {
    "juego": "medio",
@@ -330,9 +594,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": 0.13127667654586836,
-     "ic_lo": -0.46372160504579113,
-     "ic_hi": 0.7840524861871652,
+     "dif_media_pp": -0.24504276981361256,
+     "ic_lo": -0.6527335815889347,
+     "ic_hi": 0.15347090344677058,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -341,9 +605,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.4302498794832114,
-     "ic_lo": -0.16714671980202533,
-     "ic_hi": 1.0982875206586749,
+     "dif_media_pp": 0.05658074560601244,
+     "ic_lo": -0.43933119547945615,
+     "ic_hi": 0.4996876130948626,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -351,13 +615,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1769.0705182002073,
+   "final_usd": 1220.4166859590464,
    "aportado_usd": 500.0,
-   "resultado_usd": 1269.0705182002073,
-   "resultado_pct": 253.81410364004148,
-   "ordenes": 220,
-   "comisiones_usd": 133.7849282685042,
-   "deslizamiento_usd": 7.494720567344865
+   "resultado_usd": 720.4166859590464,
+   "resultado_pct": 144.08333719180928,
+   "ordenes": 415,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 129.5198171357481,
+   "deslizamiento_usd": 17.04986246192261,
+   "comisiones_pct_del_aportado": 25.903963427149616
   },
   {
    "juego": "medio",
@@ -365,9 +631,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": 0.09237420985829886,
-     "ic_lo": -0.44371979200669076,
-     "ic_hi": 0.6752282105060646,
+     "dif_media_pp": -0.3488556514757289,
+     "ic_lo": -0.7896639843023957,
+     "ic_hi": 0.07285732185301161,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -376,9 +642,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": 0.38921002496473206,
-     "ic_lo": -0.17802816149186576,
-     "ic_hi": 1.0029589888308024,
+     "dif_media_pp": -0.04716711736270455,
+     "ic_lo": -0.5970430669834915,
+     "ic_hi": 0.41519821477218816,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -386,13 +652,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 1754.1839704331453,
+   "final_usd": 1040.0829169431868,
    "aportado_usd": 500.0,
-   "resultado_usd": 1254.1839704331453,
-   "resultado_pct": 250.83679408662906,
-   "ordenes": 221,
-   "comisiones_usd": 133.6454122386885,
-   "deslizamiento_usd": 14.915844665049768
+   "resultado_usd": 540.0829169431868,
+   "resultado_pct": 108.01658338863733,
+   "ordenes": 422,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 131.16210176194585,
+   "deslizamiento_usd": 33.99608184456632,
+   "comisiones_pct_del_aportado": 26.23242035238917
   },
   {
    "juego": "agresivo",
@@ -400,9 +668,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.6128433902335377,
-     "ic_lo": -1.1723807069815775,
-     "ic_hi": -0.09298583886544785,
+     "dif_media_pp": -0.5826438541708695,
+     "ic_lo": -1.163435015004074,
+     "ic_hi": -0.013282516603570944,
      "cruza_cero": false,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -411,9 +679,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": -0.3139348965481784,
-     "ic_lo": -0.999343502386322,
-     "ic_hi": 0.3017000098536503,
+     "dif_media_pp": -0.28108548293177865,
+     "ic_lo": -0.9907392662636924,
+     "ic_hi": 0.35769451577043826,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -421,13 +689,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 693.7095612597465,
+   "final_usd": 765.4423396491992,
    "aportado_usd": 500.0,
-   "resultado_usd": 193.70956125974647,
-   "resultado_pct": 38.741912251949294,
-   "ordenes": 355,
-   "comisiones_usd": 214.83808693170545,
-   "deslizamiento_usd": 0.0
+   "resultado_usd": 265.4423396491992,
+   "resultado_pct": 53.08846792983984,
+   "ordenes": 386,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 96.4988498783108,
+   "deslizamiento_usd": 0.0,
+   "comisiones_pct_del_aportado": 19.299769975662162
   },
   {
    "juego": "agresivo",
@@ -435,9 +705,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.6256859154831804,
-     "ic_lo": -1.182342306410337,
-     "ic_hi": -0.1041372452468541,
+     "dif_media_pp": -0.5884312388005467,
+     "ic_lo": -1.169377420902493,
+     "ic_hi": -0.018445854780576865,
      "cruza_cero": false,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -446,9 +716,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": -0.3267515231946348,
-     "ic_lo": -1.0000054959723985,
-     "ic_hi": 0.2843259331901631,
+     "dif_media_pp": -0.2868467948431817,
+     "ic_lo": -0.9983718927631163,
+     "ic_hi": 0.35249165506767105,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -456,13 +726,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 680.4792636046011,
+   "final_usd": 758.0917233186892,
    "aportado_usd": 500.0,
-   "resultado_usd": 180.4792636046011,
-   "resultado_pct": 36.09585272092022,
-   "ordenes": 358,
-   "comisiones_usd": 214.88408354596373,
-   "deslizamiento_usd": 7.30237021279248
+   "resultado_usd": 258.0917233186892,
+   "resultado_pct": 51.618344663737844,
+   "ordenes": 386,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 96.49961240390172,
+   "deslizamiento_usd": 7.349853804921238,
+   "comisiones_pct_del_aportado": 19.299922480780342
   },
   {
    "juego": "agresivo",
@@ -470,9 +742,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.6353641615501606,
-     "ic_lo": -1.1891878816394195,
-     "ic_hi": -0.1135687853193658,
+     "dif_media_pp": -0.6023149350213964,
+     "ic_lo": -1.184040905218539,
+     "ic_hi": -0.02681690788261428,
      "cruza_cero": false,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -481,9 +753,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": -0.3363909586128175,
-     "ic_lo": -1.0084970866015233,
-     "ic_hi": 0.2741457618202082,
+     "dif_media_pp": -0.3006914196017715,
+     "ic_lo": -1.0015953272639289,
+     "ic_hi": 0.3202057302860245,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -491,13 +763,15 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 669.4470507662734,
+   "final_usd": 741.0719019170434,
    "aportado_usd": 500.0,
-   "resultado_usd": 169.44705076627338,
-   "resultado_pct": 33.88941015325469,
-   "ordenes": 357,
-   "comisiones_usd": 214.8701386156858,
-   "deslizamiento_usd": 18.25514419233599
+   "resultado_usd": 241.07190191704342,
+   "resultado_pct": 48.21438038340868,
+   "ordenes": 391,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 97.83781334286891,
+   "deslizamiento_usd": 18.369505559561464,
+   "comisiones_pct_del_aportado": 19.567562668573782
   },
   {
    "juego": "agresivo",
@@ -505,9 +779,9 @@
    "contra": {
     "SMH": {
      "semanas": 156,
-     "dif_media_pp": -0.6516018059204907,
-     "ic_lo": -1.2033739862881858,
-     "ic_hi": -0.13355527117108762,
+     "dif_media_pp": -0.6212991640942973,
+     "ic_lo": -1.199037469333339,
+     "ic_hi": -0.046645871892982554,
      "cruza_cero": false,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -516,9 +790,9 @@
     },
     "XSD": {
      "semanas": 156,
-     "dif_media_pp": -0.3547659908140575,
-     "ic_lo": -1.028474732338528,
-     "ic_hi": 0.24982366017852234,
+     "dif_media_pp": -0.31961062998127304,
+     "ic_lo": -1.0271901832983379,
+     "ic_hi": 0.2999883496612297,
      "cruza_cero": true,
      "bloque_semanas": 4,
      "replicas": 2000,
@@ -526,18 +800,172 @@
      "semilla": 20260906
     }
    },
-   "final_usd": 651.1891037808318,
+   "final_usd": 717.9215884494542,
    "aportado_usd": 500.0,
-   "resultado_usd": 151.18910378083183,
-   "resultado_pct": 30.237820756166368,
-   "ordenes": 357,
-   "comisiones_usd": 214.872941408789,
-   "deslizamiento_usd": 36.510288384674006
+   "resultado_usd": 217.92158844945425,
+   "resultado_pct": 43.58431768989084,
+   "ordenes": 393,
+   "ordenes_reducidas_al_ejecutar": 0,
+   "comisiones_usd": 97.58425618269646,
+   "deslizamiento_usd": 36.71979995631963,
+   "comisiones_pct_del_aportado": 19.516851236539292
   }
  ],
  "falsos_positivos": {
   "comparaciones": 24,
   "con_ic_que_excluye_cero": 5,
-  "nota": "La respuesta verdadera es cero en todas: la señal no tiene información. La lectura de la v1 (todos falsos positivos) está RETIRADA: cuatro de los marcados son el resultado verdadero de friccion. Ver el .md, sección 3."
+  "nota": "NO es una tasa de falsos positivos: la nula no es cero (arrastre de comisión), un intervalo negativo es el resultado verdadero de la fricción, y las comparaciones comparten sorteo. Con 20 semillas del sorteo la fracción está medida con Wilson en `barrido_semillas` (§1b del .md); esta celda es la de la semilla de la página."
+ },
+ "sigma_dif_semanal": {
+  "juego": "conservador",
+  "base": "SMH",
+  "deslizamiento_pb": 5.0,
+  "semanas": 156,
+  "sigma_pp_semana": 2.3362,
+  "ic95": [
+   1.9952,
+   2.6686
+  ],
+  "metodo": "sd (ddof=1) de la diferencia semanal, IC por bootstrap circular de bloques de 4 semanas, 2000 réplicas, semilla 20260913",
+  "advertencia": "El IC es un percentil de bootstrap de bloques de una DESVIACIÓN y NO es un 95 %: el bloque 1 midió su cobertura a 156 semanas en 0.8495 (instrumento_dinero.md, columna «cobertura IC sd»). El punto es utilizable como insumo; el intervalo, no, hasta que se calibre. Y refleja UN sorteo de señal: ver el barrido de semillas.",
+  "cobertura_medida_del_ic_a_156_semanas": 0.8495
+ },
+ "barrido_semillas": {
+  "K": 20,
+  "semillas": [
+   20260906,
+   20260907,
+   20260908,
+   20260909,
+   20260910,
+   20260911,
+   20260912,
+   20260913,
+   20260914,
+   20260915,
+   20260916,
+   20260917,
+   20260918,
+   20260919,
+   20260920,
+   20260921,
+   20260922,
+   20260923,
+   20260924,
+   20260925
+  ],
+  "deslizamiento_pb": 5.0,
+  "comisiones_pct_del_aportado": {
+   "conservador": {
+    "mediana": 12.41,
+    "banda_p2_5_p97_5": [
+     6.35,
+     13.2
+    ],
+    "min": 6.26,
+    "max": 13.23,
+    "ordenes_mediana": 210,
+    "ordenes_banda": [
+     110.42,
+     220.53
+    ]
+   },
+   "medio": {
+    "mediana": 26.68,
+    "banda_p2_5_p97_5": [
+     14.56,
+     28.7
+    ],
+    "min": 14.06,
+    "max": 29.41,
+    "ordenes_mediana": 436,
+    "ordenes_banda": [
+     236.97,
+     469.65
+    ]
+   },
+   "agresivo": {
+    "mediana": 18.99,
+    "banda_p2_5_p97_5": [
+     17.98,
+     20.16
+    ],
+    "min": 17.71,
+    "max": 20.25,
+    "ordenes_mediana": 373,
+    "ordenes_banda": [
+     348.95,
+     401.0
+    ]
+   }
+  },
+  "ic_excluye_cero": {
+   "marcados": 51,
+   "comparaciones": 480,
+   "fraccion": 0.1062,
+   "wilson95": [
+    0.082,
+    0.137
+   ],
+   "de_los_cuales_agresivo_negativo_vs_SMH": 9
+  },
+  "nota": "La fracción de IC que excluyen el cero NO es una tasa de falsos positivos (la nula no es cero: hay arrastre de comisión). Es cuánto produce este diseño con una señal sin información, con la misma semilla de bootstrap en las K×24."
+ },
+ "sesgo_de_la_sonda": {
+  "n_senales": 24882,
+  "fraccion_positivas": 0.5781,
+  "magnitud_media_pp": 2.198,
+  "lectura": "sonda larga por construcción: sin información sobre la dirección no es lo mismo que sin sesgo"
+ },
+ "membresia": {
+  "incluidos": 33,
+  "excluidos": [
+   "ASML",
+   "SNDK",
+   "ARM"
+  ],
+  "razon_exclusion": {
+   "ASML": "precio al 2023-09-05 por encima del techo",
+   "SNDK": "sin cierre anterior a 2023-09-05 (listada después)",
+   "ARM": "sin cierre anterior a 2023-09-05 (listada después)"
+  },
+  "retorno_mediano_ventana_incluidos_pct": 166.1,
+  "retorno_mediano_ventana_excluidos_pct": 296.4
+ },
+ "cobertura_del_instrumento_a_156_semanas": {
+  "tamano_bilateral": {
+   "tasa": 0.0635,
+   "wilson95": [
+    0.054,
+    0.075
+   ],
+   "k": 127
+  },
+  "cobertura": {
+   "tasa": 0.9365,
+   "wilson95": [
+    0.925,
+    0.946
+   ],
+   "k": 1873
+  },
+  "cobertura_ic_sd": {
+   "tasa": 0.8495,
+   "wilson95": [
+    0.833,
+    0.865
+   ],
+   "k": 1699
+  },
+  "usable_a_alpha_005": false,
+  "alpha_real": 0.0635,
+  "z_al_alpha_real": 1.8557,
+  "potencia_cerrada_al_alpha_real": {
+   "0.25": 0.2417,
+   "0.5": 0.675,
+   "1.0": 0.9971
+  },
+  "mde80_pp_semana": 0.6066,
+  "mde80_pp_anio_aprox": 31.5
  }
 }

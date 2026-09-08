@@ -277,32 +277,59 @@ NO_COMPRABLES = (
 # ------------------------------------------------------------
 # Costo de una orden — con el supuesto a la vista
 # ------------------------------------------------------------
-def comision_usd(n_acciones: int, precio: float, costos: dict) -> float:
-    """Comisión de una orden, bajo el arancel SUPUESTO de reglas.json.
-    El tope como porcentaje del monto es lo que manda para acciones baratas:
-    con mínimo de 1 USD y tope de 1%, cualquier acción de menos de 100 USD
-    paga exactamente el 1% si se compra una sola."""
+def comision_usd(n_acciones, precio: float, costos: dict,
+                 fraccionarias: bool = False) -> float:
+    """Comisión de una orden bajo el arancel de reglas.json (desde el 8-sep,
+    el publicado del insumo §40). Enteras: máx(mínimo, por acción × n),
+    topada en el % del monto — con mínimo 0,35 y tope 1 % el cruce está en
+    35 USD por orden. Fraccionarias (`fraccionarias=True`, columna del
+    insumo que esta cuenta NO usa): máx(mínimo, % del monto), que no se
+    diluye nunca."""
     if n_acciones <= 0:
         return 0.0
     monto = n_acciones * precio
+    if fraccionarias:
+        f = costos["fraccionarias_no_usadas"]
+        return max(f["comision_minima_usd"], f["comision_pct_del_monto"] / 100.0 * monto)
     bruta = max(costos["comision_minima_usd"],
                 costos["comision_por_accion_usd"] * n_acciones)
     tope = costos["comision_tope_pct_del_monto"] / 100.0 * monto
     return min(bruta, tope)
 
 
-def acciones_por_monto(monto: float, precio: float, costos: dict) -> int:
-    """Cuántas acciones enteras entran en `monto`, comisión incluida."""
+def acciones_por_monto(monto: float, precio: float, costos: dict,
+                       fraccionarias: bool = False):
+    """Cuántas acciones entran en `monto`, comisión incluida. Enteras: un
+    entero. Fraccionarias: un float (las unidades que compra `monto` neto
+    de la comisión proporcional). El modo es un ARGUMENTO explícito, no una
+    bandera escondida en reglas.json: el censo se computa en los dos."""
     if precio <= 0 or monto <= 0:
-        return 0
-    if costos.get("acciones_fraccionarias"):
-        raise NotImplementedError(
-            "el riel de dinero asume acciones enteras; las fraccionarias "
-            "dependen del corredor y no hay corredor")
+        return 0.0 if fraccionarias else 0
+    if fraccionarias:
+        f = costos["fraccionarias_no_usadas"]
+        valor = monto / (1.0 + f["comision_pct_del_monto"] / 100.0)
+        if valor - f["comision_minima_usd"] <= 0:
+            return 0.0
+        return valor / precio
     n = int(monto // precio)
     while n > 0 and n * precio + comision_usd(n, precio, costos) > monto:
         n -= 1
     return n
+
+
+def friccion_ida_y_vuelta(monto: float, precio: float, costos: dict,
+                          fraccionarias: bool = False) -> dict:
+    """Qué cuesta entrar y salir con `monto` en un instrumento: comisión de
+    compra más comisión de venta (sin deslizamiento), en USD y como % de la
+    posición efectivamente tomada. Lo pide el bloque 10 de la corrida 11:
+    la fricción al lado de cada instrumento, leída del arancel del §40."""
+    n = acciones_por_monto(monto, precio, costos, fraccionarias)
+    if not n:
+        return {"unidades": 0, "posicion_usd": 0.0, "friccion_usd": None, "friccion_pct": None}
+    posicion = n * precio
+    ida_vuelta = 2.0 * comision_usd(n, precio, costos, fraccionarias)
+    return {"unidades": n, "posicion_usd": posicion, "friccion_usd": ida_vuelta,
+            "friccion_pct": 100.0 * ida_vuelta / posicion}
 
 
 @dataclass
@@ -317,14 +344,24 @@ class FilaMapa:
     comision_orden_techo_pct: float | None = None
     alcanza_con_techo: bool = False
     alcanza_con_piso: bool = False
+    presupuesto_usd: float | None = None
+    fraccionarias: bool = False
+    friccion_ida_vuelta_usd: float | None = None
+    friccion_ida_vuelta_pct: float | None = None
 
 
-def construir_mapa(cierres, cfg: dict | None = None) -> list:
+def construir_mapa(cierres, cfg: dict | None = None,
+                   presupuesto: float | None = None,
+                   fraccionarias: bool = False) -> list:
     """Cruza los candidatos con los precios efectivamente descargados.
-    Función PURA respecto de la red: recibe el DataFrame, no lo baja."""
+    Función PURA respecto de la red: recibe el DataFrame, no lo baja.
+
+    `presupuesto` (bloque 10, corrida 11) reemplaza al techo de reglas.json
+    como «con cuánto se compra»; `fraccionarias` cambia el modo de compra.
+    Con los dos por defecto reproduce el censo original (techo, enteras)."""
     cfg = cfg or reglas()
     costos = cfg["costos"]
-    techo = cfg["presupuesto"]["techo_usd"]
+    techo = cfg["presupuesto"]["techo_usd"] if presupuesto is None else presupuesto
     piso = cfg["presupuesto"]["piso_usd"]
     filas = []
     for c in CANDIDATOS:
@@ -340,15 +377,20 @@ def construir_mapa(cierres, cfg: dict | None = None) -> list:
         fila.verificado = True
         fila.precio = precio
         fila.fecha_precio = str(fecha)
-        fila.acciones_con_techo = acciones_por_monto(techo, precio, costos)
-        c1 = comision_usd(1, precio, costos)
+        fila.presupuesto_usd = techo
+        fila.fraccionarias = fraccionarias
+        fila.acciones_con_techo = acciones_por_monto(techo, precio, costos, fraccionarias)
+        c1 = comision_usd(1, precio, costos, fraccionarias)
         fila.comision_orden_minima_pct = 100.0 * c1 / precio
         n = fila.acciones_con_techo
         if n > 0:
             fila.comision_orden_techo_pct = (
-                100.0 * comision_usd(n, precio, costos) / (n * precio))
-        fila.alcanza_con_techo = n >= 1
-        fila.alcanza_con_piso = acciones_por_monto(piso, precio, costos) >= 1
+                100.0 * comision_usd(n, precio, costos, fraccionarias) / (n * precio))
+        fr = friccion_ida_y_vuelta(techo, precio, costos, fraccionarias)
+        fila.friccion_ida_vuelta_usd = fr["friccion_usd"]
+        fila.friccion_ida_vuelta_pct = fr["friccion_pct"]
+        fila.alcanza_con_techo = n > 0
+        fila.alcanza_con_piso = acciones_por_monto(piso, precio, costos, fraccionarias) > 0
         filas.append(fila)
     return filas
 

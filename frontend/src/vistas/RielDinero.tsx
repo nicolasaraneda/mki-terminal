@@ -90,8 +90,10 @@ export function RielDinero() {
 
       <Card titulo="La comisión se come el capital — el hallazgo robusto" className="capa-1">
         <p className="mb-3 max-w-3xl text-[11px] leading-relaxed text-text-2">
-          No depende del sorteo ni del supuesto de deslizamiento: depende sólo de cuántas
-          órdenes emite cada juego. Con un mínimo de 1 USD por orden y{' '}
+          Depende sobre todo de cuántas órdenes emite cada juego, y el número de órdenes
+          depende del sorteo: por eso la banda entre semillas va debajo de la tabla. Con el
+          mínimo por orden del arancel vigente (
+          {d.reconstruccion?.costo?.comision_minima_usd ?? '?'} USD) y{' '}
           {d.aportado_usd.toFixed(0)} dólares de capital, rotar la cartera cuesta esto:
         </p>
         <div className="overflow-x-auto">
@@ -124,6 +126,22 @@ export function RielDinero() {
             </tbody>
           </table>
         </div>
+        {d.barrido_semillas && (
+          <p className="mt-3 max-w-3xl text-[11px] leading-relaxed text-text-2">
+            <span className="text-text-1">
+              Con {d.barrido_semillas.K} semillas del sorteo (deslizamiento{' '}
+              {d.barrido_semillas.deslizamiento_pb} pb):
+            </span>{' '}
+            {Object.entries(d.barrido_semillas.comisiones_pct_del_aportado).map(([j, x]) => (
+              <span key={j} className="mr-3 font-mono text-[11px] tabular-nums">
+                {j} {x.mediana.toFixed(1)} % [{x.banda_p2_5_p97_5[0].toFixed(1)},{' '}
+                {x.banda_p2_5_p97_5[1].toFixed(1)}]
+              </span>
+            ))}
+            . La tabla de arriba es la semilla de la página; la banda es percentiles 2,5 y 97,5
+            entre semillas, no un intervalo de cobertura nominal.
+          </p>
+        )}
       </Card>
 
       <Card
@@ -169,22 +187,8 @@ export function RielDinero() {
             </div>
           </div>
           <p className="max-w-2xl text-[11px] leading-relaxed text-text-2">
-            <span className="text-text-1">
-              La lectura que esta tarjeta tenía está RETIRADA.
-            </span>{' '}
-            Decía que los {fp.con_ic_que_excluye_cero} eran todos falsos positivos porque la
-            respuesta verdadera era cero. No lo es: la estrategia y la línea base son
-            carteras distintas y la estrategia paga mucha más comisión, así que la
-            diferencia verdadera es <span className="text-text-1">negativa</span>, no cero.
-            De hecho cuatro de los cinco marcados son{' '}
-            <span className="text-text-1">el resultado verdadero de fricción</span> que esta
-            misma página celebra más abajo. Queda uno sin explicar, o sea 1 de{' '}
-            {fp.comparaciones}: el α nominal, que no dice nada. Y las{' '}
-            {fp.comparaciones} comparten un solo sorteo, así que ni siquiera son{' '}
-            {fp.comparaciones} pruebas. Cuán fácil es que este diseño produzca un resultado
-            «significativo» sin que haya nada detrás{' '}
-            <span className="text-text-1">sigue sin respuesta medida</span>: hace falta
-            repetirlo con K semillas.
+            <span className="text-text-1">No es una tasa de falsos positivos.</span>{' '}
+            {fp.nota}
           </p>
         </div>
       </Card>
@@ -197,7 +201,8 @@ export function RielDinero() {
           y eso cambia qué instrumento se compra. Con acciones enteras y{' '}
           {d.aportado_usd.toFixed(0)} dólares, el resultado lo decide cuál de los{' '}
           {d.instrumentos_operables} instrumentos tocó en el sorteo. Compararlas entre sí
-          sería un error, y por eso esta vista muestra una sola pasada.
+          sería un error, y por eso esta vista muestra una sola pasada del barrido de costo; la
+          variación entre sorteos está en la tarjeta de comisiones.
         </p>
       </Card>
     </div>

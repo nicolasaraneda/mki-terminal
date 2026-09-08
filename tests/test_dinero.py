@@ -269,20 +269,37 @@ def test_el_tope_porcentual_manda_para_acciones_baratas():
     """Con mínimo de 1 USD y tope de 1%, una orden de UNA acción de menos de
     100 USD paga exactamente el 1%. Es el hallazgo que ordena el mapa del
     bloque 1 y por eso queda clavado acá."""
-    costos = U.reglas()["costos"]
+    costos = {"comision_por_accion_usd": 0.005, "comision_minima_usd": 1.0,
+              "comision_tope_pct_del_monto": 1.0}
     assert U.comision_usd(1, 50.0, costos) == pytest.approx(0.50)
     assert U.comision_usd(1, 99.0, costos) == pytest.approx(0.99)
     assert U.comision_usd(1, 200.0, costos) == pytest.approx(1.00)
     assert U.comision_usd(0, 200.0, costos) == 0.0
+    # Con el arancel vigente del insumo §40 (mínimo 0,35, tope 1 %) el cruce
+    # está en 35 USD por orden: por debajo manda el tope, por encima el mínimo.
+    vigente = U.reglas()["costos"]
+    assert U.comision_usd(1, 20.0, vigente) == pytest.approx(0.20)
+    assert U.comision_usd(1, 35.0, vigente) == pytest.approx(0.35)
+    assert U.comision_usd(1, 200.0, vigente) == pytest.approx(0.35)
+    assert U.comision_usd(100, 200.0, vigente) == pytest.approx(0.35)
+    assert U.comision_usd(200, 200.0, vigente) == pytest.approx(0.70)
 
 
 def test_no_se_compran_fracciones_y_la_comision_entra_en_la_cuenta():
-    costos = U.reglas()["costos"]
+    # El mecanismo, con un arancel fijo del test (mínimo 1 USD) y no con el
+    # de reglas.json, que cambió el 8-sep al del insumo §40: la propiedad es
+    # que la comisión entra en la cuenta, no cuánto vale.
+    costos = {"comision_por_accion_usd": 0.005, "comision_minima_usd": 1.0,
+              "comision_tope_pct_del_monto": 1.0, "acciones_fraccionarias": False}
     # 500 USD, acción de 240: entran 2 (480 + 1 de comisión = 481).
     assert U.acciones_por_monto(500.0, 240.0, costos) == 2
     # 500 USD, acción de 499.60: 1 acción costaría 499.60 + 1.00 > 500.
     assert U.acciones_por_monto(500.0, 499.60, costos) == 0
     assert U.acciones_por_monto(500.0, 600.0, costos) == 0
+    # y con el arancel vigente de reglas.json la comisión también entra:
+    vigente = U.reglas()["costos"]
+    n = U.acciones_por_monto(500.0, 240.0, vigente)
+    assert n * 240.0 + U.comision_usd(n, 240.0, vigente) <= 500.0
 
 
 def test_el_estado_de_un_eslabon_sigue_la_regla_escrita():
@@ -308,11 +325,18 @@ def test_los_parametros_reproducen_su_regla_de_derivacion():
     test la recomputa sobre los precios congelados. Si alguien mueve un
     número a mano, la suite se pone roja — que es la única forma de que la
     regla siga siendo la regla y no un comentario."""
+    from dinero import cuenta_papel as CP
     from dinero import derivacion, precios
     cfg = U.reglas()
     cierres = precios.cargar_congelado()
     costos, techo = cfg["costos"], cfg["presupuesto"]["techo_usd"]
-    sigma = derivacion.sigma_60d_pct(cierres, derivacion.ETF_REFERENCIA)
+    # E5 (corrida 11): la sigma del interruptor se mide HASTA el inicio de
+    # la ventana de la cuenta, no sobre el archivo entero.
+    sigma = derivacion.sigma_60d_pct(cierres, derivacion.ETF_REFERENCIA,
+                                     hasta=CP.DESDE)
+    # y el arancel es el del insumo §40, columna de enteras
+    assert costos["comision_minima_usd"] == 0.35
+    assert costos["comision_por_accion_usd"] == 0.0035
     # Precio de referencia: el cierre verificado más barato. En el tramo
     # relevante el costo no depende del precio (manda el mínimo de 1 USD),
     # y el test lo comprueba probando además con el más caro que cabe.
@@ -524,21 +548,27 @@ def test_las_cifras_del_riel_de_medicion_salen_del_arbitro():
 # ============================================================
 # 6. LA PRUEBA MAESTRA DE TRUNCACIÓN SOBRE LA CUENTA EN PAPEL
 #
-# Exigencia E2 del `auditor-lookahead` en el cierre de la corrida 10, y va
+# Exigencia E2 del `auditor-lookahead` en el cierre de la corrida 10, y fue
 # ANTES que cualquier corrección: «escribir el test de truncación de la
 # cuenta en papel ANTES de volver a correrla».
 #
-# Los tres están marcados `xfail(strict=True)` a propósito, y eso NO es una
-# forma elegante de esconder un rojo: es el estado real del árbol. Las tres
-# fugas están DEMOSTRADAS (`GEMELO/resultados/dictamen_10/auditor_lookahead.md`
-# F1, F2 y F4) y todavía no corregidas, así que el test que las cierra tiene
-# que fallar hoy. `strict=True` es la parte que importa: el día que alguien
-# arregle la fuga, el test va a PASAR, el modo estricto va a convertir ese
-# éxito inesperado en un rojo, y quien lo arregló va a tener que venir acá a
-# sacar el marcador. Así la fuga deja de vivir en la memoria de nadie.
-#
-# Que estos tres existan es lo que separa «sabemos que hay fuga» de «la
-# máquina sabe que hay fuga».
+# HISTORIA. Del 7 al 8-sep-2026 los tres tests de abajo estuvieron marcados
+# `xfail(strict=True)`: las fugas F1, F2 y F4 estaban DEMOSTRADAS y no
+# corregidas, así que tenían que fallar, y el modo estricto obligaba a
+# volver acá el día que se arreglaran. Ese día fue el 8-sep (corrida 11,
+# acta §82.4 opción A). Se verificó con `--runxfail` que los tres fallaban
+# por su razón escrita y no por otra, se corrigió el código, y se sacaron
+# los marcadores. Dos ajustes a los tests, declarados:
+#   · F1 apuntaba a `construir_mapa` (la función del censo, que mira el
+#     último cierre por diseño) y no a lo que la cuenta usa para decidir su
+#     membresía; tal como estaba no podía pasar con ninguna corrección.
+#     Ahora apunta a `cuenta_papel.universo_operable`, que es la función
+#     corregida.
+#   · F2 pasaba la ventana sola; la señal ahora se sortea de datos
+#     ANTERIORES a la ventana, así que el test pasa el archivo completo y
+#     `desde`.
+# Y se agregaron la prueba maestra sobre la cuenta ENTERA (E6) y su
+# contraprueba: un gate que no puede fallar no es un gate.
 # ============================================================
 import pandas as _pd  # noqa: E402
 import pytest as _pytest  # noqa: E402
@@ -550,50 +580,40 @@ def _cierres_de_la_ventana():
     return CP._ventana(precios.cargar_congelado()), CP
 
 
-@_pytest.mark.xfail(strict=True, reason=(
-    "FUGA F1 DEMOSTRADA y no corregida: `cuenta_papel.correr()` elige el "
-    "universo operable con `construir_mapa` sobre el archivo ENTERO, o sea "
-    "con el cierre del último día de la ventana simulada. Cuando se corrija "
-    "(membresía como argumento acotado por la fecha), este test pasa y el "
-    "marcador estricto obliga a sacarlo."))
 def test_el_universo_operable_no_puede_depender_del_futuro():
     """La membresía usada para simular desde DESDE no puede cambiar según
-    datos posteriores a DESDE."""
+    datos posteriores a DESDE (F1, corregida por E1)."""
+    from dinero import cuenta_papel as CP
     from dinero import precios
-    from dinero import universo_dinero as U
     cfg = U.reglas()
     completo = precios.cargar_congelado()
-    from dinero import cuenta_papel as CP
     hasta_el_inicio = completo.loc[:CP.DESDE]
-
-    def operables(marco):
-        mapa = U.construir_mapa(marco, cfg)
-        return sorted(f.candidato.ticker for f in mapa
-                      if f.verificado and f.alcanza_con_techo)
-
-    assert operables(completo) == operables(hasta_el_inicio), (
+    assert CP.universo_operable(completo, cfg) == CP.universo_operable(hasta_el_inicio, cfg), (
         "el universo operable cambia al truncar en el inicio de la ventana: "
         "la membresía de tres años se está decidiendo con el último cierre")
+    # y la contraprueba: la función del censo SÍ depende del último cierre,
+    # que es exactamente lo que la cuenta ya no usa
+    def censo(marco):
+        return sorted(f.candidato.ticker for f in U.construir_mapa(marco, cfg)
+                      if f.verificado and f.alcanza_con_techo)
+    assert censo(completo) != censo(hasta_el_inicio)
 
 
-@_pytest.mark.xfail(strict=True, reason=(
-    "FUGA F2 DEMOSTRADA y no corregida: `senales_sin_informacion` sortea de "
-    "`shift(-horizonte)` sobre la ventana simulada, o sea de la distribución "
-    "de retornos FUTUROS de esa misma ventana. La corrección es sortear de "
-    "datos anteriores a DESDE, o de una paramétrica declarada en reglas.json."))
 def test_la_senal_sin_informacion_no_puede_sortearse_del_futuro():
     """Truncar los datos posteriores a un corte no puede cambiar las señales
-    de los días anteriores a ese corte."""
+    de los días anteriores a ese corte (F2, corregida por E3)."""
     from dinero import contabilidad as C
-    cierres, CP = _cierres_de_la_ventana()
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo_df = precios.cargar_congelado()
     corte = "2024-09-04"
-    tickers = [t for t in ("NVDA", "INTC", "AMD") if t in cierres.columns]
+    tickers = [t for t in ("NVDA", "INTC", "AMD") if t in completo_df.columns]
     completo = C.senales_sin_informacion(
-        cierres, tickers, CP.HORIZONTE_SENAL_HABILES,
-        C.SEMILLA_SENAL_SIN_INFORMACION)
+        completo_df, tickers, CP.HORIZONTE_SENAL_HABILES,
+        C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
     truncado = C.senales_sin_informacion(
-        cierres.loc[:corte], tickers, CP.HORIZONTE_SENAL_HABILES,
-        C.SEMILLA_SENAL_SIN_INFORMACION)
+        completo_df.loc[:corte], tickers, CP.HORIZONTE_SENAL_HABILES,
+        C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
     comunes = [d for d in truncado if d in completo]
     assert comunes, "el corte no dejó días comunes; el test no probó nada"
     distintos = [d for d in comunes
@@ -602,41 +622,104 @@ def test_la_senal_sin_informacion_no_puede_sortearse_del_futuro():
     assert not distintos, (
         f"{len(distintos)} de {len(comunes)} días cambian de señal al truncar "
         "en %s: la señal se está sorteando de retornos futuros" % corte)
+    # sin historia previa, revienta en vez de fingir una distribución
+    with _pytest.raises(ValueError):
+        C.senales_sin_informacion(completo_df.loc[CP.DESDE:], tickers,
+                                  CP.HORIZONTE_SENAL_HABILES,
+                                  C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
 
 
-@_pytest.mark.xfail(strict=True, reason=(
-    "FUGA F4 DEMOSTRADA y no corregida: `correr_estrategia` decide con el "
-    "cierre de d y ejecuta contra ESE MISMO cierre. `senal_larga.py` usa "
-    "RETARDO_IMPLEMENTACION = 1 en el mismo riel. La corrección es introducir "
-    "el retardo en las DOS patas de la comparación."))
 def test_la_orden_de_un_dia_no_puede_depender_del_cierre_de_ese_dia():
-    """Si se decide con el cierre de d, la ejecución tiene que ser contra el
-    cierre de d+1. Perturbar el cierre de d no puede cambiar la orden de d."""
+    """Se decide con el cierre de d y se ejecuta contra el de d+1 (F4,
+    corregida por E4). Perturbar el cierre del día de EJECUCIÓN no puede
+    cambiar lo que se decidió: ni el ticker, ni el día de decisión, ni las
+    acciones decididas. Lo único que puede cambiar es el precio de
+    ejecución, que es justamente lo que el retardo hace visible."""
     from dinero import contabilidad as C
-    from dinero import universo_dinero as U
-    cierres, CP = _cierres_de_la_ventana()
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
     cfg = U.reglas()
     tickers = [t for t in ("NVDA", "INTC", "AMD", "AVGO", "VRT")
-               if t in cierres.columns]
-    cierres = cierres[tickers].dropna(how="all")
+               if t in completo.columns]
+    cierres = CP._ventana(completo)[tickers].dropna(how="all")
     aportes = C.calendario_aportes([d.date() for d in cierres.index],
                                    CP.APORTE_SEMANAL_USD,
                                    cfg["presupuesto"]["techo_usd"])
-    senales = C.senales_sin_informacion(cierres, tickers,
+    senales = C.senales_sin_informacion(completo, tickers,
                                         CP.HORIZONTE_SENAL_HABILES,
-                                        C.SEMILLA_SENAL_SIN_INFORMACION)
+                                        C.SEMILLA_SENAL_SIN_INFORMACION,
+                                        desde=CP.DESDE)
 
-    def ordenes(marco):
+    def decisiones(marco):
         libro = C.correr_estrategia(marco, senales, cfg, "conservador",
                                     aportes, 0.0,
                                     cfg["presupuesto"]["techo_usd"])
-        return [(m.fecha, m.ticker, m.acciones) for m in libro.movimientos]
+        return [(m.decidida_el, m.ticker, m.acciones_decididas, m.fecha)
+                for m in libro.movimientos]
 
-    base = ordenes(cierres)
+    base = decisiones(cierres)
     assert base, "la corrida de referencia no generó ninguna orden"
-    dia = _pd.Timestamp(base[0][0])
+    decidida, ticker, n, ejecutada = base[0]
+    assert ejecutada > decidida, "la ejecución tiene que ser posterior a la decisión"
     perturbado = cierres.copy()
-    perturbado.loc[dia] = perturbado.loc[dia] * 1.10
-    assert ordenes(perturbado)[0] == base[0], (
-        "perturbar el cierre del día de la orden cambió esa misma orden: se "
+    perturbado.loc[_pd.Timestamp(ejecutada)] = perturbado.loc[_pd.Timestamp(ejecutada)] * 1.10
+    assert decisiones(perturbado)[0][:3] == (decidida, ticker, n), (
+        "perturbar el cierre del día de ejecución cambió la decisión: se "
         "decide y se ejecuta contra el mismo cierre (retardo cero)")
+
+
+def test_los_dos_retardos_del_riel_son_el_mismo():
+    """F4 era, en el fondo, dos retardos distintos en el mismo riel."""
+    from dinero import contabilidad as C
+    from dinero import senal_larga as SL
+    assert C.RETARDO_IMPLEMENTACION == SL.RETARDO_IMPLEMENTACION == 1
+
+
+def test_la_cuenta_en_papel_es_invariante_al_truncado():
+    """LA PRUEBA MAESTRA sobre la cuenta ENTERA (E6): reconstruirla con la
+    fuente cortada en D no puede cambiar un solo movimiento ejecutado hasta
+    D. Es el mismo gate que corre `cuenta_papel.main` antes de escribir."""
+    from dinero import cuenta_papel as CP
+    gate = CP.verificar_invariancia()
+    assert gate["resultado"] == "INVARIANTE"
+    assert len(gate["cortes"]) >= 20, "el barrido de cortes tiene que ser denso (regla, no lista a dedo)"
+    assert all(c["movimientos_comparados"] > 0 for c in gate["comparaciones"])
+    assert "alcance" in gate
+
+
+def test_contraprueba_una_fuga_inyectada_rompe_la_invariancia():
+    """Un gate que no puede fallar no es un gate. Se inyecta la fuga
+    canónica —la señal de d mira el retorno real de d a d+1— y el gate
+    tiene que reventar con ErrorLookAhead. La fábrica se llama con cada
+    fuente (completa y truncada), que es como una fuga entra de verdad."""
+    from backtest.datos import ErrorLookAhead
+    from dinero import contabilidad as C
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    cfg = U.reglas()
+
+    def fabrica_con_fuga(cierres):
+        operables = CP.universo_operable(cierres, cfg)
+        limpias = C.senales_sin_informacion(cierres, operables, CP.HORIZONTE_SENAL_HABILES,
+                                            C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
+        ventana = CP._ventana(cierres)
+        r_manana = (ventana[operables].shift(-1) / ventana[operables] - 1.0) * 100.0
+        con_fuga = {}
+        for dia, lote in limpias.items():
+            ts = _pd.Timestamp(dia)
+            fila = r_manana.loc[ts] if ts in r_manana.index else None
+            nuevo = []
+            for s in lote:
+                if fila is not None and not _pd.isna(fila[s.ticker]):
+                    m = float(fila[s.ticker]) * 50.0
+                else:
+                    m = s.magnitud_pp
+                nuevo.append(D.Senal(s.ticker, m, m - 0.01, m + 0.01))
+            con_fuga[dia] = nuevo
+        return con_fuga
+
+    with _pytest.raises(ErrorLookAhead, match="invariancia al truncado ROTA"):
+        CP.verificar_invariancia(cfg=cfg, cierres_completo=completo,
+                                 fabrica_senales=fabrica_con_fuga)

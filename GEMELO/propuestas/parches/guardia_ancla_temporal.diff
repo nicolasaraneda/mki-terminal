@@ -1,0 +1,103 @@
+--- a/snapshot.py	2026-09-08 01:18:13.900444302 -0300
++++ b/snapshot.py	2026-09-08 01:18:13.912069822 -0300
+@@ -131,8 +131,19 @@
+         if sox_fecha:
+             try:
+                 available_at = calendarios.cierre_utc("XNYS", sox_fecha).isoformat()
+-            except Exception:
+-                pass
++            except Exception as e:
++                # Guardia (corrida 11, acta §82.2 c): si esta rama se toma,
++                # `available_at` queda en reloj de pared y el parche del §26
++                # se comporta idéntico al defecto sin dejar marca. La marca
++                # es esta línea en el log; el vigía lo lee de la base
++                # (available_at == timestamp_utc) y alerta.
++                from seguridad import enmascarar_secretos
++                print(f"  AVISO ancla temporal: available_at cayó al reloj de pared "
++                      f"— cierre_utc('XNYS', {sox_fecha!r}) falló: "
++                      f"{enmascarar_secretos(str(e))}", flush=True)
++        else:
++            print("  AVISO ancla temporal: available_at cayó al reloj de pared "
++                  "— la predicción no trae sox_fecha", flush=True)
+         for _, fila in pred.iterrows():
+             t = fila["Ticker"]
+             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")
+--- a/senales.py	2026-09-08 01:18:13.900513204 -0300
++++ b/senales.py	2026-09-08 01:18:13.912304709 -0300
+@@ -310,12 +310,21 @@
+         ORDER BY fecha
+     """).fetchall()
+ 
+-    verificadas, descartadas, atascadas = 0, 0, 0
++    verificadas, descartadas, atascadas, sin_calendario = 0, 0, 0, 0
+     for (id_, fecha_senal, ticker, est_pct, ts_utc, exchange,
+          sesion_obj, modelo_ver) in pendientes:
+         try:
+             apertura = calendarios.apertura_utc(exchange, sesion_obj)
+-        except Exception:
++        except Exception as e:
++            # Guardia (corrida 11, acta §82.2 c): un fallo del calendario
++            # dejaba la fila pendiente para siempre en silencio. Sigue
++            # quedando pendiente —no se inventa nada—, pero se cuenta y se
++            # dice, para que el atasco no viva en la memoria de nadie.
++            sin_calendario += 1
++            from seguridad import enmascarar_secretos
++            print(f"  AVISO verificador: calendario falló para {ticker} "
++                  f"{exchange} {sesion_obj} (fila {id_}), queda pendiente: "
++                  f"{enmascarar_secretos(str(e))}", flush=True)
+             continue
+         emitida = datetime.fromisoformat(ts_utc)
+         if emitida.tzinfo is None:
+@@ -379,7 +388,7 @@
+     conn.commit()
+     conn.close()
+     return {"verificadas": verificadas, "no_verificables": descartadas,
+-            "sin_datos_mercado": atascadas}
++            "sin_datos_mercado": atascadas, "sin_calendario": sin_calendario}
+ 
+ 
+ def verificar_puntaje_pendientes() -> int:
+--- a/mki_vigia.py	2026-09-08 01:18:13.900576746 -0300
++++ b/mki_vigia.py	2026-09-08 01:18:13.912488274 -0300
+@@ -76,6 +76,32 @@
+     return False, f"descarga: {ok_n}/{total} DEGRADADA (caídos: {caidos})"
+ 
+ 
++def chequear_ancla_temporal(hoy: date = None) -> tuple:
++    """Guardia del acta §82.2 (c), corrida 11: ninguna predicción sellada
++    hoy puede tener `available_at` igual a su `timestamp_utc`. Si lo tiene,
++    la rama del `except` de snapshot.py (available_at) se tomó —sox_fecha
++    vacío o `cierre_utc` falló—, el ancla temporal es reloj de pared, y con
++    el parche del §26 aplicado la sesión objetivo se eligió como en el
++    defecto. Se lee de la base, no del log: la evidencia es la igualdad."""
++    import senales
++    senales.init_db()
++    hoy = hoy or date.today()
++    conn = senales.get_connection()
++    filas = conn.execute(
++        "SELECT ticker, timestamp_utc, available_at FROM senales_ticker "
++        "WHERE fecha = ? AND apertura_estimada_pct IS NOT NULL",
++        (hoy.isoformat(),)).fetchall()
++    conn.close()
++    if not filas:
++        return True, "ancla temporal: sin predicciones selladas hoy que revisar"
++    de_pared = [t for t, ts, av in filas if av is None or av == ts]
++    if de_pared:
++        return False, (f"ancla temporal: {len(de_pared)}/{len(filas)} filas con "
++                       f"available_at = reloj de pared ({', '.join(de_pared)}) — "
++                       f"la rama del except de snapshot.py se tomó; ver snapshot.log")
++    return True, f"ancla temporal: {len(filas)}/{len(filas)} filas con cierre del SOX"
++
++
+ def _proceso_noticias_colgado() -> str | None:
+     """5.0.2 — si hay un mki_noticias.py vivo, launchd NO vuelve a disparar
+     el job (un label = un proceso): el 3-ago un fetch sin timeout quedó
+@@ -386,7 +412,7 @@
+     rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
+     _log("mki_vigia.py — revisión del día operativo")
+     resultados = [chequear_snapshot(), chequear_descarga(), chequear_noticias(),
+-                  chequear_reporte(), chequear_backup()]
++                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy)]
+     for ok, detalle in resultados:
+         _log(f"  {'OK ' if ok else 'FALLA'} {detalle}")
+     if all(ok for ok, _ in resultados):

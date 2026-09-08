@@ -8707,7 +8707,7 @@ puede disparar mientras el defecto exista.** `senales.py:325` compara
 `emitida >= apertura` donde `apertura` es la de `sesion_objetivo`, y
 `sesion_objetivo` se elegía por ser la primera que abre después del mismo
 instante de emisión. La condición es falsa por construcción. Empíricamente: **0
-filas en `no_verificable_timing` sobre 295**. La garantía sobre la que descansa
+filas en `no_verificable_timing` sobre 295** *(errata 8-sep-2026, corrida 11: la máquina da 319 filas 4.6.0 con predicción y 309 verificadas; el conteo del §83.4 se hizo sobre esas 319)*. La garantía sobre la que descansa
 el track record entero era hasta hoy una tautología. El parche es lo que la
 vuelve operativa por primera vez.
 
@@ -8919,3 +8919,139 @@ tamaño cero, y ésas cuestan cero pesos.
 El escalonamiento se firma con capital propio y con el rango original. El
 aporte de un tercero, si va, entra en una etapa donde haya algo medido, con
 `REGLAS_DE_CAPITAL.md` enmendado **antes** y no después.
+
+## 83. Corrida 11 (8-sep-2026): las seis firmas del §82 ejecutadas, el instrumento del riel de dinero validado y no calibrado, y la cuenta en papel reconstruida sin fuga
+
+Contexto: corrida nocturna sin supervisión, 00:43 a 02:07 hora de Chile (leído de `date`),
+fuera de la ventana de sellado. Encargo: `GEMELO/resultados/encargo_corrida_11.md` (v2).
+Bitácora: `GEMELO/resultados/bitacora_11.md`. Suite al abrir 754 passed, 5 xfailed; al
+cerrar, con el árbol quieto, 802 passed, 1 xfailed (02:00 a 02:06) y `test_motor.py` OK. Nada se pusheó, nada se firmó, ningún archivo
+protegido se tocó, ninguna fila sellada se reescribió, ninguna cifra publicada se movió. El
+registro de intentos del gap asiático sigue en 352 / 358 y el del riel largo en 3.
+
+### 83.1 El «instrumento» del bloque 1 era el del riel de dinero, no el simulador que ya existía
+
+**Qué se decidió.** La instrucción «corré `GEMELO/simulador/` con ventaja verdadera distinta de
+cero» se ejecutó modificada: se escribió un simulador nuevo del instrumento del riel de dinero
+(`GEMELO/simulador/instrumento_dinero.py`) en vez de re-correr el Frente A.
+
+**Por qué.** El Frente A ya había corrido δ distinto de cero para el riel de medición (A1 a
+8,97 pp, A2 a 6,5 y 9, A4 a 5 / 6,3 / 9). La mitad que faltaba, según el dictamen #23 del
+adversario de la corrida 10, era la del instrumento que lee la cuenta en papel:
+`contabilidad.comparar` más la regla §2.3 del pre-registro. Correr el Frente A otra vez habría
+producido una cifra que no dice nada sobre ese instrumento. El pre-mortem del
+`director-programa` no lo marcó (ancló las magnitudes al riel de medición); el orientador lo
+confirmó después.
+
+**Resultado (PROPUESTA, dictamen «sostiene con exigencias», exigencias aplicadas).** Con
+δ ∈ {0, 0,25, 0,50, 1,00} pp/semana declarados antes (de la tabla §2.1 del pre-registro) y
+σ medida 2,704 pp/semana (200 carteras de 4 operables contra SMH, 156 semanas), el instrumento
+DISCRIMINA por el criterio pre-declarado (piso de Wilson de detección sobre techo de Wilson de
+falsa detección, en las tres magnitudes, 2.000 réplicas por celda). Pero no está calibrado:
+tamaño bilateral 0,086 [0,074, 0,099] contra 0,05 y cobertura 0,914 [0,901, 0,926] contra 0,95
+a 52 semanas; 0,064 y 0,936 a 156. El IC bootstrap de una desviación cubre 0,783 a 52 y 0,850
+a 156 semanas. MDE80: 1,05 pp/semana a 52 semanas (55 pp/año), 0,61 a 156.
+
+**Qué se descartó.** Anclar σ en la 2,54 del pre-registro (cifra retirada). Cambiar el
+estimador después de ver la cobertura (grado de libertad; queda como decisión, `espera_firma`
+§50). El brazo de calibración que el adversario exigió se agregó DESPUÉS de ver el resultado y
+se declara así: la corrida 11 lo habría cruzado.
+
+**Qué queda abierto.** El estimador del riel de dinero y el largo del bloque (§50). Lo que este
+simulador no valida: el camino que produce las series de valor, cubierto por el gate del 83.3.
+
+### 83.2 La rama de coherencia tiene su intervalo, contiene el cero, y no sobrevive a R2
+
+**Qué se decidió.** Nada nuevo: se computó lo que el §82.3 exigía y se dejó sin cablear.
+
+**Resultado (PROPUESTA con dictamen «sostiene con exigencias», aplicadas).** Conjuntos
+verificados (238 − 15 = 223, los dos órdenes coinciden, 8 filas del 5-jul y 7 del 5-ago). Rama
+de coherencia: +14,3 pp, percentil de día [−1,4, +32,1], t de clúster [−3,5, +32,2] (el
+calibrado), permutación p = 0,111, ICC 0,42, DEFF 3,71, n efectivo 60, 33 días. **La predicción
+escrita antes se cumple en las tres rutas.** Sin el 15–23 jul: +7,8 pp, [−9,1, +25,6], p 0,433,
+exacta 0,1354. El retiro se llevó 2 de 6 días negativos y 0 de 10 positivos: es el mecanismo que
+el acta escribió antes, y +14,3 pp es otro estimando, no una remedición de +9,7.
+
+**Hallazgo del §82.5.** La discrepancia del p titular entre el traspaso 10 y `espera_firma`
+(0,0455 contra 0,0451) sí es la pareja χ² con corrección / exacta. La del último decimal del
+intervalo (26,6 contra 26,5) no: es el número de réplicas del bootstrap de día (4.000 en
+`cifras.py`, 10.000 por defecto en `bifurcaciones`). Cablear la rama sería un intento del DSR.
+
+### 83.3 La cuenta en papel se reconstruyó en el orden del auditor, y sus tests se retargetearon
+
+**Qué se decidió.** Aplicar E1, E3, E4, E5 y E6 en `dinero/` y republicar como v2; retirar los
+tres `xfail(strict=True)` después de verificar con `--runxfail` que fallaban por su razón
+escrita; y retargetear dos de esos tests, con constancia.
+
+**Por qué el retargeteo.** El test de F1 apuntaba a `construir_mapa` (la función del censo, que
+mira el último cierre por diseño) y no a lo que la cuenta usa para decidir su membresía: tal
+como estaba no podía pasar con ninguna corrección. Ahora apunta a
+`cuenta_papel.universo_operable`. El de F2 pasaba la ventana sola y la señal ahora se sortea de
+datos anteriores a la ventana. Es un error propio de la corrida 10, y se escribe.
+
+**Decisiones de diseño dentro de la reconstrucción.** (a) `Movimiento` lleva fecha de decisión y
+acciones decididas aparte de las ejecutadas; si la caja no alcanza al precio de d+1 la orden se
+reduce y queda contada, no disimulada. (b) `Libro.decisiones` registra toda decisión, porque una
+decisión tomada en el borde del corte nunca llega a ser movimiento y el gate tiene que verla.
+(c) El gate compara movimientos Y decisiones hasta el corte, con dos cortes declarados. (d) El
+arancel pasó al del insumo §40, columna de enteras, por orden del encargo; el §40 sigue sin
+firma y los umbrales derivados bajaron por su regla (conservador 3,49 → 1,35 pp), `espera` §48.
+
+**Resultado (v2, PROPUESTA).** Gate INVARIANTE (5.066 movimientos). Fricción del juego por
+defecto 12,4 % de lo aportado sobre 156 semanas, mediana entre 20 semillas 12,4 %, banda [6,4,
+13,2]; la manda el número de órdenes (mediana 210), no el arancel: la advertencia del §82.4 se
+leyó después de computar y se cumple. σ de la diferencia semanal 2,336 pp/semana; su IC [1,995,
+2,669] NO es un 95 % (cobertura medida 0,85). Cobertura por causalidad: 0 % → 28 % en
+`cuenta_papel.py` y 0 % → 84,5 % en `contabilidad.py`, medida antes y después con
+`dinero/cobertura_causal.py`. M2 con la v2 no se dispara para el juego por defecto, y sigue sin
+poder leerse hasta las cuatro precisiones del §43 (errata fechada §7 del pre-registro).
+
+**Qué queda abierto.** El dictamen del `auditor-lookahead` sobre la reconstrucción está en la
+bitácora; lo que exija y no se haya aplicado entra a la corrida 12. La primera fila prospectiva
+del riel espera al parche del §26 con su guardia.
+
+### 83.4 El guardia de la rama del `except`: alerta del vigía, no marca en la fila
+
+**Qué se decidió.** Proponer, como parche NO aplicado, un aviso en el log de `snapshot.py`
+cuando `available_at` cae al reloj de pared (por `except` o por `sox_fecha` vacío), un chequeo
+del vigía que lee la igualdad `available_at == timestamp_utc` de la base y falla, y un conteo
+`sin_calendario` en el verificador para el tercer tragador de excepciones.
+
+**Por qué esa opción.** La evidencia ya está en la base (la igualdad misma), así que una columna
+nueva sería un cambio de esquema en filas selladas sin información nueva; una alerta llega esa
+misma noche a quien puede actuar; y un test la caza en la suite. El pre-mortem lo pidió así.
+Los dos parches (§26 y guardia) aplican juntos sobre copias, verificado por test.
+
+**Conteo del §82.2 (d).** 0 de 319 filas 4.6.0 con `available_at` de reloj de pared; 0 con
+`sox_fecha` vacío. El agujero es teórico hoy. Errata de cifra: el §82.2 dice 295 filas; la
+máquina da 319 con predicción y 309 verificadas.
+
+### 83.5 El censo por presupuesto y modo, y un segundo día que no fue segundo día
+
+**Qué se decidió.** El modo de compra y el presupuesto son parámetros explícitos de
+`construir_mapa`; el documento se regenera para 100 / 250 / 500 / 1000 USD en los dos modos, con
+la fricción de ida y vuelta al lado de cada instrumento.
+
+**Resultado (MEDIDO sobre el congelado del 4-sep).** Enteras: 7 / 13 / 29 / 33 de 36; `MSFT`
+al borde a 500. Fraccionarias: 36 de 36 con 2 % de ida y vuelta que no se diluye; cruce en 35
+USD por orden. **El segundo día de censo no aportó sesión:** la descarga del 8-sep a las 04:21
+UTC termina en la misma sesión (el 7-sep fue feriado en NYSE), precios idénticos, sha distinto
+por formato. Se declara y no cuenta. La decisión del presupuesto queda en `espera` §47.
+
+### 83.6 Errores propios de esta corrida, escritos acá
+
+1. Dos horas de la bitácora se escribieron estimadas (00:51, 00:53) en vez de leídas de `date`
+   (era 00:49); corregidas en el sitio antes del commit.
+2. La regeneración de la cuenta se lanzó una vez con una clave mal referenciada (`nota` en el
+   diccionario equivocado) y otra con un `assert` de edición fallido que dejó correr la versión
+   vieja; se detectaron por la salida y se repitieron.
+3. Un borrado recursivo del scratchpad fue bloqueado por el hook del repo (la regla no distingue
+   directorio); se rehízo sin borrar.
+4. El `cd frontend` del build dejó el cwd fuera del repo y una edición del README falló hasta
+   volver a la raíz.
+
+### 83.7 Lo que esta corrida dejó a firma
+
+§46 cablear la coherencia y el README; §47 presupuesto con la tabla; §48 arancel del §40 y
+umbrales derivados; §49 el guardia junto al §26; §50 el estimador del riel de dinero que
+sub-cubre. Y las que ya esperaban: §43 período de M2, §44 M4, §30 V1-bis.

@@ -68,13 +68,25 @@ def umbral_derivado_pp(k: float, tope_posicion_pct: float, techo_usd: float,
 
 
 def sigma_60d_pct(cierres, ticker: str = ETF_REFERENCIA,
-                  horizonte: int = HORIZONTE_LARGO_HABILES) -> float:
+                  horizonte: int = HORIZONTE_LARGO_HABILES,
+                  hasta: str | None = None) -> float:
     """Desviación estándar del retorno a `horizonte` días hábiles, en %.
 
     Se calcula sobre ventanas SOLAPADAS y eso infla la muestra sin inflar
     la información: el número sirve para dimensionar un interruptor, no
-    para sostener una afirmación con intervalo."""
+    para sostener una afirmación con intervalo.
+
+    `hasta` (E5, corrida 11): la sigma que dimensiona el interruptor de la
+    cuenta en papel se mide SÓLO con cierres anteriores o iguales a `hasta`
+    —el inicio de la ventana simulada—. La versión de la corrida 10 la
+    medía sobre el archivo entero, o sea con el futuro de la ventana que
+    después se mide (F3 del auditor: materialidad nula, el interruptor
+    nunca disparó, y aun así se corrige por el código y no por la cifra).
+    Sin `hasta` se mide sobre todo lo que llega, que es lo que corresponde
+    para dimensionar hacia adelante desde hoy."""
     serie = cierres[ticker].dropna()
+    if hasta is not None:
+        serie = serie.loc[:hasta]
     ret = (serie.shift(-horizonte) / serie - 1.0).dropna()
     return float(np.std(ret.to_numpy(), ddof=1) * 100.0)
 

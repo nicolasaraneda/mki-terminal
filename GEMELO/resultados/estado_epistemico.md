@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (3-sep-2026, actualizado al cierre de la novena corrida)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (8-sep-2026, actualizado al cierre de la corrida 11)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -209,6 +209,31 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
     sostiene.)*
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
+
+- **Corrida 11 (8-sep), con dictamen del `estadistico-adversario` («sostiene con
+  exigencias» en los tres artefactos; exigencias aplicadas al ejecutable y re-corridas,
+  y las cifras re-corridas NO volvieron a pasar por el adversario) y del
+  `auditor-lookahead` sobre la reconstrucción («no encontré fuga», diez exigencias, ocho
+  aplicadas; `dictamen_11/`):** (i) **El instrumento del riel de dinero** (`contabilidad.comparar`
+  más la regla §2.3 del pre-registro) **discrimina una ventaja verdadera de cero pero no
+  está calibrado a α = 0,05**: tamaño bilateral 0,086 [0,074, 0,099] y cobertura 0,914
+  [0,901, 0,926] a 52 semanas (0,064 y 0,936 a 156); el bootstrap de una desviación cubre
+  0,78 a 0,85; MDE80 a 52 semanas 1,05 pp/semana (≈ 55 pp/año), con σ ancla 2,704
+  (`instrumento_dinero.md`). (ii) **La rama de coherencia** (n = 223, +14,3 pp, retiro
+  firmado en §82.3, NO cableada) tiene IC de clúster de día que **contiene el cero en las
+  tres rutas** (percentil [−1,4, +32,1]; t de clúster, el calibrado, [−3,5, +32,2];
+  permutación p = 0,111) y bajo R2 cae a +7,8 pp, p = 0,433: es otro estimando, no una
+  remedición de +9,7, y el movimiento sale de 2 días de 34 (`intervalo_coherencia.md`).
+  (iii) **La cuenta en papel v2, reconstruida y PROPUESTA** (gate de invariancia INVARIANTE
+  en 25 cortes por regla con contraprueba; cobertura causal 28 % / 84,5 %; el auditor no
+  encontró fuga, y que no queden fugas no es demostrable): con señal sin información y el arancel publicado del §40, el juego por
+  defecto gasta 12,4 % de lo aportado en comisiones sobre 156 semanas (mediana sobre 20
+  semillas 12,4 %, banda [6,4, 13,2]), fricción que fija el número de órdenes y no el
+  arancel; ningún juego muestra ventaja positiva contra SMH; σ de la diferencia semanal
+  2,336 pp/semana, cuyo intervalo publicado NO es un 95 % (`cuenta_papel.md`). Lo que estas
+  tres cosas NO autorizan: ninguna afirmación positiva sobre ningún riel.
+- **RETIRADO en la corrida 11:** la cuenta en papel v1 (7-sep) queda reemplazada; sus
+  cifras (27 % / 57 %, 14 % a 43 %, σ 2,54) siguen retiradas y no se comparan con la v2.
 
 - **Novena corrida (3-sep), con dictamen del adversario y SIN dictamen del
   guardián ni del curador (agentes caídos por límite de API; este documento se

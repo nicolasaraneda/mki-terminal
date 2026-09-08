@@ -966,6 +966,52 @@ def dinero_cuenta():
     return {"meta": _meta_simple("cuenta_papel.json"), "datos": datos}
 
 
+def _comisiones_juego_activo(cuenta: dict):
+    """Comisión acumulada del juego por defecto a su deslizamiento por
+    defecto, como % de lo aportado, leída del artefacto (nunca recomputada)."""
+    try:
+        from dinero import universo_dinero as U
+        cfg = U.reglas()
+        juego, pb = cfg["juego_activo"], cfg["costos"]["deslizamiento_pb_por_lado"]
+        for j in cuenta.get("juegos", []):
+            if j.get("juego") == juego and j.get("deslizamiento_pb") == pb:
+                v = j.get("comisiones_pct_del_aportado")
+                return round(float(v), 1) if v is not None else None
+    except Exception:
+        return None
+    return None
+
+
+def _potencia_desde_artefacto(cuenta: dict) -> dict:
+    """σ de la diferencia semanal CON intervalo, del artefacto de la cuenta
+    reconstruida. Si el artefacto está retirado o no trae la σ, se declara
+    RETIRADO y no viaja ningún número: la regla de la casa es que un
+    estimador no viaja sin intervalo."""
+    sig = (cuenta or {}).get("sigma_dif_semanal") or {}
+    retirado = (cuenta or {}).get("estatus") in (None, "RETIRADO")
+    if retirado or sig.get("sigma_pp_semana") is None or not sig.get("ic95"):
+        return {
+            "sigma_dif_semanal_pp": None, "estatus": "RETIRADO",
+            "nota": ("La σ semanal de la cuenta en papel v1 está RETIRADA por "
+                     "fuga temporal demostrada (dictamen 10, F1 a F4) y viajaba "
+                     "sin intervalo. La cifra vuelve cuando exista sobre una "
+                     "cuenta sin fuga y con su intervalo.")}
+    return {
+        "sigma_dif_semanal_pp": sig["sigma_pp_semana"],
+        "intervalo": sig["ic95"], "tipo_intervalo": "bootstrap circular de bloques de semanas, 95 %",
+        "semanas": sig.get("semanas"), "juego": sig.get("juego"), "base": sig.get("base"),
+        "estatus": "PROPUESTA",
+        "nota": ("σ de la diferencia semanal juego por defecto − SMH sobre la cuenta "
+                 "reconstruida (8-sep-2026), con intervalo. Es el parámetro de la tabla "
+                 "de potencia del pre-registro; la tabla misma se recomputa con el "
+                 "simulador validado (GEMELO/simulador/instrumento_dinero.py), que "
+                 "midió que el instrumento discrimina y sub-cubre bajo la nula. Con "
+                 "esta σ, 52 semanas sólo alcanzan para una ventaja del orden de "
+                 "1 pp/semana (MDE80 del bloque 1); por qué una ventaja así no es "
+                 "plausible lo dice el pre-registro §2.1, no esta API."),
+    }
+
+
 @cache_ttl(600)
 def _estado_rieles() -> dict:
     """Los dos rieles, uno al lado del otro. El de medición se lee del
@@ -1052,15 +1098,24 @@ def _estado_rieles() -> dict:
                              "éste. Nada de este riel es evidencia del mismo "
                              "tipo.")},
         "mapa": (mapa.get("resumen") if mapa else None),
-        # La cuenta en papel tiene fuga temporal DEMOSTRADA (dictamen 10,
-        # F1 a F4). Mientras no se republique sin fuga, este endpoint NO
-        # sirve sus cifras: sirve el motivo del retiro. Servir el número
-        # con una advertencia al lado sería seguir haciéndolo circular.
+        # La v1 de la cuenta en papel tuvo fuga temporal DEMOSTRADA
+        # (dictamen 10, F1 a F4) y estuvo RETIRADA del 7 al 8-sep-2026; la v2
+        # (corrida 11, acta §82.4) se reconstruyó sin fuga y con gate de
+        # invariancia. `cifras_disponibles` se lee del artefacto: mientras
+        # el estatus sea RETIRADO este endpoint sirve el motivo del retiro y
+        # nada más, porque servir el número con una advertencia al lado
+        # sería seguir haciéndolo circular.
         "cuenta_en_papel": ({
             "estatus": cuenta.get("estatus"),
+            "version": cuenta.get("version"),
             "retirado": cuenta.get("retirado"),
+            "reconstruccion": ({
+                "fecha": cuenta["reconstruccion"].get("fecha"),
+                "gate_invariancia": (cuenta["reconstruccion"].get("gate_invariancia") or {}).get("resultado"),
+            } if cuenta.get("reconstruccion") else None),
             "advertencia": cuenta.get("advertencia"),
-            "cifras_disponibles": False,
+            "cifras_disponibles": cuenta.get("estatus") not in (None, "RETIRADO"),
+            "comisiones_pct_del_aportado_juego_activo": _comisiones_juego_activo(cuenta),
         } if cuenta else None),
         "senal_larga": ({
             "estatus": larga.get("estatus"),
@@ -1075,32 +1130,20 @@ def _estado_rieles() -> dict:
             "(dinero/preregistro_dinero.md §2). Hoy: 0 semanas."),
         "que_lo_mata": (
             "M1: 104 semanas sin distinguirse del cero y con punto negativo. "
-            "M2: comisión acumulada sobre el 25 % del capital — la cifra que "
-            "sostenía este umbral (14 % a 43 %) está RETIRADA por fuga "
-            "temporal demostrada y además medía 156 semanas contra un umbral "
-            "escrito para 52, así que M2 no se puede leer como disparado ni "
-            "como no disparado hasta que se recompute. M3: cualquier fuga — "
-            "ya disparó en la cuenta en papel. M4: que la señal larga no "
-            "supere ninguna vara; hoy no se puede dar por leído, porque la "
-            "segunda vara pre-registrada no se evaluó."),
+            "M2: comisión acumulada sobre el 25 % del capital — la cifra "
+            "vieja (14 % a 43 %) está RETIRADA por fuga; la cuenta "
+            "reconstruida el 8-sep mide la comisión sobre 156 semanas, pero "
+            "M2 sigue sin poder leerse hasta que se fije su período (§43, "
+            "decisión de Nicolás). M3: cualquier fuga — disparó en la v1 de "
+            "la cuenta en papel; la v2 pasa el gate de invariancia y el auditor "
+            "no encontró fuga (dictamen 11, PROPUESTA). M4: que la señal larga no supere ninguna vara; hoy no "
+            "se puede dar por leído, porque la segunda vara pre-registrada "
+            "no se evaluó."),
         # σ salía de la cuenta en papel, que está retirada por fuga; y
         # viajaba como número suelto, sin intervalo, contra la regla que
         # este mismo bloque declara arriba. No viaja más hasta que se
         # recompute con su intervalo sobre una cuenta sin fuga.
-        "potencia": {
-            "sigma_dif_semanal_pp": None,
-            "estatus": "RETIRADO",
-            "nota": ("La aritmética de potencia del pre-registro descansa en "
-                     "una σ semanal medida sobre la cuenta en papel, que está "
-                     "RETIRADA por fuga temporal demostrada (dictamen 10, F1 "
-                     "a F4). Además viajaba sin intervalo, que es lo que esta "
-                     "misma API se prohíbe. El razonamiento cualitativo "
-                     "sobrevive y hay que decirlo: con la σ de este riel, las "
-                     "52 semanas del criterio sólo alcanzan para una ventaja "
-                     "grande, y una ventaja así no es plausible con datos "
-                     "públicos. La cifra concreta vuelve cuando se recompute "
-                     "con su intervalo sobre una cuenta sin fuga."),
-        },
+        "potencia": _potencia_desde_artefacto(cuenta),
     }
     return {"rieles": [medicion, dinero],
             "por_que_son_dos": (

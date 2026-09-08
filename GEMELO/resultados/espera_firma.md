@@ -1,8 +1,21 @@
-> **7-sep-2026: §45, §41, §55, §42, §26 y 2a-ter FIRMADOS. Ver acta §82 en DECISIONES.md. Esta cola todavía no se limpió.**
-
 # Lo que espera tu firma
 
-**Cuarenta ítems. Los cuatro últimos (§42 a §45) los abrió el CIERRE de la
+> **Actualizado el 8-sep-2026 (corrida 11).** Los seis ítems firmados en el acta §82
+> (§45, §41, §55/§8, §42, §26 y 2a-ter/§3) salieron de la cola y quedaron como stubs con
+> referencia a su acta; lo que sigue esperando no se tocó. **Firmado no es ejecutado:**
+> la sección de abajo dice qué te queda a vos de cada firma.
+
+## Firmado en §82, pendiente de ejecución por Nicolás
+
+| Firma | Qué falta, y de quién es |
+|---|---|
+| §82.2 (§26, §1) | **Aplicar el parche `snapshot140.diff` junto con el guardia `guardia_ancla_temporal.diff`** (§49), en el mismo acto, con bump de `PLATAFORMA_VERSION`. Los dos aplican juntos sobre copias (`tests/test_parche_guardia_ancla_temporal.py`). El conteo de la parte (d) está hecho: **0 filas** pasaron por la rama del `except` (bitácora 11, bloque 6). |
+| §82.3 (2a-ter, §3) | El intervalo de clúster está computado (`intervalo_coherencia.md`): **contiene el cero en las tres rutas**, como predijo el acta. **Cablear** `filtrar_sesion_coherente` al árbitro y mover el README es decisión aparte, no firmada (§46). |
+| §82.4 (§42) | Reconstruida. Espera los dictámenes del auditor y del adversario (en la bitácora 11); si exigen algo, entra a la corrida 12. Lo que abrió: §47 y §48. |
+| §82.1, §82.5, §82.6 | Ejecutadas por completo (bloques 7 y 8; §82.6 no tenía nada que ejecutar). |
+
+
+**Cuarenta y cinco ítems al 7-sep, más los cinco que abrió la corrida 11 (§46 a §50). Los cuatro últimos (§42 a §45) los abrió el CIERRE de la
 corrida 10, no la corrida: salen de los dictámenes, y el §42 es el más caro de
 postergar de todos los abiertos, porque hoy bloquea una vara pre-registrada.
 Ninguno lo puede decidir un agente.** Cada uno trae qué hay
@@ -63,7 +76,7 @@ Ver §3.
 
 ---
 
-# 1. El parche de `snapshot.py:140`
+# 1. El parche de `snapshot.py:140` — FIRMADO (acta §82.2), PENDIENTE DE APLICAR (lo aplicás vos)
 
 **Qué hay que decidir:** si se aplica el parche que hace que
 `sesion_objetivo` se calcule desde `available_at` —cuándo era conocible el
@@ -241,105 +254,13 @@ lo único que impide poner este ítem primero sin discusión.
 
 ---
 
-# 3. Las 15 filas sin pareja, y publicar (o no) el README
+# 3. Las 15 filas sin pareja, y publicar (o no) el README — FIRMADO (acta §82.3, 7-sep-2026)
 
-**Van juntos y no son separables.** Por eso están en un solo ítem.
-
-## 3.1 — Qué hay que decidir
-
-**Si además de deduplicar se retiran las 15 filas que están solas y mal.**
-
-La regla que firmaste **no las cubre, y no por descuido: por construcción.**
-La regla arbitra **entre dos filas que compiten** por el mismo
-`(ticker, sesión objetivo)` y siempre deja una. **Estas 15 no compiten con
-nada.** No hay hermana correcta que conservar, así que retirarlas es
-**descartar sin reemplazo**, que es una operación distinta de la que firmaste.
-Por eso quedó explícitamente sin decidir, para que la resuelvas con el mismo
-criterio que usaste para las otras diez y no por omisión.
-
-**Qué son las 15:**
-
-| Emisión | Sesión sellada | Sesión que implica `available_at` | Filas | Por qué quedó sin pareja |
-|---|---|---|---|---|
-| 2026-08-05 | 2026-08-07 | **2026-08-06** | 7 | El snapshot del 08-06 tuvo **caída total de datos**: no hubo fila fresca con la cual chocar. |
-| 2026-07-05 | 2026-07-06 | **2026-07-03** | 8 | Sello **manual** con casi 3 días de atraso, saltando un feriado de XNYS y un fin de semana. El salto no es de una sesión sino de tres. |
-
-## 3.2 — La cifra, marcada como consecuencia y no como argumento
-
-| | n | ventaja | b/c | p exacta | IC95 de clúster |
-|---|---|---|---|---|---|
-| Regla firmada (ya aplicada en el ejecutable) | 238 | +9,7 pp | 72/49 | 0,0451 | **[−7,2, +26,5]**, n efectivo 67 |
-| **+ coherencia (no aplicada)** | **223** | **+14,3 pp** | **69/37** | **0,0024** | **no computado** |
-
-**Tres cosas sobre esa tabla, y las tres importan más que los números:**
-
-**Primera: el IC de la fila de abajo no existe todavía.** Por la tercera regla
-de la casa, un estimador puntual sin intervalo no se cita como evidencia.
-Pedime que lo compute antes de que ese +14,3 pp entre a cualquier
-razonamiento — y tené presente que el ancla de 238 filas ya tenía n efectivo
-**67**: sacar 15 filas más saca a lo sumo un par de días de clúster, así que
-**no hay razón para esperar que el intervalo se angoste de forma material.**
-
-**Segunda: el retiro es asimétrico, otra vez.** `c` cae de 49 a 37 y `b` sólo
-de 72 a 69. Es el mismo patrón que produjo el 0,0451: de las 10 filas que
-retiró la regla firmada, **7 eran discordantes y las 7 favorecían a la
-baseline, ninguna al modelo.** Que la corrección correcta siga empujando en la
-dirección que le conviene al modelo es exactamente la clase de cosa que hay
-que mirar de frente antes de firmar, no después.
-
-**Tercera, y es la que puede decidir el ítem sola:** las 8 filas del 5-jul
-**no necesitan un criterio nuevo para salir**. Con el ancla temporal correcta,
-su sesión (07-03) ya había cerrado cuando el proceso selló (07-05T10:06 UTC),
-así que **la regla maestra que el proyecto tiene desde la Etapa 4.6 las manda
-a `no_verificable_timing` por sí sola.** No las descartaría un criterio nuevo:
-las descartaría el criterio que ya está escrito. Hoy están contadas como
-`verificada` sólo porque el ancla estaba mal.
-
-| Opción | Consecuencia |
-|---|---|
-| **(a)** Retirar las 15 | Rama +14,3 pp. Es descartar sin reemplazo: una extensión de la regla, no la regla. |
-| **(b)** Dejarlas | Las 15 siguen contando como si su `sesion_objetivo` fuera correcto. |
-| **(c)** Tratar sólo las 8 del 5-jul | **No inventa criterio: aplica la regla maestra.** Las 7 del 5-ago quedan para decidir aparte. |
-
-**Recomendación, marcada como tal: la (c).** Es la única que no extiende
-ninguna regla — sólo deja de blindar 8 filas contra un criterio que el
-proyecto ya tiene desde la 4.6 y que estaba mal aplicado por el ancla. Las
-otras dos siguen disponibles después, con el IC ya computado y sin la presión
-de resolverlo junto con la publicación.
-
-## 3.3 — Y de ahí, publicar o no
-
-El parche de `parche_dedup.md` (trece bloques, escrito y no aplicado) movería
-la cifra publicada de **+6,5 pp a +9,7 pp**. Hoy el README, la skill
-`cifras-canonicas`, `estadistica-evaluacion` y `estadistico-adversario.md`
-**siguen citando +6,5 pp sin la advertencia** — y por la cuarta regla de la
-casa, un número que sigue ofrecido vuelve a circular.
-
-**Un hecho que conviene tener a la vista al ratificar:** firmaste conociendo
-dos desenlaces, 0,1847 sin deduplicar y 0,0323 con `keep="last"` (que quedó
-prohibida). **Tu regla produjo un tercero, 0,0451, que cruza α y no estaba
-sobre la mesa.** El criterio sigue siendo el correcto — el desenlace se
-declara porque una decisión informada por dos números que produce un tercero
-necesita esa nota.
-
-| Opción | Consecuencia |
-|---|---|
-| (a) Publicar +9,7 pp ahora | Publica sabiendo que hay una rama declarada de +14,3 pp sin resolver. |
-| **(b)** Resolver §3.1 y publicar una sola vez | Una sola errata, una sola pasada. |
-| (c) Publicar +9,7 con las advertencias pegadas | Honesto, pero sigue siendo publicar dos veces. |
-
-**Recomendación, marcada como tal: la (b).** No por prolijidad: publicar +9,7
-pp mientras una rama de +14,3 pp está declarada y sin resolver es **peor que
-no publicar ninguna de las dos**, porque deja en la portada una cifra que
-sabemos incompleta.
-
-**Y pase lo que pase con el número, la advertencia va pegada:** +9,7 pp con
-IC95 de clúster [−7,2, +26,5] y n efectivo 67. **Con un intervalo de 34 pp de
-ancho, esta ventana no separa al campeón de una constante.** El track record
-no está refutando al campeón: está diciendo que **todavía no alcanza para
-juzgarlo**, en ninguna dirección.
-
----
+**Decidido: se retiran de las métricas** (2a-ter). La corrida 11 (bloque 4) computó el
+intervalo de clúster de día que el §82.3 exigía antes de publicar:
+`GEMELO/resultados/intervalo_coherencia.md`. **Queda a tu decisión, aparte:** cablear
+`filtrar_sesion_coherente` al árbitro y mover el README (ver §46 abajo). El expediente
+de esta tarjeta vive en la versión anterior de este archivo (git) y en el acta.
 
 # 4. La réplica: quién gana ante una divergencia
 
@@ -523,45 +444,11 @@ declares canónica. Sí recomiendo, marcado como tal, **que no quede en 25**, y
 
 ---
 
-# 8. El método del McNemar, sin declarar
+# 8. El método del McNemar, sin declarar — FIRMADO (acta §82.5, 7-sep-2026)
 
-**Qué hay que decidir:** cuál de tres salidas se toma ante el hecho de que el
-proyecto tiene **dos árbitros para la misma pregunta, y ninguno está mal.**
-
-**Qué desbloquea:** cierra un `xfail` puesto a propósito en rojo en
-`tests/test_epistemico.py`, y cierra una regla escrita rota.
-
-**Costo de decidirlo: 10 minutos** bajo A; **~1 h** si elegís B.
-
-**El hallazgo, y no es el que se creía:** el 0,1849 del README es el **χ² de
-McNemar con corrección de continuidad** (0,184898) y el 0,1847 del módulo es
-la **binomial exacta** (0,184683). Mismo par (b=72, c=56), mismo n, **métodos
-distintos, ninguno mal.**
-
-**No es una cifra, son cuatro** —los tres p de la ventana sellada (0,1158 /
-0,2542 / 0,1849) y el de la línea base congelada (0,4633)— y todas salen de
-`backtest/linea_base.py:126`, **que reimplementa McNemar a mano cuando
-`.claude/rules/backtest.md`:26-27 dice literal que no se reimplemente.**
-*Atenuante:* `linea_base.py` es del 25-ago y la regla del 30-ago; la regla
-llegó después y nadie volvió a mirar el código que ya estaba.
-
-**Lo que traba el arreglo obvio:** `GEMELO/DISEÑO.md` §2.8 **congeló**
-p = 0,4633 en un pre-registro. Migrar al árbitro la mueve a 0,4635, y un
-pre-registro congelado no se toca. **Chocan dos reglas del propio proyecto.**
-
-| Opción | Consecuencia |
-|---|---|
-| **A. Declarar el método al lado de cada p, sin mover ningún dígito** | Cero cifras movidas, pre-registro intacto. Queda una excepción viva a una regla escrita. |
-| B. Migrar al árbitro y mover las cuatro | Coherencia total. **Precedente incómodo: un pre-registro que se mueve.** |
-| C. Migrar hacia adelante, congelar hacia atrás | Sin errata sobre el pre-registro, pero convive un corte de método que hay que explicar cada vez. |
-
-**Recomendación, marcada como tal: la A.** Ninguna conclusión cambia — el
-mayor Δ es 0,0003 — y el χ² con corrección de continuidad no es el método
-malo. **Lo que falta es una palabra, no un número.** Obliga igual a escribir
-la excepción en `.claude/rules/backtest.md`: **una regla con una excepción no
-escrita es una regla que se vuelve a romper.**
-
----
+**Decidido: opción A**, declarar el método y no mover ninguna cifra. **Ejecutado en la
+corrida 11 (bloque 8):** el README declara el test al lado de cada p y el `xfail` de
+`tests/test_epistemico.py` se retiró. Nada queda pendiente de vos en este ítem.
 
 # 9. El parche de honestidad del README, y si se reformula R2
 
@@ -1092,7 +979,7 @@ aplicadas** (acta §78; `bitacora_09.md`). Lo que sigue es lo nuevo que sí la
 espera, más lo que esta corrida cerró de la lista anterior (marcado arriba
 en su ítem, con fecha, sin borrar).
 
-## 26. Aplicar el parche de `snapshot.py:140` — ahora con `.diff`, test y tabla (frente 2b)
+## 26. Aplicar el parche de `snapshot.py:140` — FIRMADO (acta §82.2 a, b, c, d), PENDIENTE DE APLICAR junto con el guardia del §49
 
 **Qué hay que decidir:** lo mismo que el §1 (aplicar el parche y declarar el
 corte de método). Lo que cambió esta noche es que ya no hay nada que
@@ -1416,74 +1303,28 @@ declara qué cambió. Nada más depende de esto.
 
 ---
 
-## 41. ¿El registro de intentos del riel largo se fusiona con el del gap asiático? (corrida 10, bloque 6)
+## 41. ¿Los registros de intentos se fusionan? — FIRMADO (acta §82.6, 7-sep-2026)
 
-**Qué se decide.** Si `dinero/registro_intentos.N_INTENTOS_RIEL_LARGO` (hoy **3**)
-y `GEMELO/relevo_asiatico.N_INTENTOS_ACUMULADO` (hoy **352**, del que cuelga
-`backtest/veredicto_51.N_INTENTOS_51` = **358**) cuentan la misma búsqueda y
-deben sumarse, o son dos familias de hipótesis y deben quedar separados.
+**Decidido: separados**; el riel integrador, descartado. Nada que ejecutar; la condición de
+revisión (una pregunta que abarque los dos rieles) está escrita en el acta y en
+`dinero/registro_intentos.FAMILIA_HERMANA`. Nada queda pendiente de vos.
 
-**Por qué esta corrida no lo resolvió sola.** El DSR deflacta por intentos sobre
-**la misma** búsqueda. El riel asiático prueba hipótesis sobre el gap de una
-noche en Tokio, Taipéi y Seúl; el riel largo, sobre retornos a 20 y 60 días
-hábiles de instrumentos de EE.UU. No comparten estimando, ni horizonte, ni
-universo. Y hay una razón operativa además de la conceptual: mover
-`N_INTENTOS_ACUMULADO` dispara la regla de los doce bloques dependientes.
+## 42. ¿La cuenta en papel se reconstruye o se descarta? — FIRMADO (acta §82.4, 7-sep-2026)
 
-**Las dos lecturas.**
-
-1. **Separados** (lo que rige hoy). Cada familia deflacta por sus propios
-   intentos. Riesgo: si mañana alguien mira las dos búsquedas como una sola
-   exploración del mismo fenómeno —«¿la cadena de semiconductores es
-   predecible?»—, los DSR de ambas están inflados.
-2. **Fusionados.** Un solo registro, hoy 355. Es la lectura conservadora y la
-   que más cuesta pasar. Costo: mover los doce bloques dependientes en el mismo
-   acto, o no moverlo.
-
-**Recomendación.** Ninguna esta noche; el vínculo ya está escrito en
-`dinero/registro_intentos.FAMILIA_HERMANA` para que la pregunta no se pierda. Si
-alguna vez el riel largo llega a un veredicto con DSR, **esta decisión hay que
-tomarla antes de calcularlo**, no después de verlo.
-
----
-
-## 42. ¿La cuenta en papel se reconstruye o se descarta? (cierre de la corrida 10)
-
-**Qué hay que decidir en una frase.** El `auditor-lookahead` demostró cuatro
-fugas temporales en la cuenta en papel; la página está retirada y **ninguna de
-sus cifras se puede citar**. Hay que decidir si se reconstruye sin fuga, si se
-reemplaza por otra cosa, o si se descarta el bloque entero.
-
-**Qué desbloquea.** Tres cosas dependen de esa página y hoy están todas
-bloqueadas: la **segunda vara pre-registrada** de la señal larga (la línea base
-aburrida, a la que se llega pasando la señal por la cuenta), el criterio **M2**
-del riel, y la **σ** de la tabla de potencia. Mientras la cuenta esté retirada,
-la regla de refutación §6 de la señal larga **no se puede dar por leída**.
-
-**Cuánto cuesta decidirlo.** 10 minutos. Ejecutarlo, según la opción, entre
-media corrida y una corrida entera.
-
-**Lo que la máquina ya dejó hecho.** Las tres fugas están clavadas con `xfail`
-estricto en `tests/test_dinero.py` (F1 universo, F2 señal, F4 retardo). El día
-que alguien las arregle, los tests pasan, el modo estricto convierte ese éxito
-en rojo, y quien lo arregló tiene que venir a sacar el marcador. La fuga no vive
-en la memoria de nadie.
-
-**Opciones.**
-
-| | Qué implica | Consecuencia |
-|---|---|---|
-| **A. Reconstruir** (recomendada) | Orden obligatorio del auditor: **el test va primero y ya está**. Después: membresía acotada por fecha (E1), sorteo desde datos anteriores a la ventana (E3), retardo de implementación en las DOS patas (E4), sigma del interruptor sin futuro (E5), y cablear `ErrorLookAhead` al riel (E6). Republicar. | Es la única opción que devuelve la vara económica y M2. El signo de la conclusión ya se sabe que aguanta; el número va a cambiar mucho (27 % → 57 % en el juego medio). |
-| **B. Reemplazar por una cuenta más chica** | Sólo fricción, sin señal ni juegos: cuánto cuesta comprar y sostener. | Más barato y suficiente para M2, pero **no** devuelve la vara económica del §5 de la señal larga. |
-| **C. Descartar el bloque** | Se retira también del `VISION.md` la promesa de la vara económica. | Barato hoy y caro después: el pre-registro de la señal larga quedaría con una vara declarada que nunca se va a poder evaluar, y eso es peor que no haberla declarado. |
-
-**Recomendación: A**, y con el orden del auditor respetado. La razón no es que
-el número importe: es que **una vara declarada en un pre-registro y nunca
-evaluada envenena la regla de refutación que la nombra**.
-
----
+**Decidido: opción A, reconstruir.** **Ejecutado en la corrida 11 (bloque 2):** E1, E3, E4,
+E5, E6 aplicados en `dinero/`, gate de invariancia en verde, página republicada como v2
+(`dinero/resultados/cuenta_papel.md`, PROPUESTA hasta los dictámenes). La errata del
+8-sep a esta tarjeta (§82.4) se aplicó antes de que ningún frente la leyera. Ver §47 y
+§48 abajo por lo que la reconstrucción abrió.
 
 ## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10)
+
+> **Nota 8-sep-2026 (corrida 11):** las cifras de esta tarjeta (14 % a 43 %; 10,1 %, 21,8 % y
+> 14,8 % de peor ventana móvil de 52 semanas) son de la cuenta v1 RETIRADA por fuga y **no se
+> citan**; con la v2 hay que recomputarlas, con banda entre semillas, antes de firmar el
+> período. Lo que la v2 ya dice: el juego por defecto gasta 12,4 % sobre 156 semanas (mediana
+> de 20 semillas), la mitad de la vara; ver `preregistro_dinero.md` §7. La pregunta sigue
+> siendo la misma.
 
 **Qué hay que decidir en una frase.** M2 dispara si la comisión acumulada supera
 el 25 % del capital aportado «en el período», y hay que decir **qué período**.
@@ -1538,29 +1379,90 @@ perder: **con la familia corregida, M4 dispararía hoy.**
 
 ---
 
-## 45. ¿El registro de intentos del riel largo pasa de 3 a 30? (cierre de la corrida 10)
+## 45. ¿El registro de intentos del riel largo pasa de 3 a 30? — FIRMADO (acta §82.1, 7-sep-2026)
 
-**Complementa al §41, no lo reemplaza.** El §41 pregunta si los dos registros
-(gap asiático y riel largo) se fusionan. Éste pregunta otra cosa: **qué cuenta
-como un intento dentro del riel largo**.
+**Decidido: opción (a), dos contadores declarados por separado**, y el aviso va donde el
+3 se publica. **Ejecutado en la corrida 11 (bloque 7):** `dinero/senal_larga_reporte.py`
+emite la nota con los dos números computados y el reporte se regeneró sin mover ninguna
+celda. Nada queda pendiente de vos.
 
-`registro_intentos.N_INTENTOS_RIEL_LARGO = 3` cuenta **especificaciones** (L1,
-L2, L3). Es correcto como cuenta de especificaciones e insuficiente como cuenta
-de multiplicidad: el reporte produce **cinco contrastes por celda**, la familia
-son **30**, y el resultado que se publicaba era el máximo sobre esos 30. Además
-la vara climatológica se agregó **después de ver el resultado**, y por la regla
-de la casa eso cuenta.
 
-**Cuánto cuesta decidirlo.** 10 minutos. **Y hay que tomarla ANTES** de que este
-riel llegue a cualquier DSR: un DSR con un N desactualizado miente hacia arriba,
-que es exactamente el error que el proyecto ya tiene registrado.
 
-**Opciones.** (a) Dos cuentas declaradas por separado: especificaciones (3) para
-el registro, familia de contrastes (30) para la multiplicidad —es lo que el
-código hace hoy de hecho—. (b) Una sola cuenta, 30, y el registro pasa a contar
-contrastes. (c) 3 + 1 por la vara post-hoc = 4, contando varas y no contrastes.
+# Lo que agregó la corrida 11 (8-sep-2026)
 
-**Recomendación: (a) escrita explícitamente**, porque son dos preguntas
-distintas y hoy la separación existe pero no está declarada. Lo que **no** es
-defendible es dejar el 3 solo, sin decir que la multiplicidad que gobierna el
-resultado se computa sobre 30.
+## 46. Cablear (o no) la rama de coherencia al árbitro, y qué publica el README
+
+**Qué hay que decidir en una frase.** Firmaste retirar las 15 filas (§82.3). Falta decir si
+`backtest.linea_base.filtrar_sesion_coherente` pasa a aplicarse por defecto en `cargar()`
+y en `cifras.sellada()`, y con eso el README pasa de n = 238 / +9,7 pp a n = 223 / +14,3 pp.
+
+**El dato que faltaba, ya computado** (`GEMELO/resultados/intervalo_coherencia.md`, corte
+2026-08-28, `excluir_cero`): la rama de coherencia da +14,3 pp con IC95 percentil de día
+[−1,4, +32,1], t de clúster [−3,5, +32,2], permutación de día p = 0,111, ICC 0,42, DEFF 3,71,
+n efectivo 60, sobre 33 días. **El intervalo contiene el cero en las tres rutas**, como el
+acta predijo antes de computar. El retiro se lleva un día entero (5-jul, 8 filas) y mutila
+otro (5-ago, 7 de 8), y los dos eran informativos con Σ = −4 cada uno. **Bajo R2 (sin el
+15–23 jul) la rama cae a +7,8 pp, [−9,1, +25,6], permutación p = 0,433: hereda intacta la
+ventana afortunada y se apaga igual que la regla firmada (+2,6 pp, p = 0,821).** Y +14,3 pp
+es otro estimando (ventaja restringida a filas con sesión coherente), no «+9,7 medido mejor».
+
+**Cuánto cuesta decidirlo.** 10 minutos. Ejecutarlo: los doce bloques del README se mueven
+en el mismo acto (regla de la casa), media corrida.
+
+**Opciones.** (a) Cablear y publicar 223 / +14,3 con su intervalo al lado. (b) No cablear:
+el README sigue en 238 / +9,7 y la rama queda como consecuencia declarada. (c) Cablear
+recién cuando el parche del §26 esté aplicado, para que el filtro y la regla maestra
+operativa entren juntos. **Recomendación, marcada como tal: (c)**, porque el argumento del
+§82.3 es que a esas filas las descarta la regla maestra, y la regla maestra sólo dispara
+con el parche aplicado.
+
+## 47. El presupuesto del riel de dinero, con la tabla a la vista (§82.7)
+
+**Qué hay que decidir en una frase.** Cuánto capital propio y en qué modo de compra.
+
+**La tabla** (`docs/universo_operable.md`, «Censo por presupuesto y modo de compra», arancel
+del §40): enteras 100 USD **7 de 36**, 250 USD **13**, 500 USD **29** (`MSFT` al borde),
+1000 USD **33**; fraccionarias 36 de 36 a cualquier monto, con fricción de ida y vuelta
+del 2 % que no se diluye, contra 0,70 USD fijos en enteras (cruce en 35 USD por orden). El
+segundo día de censo NO aportó sesión nueva (el 7-sep fue feriado en NYSE): sigue siendo
+censo de un solo día.
+
+**Cuánto cuesta decidirlo.** 15 minutos con la tabla. **Recomendación:** ninguna; la firma
+del escalonamiento (§82.7) dice capital propio y rango original.
+
+## 48. La reconstrucción cambió el arancel de `reglas.json` y sus derivados, y el §40 sigue sin firma
+
+**Qué pasó.** El encargo ordenó reconstruir con el arancel del insumo §40 (Pro Tiered,
+enteras: 0,0035 / 0,35 / 1 %). `reglas.json` pasó a `0.2.0-PROPUESTA` y los parámetros
+derivados se recomputaron por su regla: umbral conservador 3,49 → **1,35 pp**, medio
+1,99 → 0,79, agresivo 0,91 → 0,38; apagado con σ hasta 2023-09-05 (14,17 %): 15,6 → 14,2,
+23,4 → 21,3, 31,2 → 28,3. Con umbrales más bajos el diseño emite 200 a 450 órdenes en 156
+semanas y la fricción da 12 % a 28 % del capital: **la manda el número de órdenes, no el
+arancel** (lo que el §82.4 anticipó, leído después de computar).
+
+**Qué hay que decidir.** (a) Firmar el §40 como arancel del riel (con la restricción de
+SmartRouting). (b) Si los umbrales derivados tan bajos son lo que querés, o si k (2 / 1,5 / 1)
+se revisa; revisarlo después de ver la cuenta es un grado de libertad y hay que declararlo
+como tal si se hace.
+
+## 49. El guardia de la rama del `except` (parche NO aplicado, §82.2 c)
+
+`GEMELO/propuestas/parches/guardia_ancla_temporal.diff` toca `snapshot.py` (aviso en el
+log cuando `available_at` cae al reloj de pared, por `except` o por `sox_fecha` vacío),
+`mki_vigia.py` (chequeo `chequear_ancla_temporal`: filas de hoy con
+`available_at == timestamp_utc` disparan la alerta) y `senales.py` (el verificador cuenta y
+declara `sin_calendario`, el tercer tragador de excepciones). Elegí **alerta del vigía más
+log, y no marca en la fila**: la evidencia ya está en la base y una columna nueva es cambio
+de esquema en filas selladas. Test: `tests/test_parche_guardia_ancla_temporal.py` (6 tests,
+sobre copias; verifica que los dos parches aplican juntos). **Se aplica en el mismo acto que
+el §26.** Hoy el agujero es teórico: 0 de 319 filas 4.6.0 pasaron por la rama (bloque 6).
+
+## 50. El instrumento del riel de dinero sub-cubre bajo la nula
+
+`GEMELO/resultados/instrumento_dinero.md` (PROPUESTA): `contabilidad.comparar` discrimina
+(criterio pre-declarado cumplido en las tres magnitudes), pero a 52 semanas el tamaño
+bilateral es 0,086 [0,074, 0,099] contra 0,05 y la cobertura 0,914 [0,901, 0,926] contra
+0,95; con ρ = 0,2 la cobertura baja a 0,885. Es el mismo defecto del percentil que el Frente
+A midió en el riel de medición. **Cambiar el estimador después de ver la cobertura es un
+grado de libertad**: la opción (t de bloques, más réplicas, bloque distinto) es tuya, y hasta
+entonces cada `✓` de la cuenta en papel se lee sabiendo que el nominal 95 % es ~91 %.

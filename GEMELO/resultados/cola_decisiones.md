@@ -9,7 +9,7 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 2-sep-2026, séptima corrida.
+**Actualizada:** 8-sep-2026, corrida 11. Las seis firmas del 7-sep (acta §82) están marcadas en su ítem; la cola no se reordenó.
 
 ## Qué movió la séptima corrida (2-sep)
 
@@ -235,7 +235,9 @@ demostrable, no frescura). **Las dos cosas van juntas o no van.**
 aplicado: `GEMELO/resultados/parche_dedup.md`, trece bloques con
 archivo:línea.
 
-### 2a-ter. Las 15 filas SIN pareja que tampoco calzan — DECISIÓN PENDIENTE (D1 la dejó explícitamente en cola: no se publica)
+### 2a-ter. Las 15 filas SIN pareja que tampoco calzan — FIRMADA el 7-sep-2026 (acta §82.3): se retiran
+
+**Estado 8-sep-2026 (corrida 11, bloque 4):** el intervalo de clúster de día que el acta exigía está computado en `GEMELO/resultados/intervalo_coherencia.md` y **contiene el cero en las tres rutas** (percentil [−1,4, +32,1], t de clúster [−3,5, +32,2], permutación p = 0,111; n = 223, 33 días). Cablear el filtro al árbitro y mover el README es decisión aparte: `espera_firma.md` §46. Lo que sigue es el expediente tal como estaba.
 
 **Actualización 3-sep-2026 (frente 2b, `corrida09/parche_snapshot140_tabla.md`):** bajo el parche de `snapshot.py:140`, las 25 filas con sesión objetivo incorrecta (las 10 del lado viejo de los pares Y estas 15) serían todas `no_verificable_timing` — no sólo las 8 del 5-jul como decía este ítem: las 10 del lado viejo también se emitieron después de la apertura de la sesión correcta. La rama «+ coherencia» sigue sin intervalo de día computado y sin publicar.
 
@@ -463,7 +465,9 @@ barato resolver varias preguntas de reporte en una sola pasada.
 
 ---
 
-## 3-bis. El McNemar: dos rutas, ninguna equivocada
+## 3-bis. El McNemar: dos rutas, ninguna equivocada — FIRMADA el 7-sep-2026 (acta §82.5, opción A) y EJECUTADA el 8-sep (corrida 11, bloque 8)
+
+**Estado:** el README declara el método al lado de cada p; ninguna cifra se movió; el `xfail` se retiró. La discrepancia del p titular entre el traspaso 10 y `espera_firma` (0,0455 vs 0,0451) **es esta pareja de rutas**; la del último decimal del intervalo (26,6 vs 26,5) **no**: es el número de réplicas del bootstrap de día (4.000 en `cifras.py`, 10.000 por defecto en `bifurcaciones`). Lo que sigue es el expediente tal como estaba.
 
 **Qué decidir:** cuál de las tres salidas se toma ante el hecho de que el
 proyecto tiene **dos árbitros** para la misma pregunta.
