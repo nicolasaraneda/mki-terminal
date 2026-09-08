@@ -1,42 +1,47 @@
-# Encargo corrida 11: validar el instrumento, reconstruir sin fuga, y sellar la primera fila prospectiva del riel de dinero
+# Encargo corrida 11 (v2, post acta §82): validar el instrumento, reconstruir sin fuga, y ejecutar seis firmas
+
+**Reemplaza la v1 del 7-sep.** La v1 presuponía tres firmas sin tomar. El acta
+**§82** de `DECISIONES.md` tomó seis. Este encargo ejecuta lo que esas firmas
+implican y no vuelve a preguntarlas.
 
 Leé este archivo entero antes de ejecutar nada. Corrida nocturna sin
-supervisión; Nicolás revisa a la mañana. **Nada se pushea**: el push lo hace
-Nicolás después de leer el diff.
+supervisión; Nicolás revisa a la mañana. **Nada se pushea.**
 
 El orden de los bloques es estricto y la razón está escrita en cada uno. Si el
-tiempo no alcanza, se cierra limpiamente lo abierto y lo restante queda como
-no iniciado en la bitácora. Un frente a medias sin bitácora es peor que uno no
+tiempo no alcanza, se cierra limpiamente lo abierto y lo restante queda como no
+iniciado en la bitácora. Un frente a medias sin bitácora es peor que uno no
 empezado.
 
 ---
 
 ## 0. Orientación obligatoria
 
-1. `orientador` reconstruye el estado. Orden de lectura: `ESTADO.md`,
-   `GEMELO/resultados/estado_epistemico.md`, `espera_firma.md`,
-   `cola_decisiones.md`, `bitacora_10.md`, actas §80 y §81 de `DECISIONES.md`,
-   `GEMELO/resultados/dictamen_10/aplicacion.md` y
-   `GEMELO/resultados/calibracion_instrumento.md`.
-2. **Toda cifra se lee de la máquina** (módulo árbitro o README renderizado),
-   nunca de memoria ni de este archivo. Si este archivo y la máquina no
-   coinciden, manda la máquina y se anota errata.
-3. Suite completa antes de empezar; anotá el número. Si no está en verde,
-   parás y reportás.
-4. Ventana de sellado 17:50 a 20:30 hora de Chile: nada pesado.
-5. El registro de intentos se incrementa por cada hipótesis probada esta
-   noche, incluidas las descartadas.
-6. **`director-programa` corre en modo pre-mortem sobre este encargo antes de
-   ejecutar el bloque 1**, y devuelve la lista de instrucciones que podrían
-   ser ellas mismas el defecto. El orquestador no ejecuta una instrucción
-   marcada sin anotarla en la bitácora.
+1. `orientador` reconstruye el estado. Orden de lectura: **`DECISIONES.md`
+   sección §82 primero**, después `ESTADO.md`,
+   `GEMELO/resultados/estado_epistemico.md`,
+   `GEMELO/resultados/inventario_abierto_2026-09-07.md`, `espera_firma.md`,
+   `cola_decisiones.md`, `bitacora_10.md`, actas §80 y §81, y
+   `GEMELO/resultados/dictamen_10/aplicacion.md`.
+2. **`espera_firma.md` está desactualizado y lo declara en su primera línea.**
+   Los ítems §45, §41, §55, §42, §26 y 2a-ter figuran como pendientes y **están
+   firmados**. Manda el acta §82, no la cola.
+3. **Toda cifra se lee de la máquina**, nunca de memoria ni de este archivo. Si
+   este archivo y la máquina no coinciden, manda la máquina y se anota errata.
+4. Suite completa antes de empezar; anotá el número. Si no está en verde, parás.
+5. Ventana de sellado 17:50 a 20:30 hora de Chile: nada pesado.
+6. El registro de intentos se incrementa por cada hipótesis probada, incluidas
+   las descartadas. Recordá el §82.1: el contador de especificaciones y la
+   familia de contrastes son dos cosas y ninguna reemplaza a la otra.
+7. **`director-programa` corre en modo pre-mortem sobre este encargo antes del
+   bloque 1** y devuelve la lista de instrucciones que podrían ser ellas mismas
+   el defecto. El orquestador no ejecuta una instrucción marcada sin anotarla.
 
 ## 1. Límites duros
 
-- No se tocan `motor.py`, `senales.py`, `snapshot.py`, `universo.py`, el modo
-  de emisión, `.env` ni los timers. Donde un frente necesite tocar uno de
-  ellos, produce un parche NO aplicado con su test y lo deja en
-  `espera_firma.md`.
+- **No se tocan `motor.py`, `senales.py`, `snapshot.py`, `universo.py`**, el
+  modo de emisión, `.env` ni los timers. Donde un frente necesite uno de ellos,
+  produce un parche **NO aplicado** con su test y lo deja en `espera_firma.md`.
+  Esto incluye el parche del §26, que está firmado y **lo aplica Nicolás**.
 - No se reescribe ninguna fila sellada.
 - Ninguna cifra publicada se mueve sola.
 - Ningún estimador puntual sin intervalo computado. Clúster de día siempre que
@@ -46,176 +51,241 @@ empezado.
 - Una verificación que usa el mismo mecanismo que produjo la cifra no es
   verificación.
 - La corrección va al ejecutable antes que al texto.
+- **No se firma nada.** Si un frente concluye que hace falta una decisión que no
+  está en el §82, la escribe en `espera_firma.md` y sigue.
 
-## 2. Decisiones de Nicolás que esta corrida presupone
+## 2. Lo que el acta §82 dejó decidido
 
-**Si alguna no está firmada al arrancar, el bloque que depende de ella no se
-ejecuta y se anota como bloqueado.** No se ejecuta "asumiendo" una firma.
+Se ejecuta, no se discute. Si algún frente encuentra que una de estas
+decisiones no se sostiene, **lo escribe como hallazgo y no la revierte**.
 
-- **§26 / §1, el parche de `snapshot.py:140`**, en sus tres partes: aplicar el
-  diff con bump de `PLATAFORMA_VERSION`, el guardia de la rama del `except`, y
-  el tratamiento de las 15 filas en métricas. Bloquea el bloque 6.
-- **§42, la cuenta en papel se reconstruye o se descarta.** Bloquea los
-  bloques 3 y 4.
-- **§45, el registro de intentos del riel largo pasa de 3 a 30.** Bloquea
-  cualquier cómputo de DSR en ese riel.
+| Acta | Decisión | Qué implica en esta corrida |
+|---|---|---|
+| §82.1 | Dos contadores por separado, y el aviso va también donde el 3 se publica | Bloque 7 |
+| §82.2 | Parche de `snapshot.py:140` entero: aplicar, bump, guardia, conteo | Bloques 5 y 6. **La aplicación es de Nicolás** |
+| §82.3 | Se retiran las 15 filas. Publicación espera al intervalo de clúster | Bloque 4 |
+| §82.4 | La cuenta en papel se reconstruye (opción A) | Bloques 2 y 3 |
+| §82.5 | Se declara con qué test se computó cada p, sin mover cifras | Bloque 8 |
+| §82.6 | Los dos registros de intentos quedan separados. Riel integrador descartado | Nada que ejecutar. Se respeta al contar intentos |
 
----
+## 3. Bloque 0. Corregir la tarjeta del §42 antes de que nadie la lea
 
-## 3. Bloque 1 (PRIMERO). La mitad que falta de la calibración del instrumento
+**Primero de todo y cuesta dos minutos.** El acta §82.4 ordena sacar de la
+tarjeta del §42, en `espera_firma.md`, la frase que afirma que el signo de la
+conclusión ya se sabe que aguanta y que cita el movimiento de 27 % a 57 % en el
+juego medio. Esas cifras son de la cuenta con las cuatro fugas y están
+retiradas.
 
-**Por qué va primero.** El proyecto tiene la regla de verificar el instrumento
-contra una verdad conocida antes de creerle sobre una desconocida. La mitad
-con ventaja verdadera igual a cero se corrió. **La mitad con ventaja verdadera
-distinta de cero no se corrió**, y la tabla de potencia del riel de dinero es
-aritmética sin validar. Reconstruir la cuenta en papel antes de esto produce
-cifras que no se pueden interpretar, porque no se sabe qué hace el instrumento
-cuando hay algo que detectar.
+Se saca la frase, se deja nota de errata con fecha remitiendo al §82.4, y
+**recién después** cualquier frente lee esa tarjeta. Si el bloque 2 la lee
+antes, arranca con la respuesta escrita.
+
+## 4. Bloque 1 (PRIMERO de los frentes). La mitad que falta de la calibración
+
+**Por qué va primero.** La regla de la casa es verificar el instrumento contra
+una verdad conocida antes de creerle sobre una desconocida. La mitad con
+ventaja verdadera igual a cero se corrió. **La mitad con ventaja verdadera
+distinta de cero no.** Reconstruir la cuenta antes de esto produce cifras que
+no se pueden interpretar.
 
 Corré `GEMELO/simulador/` con ventaja verdadera distinta de cero, en al menos
 tres magnitudes declaradas antes de correr, con semilla sellada y número de
-réplicas por celda declarado. Reportá, por celda, la proporción de veces que
-el procedimiento detecta la ventaja, con su intervalo. Reportá también la
-mitad nula en el mismo cuadro, aunque ya esté corrida, para que las dos tasas
-queden en la misma tabla.
+réplicas por celda declarado. Reportá por celda la proporción de detección con
+su intervalo, y poné la mitad nula en el mismo cuadro.
 
-**Criterio de fallo del bloque, escrito antes:** si la tasa de detección bajo
-ventaja verdadera no supera a la tasa de falsa detección bajo ventaja nula en
-ninguna de las tres magnitudes, el instrumento no discrimina y **todo lo demás
-de esta corrida queda suspendido**, incluida la reconstrucción. Eso sería un
-resultado, no un fracaso, y se publica con la misma firmeza que el contrario.
+**Criterio de fallo, escrito antes:** si la tasa de detección bajo ventaja
+verdadera no supera a la de falsa detección bajo ventaja nula en ninguna de las
+tres magnitudes, el instrumento no discrimina y **el resto de la corrida queda
+suspendido**, incluida la reconstrucción. Eso es un resultado, no un fracaso, y
+se publica con la misma firmeza que el contrario.
 
-## 4. Bloque 2. El insumo del §40, cableado
+## 5. Bloque 2. Reconstrucción de la cuenta en papel
 
-Los tres documentos escritos el 7-sep-2026 entran al repositorio como
-PROPUESTA y no se modifican en esta corrida:
-`criterio_corredor_prerregistro.md`, `insumo_40_aranceles_ibkr.md`,
-`regla_aporte_y_dimensionamiento.md`.
-
-Lo que sí hace esta corrida: **verificar de forma independiente** las dos
-tarifas contra la fuente oficial, con fecha de consulta propia, sin usar las
-cifras del documento como insumo. Si difieren, manda tu lectura y se anota
-errata. Reportá también si la contradicción entre 1% y 0,5% sigue en la página
-o se resolvió.
-
-Cero intentos del DSR: no se evalúa ninguna hipótesis sobre retornos.
-
-## 5. Bloque 3. Reconstrucción de la cuenta en papel, orden obligatorio
-
-**Depende de la firma §42.** El orden lo fijó el `auditor-lookahead` y no se
+**Firmada en §82.4, opción A.** El orden lo fijó el `auditor-lookahead` y no se
 altera.
 
-1. **El test de truncación primero.** `tests/test_dinero.py` tiene tres
-   `xfail(strict=True)` que clavan F1, F2 y F4. Hoy fallan porque las fugas
-   existen. Cuando se arreglen van a pasar, el modo estricto va a volver eso
-   rojo, y eso **obliga a volver a sacar el marcador**. Es intencional.
-2. Las correcciones: membresía acotada por fecha, sorteo desde datos
-   anteriores a la ventana, retardo de implementación en las **dos** patas de
-   la comparación, sigma del interruptor sin futuro, y cablear
-   `ErrorLookAhead` al riel.
+1. **El test de truncación primero.** Los tres `xfail(strict=True)` de
+   `tests/test_dinero.py` clavan F1, F2 y F4. Cuando se arreglen van a pasar, el
+   modo estricto lo va a volver rojo, y eso obliga a sacar el marcador. Es
+   intencional.
+2. Las correcciones: membresía acotada por fecha (E1), sorteo desde datos
+   anteriores a la ventana (E3), retardo de implementación en las **dos** patas
+   (E4), sigma del interruptor sin futuro (E5), y cablear `ErrorLookAhead` al
+   riel (E6).
 3. Recién después republicar.
 
-**No se calcula un solo MAE antes de que el auditor corra.** Es el
-procedimiento que funcionó en el bloque 6 de la corrida 10 y se repite.
+**No se calcula un solo MAE antes de que el auditor corra.**
 
-## 6. Bloque 4. Cobertura por causalidad de `cuenta_papel.py` y `contabilidad.py`
+**Parámetro de costo:** el de `GEMELO/propuestas/insumo_40_aranceles_ibkr.md`,
+no un supuesto. Declarar cuál de las dos columnas se usó, enteras o
+fraccionarias, porque cambia el costo por un factor de casi ocho a 250 dólares.
 
-**Va pegado al bloque 3 y no después.** La sección 10 declara que la suite
-verde no cubre por causalidad ninguno de los dos, y que un verde de `pytest`
-hoy **no es evidencia de ausencia de fuga** en el riel de dinero. Reconstruir
-sin cerrar esto es repetir el error con código nuevo.
+**Advertencia del §82.4:** si la fricción vuelve a dar del orden de la mitad
+del capital, el sospechoso principal es el número de operaciones del diseño y
+no el arancel. Con 0,70 dólares de ida y vuelta sobre 100 hacen falta del orden
+de ochenta idas y vueltas, y el horizonte declarado es de semanas.
 
-Medí la cobertura por causalidad de los dos módulos, antes y después de la
-reconstrucción, y reportá los dos números. Si algún camino queda sin cubrir,
-se lista con la razón.
+## 6. Bloque 3. Cobertura por causalidad de `cuenta_papel.py` y `contabilidad.py`
 
-## 7. Bloque 5. Regenerar el mapa operable con el parámetro de fraccionarias
+**Va pegado al bloque 2 y no después.** La suite verde no cubre por causalidad
+ninguno de los dos, así que un verde de `pytest` hoy no es evidencia de
+ausencia de fuga en ese riel. Reconstruir sin cerrar esto es repetir el error
+con código nuevo.
+
+Medí la cobertura por causalidad de los dos módulos **antes y después** de la
+reconstrucción, y reportá los dos números. Los caminos que queden sin cubrir se
+listan con la razón.
+
+## 7. Bloque 4. El intervalo de clúster del +14,3 pp
+
+**Lo pide el §82.3 y es la condición para publicar.** La rama de coherencia
+(`backtest/linea_base.filtrar_sesion_coherente`, n = 223) tiene p exacta pero
+no tiene intervalo de clúster de día. Hasta que lo tenga es una consecuencia
+declarada y no un argumento.
+
+Computalo con la maquinaria que ya existe: `_grupos_por_dia`, `_bootstrap_dia`,
+`_ic_t_cluster`, `_p_permutacion_dia`, `icc_y_deff`. Reportá también ICC, DEFF y
+n efectivo de esa rama, y **cuántos días quedan** después del retiro.
+
+**Pregunta pegada, que nadie contestó:** si las 15 filas retiradas constituyen
+días de emisión enteros o los dejan mutilados, y si esas fechas estaban entre
+los días informativos. Es el dato que decide si el retiro cambia el estadístico
+de día o sólo el de fila.
+
+**Predicción escrita antes de calcularlo, del §82.3:** es esperable que el
+intervalo contenga el cero, como lo contiene el de la regla firmada. Si no lo
+contiene, eso es un hallazgo y merece verificación por segunda ruta.
+
+**Cableado:** `filtrar_sesion_coherente` sigue **sin aplicarse por defecto**
+en ningún camino. Esta corrida computa la cifra; el cableado al árbitro es una
+decisión aparte que no está firmada.
+
+## 8. Bloque 5. El guardia de la rama del `except` (parche NO aplicado)
+
+**Lo firmó el §82.2 parte (c) y no existe.** El defecto tiene una vía de
+escape: en `snapshot.py`, `available_at` arranca valiendo `ts_emision` y sólo se
+reemplaza dentro de un `try` cuyo `except` es `pass`. Si esa rama se toma, el
+parche aplicado se comporta idéntico al defecto y no deja marca.
+
+Producí el guardia como **parche no aplicado con su test**, en
+`GEMELO/propuestas/parches/`, y dejalo en `espera_firma.md` junto al del §26
+para que Nicolás aplique los dos en el mismo acto.
+
+El guardia tiene que hacer visible el paso por esa rama: alerta del vigía, marca
+en la fila, o test que lo detecte. Cuál de las tres es propuesta tuya, con la
+razón.
+
+**El mismo patrón está en `senales.py:317-319`**, donde un fallo del calendario
+deja la fila pendiente para siempre en silencio. Miralo en el mismo pase y
+decí si corresponde el mismo tratamiento. Son tres tragadores de excepciones en
+el camino de sellado y verificación: es un patrón, no tres instancias.
+
+## 9. Bloque 6. Cuántas filas pasaron por esa rama
+
+**Lo firmó el §82.2 parte (d).** Contá, sobre `senales.db` en `mode=ro`, cuántas
+de las 295 filas tienen `available_at` igual a su `timestamp_utc`, o sea que
+nunca recibieron el cierre de NYSE.
+
+Si son cero, el agujero del bloque 5 es teórico y se declara. Si no son cero,
+hay filas con un ancla temporal de reloj de pared, que es un problema distinto
+de las 25 y que nadie contó nunca. En ese caso **no lo resuelvas**: mediló,
+escribí el hallazgo y dejalo a firma.
+
+## 10. Bloque 7. El alcance del §82.1
+
+Donde el número 3 aparezca publicado tiene que aparecer al lado que la
+multiplicidad que gobierna el resultado se computa sobre 30. Empezá por
+`dinero/senal_larga_reporte.py` y seguí por todo documento generado que muestre
+ese contador.
+
+**No cambia ningún cálculo.** Es texto pegado al número. Si en algún lugar
+cambiar el texto obligara a cambiar un cálculo, pará y anotalo.
+
+## 11. Bloque 8. El §82.5, declarar el método de cada p
+
+Cada p publicada lleva al lado con qué test se computó. **Ninguna cifra se
+mueve.** El README publica el χ² de McNemar con corrección de Edwards y el
+árbitro devuelve la exacta; las dos son correctas y lo que falta es decirlo.
+
+Aprovechá para **confirmar o descartar** que la discrepancia entre el traspaso
+de la corrida 10 y `espera_firma.md` en el p titular y en el último decimal del
+intervalo es esta misma pareja de rutas. Es hipótesis, no conclusión.
+
+Y sacá el `xfail` de `test_epistemico.py:775` si esta declaración lo resuelve.
+
+## 12. Bloque 9. La razón podrida y su guardia
+
+`test_epistemico.py:572` justifica su marcador diciendo que la regla de
+deduplicación no está congelada y remitiendo al §56 punto 1 como pendiente.
+**Esa decisión se cerró el 3-sep, acta §78.** El marcador sigue bien puesto por
+otro motivo: `_filas_selladas_excluir_cero()` consulta la base por SQL y no pasa
+por `cargar()`, así que ve los duplicados físicos que la regla firmada no borra
+porque actúa al cargar.
+
+Corregí la razón sin ablandar el test, y escribí el guardia que falta: el
+proyecto vigila que las citas por número de línea a `DECISIONES.md` no se
+desplacen, **y no tiene nada que verifique que las razones de los `xfail` sigan
+siendo ciertas**. Una razón de `xfail` es documentación que vive dentro del
+ejecutable.
+
+## 13. Bloque 10. Regenerar el mapa operable
 
 `docs/universo_operable.md` se genera, no se escribe. El censo vigente asume
-compra de acciones enteras y por eso da 7 de 36 alcanzables con piso de 100
-dólares, con `SMH` fuera de 500.
+acciones enteras con piso de 100 dólares, y por eso da 7 de 36.
 
-**El insumo del §40 cambia el censo**: con fraccionarias los 36 son
-alcanzables, a 1% del valor operado por lado. Regenerá el mapa con el modo de
-compra como parámetro explícito, produciendo las dos columnas, enteras y
-fraccionarias, con la fricción de ida y vuelta al lado de cada instrumento.
+Regeneralo con **el modo de compra como parámetro explícito** (enteras y
+fraccionarias) y con el presupuesto como segundo parámetro, produciendo el censo
+para **100, 250, 500 y 1000 dólares**. La fricción de ida y vuelta va al lado de
+cada instrumento, leída del insumo del §40.
 
-Aprovechá el mismo pase para cerrar el segundo hueco de la sección 10:
-**segundo día de censo**, con precios congelados con fecha y huella sha256
-como el primero. La comparación entre los dos días es el dato, no el segundo
-día solo.
+**Por qué las cuatro cifras y no una:** el presupuesto está sin decidir
+justamente porque el censo se computó para un rango que ya no es el que se
+discute. La decisión se toma con la tabla a la vista, no antes.
 
-**Lo que este bloque NO hace:** auditar liquidez real. Ver la sección 10 de
-este encargo.
+Aprovechá el mismo pase para el segundo día de censo, con precios congelados con
+fecha y sha256 como el primero. La comparación entre los dos días es el dato, no
+el segundo día solo.
 
-## 8. Bloque 6. La primera fila prospectiva del riel de dinero, tamaño cero
+## 14. Lo que esta corrida NO hace
 
-**Depende de la firma del §26**, porque toca el camino de sellado.
+- **No sella la primera fila prospectiva del riel de dinero.** El §26 está
+  firmado pero el parche **no está aplicado**, y aplicarlo es de Nicolás. Sellar
+  con el camino defectuoso sería sellar con el problema que se acaba de decidir
+  corregir. Entra en la corrida 12, después de que el parche y el guardia
+  aterricen juntos.
+- **No aplica ningún parche a los archivos protegidos.**
+- **No cablea `filtrar_sesion_coherente` al árbitro.**
+- **No decide el presupuesto** ni toca nada del capital de terceros.
+- **No firma el `motor_concat.diff`**, que necesita prueba de identidad de
+  salida antes de que nadie lo aplique.
+- **No audita liquidez real**, que espera a que exista la etapa E1.
 
-Este es el único hueco de la sección 10 que no se puede cerrar con más
-cómputo, y el reloj corre: cada noche sin sellar es una noche que no se
-recupera. Todas las cifras del riel de dinero salen hoy de mirar ocho años de
-una vez, y la única defensa contra la fuga por el analista es el sellado en
-vivo.
+## 15. Cierre
 
-La máquina emite una decisión del riel de dinero **antes de la apertura del
-mercado objetivo**, con **tamaño nominal cero**, y la sella con la misma
-disciplina del riel de medición: marca de tiempo, `available_at`, sesión
-objetivo anclada a `available_at` y no al reloj de pared, y sin reescritura
-posterior.
-
-Tamaño cero significa cero dinero, cero cuenta y cero orden enviada a ningún
-lado. Lo que se sella es la decisión, no la posición.
-
-**Aislamiento:** el bloque no puede tocar el camino de sellado del riel de
-medición. Los tests de aislamiento en las dos direcciones que existen desde la
-corrida 10 tienen que seguir verdes y se anota su número.
-
-## 9. Cierre de la corrida
-
-1. `GEMELO/resultados/bitacora_11.md`: por bloque, qué se hizo, qué se
-   encontró con n e intervalo, qué dictaminó el adversario, qué quedó abierto,
-   y **errores propios detectados**.
+1. `GEMELO/resultados/bitacora_11.md`: por bloque, qué se hizo, qué se encontró
+   con n e intervalo, qué dictaminó el adversario, qué quedó abierto, y
+   **errores propios detectados**.
 2. `estado_epistemico.md` sólo con afirmaciones que pasaron por el adversario.
-3. `espera_firma.md` y `cola_decisiones.md` actualizados sin borrar lo que ya
-   esperaba.
-4. Nuevo conteo de intentos del DSR con la lista de lo que se sumó esta noche.
-5. Acta en `DECISIONES.md`.
+3. **Limpiar `espera_firma.md` y `cola_decisiones.md`**: los seis ítems del §82
+   salen de la cola con referencia a su acta. Lo que sigue esperando no se
+   borra. Sacá también el aviso provisorio de la primera línea.
+4. Nuevo conteo de intentos con la lista de lo que se sumó, respetando el
+   §82.1 y el §82.6.
+5. Acta en `DECISIONES.md`, sección §83.
 6. `ESTADO.md` dentro de sus 50 líneas.
-7. Suite completa en verde con el número final anotado. Si un bloque dejó la
-   suite en rojo, se revierte ese bloque y se documenta.
-8. `director-programa` revisa que nada se salió del alcance. Lo que se salió
-   se revierte.
+7. Suite completa en verde con el número anotado. Si un bloque la dejó en rojo,
+   se revierte ese bloque y se documenta.
+8. `director-programa` revisa el alcance. Lo que se salió se revierte.
 9. **No hagas push.**
 
----
+## 16. Prioridad si el tiempo no alcanza
 
-## 10. Triage de la sección 10 del traspaso: qué entra y qué espera
+El más ambicioso es el bloque 2. Los más baratos son el 0, el 7 y el 8, que
+juntos no llegan a una hora y ejecutan tres firmas.
 
-Escrito antes de ejecutar, con la razón de cada uno.
+Si hay que elegir: **bloque 0 siempre, después el 1, después el 4.** El bloque 1
+puede suspender todo lo demás y por eso va antes que el 2. El bloque 4 es el que
+destraba la publicación del README, que es el ítem 3 de la lista de urgencia de
+Nicolás desde hace semanas.
 
-### Entra
-
-| Hueco | Bloque | Razón |
-|---|---|---|
-| No se corrió el simulador con ventaja verdadera distinta de cero | 1 | Es la regla propia del proyecto. Sin esto, ninguna cifra de los bloques 3 y 5 es interpretable, porque no se sabe qué hace el instrumento cuando hay algo que detectar. Va primero por eso, no por importancia relativa. |
-| El supuesto de costos no está contrastado contra tarifario real (§40) | 2 | Ya está resuelto fuera de la corrida y sólo falta verificación independiente. Es el bloque más barato de la noche y desbloquea el parámetro de costo del bloque 3. |
-| No se reconstruyó la cuenta en papel | 3 | Bloquea tres cosas: la segunda vara, el criterio M2 y la σ de la tabla de potencia. Es el ítem más caro de postergar de los abiertos. |
-| La suite verde no cubre por causalidad `cuenta_papel.py` ni `contabilidad.py` | 4 | Va pegado al 3. Reconstruir sin cerrar esto es volver a producir código cuyo verde no significa nada. |
-| No se verificó el mapa operable en un segundo día | 5 | Sube de prioridad por una razón nueva: el insumo del §40 obliga a regenerar el mapa de todos modos, porque las fraccionarias cambian el censo entero. Aprovechar el mismo pase cuesta casi nada. |
-| Nada del riel de dinero es prospectivo | 6 | Único hueco que no se cierra con cómputo y cuyo costo de postergar crece cada noche. Cuesta cero pesos. |
-
-### Espera, con la razón
-
-| Hueco | Por qué espera |
-|---|---|
-| No se corrió la segunda vara pre-registrada de la señal larga | Pasa por la cuenta retirada. No es que sea menos importante: es que **no se puede** hasta que el bloque 3 termine. Entra sola en la corrida 12. |
-| No se midió la tasa de falsos positivos del diseño de la señal larga (K semillas) | Es del riel largo, que hoy no tiene ninguna afirmación positiva en pie. Medir la tasa de falsos positivos de un diseño cuya única afirmación ya fue refutada tiene valor metodológico y no desbloquea nada. Además el bloque 1 mide la propiedad análoga sobre el instrumento compartido, así que conviene ver ese resultado antes de gastar K semillas acá. |
-| No se auditó la liquidez real de ningún instrumento | Requiere datos de volumen que el proyecto no tiene y no bloquea nada mientras no haya órdenes reales. El escalonamiento de `regla_aporte_y_dimensionamiento.md` pone las órdenes reales en la etapa E2, después de E0 y E1. Entra cuando E1 esté cerrada, no antes. Los dos miembros de los paneles que están en esa situación siguen declarados. |
-
-### Nota sobre el orden de urgencia contra el orden de ambición
-
-El bloque más ambicioso de esta corrida es el 3. El más urgente es el 6, que
-cuesta una noche de trabajo y cero pesos. Si el tiempo no alcanza para los
-dos, **se hace el 6 y se posterga el 3**, y se anota en la bitácora qué quedó
-postergado por esa elección.
+Lo que quede sin empezar se anota como no iniciado, con la razón.
