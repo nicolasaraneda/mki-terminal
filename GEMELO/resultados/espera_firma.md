@@ -1,3 +1,5 @@
+> **7-sep-2026: §45, §41, §55, §42, §26 y 2a-ter FIRMADOS. Ver acta §82 en DECISIONES.md. Esta cola todavía no se limpió.**
+
 # Lo que espera tu firma
 
 **Cuarenta ítems. Los cuatro últimos (§42 a §45) los abrió el CIERRE de la
