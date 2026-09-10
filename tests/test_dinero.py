@@ -78,17 +78,28 @@ def test_el_camino_de_sellado_no_importa_dinero():
 
 def test_ninguna_funcion_del_riel_manda_ordenes_de_verdad():
     """Prohibición del encargo, puesta como test y no como promesa: nada de
-    `dinero/` habla con una corredora ni guarda credenciales de una."""
-    sospechosos = ("alpaca", "ibkr", "ib_insync", "interactivebrokers",
-                   "tradier", "robinhood", "api_key", "api_secret",
-                   "account_id", "place_order", "submit_order")
+    `dinero/` habla con una corredora ni guarda credenciales de una.
+
+    Corrida 12, bloque 2.4: el NOMBRE del corredor cuyo arancel publicado
+    alimenta `reglas.json` (Interactive Brokers, insumo del §40) puede
+    aparecer en un comentario o en la cita de la fuente —una perífrasis que
+    evita nombrar la fuente hace más difícil verificarla, y el curador de la
+    corrida 11 nunca exigió esconderlo—; lo que sigue prohibido es HABLAR con
+    él: ningún módulo de `dinero/` importa `ibapi` ni `corredor`, ni contiene
+    los verbos de una API de órdenes ni nombres de credenciales."""
+    sospechosos = ("alpaca", "ib_insync", "tradier", "robinhood", "api_key",
+                   "api_secret", "account_id", "place_order", "submit_order",
+                   "placeorder", "reqids", "eclient", "ewrapper")
     carpeta = os.path.join(RAIZ, "dinero")
     for archivo in _modulos(carpeta):
-        texto = open(os.path.join(carpeta, archivo), encoding="utf-8").read().lower()
+        ruta = os.path.join(carpeta, archivo)
+        texto = open(ruta, encoding="utf-8").read().lower()
         for palabra in sospechosos:
             assert palabra not in texto, (
                 f"dinero/{archivo} menciona '{palabra}': el riel es simulado "
                 f"y no hay cuenta de corredora")
+        assert not ({"ibapi", "corredor"} & _importados(ruta)), (
+            f"dinero/{archivo} importa el adaptador del corredor: el riel simulado no habla con nadie")
 
 
 # ------------------------------------------------------------
@@ -723,3 +734,186 @@ def test_contraprueba_una_fuga_inyectada_rompe_la_invariancia():
     with _pytest.raises(ErrorLookAhead, match="invariancia al truncado ROTA"):
         CP.verificar_invariancia(cfg=cfg, cierres_completo=completo,
                                  fabrica_senales=fabrica_con_fuga)
+
+
+# ------------------------------------------------------------
+# 7. Corrida 12 — G3 (fuga por `precios_ref`), modo diagnóstico del gate
+#    y G8 (disponibilidad por ticker sellada en el metadato del congelado)
+# ------------------------------------------------------------
+import json as _json
+import glob as _glob
+from datetime import datetime as _dt
+
+
+def _primer_dia_en_que_la_fuga_cambia_una_decision(completo, cfg):
+    """Prueba de BORDE (G3, exigencia del auditor de la corrida 11): el corte
+    no se adivina, se lee de `Libro.decisiones`. Se corre la cuenta honesta y
+    la cuenta con la fuga de 1 día por `precios_ref`, y se toma el primer día
+    en que alguna decisión difiere. En ese día el estado previo de los dos
+    libros es idéntico (es la PRIMERA diferencia), así que la decisión con
+    el cierre de d+1 y la decisión con el cierre de d son distintas por
+    construcción, y un gate cortado exactamente ahí TIENE que verla."""
+    from dinero import cuenta_papel as CP
+    _, honesto = CP.correr(completo, cfg)
+    _, con_fuga = CP.correr(completo, cfg, fuga_precios_ref_dias=1)
+    candidatos = []
+    for clave in honesto["estrategia"]:
+        por_dia_a, por_dia_b = {}, {}
+        for (d, t, lado, n) in honesto["estrategia"][clave][0].decisiones:
+            por_dia_a.setdefault(d, []).append((t, lado, n))
+        for (d, t, lado, n) in con_fuga["estrategia"][clave][0].decisiones:
+            por_dia_b.setdefault(d, []).append((t, lado, n))
+        for d in sorted(set(por_dia_a) | set(por_dia_b)):
+            if por_dia_a.get(d) != por_dia_b.get(d):
+                candidatos.append(d)
+                break
+    assert candidatos, "la fuga de 1 día por precios_ref no cambió ninguna decisión: la contraprueba no tiene borde"
+    return min(candidatos)
+
+
+def test_G3_la_fuga_por_precios_ref_dispara_el_gate_en_el_dia_de_borde():
+    """La contraprueba que faltaba: la fuga entra por el PRECIO con que se
+    dimensiona (no por la señal, que es la otra contraprueba) y se inyecta
+    por un parámetro del riel, no editando código a mano."""
+    from backtest.datos import ErrorLookAhead
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    cfg = U.reglas()
+    borde = _primer_dia_en_que_la_fuga_cambia_una_decision(completo, cfg)
+    assert str(borde) > CP.DESDE and str(borde) < CP.HASTA
+    with _pytest.raises(ErrorLookAhead, match=f"invariancia al truncado ROTA en {borde}"):
+        CP.verificar_invariancia(cortes=[str(borde)], cfg=cfg, cierres_completo=completo,
+                                 fuga_precios_ref_dias=1)
+
+
+def test_G3_sin_fuga_el_mismo_corte_de_borde_es_invariante():
+    """Contraprueba de la contraprueba: el corte de borde no es especial
+    para la cuenta honesta."""
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    cfg = U.reglas()
+    borde = _primer_dia_en_que_la_fuga_cambia_una_decision(completo, cfg)
+    g = CP.verificar_invariancia(cortes=[str(borde)], cfg=cfg, cierres_completo=completo)
+    assert g["resultado"] == "INVARIANTE"
+    assert g["fuga_inyectada"] == {"precios_ref_dias": 0, "fabrica_senales": False}
+
+
+def test_el_gate_en_modo_diagnostico_devuelve_el_mapa_de_cortes_rotos_sin_levantar():
+    """Hallazgo 5 de la revisión de la corrida 11: el gate podía decir sólo el
+    PRIMER corte roto. En modo diagnóstico devuelve todos, y la medición del
+    auditor (una fuga de 1 día sólo se ve desde algunos cortes) queda como
+    número: sobre los diez primeros cortes por regla, algunos la ven y otros
+    no. El comportamiento por defecto (levantar) no cambia."""
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    cfg = U.reglas()
+    diez = CP.cortes_invariancia(completo)[:10]
+    g = CP.verificar_invariancia(cortes=diez, cfg=cfg, cierres_completo=completo,
+                                 fuga_precios_ref_dias=1, diagnostico=True)
+    assert g["resultado"] == "ROTA"
+    rotos = [r["corte"] for r in g["cortes_rotos"]]
+    assert 0 < len(rotos) < len(diez), (
+        f"la fuga de 1 día tendría que verse desde ALGUNOS cortes y no desde todos; rotos={rotos}")
+    assert all(c in diez for c in rotos)
+    assert all("ROTA" in r["detalle"] for r in g["cortes_rotos"])
+    assert len(g["comparaciones"]) == len(diez), "en modo diagnóstico se recorren todos los cortes"
+
+
+def test_el_gate_en_modo_diagnostico_sin_fuga_es_invariante_y_no_lista_nada():
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    g = CP.verificar_invariancia(cortes=CP.cortes_invariancia(completo)[:2],
+                                 cierres_completo=completo, diagnostico=True)
+    assert g["resultado"] == "INVARIANTE" and g["cortes_rotos"] == []
+
+
+def test_G8_todo_congelado_declara_la_disponibilidad_por_ticker():
+    """Zona ciega Z3 del auditor (corrida 11): el congelado no es point-in-time.
+    Lo mínimo exigible es que cada metadato diga, por ticker, qué tramo
+    contiene y desde cuándo era conocible su último dato; y que eso sea
+    consistente con el propio CSV y con la hora de descarga. Vale para todo
+    congelado, presente y futuro: un `.meta.json` nuevo sin este campo pone
+    la suite en rojo."""
+    from dinero import precios
+    metas = sorted(_glob.glob(os.path.join(RAIZ, "dinero", "datos", "*.meta.json")))
+    assert metas, "no hay congelados"
+    for ruta_meta in metas:
+        m = _json.load(open(ruta_meta, encoding="utf-8"))
+        disp = m.get("disponibilidad")
+        assert disp and disp.get("exchange") == precios.EXCHANGE_DISPONIBILIDAD, ruta_meta
+        por_ticker = disp["por_ticker"]
+        assert set(por_ticker) == set(m["tickers"]), f"{ruta_meta}: tickers sin disponibilidad"
+        congelado_en = _dt.fromisoformat(m["congelado_en_utc"])
+        for t, d in por_ticker.items():
+            if d["n_cierres"] == 0:
+                assert d["available_at_utc"] is None
+                continue
+            assert d["primer_cierre"] <= d["ultimo_cierre"] <= m["hasta"], (ruta_meta, t)
+            assert d["primer_cierre"] >= m["desde"], (ruta_meta, t)
+            assert _dt.fromisoformat(d["available_at_utc"]) <= congelado_en, (
+                f"{ruta_meta}: {t} declara conocible después de descargado")
+        # y el CSV dice lo mismo: el metadato no es una afirmación suelta
+        ruta_csv = ruta_meta.replace(".meta.json", ".csv")
+        recomputado = precios.disponibilidad_por_ticker(precios.cargar_congelado(ruta_csv))
+        assert recomputado == por_ticker, f"{ruta_meta}: la disponibilidad declarada no coincide con el CSV"
+        assert precios._huella(ruta_csv) == m["sha256"], f"{ruta_meta}: el CSV cambió"
+
+
+def test_G8_available_at_es_el_cierre_por_calendario_no_la_descarga():
+    """Contraprueba de significado: para una serie que termina un viernes, la
+    hora conocible es el cierre de ese viernes (20:00 UTC en horario de
+    verano de Nueva York), no la madrugada en que se descargó."""
+    from dinero import precios
+    df = _pd.DataFrame({"X": [1.0, 2.0, 3.0]},
+                       index=_pd.to_datetime(["2026-09-02", "2026-09-03", "2026-09-04"]))
+    d = precios.disponibilidad_por_ticker(df)["X"]
+    assert d == {"primer_cierre": "2026-09-02", "ultimo_cierre": "2026-09-04",
+                 "n_cierres": 3, "available_at_utc": "2026-09-04T20:00:00+00:00"}
+    # una fecha que no es sesión no inventa hora
+    assert precios._cierre_utc("2026-09-07") is None   # feriado NYSE
+
+
+def test_D17_el_bloque_y_las_replicas_del_instrumento_estan_fijados():
+    """A7 del dictamen 11 era prosa («no se barre el bloque sin declararlo»);
+    D17 del re-dictamen (corrida 12) lo vuelve ejecutable: cambiar el bloque o
+    las réplicas del instrumento `contabilidad.comparar` es una configuración
+    nueva y exige una fila en el registro de intentos ANTES de tocar esto."""
+    from dinero import contabilidad as C
+    assert C.BLOQUE_BOOTSTRAP_SEMANAS == 4
+    assert C.REPLICAS_BOOTSTRAP == 2000
+    assert C.ALPHA == 0.05
+
+
+def test_D7_la_fraccion_de_ic_que_excluyen_cero_no_viaja_con_wilson_iid():
+    """El Wilson sobre K×24 comparaciones agrupadas en K semillas se retiró
+    (re-dictamen D7). El artefacto declara la semilla como unidad."""
+    ruta = os.path.join(RAIZ, "dinero", "resultados", "cuenta_papel.json")
+    d = _json.load(open(ruta, encoding="utf-8"))
+    ic = d["barrido_semillas"]["ic_excluye_cero"]
+    assert "wilson95" not in ic
+    assert ic["unidad_de_replicacion"] == "semilla"
+    assert len(ic["fraccion_por_semilla"]) == d["barrido_semillas"]["K"]
+    lo, hi = ic["ic95_t_entre_semillas"]
+    assert lo <= ic["fraccion"] <= hi
+    # D8: cada intervalo viaja con su cobertura medida
+    for j in d["juegos"]:
+        for cc in j["contra"].values():
+            assert cc["alpha_es"] == "nominal" and "alpha_real_medido" in cc and "cobertura_medida_ic_media" in cc
+
+
+def test_el_gate_de_la_cuenta_rechaza_un_corte_vacuo():
+    """Director de programa, corrida 12: el hallazgo H1 del auditor (un corte en el
+    último día compara la cuenta consigo misma) se generaliza al gate que
+    respalda las cifras publicadas, no sólo al sellador."""
+    from backtest.datos import ErrorLookAhead
+    from dinero import cuenta_papel as CP
+    from dinero import precios
+    completo = precios.cargar_congelado()
+    with _pytest.raises(ErrorLookAhead, match="VACUO"):
+        CP.verificar_invariancia(cortes=[str(completo.index.max().date())], cierres_completo=completo)
+    with _pytest.raises(ErrorLookAhead, match="VACUO"):
+        CP.verificar_invariancia(cortes=[], cierres_completo=completo)

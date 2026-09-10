@@ -526,3 +526,15 @@ def test_los_dos_mde_del_informe_salen_con_intervalo():
             "informe tiene que declararlo (§34.9)")
         # y el MDE queda muy por encima de la ventaja publicada
         assert out["lo"] > bf.ANCLA["ventaja_pp"]
+
+
+def test_el_numero_de_replicas_del_bootstrap_vive_en_el_arbitro():
+    """Corrida 12, bloque 2.6: dos módulos que computan la misma cifra con
+    distinto número de réplicas es una cifra que puede moverse sola (26,6 vs
+    26,5 en el último decimal del IC de día, bitácora 11). El único lugar es
+    `cifras.N_BOOT_DIA`, que es el que produce las cifras publicadas, y
+    `bifurcaciones` lo importa de ahí."""
+    import cifras
+    import GEMELO.bifurcaciones as B
+    assert B.N_BOOT == cifras.N_BOOT_DIA == 4000
+    assert B.metricas.__defaults__[0] == cifras.N_BOOT_DIA

@@ -247,9 +247,31 @@ def celdas_del_estudio(sigma: float) -> list:
     return out
 
 
-def mde80(sigma: float, T: int) -> float:
-    """Ventaja mínima detectable con potencia 0,80 a α = 0,05 (normal cerrada)."""
-    return (Z + Z_POTENCIA_80) * sigma / math.sqrt(T)
+def mde80(sigma: float, T: int, alpha: float = 0.05) -> float:
+    """Ventaja mínima detectable con potencia 0,80 (normal cerrada) al nivel
+    `alpha`. Exigencia D4 del re-dictamen (corrida 12): antes usaba Z fijo a
+    α = 0,05 en una tabla cuya columna vecina era «α real»; ahora α es un
+    argumento y el reporte publica las dos columnas."""
+    z = Z if alpha == 0.05 else _z_bilateral(alpha)
+    return (z + Z_POTENCIA_80) * sigma / math.sqrt(T)
+
+
+def mde80_con_banda(sigma: float, banda_sigma, T: int, alpha: float = 0.05) -> dict:
+    """El MDE80 CON intervalo, propagado de la banda entre sorteos de σ
+    (exigencia D5: ningún MDE sin barra), y la anualización declarada en sus
+    dos convenciones (exigencia D6: 52 × m es suma aritmética; la capitalizada
+    es (1 + m/100)^52 − 1, y las dos difieren en decenas de pp)."""
+    m = mde80(sigma, T, alpha)
+    lo, hi = (mde80(banda_sigma[0], T, alpha), mde80(banda_sigma[1], T, alpha)) if banda_sigma else (None, None)
+    return {"pp_semana": round(m, 4),
+            "banda_pp_semana": [round(lo, 4), round(hi, 4)] if lo is not None else None,
+            "pp_anio_suma_aritmetica": round(52 * m, 1),
+            "pp_anio_capitalizado": round(100 * ((1 + m / 100) ** 52 - 1), 1),
+            "convencion_anualizacion": ("pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla "
+                                        "llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. "
+                                        "Son dos cantidades distintas y se publican las dos."),
+            "alpha": alpha,
+            "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"}
 
 
 def _z_bilateral(alpha: float) -> float:
@@ -264,7 +286,7 @@ def _z_bilateral(alpha: float) -> float:
     return (lo + hi) / 2
 
 
-def calibracion(celdas: list) -> dict:
+def calibracion(celdas: list, banda_sigma=None) -> dict:
     """Brazo de calibración (exigencia A1 del adversario, agregado DESPUÉS de
     ver el resultado y declarado así): el instrumento es usable a α = 0,05
     sólo si el Wilson del tamaño bilateral bajo δ = 0 contiene 0,05 y el de
@@ -291,6 +313,13 @@ def calibracion(celdas: list) -> dict:
             "potencia_cerrada_al_alpha_real": ajustada,
             "mde80_pp_semana": round(mde80(nula["sigma_pp_semana"], T), 4),
             "mde80_pp_anio_aprox": round(52 * mde80(nula["sigma_pp_semana"], T), 1),
+            "mde80_pp_anio_aprox_convencion": "suma aritmética 52 × MDE80 semanal (D6)",
+            # D4/D5/D6 (re-dictamen, corrida 12): al α nominal y al α REAL medido,
+            # con banda propagada de la banda entre sorteos de σ, y las dos
+            # anualizaciones declaradas.
+            "mde80_alpha_nominal": mde80_con_banda(nula["sigma_pp_semana"], banda_sigma, T, 0.05),
+            "mde80_alpha_real": mde80_con_banda(nula["sigma_pp_semana"], banda_sigma, T, alpha_real),
+            "sigma_de_este_mde_pp_semana": nula["sigma_pp_semana"],
         }
     return out
 
@@ -365,7 +394,7 @@ def correr(n_rep: int = REPLICAS, semilla: int = SEMILLA) -> dict:
                     "congelado_en_utc": meta.get("congelado_en_utc")},
         "celdas": celdas,
         "veredicto": veredicto(celdas),
-        "calibracion": calibracion(celdas),
+        "calibracion": calibracion(celdas, sig.get("banda_entre_sorteos_p2_5_p97_5")),
         "sigma_cuenta_reconstruida": _sigma_cuenta(),
         "intentos_dsr": 0,
         "no_valida": ("el camino que produce las series de valor (cuenta_papel, "
@@ -439,21 +468,30 @@ def informe(r: dict) -> str:
     L.append("si el Wilson del tamaño bilateral contiene 0,05 y el de la cobertura contiene 0,95. La")
     L.append("potencia cerrada se recomputa al tamaño real medido (exigencia A5): la brecha")
     L.append("«simulada > cerrada» de la tabla de abajo es exactamente el tamaño inflado.\n")
-    L.append("| semanas | tamaño bilateral [Wilson] | cobertura IC media [Wilson] | cobertura IC sd [Wilson] | ¿usable a α = 0,05? | α real | potencia cerrada al α real (0,25 / 0,50 / 1,00) | MDE80 pp/semana | ≈ pp/año |")
-    L.append("|---|---|---|---|---|---|---|---|---|")
+    L.append("| semanas | tamaño bilateral [Wilson] | cobertura IC media [Wilson] | cobertura IC sd [Wilson] | ¿usable a α = 0,05? | α real | potencia cerrada al α real (0,25 / 0,50 / 1,00) | MDE80 pp/semana a α 0,05 [banda σ] | MDE80 al α real [banda σ] | pp/año suma / capitalizado (α 0,05) |")
+    L.append("|---|---|---|---|---|---|---|---|---|---|")
     for T, k in r["calibracion"].items():
         pa = k["potencia_cerrada_al_alpha_real"]
+        mn, mr = k["mde80_alpha_nominal"], k["mde80_alpha_real"]
         L.append(f"| {T} | {k['tamano_bilateral']['tasa']:.3f} {k['tamano_bilateral']['wilson95']} | "
                  f"{k['cobertura']['tasa']:.3f} {k['cobertura']['wilson95']} | "
                  f"{k['cobertura_ic_sd']['tasa']:.3f} {k['cobertura_ic_sd']['wilson95']} | "
                  f"{'sí' if k['usable_a_alpha_005'] else '**NO**'} | {k['alpha_real']:.3f} | "
                  f"{pa.get('0.25', float('nan')):.3f} / {pa.get('0.5', float('nan')):.3f} / {pa.get('1.0', float('nan')):.3f} | "
-                 f"**{k['mde80_pp_semana']:.2f}** | {k['mde80_pp_anio_aprox']:.0f} |")
+                 f"**{mn['pp_semana']:.2f}** {mn['banda_pp_semana']} | {mr['pp_semana']:.2f} {mr['banda_pp_semana']} | "
+                 f"{mn['pp_anio_suma_aritmetica']:.0f} / {mn['pp_anio_capitalizado']:.0f} |")
     L.append("")
     L.append("**La corrida 11 habría cruzado este brazo a 52 semanas**: el instrumento discrimina pero no")
     L.append("está calibrado a α = 0,05 (exigencia A1, declarado). El MDE80 dice en número lo que el")
     L.append("pre-registro decía en prosa: a 52 semanas la regla §2.3 sólo detecta una ventaja del orden de")
-    L.append("1 pp/semana, ≈ 55 pp/año, que no es plausible con datos públicos.")
+    k52 = r["calibracion"].get("52", {})
+    m52 = k52.get("mde80_alpha_nominal", {})
+    L.append(f"{m52.get('pp_semana', float('nan')):.2f} pp/semana (banda {m52.get('banda_pp_semana')} según la σ del sorteo; "
+             f"{k52.get('mde80_alpha_real', {}).get('pp_semana', float('nan')):.2f} al α real), o sea "
+             f"{m52.get('pp_anio_suma_aritmetica', float('nan')):.0f} pp/año como suma aritmética y "
+             f"{m52.get('pp_anio_capitalizado', float('nan')):.0f} pp capitalizados: una ventaja así no es plausible con datos")
+    L.append("públicos. La banda del MDE viene de la banda entre sorteos de σ y no es un IC de muestreo (D5, D6).")
+    L.append(f"La σ de estos MDE es la ANCLA del simulador ({sig['sigma_pp_semana']:.3f} pp/semana), no la σ realizada de la cuenta v2.")
     sc = r.get("sigma_cuenta_reconstruida")
     if sc:
         L.append(f"\n**Contraste con la σ realizada de la cuenta reconstruida** (exigencias A6/C6): la cuenta v2 "

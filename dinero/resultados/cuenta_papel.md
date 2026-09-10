@@ -22,9 +22,9 @@
 > 1 sesión en las DOS patas; E5 sigma del interruptor
 > medida hasta 2023-09-05; E6 gate de invariancia al truncado cableado y corrido
 > antes de escribir esta página.
-> **Gate de invariancia:** INVARIANTE en 25 cortes por regla (una sesión de cada 30; 56266 movimientos y 56461 decisiones comparadas). **Alcance:** invariancia al truncado en 25 cortes por regla (una sesión de cada 30). Una fuga de k días sólo deja huella en los k días previos a cada corte: el poder contra fugas cortas es la probabilidad de que en esos días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa ausencia de fuga: significa que ninguna entró por las vías que estos cortes ven. La contraprueba de precios_ref (G3) está pendiente para la corrida 12.
+> **Gate de invariancia:** INVARIANTE en 25 cortes por regla (una sesión de cada 30; 56266 movimientos y 56461 decisiones comparadas). **Alcance:** invariancia al truncado en 25 cortes por regla (una sesión de cada 30). Una fuga de k días sólo deja huella en los k días previos a cada corte: el poder contra fugas cortas es la probabilidad de que en esos días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa ausencia de fuga: significa que ninguna entró por las vías que estos cortes ven. La contraprueba de precios_ref (G3, corrida 12) existe como prueba de borde: el corte se pone en el primer día en que la fuga cambia una decisión, leído de Libro.decisiones, y ahí el gate dispara.
 
-Generado por `python -m dinero.cuenta_papel` el 2026-09-08 UTC.
+Generado por `python -m dinero.cuenta_papel` el 2026-09-09 UTC.
 
 ## Parámetros congelados antes de correr
 
@@ -156,7 +156,7 @@ Deslizamiento 5 pb. Banda = percentiles 2,5 y 97,5 entre semillas.
 | medio | **26.7 %** | [14.56, 28.7] | 14.1–29.4 | 436 | [236.97, 469.65] |
 | agresivo | **19.0 %** | [17.98, 20.16] | 17.7–20.2 | 373 | [348.95, 401.0] |
 
-Comparaciones cuyo IC excluye el cero: **51 de 480** (0.106, Wilson [0.082, 0.137]) sobre 20 semillas × 24; de ellas, 9 son `agresivo` perdiendo contra `SMH`. La fracción de IC que excluyen el cero NO es una tasa de falsos positivos (la nula no es cero: hay arrastre de comisión). Es cuánto produce este diseño con una señal sin información, con la misma semilla de bootstrap en las K×24.
+Comparaciones cuyo IC excluye el cero: **51 de 480** (0.106; IC95 t con la SEMILLA como unidad de replicación [0.0604, 0.1521], el Wilson iid sobre K×24 se retiró en el re-dictamen D7) sobre 20 semillas × 24; de ellas, 9 son `agresivo` perdiendo contra `SMH`. La fracción de IC que excluyen el cero NO es una tasa de falsos positivos (la nula no es cero: hay arrastre de comisión). Es cuánto produce este diseño con una señal sin información, con la misma semilla de bootstrap en las K×24.
 
 ### 2. El barrido de deslizamiento NO es una curva de sensibilidad al costo.
 
@@ -187,7 +187,7 @@ Juego por defecto (`conservador`) contra `SMH` a 5 pb, 156 semanas: **σ = 2.336
 pre-registro (§2.1) necesitaba. **Ese intervalo NO es un 95 %:** el bloque 1 midió que el
 bootstrap de bloques de una desviación cubre 0.850 a 156 semanas. El punto sirve de
 insumo; el intervalo no, hasta que se calibre (decisión en `espera_firma.md` §50). La tabla
-de potencia NO se recomputa acá: se recomputa con el simulador validado
+de potencia NO se recomputa acá: se recomputa con el simulador puesto a prueba (discrimina y NO está calibrado a α = 0,05)
 (`GEMELO/simulador/instrumento_dinero.py`) y es un paso aparte.
 
 ### 5. Lo que esta cuenta NO midió

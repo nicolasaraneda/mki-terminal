@@ -98,3 +98,27 @@ Resultados de la primera corrida en `docs/bitacora_agentes_v2.md`.
   porque el encargo prohibía borrar texto existente.
 - `CLAUDE.md` no nombra al `curador-epistemico` en su lista de agentes (el
   encargo pedía dejar intacto el resto del repo).
+
+## Método de los parches no aplicados (nota fechada 9-sep-2026, corrida 12)
+
+Un parche a un archivo protegido vive como `.diff` en `GEMELO/propuestas/parches/`
+con su test, y va a `espera_firma.md`. **Lección del `snapshot140.diff` (8-sep-2026,
+acta §84.1):** el diff aplicaba limpio y sus 6 tests sobre copias pasaban, pero al
+aplicarse al archivo real hizo fallar `test_el_camino_de_sellado_no_importa_GEMELO`
+por dos líneas de comentario que citaban rutas de `GEMELO/`. Nicolás lo corrigió a
+mano antes del commit. Regla desde esa fecha:
+
+1. **Todo parche no aplicado se prueba también aplicándolo sobre una copia del árbol
+   entero** (`git worktree add`), y contra esa copia se corre **la suite completa**,
+   no sólo los tests del parche. Los tests del parche prueban que el parche hace lo
+   que dice; la suite prueba que no rompe lo que el árbol ya garantiza (aislamiento,
+   palabras prohibidas, cifras retiradas).
+2. El resultado de esa corrida (número de verdes, fecha) se escribe en el ítem de
+   `espera_firma.md` del parche. Un parche sin esa línea no está listo para firma.
+3. Los comentarios de un parche a un archivo del camino de sellado **no nombran
+   `GEMELO/` ni `dinero/`**: el test de aislamiento lee el texto, no sólo los `import`.
+
+Automatización PROPUESTA, no instalada: `GEMELO/propuestas/test_parches_en_worktree.py`
+aplica cada `.diff` de `GEMELO/propuestas/parches/` sobre un worktree temporal y corre
+ahí los tests de aislamiento. Es lento (un worktree por parche) y toca `git worktree`,
+así que instalarlo en la suite es decisión de Nicolás (`espera_firma.md`).

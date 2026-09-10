@@ -46,7 +46,7 @@
 #     truncada y revienta con `backtest.datos.ErrorLookAhead` si un solo
 #     movimiento cambia (E6). `main()` lo corre ANTES de escribir nada.
 #   · el parámetro de costo es el del insumo del §40 (arancel publicado de
-#     un corredor con acceso desde Chile, Pro Tiered, columna de acciones ENTERAS), leído de reglas.json,
+#     Interactive Brokers (IBKR), con acceso desde Chile, Pro Tiered, columna de acciones ENTERAS), leído de reglas.json,
 #     y no un supuesto. Cuál columna se usó se declara en el reporte.
 #
 # Las cifras del reporte anterior (27 % / 57 % del capital en comisiones,
@@ -129,7 +129,8 @@ def universo_operable(cierres: pd.DataFrame, cfg: dict | None = None,
 
 def correr(cierres_completo: pd.DataFrame | None = None,
            cfg: dict | None = None,
-           senales_por_dia: dict | None = None):
+           senales_por_dia: dict | None = None,
+           fuga_precios_ref_dias: int = 0):
     """La cuenta entera. `cierres_completo` es el archivo congelado (o una
     versión truncada de él: eso es lo que usa el gate). Todo lo que decide
     algo mira sólo datos anteriores o iguales al día en que decide."""
@@ -156,7 +157,8 @@ def correr(cierres_completo: pd.DataFrame | None = None,
             resultados["base"][(etf, pb)] = (libro, valor)
         for nombre in JUEGOS:
             libro = C.correr_estrategia(cierres, senales_por_dia, cfg, nombre,
-                                        aportes, pb, techo)
+                                        aportes, pb, techo,
+                                        fuga_precios_ref_dias=fuga_precios_ref_dias)
             valor = C.valorizar(cierres, libro.movimientos, aportes, costos)
             resultados["estrategia"][(nombre, pb)] = (libro, valor)
     resultados["cierres"] = cierres
@@ -191,7 +193,9 @@ def _huella_movimientos(res: dict, hasta: str) -> dict:
 
 def verificar_invariancia(cortes=CORTES_INVARIANCIA, cfg: dict | None = None,
                           cierres_completo: pd.DataFrame | None = None,
-                          fabrica_senales=None) -> dict:
+                          fabrica_senales=None,
+                          fuga_precios_ref_dias: int = 0,
+                          diagnostico: bool = False) -> dict:
     """Reconstruye la cuenta con la fuente ENTERA y con la fuente cortada
     en cada `corte`, y exige que todo movimiento ejecutado hasta ese corte
     sea idéntico. Si algo se mueve, revienta con `ErrorLookAhead`: R3 no
@@ -201,15 +205,36 @@ def verificar_invariancia(cortes=CORTES_INVARIANCIA, cfg: dict | None = None,
     depende de los VALORES, no del índice. `fabrica_senales(cierres)` se
     puede inyectar para la contraprueba: se llama con la fuente completa y
     con cada fuente truncada, y una fábrica que mire un día adelante tiene
-    que hacer disparar esto."""
+    que hacer disparar esto. `fuga_precios_ref_dias` inyecta la OTRA fuga
+    (por el precio con que se dimensiona, G3) por el mismo canal.
+
+    `diagnostico=False` (por defecto) revienta en el PRIMER corte roto, que
+    es lo que el riel necesita antes de escribir. `diagnostico=True`
+    (hallazgo 5 de la revisión de la corrida 11) recorre TODOS los cortes y
+    devuelve el mapa completo de los rotos en `cortes_rotos`, sin levantar:
+    sirve para medir qué cortes ven una fuga y cuáles no, que es la pregunta
+    del auditor sobre la densidad del barrido. No cambia el `raise` por
+    defecto ni el resultado cuando no hay fuga."""
     completo = precios.cargar_congelado() if cierres_completo is None else cierres_completo
     cfg = cfg or U.reglas()
     cortes = cortes_invariancia(completo) if cortes is None else tuple(cortes)
-    _, res_full = correr(completo, cfg, fabrica_senales(completo) if fabrica_senales else None)
-    comparaciones = []
+    # Vacuidad (hallazgo H1 del auditor sobre el sellador, generalizado acá por el
+    # director de programa, corrida 12): un corte en o después del último día de la
+    # fuente compara la cuenta consigo misma y no vigila nada. Se rechaza en vez
+    # de contarse como INVARIANTE.
+    ultimo = completo.index.max()
+    vacuos = [c for c in cortes if pd.Timestamp(c) >= ultimo]
+    if vacuos or not cortes:
+        raise ErrorLookAhead(
+            f"gate VACUO: corte(s) {vacuos or '(ninguno)'} en o después del último día de la fuente "
+            f"({ultimo.date()}): comparar la cuenta consigo misma no vigila nada")
+    _, res_full = correr(completo, cfg, fabrica_senales(completo) if fabrica_senales else None,
+                         fuga_precios_ref_dias=fuga_precios_ref_dias)
+    comparaciones, rotos = [], []
     for corte in cortes:
         recortado = completo.loc[:corte]
-        _, res_cut = correr(recortado, cfg, fabrica_senales(recortado) if fabrica_senales else None)
+        _, res_cut = correr(recortado, cfg, fabrica_senales(recortado) if fabrica_senales else None,
+                            fuga_precios_ref_dias=fuga_precios_ref_dias)
         a, b = _huella_movimientos(res_full, corte), _huella_movimientos(res_cut, corte)
         for clave in a:
             if a[clave] != b.get(clave):
@@ -219,18 +244,27 @@ def verificar_invariancia(cortes=CORTES_INVARIANCIA, cfg: dict | None = None,
                     i = min(len(a[clave]), len(bc))
                 con = a[clave][i] if i < len(a[clave]) else "(ninguna)"
                 sin = bc[i] if i < len(bc) else "(ninguna)"
-                raise ErrorLookAhead(
+                detalle = (
                     f"invariancia al truncado ROTA en {corte} · {clave}: la cuenta "
                     f"cambia según existan o no los datos posteriores al corte. "
                     f"{len(a[clave])} con futuro contra {len(bc)} sin futuro; primera "
                     f"diferencia en la posición {i}. Con futuro: {con} · sin futuro: {sin}")
+                if not diagnostico:
+                    raise ErrorLookAhead(detalle)
+                rotos.append({"corte": corte, "clave": clave, "detalle": detalle})
+                break   # un corte roto se cuenta una vez; el detalle es el primero
         comparaciones.append({"corte": corte,
                               "libros": sum(1 for k in a if k != "operables" and not k.endswith(" decisiones")),
                               "movimientos_comparados": sum(len(v) for k, v in a.items()
                                                             if k != "operables" and not k.endswith(" decisiones")),
                               "decisiones_comparadas": sum(len(v) for k, v in a.items()
                                                            if k.endswith(" decisiones"))})
-    return {"ejecutado": True, "resultado": "INVARIANTE", "cortes": list(cortes),
+    return {"ejecutado": True,
+            "resultado": "ROTA" if rotos else "INVARIANTE",
+            "cortes": list(cortes),
+            "cortes_rotos": rotos,
+            "fuga_inyectada": {"precios_ref_dias": fuga_precios_ref_dias,
+                               "fabrica_senales": fabrica_senales is not None},
             "comparaciones": comparaciones,
             "metodo": ("se reconstruye la cuenta entera (membresía, señales, línea base, "
                        "tres juegos, cuatro deslizamientos) con la fuente cortada en D y se "
@@ -244,10 +278,14 @@ def verificar_invariancia(cortes=CORTES_INVARIANCIA, cfg: dict | None = None,
                         "días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga "
                         "de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa "
                         "ausencia de fuga: significa que ninguna entró por las vías que estos cortes "
-                        "ven. La contraprueba de precios_ref (G3) está pendiente para la corrida 12."),
+                        "ven. La contraprueba de precios_ref (G3, corrida 12) existe como prueba de "
+                        "borde: el corte se pone en el primer día en que la fuga cambia una "
+                        "decisión, leído de Libro.decisiones, y ahí el gate dispara."),
             "cubre_solo_la_semilla_0": True,
             "contraprueba": ("tests/test_dinero.py inyecta una señal que mira un día "
-                             "adelante y exige que este gate dispare")}
+                             "adelante (por fabrica_senales) y un precio de dimensionamiento "
+                             "que mira un día adelante (por fuga_precios_ref_dias, G3), y "
+                             "exige que este gate dispare en los dos casos")}
 
 
 # ------------------------------------------------------------
@@ -301,10 +339,14 @@ def barrido_semillas(cfg: dict | None = None, K: int = K_SEMILLAS,
                      cierres_completo: pd.DataFrame | None = None) -> dict:
     """K sorteos de la señal sin información, y sobre ellos la fricción por
     juego y la fracción de comparaciones cuyo IC excluye el cero, CON
-    intervalo (percentiles entre semillas; Wilson sobre K×24 para la
-    fracción). Semilla i = SEMILLA_SENAL_SIN_INFORMACION + i; la semilla 0
-    es la de la página."""
-    from api.utilidades import intervalo_wilson
+    intervalo (percentiles entre semillas para la fricción; para la fracción,
+    la unidad de replicación es la SEMILLA, no la comparación: las 24
+    comparaciones de una semilla comparten sorteo, calendario, instrumentos
+    y semilla de bootstrap, así que el Wilson sobre K×24 que viajaba hasta el
+    re-dictamen de la corrida 12 era un intervalo iid sobre unidades
+    agrupadas y se RETIRÓ (exigencia D7). Queda el conteo desnudo y un
+    intervalo t sobre las K fracciones por semilla). Semilla i =
+    SEMILLA_SENAL_SIN_INFORMACION + i; la semilla 0 es la de la página."""
     cfg = cfg or U.reglas()
     completo = precios.cargar_congelado() if cierres_completo is None else cierres_completo
     operables = universo_operable(completo, cfg, hasta=DESDE)
@@ -314,7 +356,9 @@ def barrido_semillas(cfg: dict | None = None, K: int = K_SEMILLAS,
     ordenes = {j: [] for j in JUEGOS}
     marcados = total = 0
     negativos_vs_smh = {j: 0 for j in JUEGOS}
+    fraccion_por_semilla = []
     for i in range(K):
+        marcados_semilla = total_semilla = 0
         sen = C.senales_sin_informacion(completo, operables, HORIZONTE_SENAL_HABILES,
                                         C.SEMILLA_SENAL_SIN_INFORMACION + i, desde=DESDE)
         _, res = correr(completo, cfg, sen)
@@ -329,11 +373,19 @@ def barrido_semillas(cfg: dict | None = None, K: int = K_SEMILLAS,
                     _, vb = res["base"][(etf, pb)]
                     comp = C.comparar(v, vb, semilla=SEMILLA_COMPARACION)
                     total += 1
+                    total_semilla += 1
                     if not comp["cruza_cero"]:
                         marcados += 1
+                        marcados_semilla += 1
                         if etf == "SMH" and comp["dif_media_pp"] < 0:
                             negativos_vs_smh[j] += 1
-    lo, hi = intervalo_wilson(marcados, total)
+        fraccion_por_semilla.append(marcados_semilla / total_semilla)
+    fps = np.asarray(fraccion_por_semilla)
+    # t sobre las K semillas (clúster = semilla). Con K = 20, t(19) al 97,5 % = 2,093.
+    from math import sqrt
+    t975 = 2.093 if K == 20 else 1.96
+    media_f = float(fps.mean())
+    ee = float(fps.std(ddof=1) / sqrt(K)) if K > 1 else float("nan")
     q = lambda v: [round(float(np.quantile(v, 0.025)), 2), round(float(np.quantile(v, 0.975)), 2)]
     return {
         "K": K, "semillas": [C.SEMILLA_SENAL_SIN_INFORMACION + i for i in range(K)],
@@ -345,8 +397,14 @@ def barrido_semillas(cfg: dict | None = None, K: int = K_SEMILLAS,
             for j in JUEGOS},
         "ic_excluye_cero": {"marcados": marcados, "comparaciones": total,
                             "fraccion": round(marcados / total, 4),
-                            "wilson95": [round(lo / 100, 4), round(hi / 100, 4)],
+                            "unidad_de_replicacion": "semilla",
+                            "fraccion_por_semilla": [round(float(x), 4) for x in fps],
+                            "ic95_t_entre_semillas": [round(media_f - t975 * ee, 4), round(media_f + t975 * ee, 4)],
+                            "wilson95_retirado": ("el Wilson sobre K×24 comparaciones se retiró en el re-dictamen "
+                                                  "de la corrida 12 (D7): era iid sobre unidades agrupadas"),
                             "de_los_cuales_agresivo_negativo_vs_SMH": negativos_vs_smh["agresivo"]},
+        "banda_es": ("percentiles 2,5 y 97,5 ENTRE SORTEOS de la señal (con K = 20 son casi el mínimo y el "
+                     "máximo), no un intervalo de cobertura nominal"),
         "nota": ("La fracción de IC que excluyen el cero NO es una tasa de falsos positivos "
                  "(la nula no es cero: hay arrastre de comisión). Es cuánto produce este diseño "
                  "con una señal sin información, con la misma semilla de bootstrap en las K×24."),
@@ -587,7 +645,9 @@ def componer(cfg, res, gate: dict | None = None, semillas: dict | None = None) -
         ie = sm["ic_excluye_cero"]
         L.append("")
         L.append(f"Comparaciones cuyo IC excluye el cero: **{ie['marcados']} de {ie['comparaciones']}** "
-                 f"({ie['fraccion']:.3f}, Wilson {ie['wilson95']}) sobre {sm['K']} semillas × 24; de ellas, "
+                 f"({ie['fraccion']:.3f}; IC95 t con la SEMILLA como unidad de replicación "
+                 f"{ie['ic95_t_entre_semillas']}, el Wilson iid sobre K×24 se retiró en el re-dictamen D7) "
+                 f"sobre {sm['K']} semillas × 24; de ellas, "
                  f"{ie['de_los_cuales_agresivo_negativo_vs_SMH']} son `agresivo` perdiendo contra `SMH`. {sm['nota']}\n")
 
     L.append("### 2. El barrido de deslizamiento NO es una curva de sensibilidad al costo.\n")
@@ -639,7 +699,7 @@ def componer(cfg, res, gate: dict | None = None, semillas: dict | None = None) -
         L.append("insumo; el intervalo no, hasta que se calibre (decisión en `espera_firma.md` §50). La tabla")
     else:
         L.append("pre-registro (§2.1) necesitaba y que viajaba retirado y sin intervalo. La tabla")
-    L.append("de potencia NO se recomputa acá: se recomputa con el simulador validado")
+    L.append("de potencia NO se recomputa acá: se recomputa con el simulador puesto a prueba (discrimina y NO está calibrado a α = 0,05)")
     L.append("(`GEMELO/simulador/instrumento_dinero.py`) y es un paso aparte.\n")
 
     L.append("### 5. Lo que esta cuenta NO midió\n")
@@ -676,7 +736,7 @@ def a_json(cfg, res, gate: dict | None = None, semillas: dict | None = None) -> 
                 "E6": "gate de invariancia al truncado cableado (verificar_invariancia) y corrido antes de escribir",
             },
             "gate_invariancia": gate,
-            "costo": {"fuente": "GEMELO/propuestas/insumo_40_aranceles_*.md (corredor del §40, Pro Tiered, 7-sep-2026)",
+            "costo": {"fuente": "GEMELO/propuestas/insumo_40_aranceles_ibkr.md (Interactive Brokers, Pro Tiered, tabla United States, consultado el 7-sep-2026)",
                       "columna": "acciones enteras",
                       "comision_por_accion_usd": c["comision_por_accion_usd"],
                       "comision_minima_usd": c["comision_minima_usd"],
@@ -696,6 +756,7 @@ def a_json(cfg, res, gate: dict | None = None, semillas: dict | None = None) -> 
         "barrido_deslizamiento_pb": pbs,
         "linea_base": [], "juegos": [],
     }
+    cal156 = _cobertura_simulador(156) or {}
     for etf in ETFS_BASE:
         for pb in pbs:
             libro, valor = res["base"][(etf, pb)]
@@ -708,7 +769,15 @@ def a_json(cfg, res, gate: dict | None = None, semillas: dict | None = None) -> 
             contra = {}
             for etf in ETFS_BASE:
                 _, vb = res["base"][(etf, pb)]
-                contra[etf] = C.comparar(valor, vb, semilla=SEMILLA_COMPARACION)
+                cc = C.comparar(valor, vb, semilla=SEMILLA_COMPARACION)
+                # D8 (re-dictamen, corrida 12): el intervalo viaja con su
+                # cobertura MEDIDA en el mismo objeto. `alpha` es nominal.
+                cc["alpha_es"] = "nominal"
+                cc["alpha_real_medido"] = (cal156.get("alpha_real") if cal156 else None)
+                cc["cobertura_medida_ic_media"] = ((cal156.get("cobertura") or {}).get("tasa") if cal156 else None)
+                cc["cobertura_medida_horizonte_semanas"] = 156 if cal156 else None
+                cc["fuente_cobertura"] = "GEMELO/resultados/instrumento_dinero.json calibracion.156" if cal156 else None
+                contra[etf] = cc
             salida["juegos"].append(dict(juego=nombre, deslizamiento_pb=pb,
                                          contra=contra, **r))
     total = sum(1 for j in salida["juegos"] for _ in j["contra"])
@@ -719,8 +788,8 @@ def a_json(cfg, res, gate: dict | None = None, semillas: dict | None = None) -> 
         "nota": ("NO es una tasa de falsos positivos: la nula no es cero (arrastre "
                  "de comisión), un intervalo negativo es el resultado verdadero de la "
                  "fricción, y las comparaciones comparten sorteo. Con 20 semillas del "
-                 "sorteo la fracción está medida con Wilson en `barrido_semillas` (§1b "
-                 "del .md); esta celda es la de la semilla de la página.")}
+                 "sorteo la fracción está en `barrido_semillas` con la semilla como unidad "
+                 "de replicación (§1b del .md); esta celda es la de la semilla de la página.")}
     salida["sigma_dif_semanal"] = sigma_diferencia_semanal(res, cfg)
     cs = _cobertura_simulador(156) or {}
     cob_sd = (cs.get("cobertura_ic_sd") or {}).get("tasa")

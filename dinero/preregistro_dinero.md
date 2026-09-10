@@ -237,7 +237,7 @@ función del sorteo; (iv) la cifra sobre 52 semanas hacia adelante, que es la
 σ = 2,336 pp/semana con intervalo [1,995, 2,669] de bootstrap de bloques de
 una desviación **cuya cobertura medida es 0,850, o sea NO es un 95 %**
 (`GEMELO/resultados/instrumento_dinero.md`), y el
-instrumento validado da un MDE80 a 52 semanas del orden de 1 pp/semana con
+instrumento puesto a prueba (discrimina y NO está calibrado a α = 0,05; «validado» retirado el 9-sep-2026, re-dictamen D14) da un MDE80 a 52 semanas del orden de 1 pp/semana con
 la σ ancla de 2,70: la conclusión cualitativa de la §2.1 (el criterio de 52
 semanas sólo lo pasa una ventaja implausible) **se mantiene**; la tabla de
 semanas necesarias se recomputa con el simulador y no acá.
@@ -245,3 +245,43 @@ semanas necesarias se recomputa con el simulador y no acá.
 **D. El arancel.** La v2 usa el arancel publicado del insumo §40 (columna de
 enteras), que espera firma. Los umbrales derivados de `reglas.json` cambiaron
 con él por su regla (`espera_firma.md` §48).
+
+
+## 8. Enmienda fechada, 9-sep-2026 (corrida 12, bloque 8): M2 no tiene unidad, y la firma §43 es NO APLICABLE
+
+**Qué pasó.** El acta §84.4.5 firmó «el período de M2 es el horizonte pre-registrado de la vara»
+(52 semanas). El `estadistico-adversario` (`GEMELO/resultados/dictamen_12/adversario_43_periodo_m2.md`)
+la declaró **NO APLICABLE**: el §2 punto 1 escribe «período **mínimo**: 52 semanas de cuenta en papel
+corriendo **hacia adelante**», que es un piso prospectivo sobre la DURACIÓN de la cuenta y no una ventana
+de acumulación de M2; el «horizonte pre-registrado de la vara» que la firma invoca no existe escrito, y se
+dispara la cláusula de escape que la propia §84.4.5 dejó («vuelve a la cola con la pregunta exacta»).
+
+**El defecto de fondo, medido.** M2 dice «la comisión acumulada supera el 25 % del capital aportado en
+el período» y el 25 % **no tiene unidad de período**. El numerador (comisión) es un flujo que crece con h;
+el denominador (500 USD, cinco aportes que terminan en la semana 5) NO crece. El cociente es proporcional
+a h: elegir 52 semanas en vez de 156 divide el numerador por ~3 con el umbral quieto, y el umbral se
+escribió mirando una banda de 156 semanas de la cuenta v1 (RETIRADA), o sea ≈ 8,3 %/año implícitos.
+Recomputado sobre la v2 sin fuga (`GEMELO/resultados/m2_periodo.md`, 20 semillas, una sola trayectoria de
+mercado, deslizamiento excluido): el juego por defecto (`conservador`, `reglas.json` SIN FIRMA) gasta
+**3,9 %/año [3,56, 4,58] del capital aportado** en comisiones, estable a través de 52/104/156 semanas
+(4,3 y 4,1 desde 104 y 156); no cruza el 25 % acumulado en ningún horizonte (techo 13,1 % a 156). El
+`medio` cruza a 156 semanas (17 de 20 semillas), pero M2 no lo nombra.
+
+**Dos hallazgos más, del dictamen.** (i) En 5 de 20 semillas la cuenta conservadora se **congela** (sin
+caja para una acción entera desde marzo/abril de 2025): acumula poca comisión por quiebra operativa, no
+por baratura, y M2 la puntúa bajo por la razón equivocada. (ii) M2 excluye el deslizamiento por
+decisión del módulo, no del pre-registro (§7 B (ii) sigue sin firma); con 5 pb el conservador pasa de
+12,5 % a 13,9 % de vida entera.
+
+**Qué queda en pie y qué no.** M2 **no se mata: se re-registra hacia adelante**, y hasta entonces no se
+puede leer como disparada ni como no disparada (lo que ya decía el §6 E, ahora por la razón correcta: el
+umbral no tiene unidad). La reescritura que el adversario propone y que espera firma (§43): M2 en
+**%/año** (tasa anualizada = comisión acumulada × 52/h sobre el capital aportado), con el umbral
+**re-declarado en %/año ANTES** de que corra la cuenta prospectiva y con la ventana de esa cuenta escrita
+antes de su primera fila; más la **condición de supervivencia operativa**: una cuenta que no puede tomar
+una posición entera está muerta y eso dispara M2 aunque su ratio sea bajo (E13). La unidad y el umbral
+son de Nicolás; nada de esto se firma acá.
+
+**Grado de libertad declarado (E12):** se computaron 12 lecturas (3 juegos × 4 períodos) y la firma
+eligió 1 con los resultados a la vista. Va al registro de «lecturas de criterio» (contador distinto del
+DSR; dónde vive es decisión pendiente).

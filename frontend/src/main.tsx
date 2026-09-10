@@ -18,6 +18,7 @@ import { Detalle } from './vistas/Detalle'
 import { Operable } from './vistas/Operable'
 import { RielDinero } from './vistas/RielDinero'
 import { Rieles } from './vistas/Rieles'
+import { SellosDinero } from './vistas/SellosDinero'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
       { path: '/rieles', element: <Rieles /> },
       { path: '/operable', element: <Operable /> },
       { path: '/dinero', element: <RielDinero /> },
+      { path: '/sellos', element: <SellosDinero /> },
       { path: '/detalle/:ticker', element: <Detalle /> },
       // catálogo del sistema de diseño — oculto, sin enlace en la navegación
       { path: '/sistema', element: <Sistema /> },

@@ -1,5 +1,5 @@
 {
- "generado_en_utc": "2026-09-08T04:36:40.086633+00:00",
+ "generado_en_utc": "2026-09-09T02:53:45.069542+00:00",
  "etiqueta": "PROPUESTA — bloque 1 de la corrida 11; hasta el dictamen del estadistico-adversario",
  "instrumento": "dinero.contabilidad.comparar (bootstrap circular de bloques de 4 semanas, 2000 réplicas, α = 0.05) + regla §2.3 del pre-registro: IC excluye 0 y punto > 0",
  "dgp": {
@@ -1188,7 +1188,33 @@
     "1.0": 0.8289
    },
    "mde80_pp_semana": 1.0506,
-   "mde80_pp_anio_aprox": 54.6
+   "mde80_pp_anio_aprox": 54.6,
+   "mde80_pp_anio_aprox_convencion": "suma aritmética 52 × MDE80 semanal (D6)",
+   "mde80_alpha_nominal": {
+    "pp_semana": 1.0506,
+    "banda_pp_semana": [
+     0.7424,
+     1.5603
+    ],
+    "pp_anio_suma_aritmetica": 54.6,
+    "pp_anio_capitalizado": 72.2,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.05,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "mde80_alpha_real": {
+    "pp_semana": 0.9595,
+    "banda_pp_semana": [
+     0.678,
+     1.425
+    ],
+    "pp_anio_suma_aritmetica": 49.9,
+    "pp_anio_capitalizado": 64.3,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.086,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "sigma_de_este_mde_pp_semana": 2.7042
   },
   "104": {
    "tamano_bilateral": {
@@ -1224,7 +1250,33 @@
     "1.0": 0.9736
    },
    "mde80_pp_semana": 0.7429,
-   "mde80_pp_anio_aprox": 38.6
+   "mde80_pp_anio_aprox": 38.6,
+   "mde80_pp_anio_aprox_convencion": "suma aritmética 52 × MDE80 semanal (D6)",
+   "mde80_alpha_nominal": {
+    "pp_semana": 0.7429,
+    "banda_pp_semana": [
+     0.5249,
+     1.1033
+    ],
+    "pp_anio_suma_aritmetica": 38.6,
+    "pp_anio_capitalizado": 46.9,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.05,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "mde80_alpha_real": {
+    "pp_semana": 0.7098,
+    "banda_pp_semana": [
+     0.5015,
+     1.0541
+    ],
+    "pp_anio_suma_aritmetica": 36.9,
+    "pp_anio_capitalizado": 44.5,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.0665,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "sigma_de_este_mde_pp_semana": 2.7042
   },
   "156": {
    "tamano_bilateral": {
@@ -1260,7 +1312,33 @@
     "1.0": 0.9971
    },
    "mde80_pp_semana": 0.6066,
-   "mde80_pp_anio_aprox": 31.5
+   "mde80_pp_anio_aprox": 31.5,
+   "mde80_pp_anio_aprox_convencion": "suma aritmética 52 × MDE80 semanal (D6)",
+   "mde80_alpha_nominal": {
+    "pp_semana": 0.6066,
+    "banda_pp_semana": [
+     0.4286,
+     0.9009
+    ],
+    "pp_anio_suma_aritmetica": 31.5,
+    "pp_anio_capitalizado": 37.0,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.05,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "mde80_alpha_real": {
+    "pp_semana": 0.584,
+    "banda_pp_semana": [
+     0.4126,
+     0.8673
+    ],
+    "pp_anio_suma_aritmetica": 30.4,
+    "pp_anio_capitalizado": 35.4,
+    "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+    "alpha": 0.0635,
+    "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+   },
+   "sigma_de_este_mde_pp_semana": 2.7042
   }
  },
  "sigma_cuenta_reconstruida": {
@@ -1274,7 +1352,8 @@
    2.6686
   ],
   "metodo": "sd (ddof=1) de la diferencia semanal, IC por bootstrap circular de bloques de 4 semanas, 2000 réplicas, semilla 20260913",
-  "advertencia": "El IC es un percentil de bootstrap de bloques de una DESVIACIÓN; el bloque 1 midió su cobertura aparte (instrumento_dinero.md, columna «cobertura IC sd»), y el punto refleja UN sorteo de señal. Ver el barrido de semillas."
+  "advertencia": "El IC es un percentil de bootstrap de bloques de una DESVIACIÓN y NO es un 95 %: el bloque 1 midió su cobertura a 156 semanas en 0.8495 (instrumento_dinero.md, columna «cobertura IC sd»). El punto es utilizable como insumo; el intervalo, no, hasta que se calibre. Y refleja UN sorteo de señal: ver el barrido de semillas.",
+  "cobertura_medida_del_ic_a_156_semanas": 0.8495
  },
  "intentos_dsr": 0,
  "no_valida": "el camino que produce las series de valor (cuenta_papel, correr_estrategia, valorizar): eso es de los bloques 2 y 3"

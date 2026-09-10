@@ -645,7 +645,7 @@ def mercados():
             continue
         valores = []
         for lag in LAGS:
-            par = pd.concat([ret_nivel[a].shift(lag), ret_nivel[b]], axis=1).dropna()
+            par = _alinear(ret_nivel[a].shift(lag), ret_nivel[b]).dropna()
             valores.append(round(float(par.iloc[:, 0].corr(par.iloc[:, 1])), 2)
                            if len(par) > 60 else None)
         filas_desfase.append({
@@ -663,9 +663,9 @@ def mercados():
         rs = precios_s[samsung].pct_change()
         rk = kospi.iloc[:, 0].pct_change()
         rx = sox.iloc[:, 0].pct_change()
-        par_k = pd.concat([rs, rk], axis=1).dropna().tail(252)
-        par_x0 = pd.concat([rs, rx], axis=1).dropna().tail(252)
-        par_x1 = pd.concat([rs, rx.shift(1)], axis=1).dropna().tail(252)
+        par_k = _alinear(rs, rk).dropna().tail(252)
+        par_x0 = _alinear(rs, rx).dropna().tail(252)
+        par_x1 = _alinear(rs, rx.shift(1)).dropna().tail(252)
         if len(par_k) > 60:
             caso = {
                 "ticker": samsung, "nombre": nombre(samsung),
@@ -680,6 +680,16 @@ def mercados():
         "correlaciones_desfase": {"lags": LAGS, "filas": filas_desfase},
         "caso_destacado": caso,
     })
+
+
+def _alinear(*series: pd.Series) -> pd.DataFrame:
+    """`pd.concat` por columnas con `sort=True` EXPLÍCITO (corrida 12, bloque
+    2.7): pandas 3 ordena por defecto cuando todos los índices son
+    DatetimeIndex y avisa que en pandas 4 el default pasa a `sort=False`.
+    `sort=True` es el valor que REPRODUCE la salida actual, demostrado por
+    `tests/test_concat_fuera_de_motor.py` contra una fixture congelada ANTES
+    de este cambio. Es presentación (correlaciones de la vista), no señal."""
+    return pd.concat(list(series), axis=1, sort=True)
 
 
 @app.get("/api/cadena")
@@ -888,13 +898,30 @@ def detalle(ticker: str):
 # La regla propia de estos tres, porque sirven cifras de un riel que no
 # tiene NINGUNA fila sellada: cada objeto lleva su `estatus`, y todo
 # estimador puntual viaja con su intervalo en el mismo objeto. Un número
-# suelto no sale por acá.
+# suelto no sale por acá. Re-dictamen de la corrida 12 (D1 a D15): el
+# intervalo viaja además con su COBERTURA MEDIDA cuando existe, ninguna
+# etiqueta de nivel se escribe a mano, y ningún resumen se sirve sin el
+# presupuesto y el modo con que se computó.
 # ============================================================
 import json as _json  # noqa: E402
+import logging as _logging  # noqa: E402
 import os as _os  # noqa: E402
 
 _RAIZ = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 _DIR_DINERO = _os.path.join(_RAIZ, "dinero", "resultados")
+_DIR_GEMELO = _os.path.join(_RAIZ, "GEMELO", "resultados")
+_log = _logging.getLogger("mki.api.dinero")
+
+
+def _artefacto_gemelo(nombre: str) -> dict | None:
+    """Artefactos de GEMELO/resultados/ que la vista cita (instrumento del
+    riel de dinero, intervalo de coherencia). Sólo lectura, igual que los
+    de dinero/resultados/."""
+    ruta = _os.path.join(_DIR_GEMELO, nombre)
+    if not _os.path.exists(ruta):
+        return None
+    with open(ruta, encoding="utf-8") as f:
+        return _json.load(f)
 
 
 def _meta_simple(artefacto: str | None = None) -> dict:
@@ -967,26 +994,59 @@ def dinero_cuenta():
 
 
 def _comisiones_juego_activo(cuenta: dict):
-    """Comisión acumulada del juego por defecto a su deslizamiento por
-    defecto, como % de lo aportado, leída del artefacto (nunca recomputada)."""
+    """Fricción del juego por defecto, leída del artefacto (nunca recomputada)
+    como OBJETO y no como escalar (exigencia D1 del re-dictamen, corrida 12):
+    mediana entre las K semillas del sorteo, banda entre semillas, K,
+    deslizamiento, semanas y denominador. La versión anterior devolvía el
+    número de UNA semilla (la de la página) redondeado a un decimal, sin
+    intervalo, sin período ni denominador, y eso se retiró.
+
+    Manejo explícito (hallazgo 2 de la revisión del 8-sep): antes terminaba
+    en `except Exception: return None`, que tragaba cualquier error sin
+    dejar rastro. Las excepciones que de verdad pueden ocurrir son las de
+    leer `reglas.json` y las de un artefacto con otra forma; se registran."""
     try:
         from dinero import universo_dinero as U
         cfg = U.reglas()
-        juego, pb = cfg["juego_activo"], cfg["costos"]["deslizamiento_pb_por_lado"]
-        for j in cuenta.get("juegos", []):
-            if j.get("juego") == juego and j.get("deslizamiento_pb") == pb:
-                v = j.get("comisiones_pct_del_aportado")
-                return round(float(v), 1) if v is not None else None
-    except Exception:
+        juego = cfg["juego_activo"]
+        pb = cfg["costos"]["deslizamiento_pb_por_lado"]
+    except (OSError, KeyError, ValueError) as e:   # ValueError cubre JSONDecodeError
+        _log.warning("reglas del riel de dinero ilegibles: %s", e)
         return None
-    return None
+    bs = (cuenta or {}).get("barrido_semillas") or {}
+    try:
+        x = bs["comisiones_pct_del_aportado"][juego]
+        if bs.get("deslizamiento_pb") != pb:
+            _log.warning("barrido_semillas a %s pb, reglas a %s pb: no se sirve", bs.get("deslizamiento_pb"), pb)
+            return None
+        return {
+            "mediana_pct": x["mediana"],
+            "banda_p2_5_p97_5": x["banda_p2_5_p97_5"],
+            "banda_es": bs.get("banda_es", "percentiles 2,5 y 97,5 entre sorteos de la señal, no un intervalo de cobertura nominal"),
+            "K": bs.get("K"),
+            "deslizamiento_pb": pb,
+            "semanas": ((cuenta.get("sigma_dif_semanal") or {}).get("semanas")),
+            "denominador_usd": cuenta.get("aportado_usd"),
+            "juego": juego,
+            "es_una_semilla": False,
+            "estatus": "SIMULADO",   # salida de simulación; pasó por el adversario (re-dictamen D1)
+        }
+    except (KeyError, TypeError) as e:
+        _log.warning("cuenta_papel.json sin la forma esperada en barrido_semillas: %s", e)
+        return None
 
 
 def _potencia_desde_artefacto(cuenta: dict) -> dict:
     """σ de la diferencia semanal CON intervalo, del artefacto de la cuenta
     reconstruida. Si el artefacto está retirado o no trae la σ, se declara
     RETIRADO y no viaja ningún número: la regla de la casa es que un
-    estimador no viaja sin intervalo."""
+    estimador no viaja sin intervalo.
+
+    Re-dictamen (corrida 12), D2 y D3: la etiqueta del intervalo NO se
+    escribe a mano —viaja la advertencia del artefacto y la cobertura MEDIDA
+    del IC de la desviación, leída del instrumento—, y el MDE80 del bloque 1
+    se cita con SU σ (el ancla del simulador), nunca atribuido a la σ que
+    esta tarjeta sirve."""
     sig = (cuenta or {}).get("sigma_dif_semanal") or {}
     retirado = (cuenta or {}).get("estatus") in (None, "RETIRADO")
     if retirado or sig.get("sigma_pp_semana") is None or not sig.get("ic95"):
@@ -996,19 +1056,113 @@ def _potencia_desde_artefacto(cuenta: dict) -> dict:
                      "fuga temporal demostrada (dictamen 10, F1 a F4) y viajaba "
                      "sin intervalo. La cifra vuelve cuando exista sobre una "
                      "cuenta sin fuga y con su intervalo.")}
+    inst = _artefacto_gemelo("instrumento_dinero.json") or {}
+    cal = (inst.get("calibracion") or {})
+    clave_h = str(sig.get("semanas") or 156) if str(sig.get("semanas") or 156) in cal else "156"
+    k156 = cal.get(clave_h) or {}
+    cob_sd = k156.get("cobertura_ic_sd") or {}
+    if cob_sd.get("tasa") is not None:
+        tipo = (f"bootstrap circular de bloques de semanas, nominal 95 %, cobertura medida "
+                f"{cob_sd['tasa']:.3f} {cob_sd.get('wilson95')} a {clave_h} semanas")
+    else:
+        tipo = "bootstrap circular de bloques de semanas, nominal 95 %, cobertura medida: no disponible"
+    k52 = cal.get("52") or {}
+    mde = k52.get("mde80_alpha_nominal") or {}
+    mde_real = k52.get("mde80_alpha_real") or {}
+    sigma_ancla = (inst.get("sigma_medida") or {}).get("sigma_pp_semana")
+    # Dos frases separadas a propósito: la σ servida y el MDE80 nunca van en la
+    # misma oración (D3; test en tests/test_api.py).
+    cob_txt = (f"con cobertura medida {cob_sd['tasa']:.3f}, por debajo del 95 % nominal: el punto es "
+               f"utilizable, el intervalo no" if cob_sd.get("tasa") is not None else
+               "con intervalo de cobertura no medida: el punto es utilizable, el intervalo no")
+    frase_sigma = (f"σ de la diferencia semanal juego por defecto − SMH sobre la cuenta "
+                   f"reconstruida (8-sep-2026), {cob_txt}. Refleja UN sorteo de señal.")
+    if mde.get("pp_semana") is not None and sigma_ancla is not None:
+        frase_mde = (f"El MDE80 del bloque 1 es {mde['pp_semana']:.2f} pp/semana a 52 semanas "
+                     f"(banda {mde.get('banda_pp_semana')} por la banda entre sorteos; "
+                     f"{mde_real.get('pp_semana', float('nan')):.2f} al α real medido) y está computado con la σ ancla "
+                     f"del simulador, {sigma_ancla:.3f} pp/semana, no con la σ de esta tarjeta. "
+                     f"El instrumento fue puesto a prueba con verdad conocida: discrimina y NO está calibrado a α = 0,05.")
+    else:
+        frase_mde = ("El MDE80 del bloque 1 no está disponible en el artefacto del instrumento; no se cita "
+                     "ningún número de potencia.")
     return {
         "sigma_dif_semanal_pp": sig["sigma_pp_semana"],
-        "intervalo": sig["ic95"], "tipo_intervalo": "bootstrap circular de bloques de semanas, 95 %",
+        "intervalo": sig["ic95"], "tipo_intervalo": tipo,
+        "cobertura_medida_ic_sd": cob_sd or None,
+        "advertencia_del_artefacto": sig.get("advertencia"),
         "semanas": sig.get("semanas"), "juego": sig.get("juego"), "base": sig.get("base"),
+        "mde80_bloque_1": ({"pp_semana": mde.get("pp_semana"), "banda_pp_semana": mde.get("banda_pp_semana"),
+                            "al_alpha_real_pp_semana": mde_real.get("pp_semana"),
+                            "sigma_ancla_pp_semana": sigma_ancla, "horizonte_semanas": 52,
+                            "convencion_anualizacion": mde.get("convencion_anualizacion"),
+                            "pp_anio_suma_aritmetica": mde.get("pp_anio_suma_aritmetica"),
+                            "pp_anio_capitalizado": mde.get("pp_anio_capitalizado")}
+                           if mde.get("pp_semana") is not None else None),
+        "estatus": "SIMULADO",   # salida de simulación; pasó por el adversario (re-dictamen D2/D3)
+        "nota": frase_sigma + " " + frase_mde,
+    }
+
+
+def _que_mata_medicion() -> str:
+    """R2 leído del artefacto de coherencia (`GEMELO/intervalo_coherencia.py`,
+    rama «regla firmada»), no escrito a mano. La versión anterior decía que
+    bajo la regla firmada R2 «NO está recomputada», y eso es falso desde el
+    8-sep-2026 (re-dictamen, D11)."""
+    base = ("V1–V7 y R1–R3 de GEMELO/DISEÑO.md §6, fijados antes de cualquier "
+            "resultado. R2 —excluir la ventana 15–23 jul— ya golpeó al titular: la ventaja "
+            "de la ventana completa no se distingue de cero (su IC de día contiene el cero), y ")
+    coh = _artefacto_gemelo("intervalo_coherencia.json") or {}
+    rama = next((r for r in coh.get("ramas", []) if "firmada" in str(r.get("rama", ""))), None)
+    r2 = (rama or {}).get("R2_sin_15_23_jul") if rama else None
+    if r2:
+        return (base + f"bajo la regla de deduplicación firmada el 1-sep, sin esa ventana la ventaja "
+                f"cae a {r2['ventaja_pp']:+.1f} pp (n={r2['n']}, {r2['dias']} días, IC95 t de clúster de día "
+                f"{r2['ic95_t_cluster']}, permutación de día p = {r2['p_permutacion_dia']}, McNemar exacta "
+                f"{r2['mcnemar_exacta']}): no se distingue de cero. Recomputado el 8-sep-2026 "
+                f"(GEMELO/resultados/intervalo_coherencia.md §3b). La valla no se bajó.")
+    return (base + "el R2 bajo la regla firmada no está disponible en el artefacto de coherencia "
+            "(GEMELO/resultados/intervalo_coherencia.json); no se cita ningún número. La valla no se bajó.")
+
+
+def _mapa_con_etiqueta(mapa: dict) -> dict | None:
+    """D9 y D10: el resumen del mapa es la celda «techo (500 USD) / enteras»
+    y sin decirlo el conteo de huecos es falso a 100 USD. Se sirve con
+    presupuesto, modo, al_borde, días de censo y fecha, o no se sirve."""
+    if not mapa or not mapa.get("resumen"):
+        return None
+    pres = (mapa.get("presupuesto") or {})
+    techo = pres.get("techo_usd") if isinstance(pres, dict) else None
+    celdas = ((mapa.get("censo_por_presupuesto_y_modo") or {}).get("celdas") or [])
+    celda = next((x for x in celdas if x.get("modo") == "enteras" and x.get("presupuesto_usd") == techo), None)
+    # días de censo DERIVADOS de las metas congeladas (curador #32): un día = una
+    # sesión `hasta` distinta entre los congelados; el segundo congelado cayó en
+    # la misma sesión y por eso hoy cuenta uno
+    import glob as _glob
+    hastas = set()
+    for ruta_meta in _glob.glob(_os.path.join(_RAIZ, "dinero", "datos", "cierres_congelados*.meta.json")):
+        try:
+            with open(ruta_meta, encoding="utf-8") as f:
+                hastas.add(_json.load(f).get("hasta"))
+        except (OSError, ValueError) as e:
+            _log.warning("meta del congelado ilegible: %s", e)
+    hastas.discard(None)
+    fecha_censo = max(hastas) if hastas else None
+    dias_censo = len(hastas)
+    if techo is None or celda is None:
+        _log.warning("mapa sin presupuesto o sin la celda techo/enteras: no se sirve el resumen")
+        return None
+    return {
+        **mapa["resumen"],
+        "presupuesto_usd": techo, "modo": "enteras",
+        "al_borde": celda.get("al_borde", []),
+        "alcanzables": celda.get("alcanzables"),
+        "dias_de_censo": dias_censo, "fecha_censo": fecha_censo,
+        "nota": (f"Celda de {techo:.0f} USD en acciones enteras, censo de {dias_censo} día(s) (último: {fecha_censo}). "
+                 f"No lleva intervalo porque la unidad de replicación es el día y n = {dias_censo}; el segundo "
+                 "congelado cayó en la misma sesión (feriado NYSE del 7-sep) y no cuenta. A otros "
+                 "presupuestos el resumen es otro: ver `censo_por_presupuesto_y_modo` en /api/dinero/universo."),
         "estatus": "PROPUESTA",
-        "nota": ("σ de la diferencia semanal juego por defecto − SMH sobre la cuenta "
-                 "reconstruida (8-sep-2026), con intervalo. Es el parámetro de la tabla "
-                 "de potencia del pre-registro; la tabla misma se recomputa con el "
-                 "simulador validado (GEMELO/simulador/instrumento_dinero.py), que "
-                 "midió que el instrumento discrimina y sub-cubre bajo la nula. Con "
-                 "esta σ, 52 semanas sólo alcanzan para una ventaja del orden de "
-                 "1 pp/semana (MDE80 del bloque 1); por qué una ventaja así no es "
-                 "plausible lo dice el pre-registro §2.1, no esta API."),
     }
 
 
@@ -1057,6 +1211,9 @@ def _estado_rieles() -> dict:
              "es_diferencia": True,
              "cruza_cero": (c["mae_ganancia_ic_t_dia"][0] <= 0 <=
                             c["mae_ganancia_ic_t_dia"][1])},
+            {"nombre": "cobertura del intervalo 80 %", "valor_pct": c["cobertura_80_pct"],
+             "intervalo": c.get("cobertura_80_wilson"), "tipo_intervalo": "Wilson 95 %",
+             "es_diferencia": False, "comparar_contra": "80 % nominal (V3 se juzga contra [76, 84])"},
         ],
         # El contrato prometía McNemar y el endpoint no lo servía. Manda la
         # máquina: se sirve, con el caveat que lo vuelve legible.
@@ -1066,21 +1223,23 @@ def _estado_rieles() -> dict:
                            "DEFF 3,55): manda el intervalo de clúster de "
                            "día, que contiene el cero."),
         "cobertura_80_pct": c["cobertura_80_pct"],
+        # D12: una proporción de esta casa viaja con su Wilson
+        "cobertura_80": {"valor_pct": c["cobertura_80_pct"], "intervalo": c.get("cobertura_80_wilson"),
+                         "tipo_intervalo": "Wilson 95 %", "k": c.get("cobertura_80_k"), "n": c.get("cobertura_80_n"),
+                         "nominal_pct": 80.0},
         "n_efectivo": c["n_efectivo"], "icc": c["icc"], "deff": c["deff"],
+        # D13: n en un solo régimen es más chico que n
+        "regimenes_en_ventana": c.get("regimenes_en_ventana"),
+        "un_solo_regimen": c.get("un_solo_regimen"),
+        "etiqueta_regimen": (("UN SOLO RÉGIMEN en la ventana sellada (%s): la muestra no dice nada sobre "
+                              "otros regímenes." % ", ".join(f"{k}: {v} snapshots" for k, v in (c.get("regimenes_en_ventana") or {}).items()))
+                             if c.get("un_solo_regimen") else
+                             ("Regímenes en la ventana: %s." % ", ".join(f"{k}: {v} snapshots" for k, v in (c.get("regimenes_en_ventana") or {}).items()))),
         "falta_para_veredicto": (
             "El veredicto 5.1 está pre-registrado en backtest/DISEÑO.md y su "
             "ejecución es decisión humana. Gatillo: N ≥ 150 filas selladas "
             "más un cambio de régimen, o 3 meses, lo que llegue primero."),
-        "que_lo_mata": (
-            "V1–V7 y R1–R3 de GEMELO/DISEÑO.md §6, fijados antes de cualquier "
-            "resultado. R2 —excluir la ventana 15–23 jul, que sostiene casi "
-            "toda la ventaja— ya golpeó al titular: sin esa ventana la "
-            "ventaja del campeón NO se distingue de cero en ninguna de las "
-            "tres convenciones de conteo (GEMELO/resultados/concentracion.md "
-            "A3; al 31-ago: +0,5 pp n=209 bajo `estricta`, −1,0 pp n=204 bajo "
-            "`excluir_cero`, −1,9 pp n=209 bajo `verificador`; ningún p cerca "
-            "de 0,05). Bajo la regla de deduplicación firmada el 1-sep NO "
-            "está recomputada. La valla no se bajó."),
+        "que_lo_mata": _que_mata_medicion(),
         "procedencia": c["procedencia"],
     }
     dinero = {
@@ -1097,7 +1256,7 @@ def _estado_rieles() -> dict:
                              "prospectivo es del riel de medición, no de "
                              "éste. Nada de este riel es evidencia del mismo "
                              "tipo.")},
-        "mapa": (mapa.get("resumen") if mapa else None),
+        "mapa": _mapa_con_etiqueta(mapa),
         # La v1 de la cuenta en papel tuvo fuga temporal DEMOSTRADA
         # (dictamen 10, F1 a F4) y estuvo RETIRADA del 7 al 8-sep-2026; la v2
         # (corrida 11, acta §82.4) se reconstruyó sin fuga y con gate de
@@ -1123,6 +1282,16 @@ def _estado_rieles() -> dict:
                 "familia_contrastes"),
             "pasan_holm": larga.get("multiplicidad", {}).get("pasan"),
             **(larga.get("resumen") or {}),
+            # D15: dos denominadores en el mismo objeto se leen como «1 de 30».
+            "denominadores": {
+                "ganan_sin_corregir_es_sobre": "celdas",
+                "celdas": (larga.get("resumen") or {}).get("celdas"),
+                "contrastes_familia_holm": (larga.get("resumen") or {}).get("contrastes"),
+                "k_bajo_la_nula": None,
+                "nota": ("El k de «ganan a la climatología sin corregir» es sobre las CELDAS (no sobre los "
+                         "30 contrastes de la familia de Holm). La distribución de k bajo la nula con el "
+                         "ICC medido no está computada: ningún «k de m» de este bloque se lee como tasa."),
+            },
         } if larga else None),
         "falta_para_veredicto": (
             "52 semanas de cuenta en papel hacia adelante, con la señal "
@@ -1154,3 +1323,70 @@ def _estado_rieles() -> dict:
 @app.get("/api/rieles")
 def rieles():
     return {"meta": _meta_simple(), "datos": _estado_rieles()}
+
+
+# ============================================================
+# E0 / E1 — lo que la máquina decidió para la próxima apertura (corrida 12,
+# bloque 5). Regla del bloque: cada número lleva estatus, n donde exista y
+# fuente. Solo lectura: `dinero/sello_dinero.db` en mode=ro y artefactos.
+# ============================================================
+def _e1_estado() -> dict:
+    """E1 (cuenta de práctica): NO EJECUTADO en la corrida 12. La pantalla
+    muestra un estado vacío que dice qué falta; NUNCA datos de ejemplo
+    (pre-mortem 20). Cuando E1 corra, este objeto trae posiciones, efectivo y
+    ejecuciones leídas por API con su marca de retraso."""
+    return {
+        "estado": "NO EJECUTADO",
+        "etiqueta": "PRÁCTICA",
+        "por_que": ("sin credenciales de cuenta de práctica ni gateway del corredor en la máquina "
+                    "(chequeo 0.7 de la corrida 12, 8-sep-2026 23:25, sondeo TCP de lectura sin "
+                    "órdenes); y de noche NYSE está cerrada, así que «enviar una orden y leer su "
+                    "ejecución en el mismo ciclo» no era ejecutable aunque hubiera cuenta"),
+        "adaptador": "corredor/ibkr.py (guardia de papel en código, probado contra réplica escrita desde documentación: NO es evidencia de C1/C2)",
+        "cuenta_practica": None, "posiciones": None, "efectivo": None, "ejecuciones": None,
+        "marca_retraso": None,
+        "estatus": "PROPUESTA",
+    }
+
+
+@app.get("/api/dinero/sellos")
+def dinero_sellos():
+    from dinero import sello_dinero as S
+    e = S.estado()
+    cuenta = _artefacto("cuenta_papel.json") or {}
+    gate = ((cuenta.get("reconstruccion") or {}).get("gate_invariancia") or {})
+    ult = e.get("ultimo")
+    return {"meta": _meta_simple(), "datos": {
+        "estatus": "PROPUESTA",
+        "que_es": ("E0 del riel de dinero: la decisión del juego por defecto para la PRÓXIMA apertura "
+                   "de NYSE, sellada por la máquina antes de esa apertura, con tamaño nominal CERO. "
+                   "Nada de esta pantalla mueve plata ni afirma una ventaja."),
+        "senal_fuente": e["senal_fuente"],
+        "E0": {"estado": "EN CURSO" if e["sesiones_selladas"] else "SIN FILAS",
+               "sesiones_selladas": e["sesiones_selladas"],
+               "sesiones_que_cuentan_para_N": e["sesiones_que_cuentan_para_N"],
+               "N_objetivo": e["N_objetivo"], "N_objetivo_fuente": e["N_objetivo_fuente"],
+               "fuente_conteos": e["fuente_conteos"], "filas": e["filas"],
+               "divergencias_registradas": e.get("divergencias_registradas", 0),
+               "nota": ("Cuentan sólo las sesiones con fila pendiente de un día con sesión e insumo fresco. "
+                        "Estas filas prueban la maquinaria del sellado prospectivo (señal sin información): "
+                        "no son un track record de habilidad."),
+               "estatus": "PROPUESTA"},
+        "E1": _e1_estado(),
+        "ultimo_sello": ult,
+        "decisiones_proxima_apertura": e["filas_ultimo_sello"],
+        "gate_invariancia_ultima_corrida": {
+            "resultado": gate.get("resultado"), "cortes": len(gate.get("cortes") or []),
+            "fecha": (cuenta.get("reconstruccion") or {}).get("fecha"),
+            "fuga_inyectada": gate.get("fuga_inyectada"),
+            "alcance": gate.get("alcance"),
+            "fuente": "dinero/resultados/cuenta_papel.json (gate de la cuenta en papel v2)",
+            "nota_e0": ("Este gate es el de la CUENTA EN PAPEL v2 (corrida 11, 25 cortes), no de la maquinaria de "
+                        "sellado de E0. E0 tiene su propio gate de decisión (dinero/sello_dinero.py, penúltimo día y 6 "
+                        "sesiones atrás), que corre antes de cada sello y cuyo resultado queda en el log del sellador, "
+                        "no en esta pantalla todavía."),
+            "estatus": "PROPUESTA"},
+        "smh": ("SMH es el benchmark declarado del proyecto y NO cabe con el piso de acciones enteras a "
+                "ningún presupuesto del rango: el riel se compara contra él como línea base sin poder "
+                "tomar posición (acta §84.4.6)."),
+    }}

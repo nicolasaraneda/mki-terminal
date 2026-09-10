@@ -9,7 +9,27 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 8-sep-2026, corrida 11. Las seis firmas del 7-sep (acta §82) están marcadas en su ítem; la cola no se reordenó.
+**Actualizada:** 9-sep-2026, corrida 12. Las siete decisiones del 8-sep (acta §84.4) están aplicadas o anotadas en su ítem; la cola no se reordenó.
+
+## Qué movió la duodécima corrida (9-sep)
+
+- **Cerrado:** el re-dictamen de la corrida 11 (`dictamen_12/re_dictamen_corrida_11.md`): D1–D18 aplicadas al
+  ejecutable; cuatro cifras retiradas y en el guardia. G3 y G8 hechos. El gate tiene modo diagnóstico.
+- **Cerrado:** §47 piso enteras y N = 40 aplicados (`regla_aporte` §5-bis); §49 ya estaba aplicado (§84.2).
+- **Ejecutado con anotación:** §43 (período de M2 = 52 semanas) — recomputado sobre la v2
+  (`GEMELO/resultados/m2_periodo.md`); dictamen del adversario en `dictamen_12/adversario_43_periodo_m2.md`.
+- **Nuevo, espera firma:** §51 (qué señal sella E0), §52 (ventana del monto de E2), §53 (timer del sellador),
+  §54 (`ibapi` no instalable desde PyPI con licencia verificada), §55 (automatizar el método de parches),
+  §56 (distribución de k bajo la nula para la señal larga, D15).
+- **Hallazgos sin dueño todavía:** `inventario_abierto_2026-09-07.md` no existe (acto de Nicolás, §84.4);
+  `README_en_borrador.md` no existe y no hay generador de README (el bloque 6 no corrió: ver bitácora 12);
+  2 snapshots de la ventana sellada tienen `regimen` NULL (D13 los rotula «sin régimen sellado»);
+  el artefacto viejo de `bifurcaciones` se produjo con 10.000 réplicas y no se regeneró.
+- **§43 declarado NO APLICABLE por el adversario** (`dictamen_12/adversario_43_periodo_m2.md`): M2 no tiene unidad de
+  período; vuelve a `espera_firma` §43 con la pregunta exacta. Nuevo: dónde vive el contador de **«lecturas de
+  criterio»** (12 computadas, 1 elegida con los resultados a la vista), distinto de los dos registros del DSR.
+- **Registro de intentos:** gap asiático 352 → **354** (fila `COHER-12`, D18); veredicto 5.1 358 → **360**.
+  Riel largo 3, sin cambio.
 
 ## Qué movió la séptima corrida (2-sep)
 

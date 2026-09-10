@@ -480,15 +480,52 @@ export interface Riel {
   mcnemar_p_filas?: number
   mcnemar_caveat?: string
   cobertura_80_pct?: number
+  // Corrida 12 (re-dictamen D12, D13): la cobertura con su Wilson y la etiqueta de régimen
+  cobertura_80?: {
+    valor_pct: number
+    intervalo: [number, number] | null
+    tipo_intervalo: string
+    k: number | null
+    n: number | null
+    nominal_pct: number
+  }
+  regimenes_en_ventana?: Record<string, number> | null
+  un_solo_regimen?: boolean | null
+  etiqueta_regimen?: string
   n_efectivo?: number
   icc?: number
   deff?: number
-  mapa?: DatosUniversoOperable['resumen'] | null
+  // D9/D10: el resumen del mapa no se sirve sin presupuesto ni modo
+  mapa?:
+    | (DatosUniversoOperable['resumen'] & {
+        presupuesto_usd: number
+        modo: string
+        al_borde: string[]
+        alcanzables: number | null
+        dias_de_censo: number
+        fecha_censo: string | null
+        nota: string
+        estatus: EstatusEvidencial
+      })
+    | null
   cuenta_en_papel?: {
     estatus?: EstatusEvidencial
     retirado?: RetiroDeCifras
     advertencia: string
     cifras_disponibles?: boolean
+    // D1: la fricción del juego activo es un objeto con banda, nunca un escalar
+    comisiones_pct_del_aportado_juego_activo?: {
+      mediana_pct: number
+      banda_p2_5_p97_5: [number, number]
+      banda_es: string
+      K: number | null
+      deslizamiento_pb: number
+      semanas: number | null
+      denominador_usd: number | null
+      juego: string
+      es_una_semilla: false
+      estatus: EstatusEvidencial
+    } | null
   } | null
   senal_larga?: {
     estatus?: EstatusEvidencial
@@ -501,9 +538,34 @@ export interface Riel {
     segunda_vara_preregistrada_evaluada?: boolean
     pasan_holm?: string[]
     nota: string
+    // D15: los dos denominadores, separados
+    denominadores?: {
+      ganan_sin_corregir_es_sobre: string
+      celdas: number | null
+      contrastes_familia_holm: number | null
+      k_bajo_la_nula: null
+      nota: string
+    }
   } | null
   potencia?: {
     sigma_dif_semanal_pp: number | null
+    intervalo?: [number, number]
+    tipo_intervalo?: string
+    cobertura_medida_ic_sd?: { tasa: number; wilson95: [number, number]; k: number } | null
+    advertencia_del_artefacto?: string | null
+    semanas?: number | null
+    juego?: string | null
+    base?: string | null
+    mde80_bloque_1?: {
+      pp_semana: number | null
+      banda_pp_semana: [number, number] | null
+      al_alpha_real_pp_semana: number | null
+      sigma_ancla_pp_semana: number | null
+      horizonte_semanas: number
+      convencion_anualizacion: string | null
+      pp_anio_suma_aritmetica: number | null
+      pp_anio_capitalizado: number | null
+    } | null
     estatus?: EstatusEvidencial
     nota: string
   }
@@ -515,4 +577,76 @@ export interface Riel {
 export interface DatosRieles {
   rieles: Riel[]
   por_que_son_dos: string
+}
+
+
+// ------------------------------------------------------------
+// /api/dinero/sellos — E0/E1 (corrida 12). Espeja CONTRATO.md.
+// ------------------------------------------------------------
+export interface FilaSelloDinero {
+  ticker: string
+  decision: 'compra' | 'venta' | 'nada'
+  acciones_regla: number | null
+  tamano_nominal: number
+  precio_ref_usd: number | null
+  senal_magnitud_pp: number | null
+  senal_banda_baja_pp: number | null
+  senal_banda_alta_pp: number | null
+  motivo: string | null
+}
+
+export interface DatosSellosDinero {
+  estatus: EstatusEvidencial
+  que_es: string
+  senal_fuente: string
+  E0: {
+    estado: string
+    sesiones_selladas: number
+    sesiones_que_cuentan_para_N: number
+    N_objetivo: number
+    N_objetivo_fuente: string
+    fuente_conteos: string
+    filas: number
+    divergencias_registradas: number
+    nota: string
+    estatus: EstatusEvidencial
+  }
+  E1: {
+    estado: string
+    etiqueta: string
+    por_que: string
+    adaptador: string
+    cuenta_practica: string | null
+    posiciones: unknown[] | null
+    efectivo: Record<string, string | number> | null
+    ejecuciones: unknown[] | null
+    marca_retraso: { retraso_min: number | null; descripcion: string } | null
+    estatus: EstatusEvidencial
+  }
+  ultimo_sello: {
+    fecha_insumo: string
+    timestamp_utc: string
+    available_at: string
+    sesion_objetivo: string
+    apertura_objetivo_utc: string
+    estado: string
+    cuenta_para_N: number
+    juego: string
+    presupuesto_usd: number
+    insumo_ext_sha256: string
+    insumo_base_sha256: string
+    plataforma_version: string
+  } | null
+  decisiones_proxima_apertura: FilaSelloDinero[]
+  gate_invariancia_ultima_corrida: {
+    resultado: string | null
+    cortes: number
+    fecha: string | null
+    fuga_inyectada: { precios_ref_dias: number; fabrica_senales: boolean } | null
+    alcance: string | null
+    fuente: string
+    nota_e0: string
+    estatus: EstatusEvidencial
+  }
+  smh: string
 }

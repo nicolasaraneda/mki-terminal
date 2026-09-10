@@ -75,6 +75,11 @@ def snap_titular(fecha: str, **cambios) -> dict:
         "descarga_ok": 28.0,
         "descarga_total": 28.0,
         "descarga_caidos": 0.0,
+        # DATO DE ENSAYO, no comparación contra la versión viva: la fixture
+        # sintética finge un sello titular de la ventana de sombra (5.0.3)
+        # y el comparador debe tratar la diferencia con la réplica como
+        # legítima (nivel 3). Verificado el 9-sep-2026 (acta §84.3): no se
+        # lee de version.py a propósito.
         "plataforma_version": "5.0.3",
         "sox_usado_pct": -1.5,
         "sox_fecha": fecha,

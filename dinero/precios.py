@@ -27,6 +27,7 @@ import json
 import os
 from datetime import date, datetime, timezone
 
+import exchange_calendars as xcals
 import pandas as pd
 import yfinance as yf
 
@@ -61,6 +62,50 @@ def descargar_cierres(tickers, anios: int = ANIOS_POR_DEFECTO) -> pd.DataFrame:
     return cierres.reindex(columns=[t for t in tickers if t in cierres.columns])
 
 
+# Todos los instrumentos del riel cotizan en horario de Nueva York (acciones,
+# ADR y ETF listados en EE.UU.; los ADR de mostrador también operan en ese
+# horario). El cierre UTC de cada sesión sale del calendario XNYS de
+# `exchange_calendars`, importado DIRECTO: `calendarios.py` es camino de
+# sellado y `dinero/` no lo importa (tests/test_dinero.py, sección 1).
+EXCHANGE_DISPONIBILIDAD = "XNYS"
+
+
+def _cierre_utc(fecha) -> str:
+    """Instante UTC en que el cierre de `fecha` se volvió conocible. Si la
+    fecha no es sesión del calendario (no debería pasar con datos de
+    yfinance) se devuelve None en vez de inventar una hora."""
+    cal = xcals.get_calendar(EXCHANGE_DISPONIBILIDAD)
+    ts = pd.Timestamp(fecha)
+    if not cal.is_session(ts):
+        return None
+    return cal.session_close(ts).tz_convert("UTC").isoformat()
+
+
+def disponibilidad_por_ticker(cierres: pd.DataFrame) -> dict:
+    """G8 (exigencia del `auditor-lookahead`, corrida 11, zona ciega Z3): el
+    congelado no es point-in-time, y lo mínimo que puede declarar es, POR
+    TICKER, qué tramo de la serie contiene y desde cuándo era conocible su
+    último dato. `available_at_utc` es el cierre UTC por calendario de la
+    última sesión con dato; NO es la hora de descarga (esa es
+    `congelado_en_utc`, cota superior común a todo el archivo). Un ticker
+    sin dato alguno queda con todo en None y `n_cierres = 0`."""
+    salida = {}
+    for t in cierres.columns:
+        s = cierres[t].dropna()
+        if s.empty:
+            salida[t] = {"primer_cierre": None, "ultimo_cierre": None,
+                         "n_cierres": 0, "available_at_utc": None}
+            continue
+        ultimo = s.index[-1]
+        salida[t] = {
+            "primer_cierre": str(ultimo.__class__(s.index[0]).date()),
+            "ultimo_cierre": str(ultimo.date()),
+            "n_cierres": int(len(s)),
+            "available_at_utc": _cierre_utc(ultimo),
+        }
+    return salida
+
+
 def congelar(cierres: pd.DataFrame, motivo: str,
              ruta: str = RUTA_CIERRES) -> dict:
     """Escribe el archivo congelado y su metadato. Devuelve el metadato."""
@@ -75,6 +120,16 @@ def congelar(cierres: pd.DataFrame, motivo: str,
         "desde": str(cierres.index.min().date()) if len(cierres) else None,
         "hasta": str(cierres.index.max().date()) if len(cierres) else None,
         "sha256": _huella(ruta),
+        # G8: disponibilidad sellada por ticker (ver disponibilidad_por_ticker)
+        "disponibilidad": {
+            "exchange": EXCHANGE_DISPONIBILIDAD,
+            "que_es": ("por ticker: primer y último cierre con dato, cuántos, y "
+                       "available_at_utc = cierre UTC por calendario de la última "
+                       "sesión con dato. congelado_en_utc es la cota superior común: "
+                       "nada del archivo era conocible después de descargarlo, y "
+                       "ningún dato de un ticker era conocible antes de su available_at_utc."),
+            "por_ticker": disponibilidad_por_ticker(cierres),
+        },
         "advertencia": (
             "Los cierres de yfinance son AJUSTADOS retroactivamente por "
             "splits y dividendos: la serie NO es point-in-time. Para el "

@@ -9,7 +9,7 @@
 > salen de `dinero/datos/cierres_congelados.csv` (congelado
 > 2026-09-07T01:47:34+00:00 UTC, sha256 `69ca7283ae18fd37…`,
 > 2011 filas, 2018-09-05 a 2026-09-04).
-> Regenerado el 2026-09-08.
+> Regenerado el 2026-09-09.
 
 ## Las dos clases de afirmación de este documento
 
@@ -58,7 +58,7 @@ Un cierre demuestra que el instrumento cotiza, no que sea líquido.
 | Diseño de chips y software EDA | **REPRESENTADO** | REPRESENTADO |
 | Demanda final de IA y datacenter | **REPRESENTADO** | REPRESENTADO |
 
-**Frase con estatus evidencial (MEDIDO el 2026-09-04, sobre 36 instrumentos verificados):** de los 8 eslabones, **6 quedan representados, 2 sustituidos y 0 huecos**. Exigiendo además que el instrumento tenga liquidez verificada —que esta corrida NO verificó para los ADR de mostrador— pasan a ser **5 representados, 3 sustituidos y 0 huecos**.
+**Frase con estatus evidencial (MEDIDO el 2026-09-04, sobre 36 instrumentos verificados):** de los 8 eslabones, **6 quedan representados, 2 sustituidos y 0 huecos a 500 USD en acciones enteras** (censo de un solo día: a otros presupuestos el conteo es otro, ver la tabla por presupuesto). Exigiendo además que el instrumento tenga liquidez verificada —que esta corrida NO verificó para los ADR de mostrador— pasan a ser **5 representados, 3 sustituidos y 0 huecos a 500 USD en acciones enteras**.
 
 «Representado» significa aquí *un instrumento dominante comprable con el
 techo del presupuesto*, no *un instrumento listado*: un dominante que

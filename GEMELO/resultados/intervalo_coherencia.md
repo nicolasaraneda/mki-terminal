@@ -1,6 +1,6 @@
 # El intervalo de clúster de día de la rama de coherencia — bloque 4, corrida 11 (PROPUESTA)
 
-> **PROPUESTA — bloque 4 de la corrida 11; computado, NO cableado; ninguna cifra publicada se mueve.** Generado 2026-09-08T04:31:22.253305+00:00 por `python -m GEMELO.intervalo_coherencia`. Corte `2026-08-28`, convención `excluir_cero`, `senales.db` en `mode=ro`.
+> **PROPUESTA — bloque 4 de la corrida 11; computado, NO cableado; ninguna cifra publicada se mueve.** Generado 2026-09-09T02:47:51.387348+00:00 por `python -m GEMELO.intervalo_coherencia`. Corte `2026-08-28`, convención `excluir_cero`, `senales.db` en `mode=ro`.
 >
 > **Predicción escrita antes de computar:** el intervalo de clúster de día de la rama de coherencia contiene el cero, como lo contiene el de la regla firmada (§82.3, escrito antes de computar).
 
@@ -24,8 +24,8 @@ Un día informativo es uno cuya suma de (acierto del modelo − acierto de la ba
 
 | rama | n | días | días informativos | modelo | base | ventaja | IC95 percentil de día | IC95 t de clúster | p permutación de día | ICC | DEFF | n efectivo | b/c | McNemar χ²cc | McNemar exacta |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| regla firmada (publicada) | 238 | 34 | 16 | 67.6 % | 58.0 % | **+9.7 pp** | [-7.2, 26.6] | [-8.1, 27.4] | 0.294 | 0.392 | 3.55 | 67.0 | 72/49 | 0.0455 | 0.0451 |
-| + coherencia (NO aplicada) | 223 | 33 | 15 | 70.9 % | 56.5 % | **+14.3 pp** | [-1.4, 32.1] | [-3.5, 32.2] | 0.111 | 0.421 | 3.71 | 60.0 | 69/37 | 0.0026 | 0.0024 |
+| regla firmada (publicada) | 238 | 34 | 16 | 67.6 % [61.5, 73.3] | 58.0 % [51.6, 64.1] | **+9.7 pp** | [-7.2, 26.6] | [-8.1, 27.4] | 0.294 | 0.392 | 3.55 | 67.0 | 72/49 | 0.0455 | 0.0451 |
+| + coherencia (NO aplicada) | 223 | 33 | 15 | 70.9 % [64.6, 76.4] | 56.5 % [49.9, 62.8] | **+14.3 pp** | [-1.4, 32.1] | [-3.5, 32.2] | 0.111 | 0.421 | 3.71 | 60.0 | 69/37 | 0.0026 | 0.0024 |
 
 **Cuál de los dos IC es el calibrado** (exigencia B2): la t de clúster con gl = k−1, que el
 Frente A midió con cobertura 0,949–0,951 a k = 35; el percentil de día cubre ~0,93 ahí. Acá la

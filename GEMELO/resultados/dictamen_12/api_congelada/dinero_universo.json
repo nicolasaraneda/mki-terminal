@@ -1,0 +1,3325 @@
+{
+ "datos": {
+  "censo_por_presupuesto_y_modo": {
+   "celdas": [
+    {
+     "al_borde": [],
+     "alcanzables": 7,
+     "huecos": 4,
+     "huecos_exigiendo_liquidez": 5,
+     "modo": "enteras",
+     "presupuesto_usd": 100.0,
+     "representados": 3,
+     "representados_exigiendo_liquidez": 2,
+     "sustituidos": 1,
+     "sustituidos_exigiendo_liquidez": 1,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 36,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "fraccionarias",
+     "presupuesto_usd": 100.0,
+     "representados": 8,
+     "representados_exigiendo_liquidez": 7,
+     "sustituidos": 0,
+     "sustituidos_exigiendo_liquidez": 1,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 13,
+     "huecos": 2,
+     "huecos_exigiendo_liquidez": 2,
+     "modo": "enteras",
+     "presupuesto_usd": 250.0,
+     "representados": 4,
+     "representados_exigiendo_liquidez": 3,
+     "sustituidos": 2,
+     "sustituidos_exigiendo_liquidez": 3,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 36,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "fraccionarias",
+     "presupuesto_usd": 250.0,
+     "representados": 8,
+     "representados_exigiendo_liquidez": 7,
+     "sustituidos": 0,
+     "sustituidos_exigiendo_liquidez": 1,
+     "verificados": 36
+    },
+    {
+     "al_borde": [
+      "MSFT"
+     ],
+     "alcanzables": 29,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "enteras",
+     "presupuesto_usd": 500.0,
+     "representados": 6,
+     "representados_exigiendo_liquidez": 5,
+     "sustituidos": 2,
+     "sustituidos_exigiendo_liquidez": 3,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 36,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "fraccionarias",
+     "presupuesto_usd": 500.0,
+     "representados": 8,
+     "representados_exigiendo_liquidez": 7,
+     "sustituidos": 0,
+     "sustituidos_exigiendo_liquidez": 1,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 33,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "enteras",
+     "presupuesto_usd": 1000.0,
+     "representados": 6,
+     "representados_exigiendo_liquidez": 5,
+     "sustituidos": 2,
+     "sustituidos_exigiendo_liquidez": 3,
+     "verificados": 36
+    },
+    {
+     "al_borde": [],
+     "alcanzables": 36,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "modo": "fraccionarias",
+     "presupuesto_usd": 1000.0,
+     "representados": 8,
+     "representados_exigiendo_liquidez": 7,
+     "sustituidos": 0,
+     "sustituidos_exigiendo_liquidez": 1,
+     "verificados": 36
+    }
+   ],
+   "instrumentos": {
+    "AMAT": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07697213753319897,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.1774296331880896
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.21774296331880896
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.5443574082970224
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.15394427506639793,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.0887148165940448
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 454.7099914550781,
+     "rol": "complemento"
+    },
+    "AMD": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07328768445091811,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.0732018232225773
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.20732018232225774
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.5183004558056443
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14657536890183623,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.0366009116112886
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 477.5700073242188,
+     "rol": "complemento"
+    },
+    "AMKR": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.0732677405581053,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 20
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 20.726376395503618
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.732677405581053,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.9801980198019806,
+       "unidades": 2.0726376395503623
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2930709622324212,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 5.181594098875904
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1465354811162106,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 10
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 10.363188197751809
+      }
+     },
+     "eslabon": "ensamblaje_prueba",
+     "precio_usd": 47.77000045776367,
+     "rol": "complemento"
+    },
+    "AMZN": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.09026085045793089,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.83002194305223
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.38300219430522303
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.9575054857630575
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2707825513737927,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.915010971526115
+      }
+     },
+     "eslabon": "demanda_final",
+     "precio_usd": 258.510009765625,
+     "rol": "complemento"
+    },
+    "ARM": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.09255953696019865,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.9275616814794336
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.3927561681479434
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.9818904203698584
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.277678610880596,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.9637808407397168
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 252.08999633789065,
+     "rol": "complemento"
+    },
+    "ASML": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 0.5773576034952073
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.057735760349520736
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 0.14433940087380182
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 0.28867880174760363
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 1714.8800048828125,
+     "rol": "dominante"
+    },
+    "ASX": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07177573481154038,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 26
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 26.395602618105375
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.9330845525500251,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 2.6395602618105376
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.31102818418334166,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 6
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 6.598900654526344
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14355146962308077,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 13
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 13.197801309052688
+      }
+     },
+     "eslabon": "ensamblaje_prueba",
+     "precio_usd": 37.5099983215332,
+     "rol": "dominante"
+    },
+    "AVGO": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.09779268118714489,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.766412480541581
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.27664124805415813
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.6916031201353953
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.19558536237428978,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.3832062402707905
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 357.8999938964844,
+     "rol": "complemento"
+    },
+    "CDNS": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.0797175687059053,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.3826408220327564
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.3382640822032757
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.8456602055081891
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.23915270611771589,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.6913204110163782
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 292.70001220703125,
+     "rol": "dominante"
+    },
+    "ENTG": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07207726397627046,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 7
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 7.136362769927768
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.7136362769927769
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.5045408478338932,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 1.784090692481942
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.16818028261129775,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 3.568181384963884
+      }
+     },
+     "eslabon": "materiales_obleas",
+     "precio_usd": 138.74000549316406,
+     "rol": "sustituto"
+    },
+    "GFS": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07037863849262883,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 22
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 21.90000066248705
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.7741650234189172,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 2.190000066248705
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.3096660093675669,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 5.475000165621762
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14075727698525767,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 11
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 10.950000331243524
+      }
+     },
+     "eslabon": "materias_primas",
+     "precio_usd": 45.209999084472656,
+     "rol": "complemento"
+    },
+    "GOOGL": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.10340956356327673,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.925305899951251
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.98019801980198,
+       "unidades": 0.2925305899951251
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.7313264749878128
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.20681912712655345,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.4626529499756256
+      }
+     },
+     "eslabon": "demanda_final",
+     "precio_usd": 338.4599914550781,
+     "rol": "dominante"
+    },
+    "GSM": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1498929311700379,
+       "friccion_ida_vuelta_usd": 1.491,
+       "unidades": 213
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 212.01263248944537
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.7137758627144661,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 21
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 21.20126324894454
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2828168512642224,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 53
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 53.00315812236134
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14989293117003788,
+       "friccion_ida_vuelta_usd": 0.742,
+       "unidades": 106
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 106.00631624472268
+      }
+     },
+     "eslabon": "materias_primas",
+     "precio_usd": 4.670000076293945,
+     "rol": "sustituto"
+    },
+    "INTC": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07306889120053696,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 10
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 10.335062404602116
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.7306889120053697,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 1.0335062404602118
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.36534445600268484,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 2.583765601150529
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14613778240107392,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 5.167531202301058
+      }
+     },
+     "eslabon": "fabricacion_vanguardia",
+     "precio_usd": 95.8000030517578,
+     "rol": "complemento"
+    },
+    "KLAC": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07543103200218491,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 5.334585007226655
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.98019801980198,
+       "unidades": 0.5334585007226655
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.3771551600109246,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 1.3336462518066639
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1885775800054623,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 2.6672925036133277
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 185.6000061035156,
+     "rol": "complemento"
+    },
+    "LIN": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07328768445091811,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.0732018232225773
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.20732018232225774
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.5183004558056443
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14657536890183623,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.0366009116112886
+      }
+     },
+     "eslabon": "materiales_obleas",
+     "precio_usd": 477.5700073242188,
+     "rol": "sustituto"
+    },
+    "LRCX": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07584376335526387,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.2182643573662175
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.3218264357366218
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.8045660893415544
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2275312900657916,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.6091321786831088
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 307.6499938964844,
+     "rol": "complemento"
+    },
+    "META": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.11349449192293838,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 1.6052969154588173
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.16052969154588173
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.4013242288647043
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.8026484577294086
+      }
+     },
+     "eslabon": "demanda_final",
+     "precio_usd": 616.77001953125,
+     "rol": "dominante"
+    },
+    "MKSI": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.08963671603923391,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.8035381629095006
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.3803538162909501
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.9508845407273752
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2689101481177017,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.9017690814547503
+      }
+     },
+     "eslabon": "materiales_obleas",
+     "precio_usd": 260.3099975585937,
+     "rol": "complemento"
+    },
+    "MSFT": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07004202350409211,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 1.9813868035103848
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.1981386803510385
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.4953467008775962
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.9906934017551924
+      }
+     },
+     "eslabon": "demanda_final",
+     "precio_usd": 499.7000122070313,
+     "rol": "dominante"
+    },
+    "MU": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 0.9739412976178596
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.09739412976178598
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.2434853244044649
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.4869706488089298
+      }
+     },
+     "eslabon": "memoria",
+     "precio_usd": 1016.5900268554688,
+     "rol": "dominante"
+    },
+    "NVDA": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.0759680498074005,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 4
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 4.298050908480933
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.4298050908480934
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.303872199229602,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 1.0745127271202333
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.151936099614801,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 2.1490254542404665
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 230.3600006103516,
+     "rol": "dominante"
+    },
+    "QCOM": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.08296787687711177,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 5.867600910686829
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.586760091068683
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.41483938438555884,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 1.4669002276717074
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.20741969219277942,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 2.9338004553434147
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 168.74000549316406,
+     "rol": "complemento"
+    },
+    "SHECY": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07097015978852146,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 53
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 53.20252431105569
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.7522836937583275,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.98019801980198,
+       "unidades": 5.320252431105569
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.2893398822147414,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 13
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 13.300631077763923
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1446699411073707,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 26
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 26.601262155527845
+      }
+     },
+     "eslabon": "materiales_obleas",
+     "precio_usd": 18.61000061035156,
+     "rol": "dominante"
+    },
+    "SMH": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.12345461066716384,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 1.7461755398467302
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.17461755398467305
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.43654388496168256
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.8730877699233651
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 567.010009765625,
+     "rol": "sustituto"
+    },
+    "SNDK": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 0.5690224194833277
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.056902241948332766
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.14225560487083191
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.28451120974166383
+      }
+     },
+     "eslabon": "memoria",
+     "precio_usd": 1740.0,
+     "rol": "complemento"
+    },
+    "SNPS": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.0888685768978429,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 2.51396257136755
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.98019801980198,
+       "unidades": 0.251396257136755
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 0.6284906428418875
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1777371537956858,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 1.256981285683775
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 393.8399963378906,
+     "rol": "dominante"
+    },
+    "SOXX": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.13465164077335465,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 1.9045493744463173
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.19045493744463174
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.47613734361157933
+      },
+      "500_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 0.9522746872231587
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 519.8599853515625,
+     "rol": "sustituto"
+    },
+    "TER": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.09803097812415405,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.7731535537243013
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.27731535537243013
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.6932883884310753
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.1960619562483081,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.3865767768621506
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 357.0299987792969,
+     "rol": "complemento"
+    },
+    "TOELY": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07932460515755527,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 5
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 5.609943787663031
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.5609943787663032
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.39662302578777636,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 1.4024859469157578
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.19831151289388818,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 2.8049718938315156
+      }
+     },
+     "eslabon": "litografia_equipos",
+     "precio_usd": 176.49000549316406,
+     "rol": "sustituto"
+    },
+    "TSEM": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07870828590554263,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 4
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.8019801980198,
+       "unidades": 4.453085482633246
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.44530854826332467
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.3148331436221705,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.95049504950495,
+       "unidades": 1.1132713706583115
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.15741657181108526,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.9009900990099,
+       "unidades": 2.226542741316623
+      }
+     },
+     "eslabon": "materias_primas",
+     "precio_usd": 222.33999633789065,
+     "rol": "complemento"
+    },
+    "TSM": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.08160220023119959,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.308407361561516
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.2308407361561516
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.577101840390379
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.16320440046239917,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 1.9999999999999998,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.154203680780758
+      }
+     },
+     "eslabon": "fabricacion_vanguardia",
+     "precio_usd": 428.9100036621094,
+     "rol": "dominante"
+    },
+    "UMC": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07021344733712893,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 48
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 47.669667216155425
+      },
+      "100_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.8425613680455472,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 4
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 4.7669667216155425
+      },
+      "250_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.28085378934851574,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 12
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 11.917416804038856
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14042689467425787,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 24
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 23.834833608077712
+      }
+     },
+     "eslabon": "materias_primas",
+     "precio_usd": 20.770000457763672,
+     "rol": "dominante"
+    },
+    "VRT": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.08317589361161518,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 3
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 3.529387281963869
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 1.9801980198019806,
+       "unidades": 0.35293872819638694
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.8823468204909672
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.24952768083484553,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.7646936409819345
+      }
+     },
+     "eslabon": "demanda_final",
+     "precio_usd": 280.5299987792969,
+     "rol": "complemento"
+    },
+    "WDC": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07487271775078408,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.118040106104217
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.21180401061042173
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.5295100265260543
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14974543550156816,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.0590200530521086
+      }
+     },
+     "eslabon": "memoria",
+     "precio_usd": 467.4599914550781,
+     "rol": "complemento"
+    },
+    "XSD": {
+     "celdas": {
+      "1000_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.07121782303518527,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 2
+      },
+      "1000_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 19.801980198019802,
+       "unidades": 2.014648459269739
+      },
+      "100_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "100_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0000000000000004,
+       "friccion_ida_vuelta_usd": 1.9801980198019804,
+       "unidades": 0.20146484592697392
+      },
+      "250_enteras": {
+       "alcanza": false,
+       "friccion_ida_vuelta_pct": null,
+       "friccion_ida_vuelta_usd": null,
+       "unidades": 0
+      },
+      "250_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 4.9504950495049505,
+       "unidades": 0.5036621148174347
+      },
+      "500_enteras": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 0.14243564607037054,
+       "friccion_ida_vuelta_usd": 0.7,
+       "unidades": 1
+      },
+      "500_fraccionarias": {
+       "alcanza": true,
+       "friccion_ida_vuelta_pct": 2.0,
+       "friccion_ida_vuelta_usd": 9.900990099009901,
+       "unidades": 1.0073242296348695
+      }
+     },
+     "eslabon": "diseno_eda",
+     "precio_usd": 491.4500122070313,
+     "rol": "sustituto"
+    }
+   },
+   "presupuestos_usd": [
+    100.0,
+    250.0,
+    500.0,
+    1000.0
+   ]
+  },
+  "costos": {
+   "_": "Arancel PUBLICADO del insumo del §40 (GEMELO/propuestas/insumo_40_aranceles_ibkr.md, IBKR Pro Tiered, tabla 'United States', consultado el 7-sep-2026), columna de acciones ENTERAS: 0,0035 USD por accion, minimo 0,35 USD por orden, tope 1 % del valor operado (la fila de EE.UU.; la vineta de 0,5 % de la misma pagina se declara como contradiccion de la fuente y se adopta el conservador). Hasta el 7-sep-2026 esto era un supuesto sin verificar (0,005 / 1,00 / 1 %); lo cambio la corrida 11 (acta §83) por orden del encargo. El §40 sigue ESPERANDO FIRMA: lo que esta firmado es reconstruir la cuenta con este insumo, no el insumo. Tarifas de terceros (SEC, FINRA, compensacion, bolsa por venue) NO estan en el modelo: a estos tamanos suman centavos y el insumo lo declara. El ruteo tiene que ser SmartRouting (una orden dirigida por API cae a Fixed, minimo 1,00 USD).",
+   "acciones_fraccionarias": false,
+   "barrido_deslizamiento_pb": [
+    0.0,
+    2.0,
+    5.0,
+    10.0
+   ],
+   "comision_minima_usd": 0.35,
+   "comision_por_accion_usd": 0.0035,
+   "comision_tope_pct_del_monto": 1.0,
+   "deslizamiento_pb_por_lado": 5.0,
+   "fraccionarias_no_usadas": {
+    "_": "Columna del insumo §40 que NO aplica a esta cuenta (compra enteras): 1 % del valor operado, minimo 0,01 USD.",
+    "comision_minima_usd": 0.01,
+    "comision_pct_del_monto": 1.0
+   }
+  },
+  "eslabones": [
+   {
+    "clave": "materias_primas",
+    "dominante_contexto_no_verificado": "Obleas de silicio y gases: Shin-Etsu y SUMCO (Tokio). Nodos maduros: UMC, GlobalFoundries, Tower.",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "REPRESENTADO",
+    "huecos": [
+     {
+      "clase": "PRIVADAS",
+      "por_que": "No cotizan en ninguna bolsa. Se le compra, en su lugar, a productores diversificados de silicio metálico.",
+      "quien": "Sibelco, The Quartz Corp (cuarzo de alta pureza)"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 24,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 1.0,
+      "comision_orden_techo_pct": 0.07021344733712893,
+      "diferencia": "Un ADR no es la acción: cotiza en el horario de Nueva York, trae riesgo de tipo de cambio TWD/USD y su precio puede separarse del local por prima o descuento.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": false,
+      "nombre": "United Microelectronics (ADR)",
+      "precio_usd": 20.770000457763672,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "2303.TW, el listado principal en Taipéi",
+      "ticker": "UMC",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 11,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.7741650234189172,
+      "comision_orden_techo_pct": 0.07037863849262883,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "GlobalFoundries",
+      "precio_usd": 45.209999084472656,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "GFS",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 106,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 1.0,
+      "comision_orden_techo_pct": 0.07494646558501894,
+      "diferencia": "Ferroglobe vende silicio metálico y ferroaleaciones a muchos sectores; el semiconductor es una fracción menor de su demanda. Comprarlo no es comprar la materia prima del chip.",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Ferroglobe",
+      "precio_usd": 4.670000076293945,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "los productores de silicio metálico y cuarzo de grado semiconductor, casi todos privados (Sibelco, Quartz Corp)",
+      "ticker": "GSM",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 2,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.15741657181108526,
+      "comision_orden_techo_pct": 0.07870828590554263,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Tower Semiconductor",
+      "precio_usd": 222.33999633789065,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "TSEM",
+      "verificado": true
+     }
+    ],
+    "nombre": "Materias primas y nodos maduros",
+    "obstaculo": "Los proveedores de materia prima pura cotizan en Tokio o son privados; los nodos maduros sí tienen listado en EE.UU."
+   },
+   {
+    "clave": "materiales_obleas",
+    "dominante_contexto_no_verificado": "Shin-Etsu y SUMCO en obleas; JSR y Tokyo Ohka en fotorresinas; Entegris y MKS en materiales y subsistemas.",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "SUSTITUIDO",
+    "huecos": [
+     {
+      "clase": "COTIZAN FUERA DE EE.UU.",
+      "por_que": "Listado principal en Tokio. Sólo hay ADR de mostrador.",
+      "quien": "Shin-Etsu Chemical (4063.T), SUMCO (3436.T)"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 26,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 1.0,
+      "comision_orden_techo_pct": 0.07233497055368535,
+      "diferencia": "ADR de mostrador (OTC), no listado en bolsa: liquidez baja y diferencial de compra-venta ancho. Verificar antes de creerle.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": true,
+      "nombre": "Shin-Etsu Chemical (ADR OTC)",
+      "precio_usd": 18.61000061035156,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "4063.T, el listado principal en Tokio",
+      "ticker": "SHECY",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 3,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.2522704239169466,
+      "comision_orden_techo_pct": 0.08409014130564887,
+      "diferencia": "Entegris vende materiales de proceso, filtración y manejo de obleas: es proveedor de la fábrica, no fabricante de la oblea. La correlación es de sector, no de producto.",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Entegris",
+      "precio_usd": 138.74000549316406,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "Shin-Etsu (4063.T) y SUMCO (3436.T), los dos fabricantes de obleas de silicio",
+      "ticker": "ENTG",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.07328768445091811,
+      "comision_orden_techo_pct": 0.07328768445091811,
+      "diferencia": "Linde es un gigante de gases industriales diversificado; el electrónico es una línea, no la empresa.",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Linde",
+      "precio_usd": 477.5700073242188,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "los gases de proceso de grado electrónico",
+      "ticker": "LIN",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.13445507405885085,
+      "comision_orden_techo_pct": 0.13445507405885085,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "MKS Instruments",
+      "precio_usd": 260.3099975585937,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "MKSI",
+      "verificado": true
+     }
+    ],
+    "nombre": "Materiales químicos y obleas",
+    "obstaculo": "El grueso del eslabón cotiza en Tokio. Lo listado en EE.UU. es la capa de materiales de proceso, no la oblea."
+   },
+   {
+    "clave": "litografia_equipos",
+    "dominante_contexto_no_verificado": "ASML en litografía EUV (monopolio de facto); Applied Materials, Lam Research, KLA y Tokyo Electron en el resto del equipo.",
+    "estado": "SUSTITUIDO",
+    "estado_exigiendo_liquidez": "SUSTITUIDO",
+    "huecos": [
+     {
+      "clase": "COTIZA FUERA DE EE.UU.",
+      "por_que": "Listado principal en Tokio.",
+      "quien": "Tokyo Electron (8035.T)"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.02040959128355558,
+      "comision_orden_techo_pct": null,
+      "diferencia": "El ADR de ASML es de nivel III y cotiza en Nasdaq con liquidez propia; la diferencia con el original es horario y moneda, no profundidad.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": false,
+      "nombre": "ASML Holding",
+      "precio_usd": 1714.8800048828125,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "ASML.AS, el listado principal en Ámsterdam",
+      "ticker": "ASML",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.07697213753319897,
+      "comision_orden_techo_pct": 0.07697213753319897,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Applied Materials",
+      "precio_usd": 454.7099914550781,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "AMAT",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 2,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.1885775800054623,
+      "comision_orden_techo_pct": 0.09428879000273115,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "KLA Corporation",
+      "precio_usd": 185.6000061035156,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "KLAC",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.1137656450328958,
+      "comision_orden_techo_pct": 0.1137656450328958,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Lam Research",
+      "precio_usd": 307.6499938964844,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "LRCX",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.09803097812415405,
+      "comision_orden_techo_pct": 0.09803097812415405,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Teradyne",
+      "precio_usd": 357.0299987792969,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "TER",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 2,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.19831151289388818,
+      "comision_orden_techo_pct": 0.09915575644694409,
+      "diferencia": "ADR de mostrador: liquidez baja. Verificar.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": true,
+      "nombre": "Tokyo Electron (ADR OTC)",
+      "precio_usd": 176.49000549316406,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "8035.T, el listado principal en Tokio",
+      "ticker": "TOELY",
+      "verificado": true
+     }
+    ],
+    "nombre": "Litografía y equipamiento",
+    "obstaculo": "ASML y varios pares tienen listado o ADR en EE.UU.; Tokyo Electron no tiene listado principal en EE.UU."
+   },
+   {
+    "clave": "fabricacion_vanguardia",
+    "dominante_contexto_no_verificado": "TSMC. Samsung Foundry e Intel Foundry como segundos.",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "REPRESENTADO",
+    "huecos": [
+     {
+      "clase": "COTIZA FUERA DE EE.UU.",
+      "por_que": "Listado principal en Taipéi; en EE.UU. sólo el ADR.",
+      "quien": "TSMC (2330.TW)"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.08160220023119959,
+      "comision_orden_techo_pct": 0.08160220023119959,
+      "diferencia": "El riel de medición usa 2330.TW y trata al ADR como DUPLICADO (universo.py, `duplicado_de`), justamente porque no son el mismo instrumento: distinto horario, distinta moneda, prima variable. Para comprar desde Chile con 500 dólares, el ADR es lo único disponible.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": false,
+      "nombre": "TSMC (ADR)",
+      "precio_usd": 428.9100036621094,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "2330.TW, el listado principal en Taipéi",
+      "ticker": "TSM",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 5,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.36534445600268484,
+      "comision_orden_techo_pct": 0.07306889120053696,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Intel",
+      "precio_usd": 95.8000030517578,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "INTC",
+      "verificado": true
+     }
+    ],
+    "nombre": "Fabricación de vanguardia",
+    "obstaculo": "TSMC cotiza en Taipéi; en EE.UU. sólo hay ADR. Samsung no tiene listado principal en EE.UU."
+   },
+   {
+    "clave": "memoria",
+    "dominante_contexto_no_verificado": "Samsung, SK Hynix y Micron en DRAM; Samsung, SK Hynix, Kioxia y Micron en NAND.",
+    "estado": "SUSTITUIDO",
+    "estado_exigiendo_liquidez": "SUSTITUIDO",
+    "huecos": [
+     {
+      "clase": "COTIZAN FUERA DE EE.UU.",
+      "por_que": "Listado principal en Seúl. Samsung tiene ADR de mostrador poco líquido; SK Hynix no tiene ADR utilizable.",
+      "quien": "Samsung Electronics (005930.KS), SK Hynix (000660.KS)"
+     },
+     {
+      "clase": "COTIZA FUERA DE EE.UU.",
+      "por_que": "Listado en Tokio desde 2024.",
+      "quien": "Kioxia"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.03442882487079134,
+      "comision_orden_techo_pct": null,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Micron Technology",
+      "precio_usd": 1016.5900268554688,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "MU",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.020114942528735632,
+      "comision_orden_techo_pct": null,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "SanDisk",
+      "precio_usd": 1740.0,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "SNDK",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.07487271775078408,
+      "comision_orden_techo_pct": 0.07487271775078408,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Western Digital",
+      "precio_usd": 467.4599914550781,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "WDC",
+      "verificado": true
+     }
+    ],
+    "nombre": "Memoria",
+    "obstaculo": "De los cuatro, sólo Micron tiene listado principal en EE.UU. El eslabón queda representado por su tercer actor."
+   },
+   {
+    "clave": "ensamblaje_prueba",
+    "dominante_contexto_no_verificado": "ASE Technology, Amkor, JCET y las casas de empaquetado avanzado; parte del empaquetado avanzado lo hace la propia fundición.",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "REPRESENTADO",
+    "huecos": [
+     {
+      "clase": "COTIZA FUERA DE EE.UU.",
+      "por_que": "Listado en Shanghái.",
+      "quien": "JCET (600584.SS)"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 13,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.9330845525500251,
+      "comision_orden_techo_pct": 0.07177573481154038,
+      "diferencia": "Mismas diferencias que cualquier ADR: horario, moneda, prima.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": false,
+      "nombre": "ASE Technology (ADR)",
+      "precio_usd": 37.5099983215332,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "3711.TW, el listado principal en Taipéi",
+      "ticker": "ASX",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 10,
+      "alcanza_con_piso": true,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.732677405581053,
+      "comision_orden_techo_pct": 0.0732677405581053,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Amkor Technology",
+      "precio_usd": 47.77000045776367,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "AMKR",
+      "verificado": true
+     }
+    ],
+    "nombre": "Ensamblaje y prueba (OSAT)",
+    "obstaculo": "ASE tiene ADR y Amkor cotiza en EE.UU."
+   },
+   {
+    "clave": "diseno_eda",
+    "dominante_contexto_no_verificado": "Diseño: NVIDIA, Broadcom, AMD, Qualcomm, Arm. EDA: Synopsys y Cadence (duopolio, con Siemens EDA tercero).",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "REPRESENTADO",
+    "huecos": [
+     {
+      "clase": "SEGMENTO DE UN CONGLOMERADO",
+      "por_que": "No cotiza por separado: es una división de Siemens AG.",
+      "quien": "Siemens EDA"
+     }
+    ],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.11957635305885794,
+      "comision_orden_techo_pct": 0.11957635305885794,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Cadence Design Systems",
+      "precio_usd": 292.70001220703125,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "CDNS",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 2,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.151936099614801,
+      "comision_orden_techo_pct": 0.0759680498074005,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "NVIDIA",
+      "precio_usd": 230.3600006103516,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "NVDA",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.0888685768978429,
+      "comision_orden_techo_pct": 0.0888685768978429,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Synopsys",
+      "precio_usd": 393.8399963378906,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "SNPS",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.07328768445091811,
+      "comision_orden_techo_pct": 0.07328768445091811,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "AMD",
+      "precio_usd": 477.5700073242188,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "AMD",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.138839305440298,
+      "comision_orden_techo_pct": 0.138839305440298,
+      "diferencia": "El ADR de Arm es el vehículo listado tras la salida a bolsa de 2023; SoftBank retiene la mayoría.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ADR",
+      "liquidez_no_verificada": false,
+      "nombre": "Arm Holdings (ADR)",
+      "precio_usd": 252.08999633789065,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "ARM.L / la matriz SoftBank",
+      "ticker": "ARM",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.09779268118714489,
+      "comision_orden_techo_pct": 0.09779268118714489,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Broadcom",
+      "precio_usd": 357.8999938964844,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "AVGO",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 2,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.20741969219277942,
+      "comision_orden_techo_pct": 0.10370984609638971,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Qualcomm",
+      "precio_usd": 168.74000549316406,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "QCOM",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.06172730533358192,
+      "comision_orden_techo_pct": null,
+      "diferencia": "Una cesta no es un eslabón: pondera por capitalización y queda dominada por diseño y fabricación. Comprarla es comprar el sector, que es justo lo contrario de apostar a un eslabón contra otro.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ETF",
+      "liquidez_no_verificada": false,
+      "nombre": "VanEck Semiconductor ETF",
+      "precio_usd": 567.010009765625,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "la cadena entera",
+      "ticker": "SMH",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.06732582038667732,
+      "comision_orden_techo_pct": null,
+      "diferencia": "Mismo reparo que SMH.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ETF",
+      "liquidez_no_verificada": false,
+      "nombre": "iShares Semiconductor ETF",
+      "precio_usd": 519.8599853515625,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "la cadena entera",
+      "ticker": "SOXX",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.07121782303518527,
+      "comision_orden_techo_pct": 0.07121782303518527,
+      "diferencia": "Ponderación igualitaria en vez de por capitalización: menos dominado por los tres grandes, más expuesto a los chicos.",
+      "fecha_precio": "2026-09-04",
+      "forma": "ETF",
+      "liquidez_no_verificada": false,
+      "nombre": "SPDR S&P Semiconductor ETF",
+      "precio_usd": 491.4500122070313,
+      "razon_no_verificado": "",
+      "rol": "sustituto",
+      "sustituye_a": "la cadena entera",
+      "ticker": "XSD",
+      "verificado": true
+     }
+    ],
+    "nombre": "Diseño de chips y software EDA",
+    "obstaculo": "Es el eslabón mejor representado en EE.UU. de toda la cadena."
+   },
+   {
+    "clave": "demanda_final",
+    "dominante_contexto_no_verificado": "Microsoft, Google, Meta y Amazon como compradores; Vertiv, Equinix y Digital Realty en la infraestructura física.",
+    "estado": "REPRESENTADO",
+    "estado_exigiendo_liquidez": "REPRESENTADO",
+    "huecos": [],
+    "instrumentos": [
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.10340956356327673,
+      "comision_orden_techo_pct": 0.10340956356327673,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Alphabet",
+      "precio_usd": 338.4599914550781,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "GOOGL",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.05674724596146919,
+      "comision_orden_techo_pct": null,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Meta Platforms",
+      "precio_usd": 616.77001953125,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "META",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 0,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": false,
+      "comision_orden_minima_pct": 0.07004202350409211,
+      "comision_orden_techo_pct": null,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Microsoft",
+      "precio_usd": 499.7000122070313,
+      "razon_no_verificado": "",
+      "rol": "dominante",
+      "sustituye_a": "",
+      "ticker": "MSFT",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.13539127568689635,
+      "comision_orden_techo_pct": 0.13539127568689635,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Amazon",
+      "precio_usd": 258.510009765625,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "AMZN",
+      "verificado": true
+     },
+     {
+      "acciones_con_techo": 1,
+      "alcanza_con_piso": false,
+      "alcanza_con_techo": true,
+      "comision_orden_minima_pct": 0.12476384041742276,
+      "comision_orden_techo_pct": 0.12476384041742276,
+      "diferencia": "",
+      "fecha_precio": "2026-09-04",
+      "forma": "accion",
+      "liquidez_no_verificada": false,
+      "nombre": "Vertiv Holdings",
+      "precio_usd": 280.5299987792969,
+      "razon_no_verificado": "",
+      "rol": "complemento",
+      "sustituye_a": "",
+      "ticker": "VRT",
+      "verificado": true
+     }
+    ],
+    "nombre": "Demanda final de IA y datacenter",
+    "obstaculo": "Todos listados en EE.UU."
+   }
+  ],
+  "estatus": "SIMULADO",
+  "estatus_de_los_precios": "MEDIDO al 2026-09-04 sobre el archivo congelado",
+  "fuente": {
+   "advertencia": "Los cierres de yfinance son AJUSTADOS retroactivamente por splits y dividendos: la serie NO es point-in-time. Para el riel de dinero eso sesga a favor y está declarado como limitación, no corregido.",
+   "archivo": "dinero/datos/cierres_congelados.csv",
+   "congelado_en_utc": "2026-09-07T01:47:34+00:00",
+   "desde": "2018-09-05",
+   "filas": 2011,
+   "fuente": "yfinance (mismo proveedor que ya ingiere el proyecto)",
+   "hasta": "2026-09-04",
+   "motivo": "bloque 1 de la corrida 10: mapa de la cadena a instrumentos comprables",
+   "sha256": "69ca7283ae18fd37736827e1b19a79d3557e2e8177dbfd05c9685be22502402b",
+   "tickers": [
+    "UMC",
+    "GFS",
+    "TSEM",
+    "GSM",
+    "ENTG",
+    "MKSI",
+    "LIN",
+    "SHECY",
+    "ASML",
+    "AMAT",
+    "LRCX",
+    "KLAC",
+    "TER",
+    "TOELY",
+    "TSM",
+    "INTC",
+    "MU",
+    "SNDK",
+    "WDC",
+    "ASX",
+    "AMKR",
+    "NVDA",
+    "AVGO",
+    "AMD",
+    "QCOM",
+    "ARM",
+    "SNPS",
+    "CDNS",
+    "MSFT",
+    "GOOGL",
+    "META",
+    "AMZN",
+    "VRT",
+    "SMH",
+    "SOXX",
+    "XSD"
+   ]
+  },
+  "generado": "2026-09-08T04:57:50+00:00",
+  "presupuesto": {
+   "_": "El presupuesto real declarado por Nicolás: 100 a 500 dólares. Se usa el techo para el mapa del bloque 1 y el piso para el escenario conservador.",
+   "piso_usd": 100.0,
+   "techo_usd": 500.0
+  },
+  "resumen": {
+   "candidatos": 36,
+   "huecos": 0,
+   "huecos_exigiendo_liquidez": 0,
+   "representados": 6,
+   "representados_exigiendo_liquidez": 5,
+   "sustituidos": 2,
+   "sustituidos_exigiendo_liquidez": 3,
+   "verificados": 36
+  },
+  "segundo_dia": {
+   "cambios_de_alcance": [],
+   "instrumentos": [
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 454.7099914550781,
+     "precio_dia2": 454.7099914550781,
+     "ticker": "AMAT",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 477.5700073242188,
+     "precio_dia2": 477.5700073242188,
+     "ticker": "AMD",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 47.77000045776367,
+     "precio_dia2": 47.77000045776367,
+     "ticker": "AMKR",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 258.510009765625,
+     "precio_dia2": 258.510009765625,
+     "ticker": "AMZN",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 252.08999633789065,
+     "precio_dia2": 252.08999633789065,
+     "ticker": "ARM",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 1714.8800048828125,
+     "precio_dia2": 1714.8800048828125,
+     "ticker": "ASML",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 37.5099983215332,
+     "precio_dia2": 37.5099983215332,
+     "ticker": "ASX",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 357.8999938964844,
+     "precio_dia2": 357.8999938964844,
+     "ticker": "AVGO",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 292.70001220703125,
+     "precio_dia2": 292.70001220703125,
+     "ticker": "CDNS",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 138.74000549316406,
+     "precio_dia2": 138.74000549316406,
+     "ticker": "ENTG",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 45.209999084472656,
+     "precio_dia2": 45.209999084472656,
+     "ticker": "GFS",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 338.4599914550781,
+     "precio_dia2": 338.4599914550781,
+     "ticker": "GOOGL",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 4.670000076293945,
+     "precio_dia2": 4.670000076293945,
+     "ticker": "GSM",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 95.8000030517578,
+     "precio_dia2": 95.8000030517578,
+     "ticker": "INTC",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 185.6000061035156,
+     "precio_dia2": 185.6000061035156,
+     "ticker": "KLAC",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 477.5700073242188,
+     "precio_dia2": 477.5700073242188,
+     "ticker": "LIN",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 307.6499938964844,
+     "precio_dia2": 307.6499938964844,
+     "ticker": "LRCX",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 616.77001953125,
+     "precio_dia2": 616.77001953125,
+     "ticker": "META",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 260.3099975585937,
+     "precio_dia2": 260.3099975585937,
+     "ticker": "MKSI",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 499.7000122070313,
+     "precio_dia2": 499.7000122070313,
+     "ticker": "MSFT",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 1016.5900268554688,
+     "precio_dia2": 1016.5900268554688,
+     "ticker": "MU",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 230.3600006103516,
+     "precio_dia2": 230.3600006103516,
+     "ticker": "NVDA",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 168.74000549316406,
+     "precio_dia2": 168.74000549316406,
+     "ticker": "QCOM",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 18.61000061035156,
+     "precio_dia2": 18.61000061035156,
+     "ticker": "SHECY",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 567.010009765625,
+     "precio_dia2": 567.010009765625,
+     "ticker": "SMH",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 1740.0,
+     "precio_dia2": 1740.0,
+     "ticker": "SNDK",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 393.8399963378906,
+     "precio_dia2": 393.8399963378906,
+     "ticker": "SNPS",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 519.8599853515625,
+     "precio_dia2": 519.8599853515625,
+     "ticker": "SOXX",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 357.0299987792969,
+     "precio_dia2": 357.0299987792969,
+     "ticker": "TER",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 176.49000549316406,
+     "precio_dia2": 176.49000549316406,
+     "ticker": "TOELY",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 222.33999633789065,
+     "precio_dia2": 222.33999633789065,
+     "ticker": "TSEM",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 428.9100036621094,
+     "precio_dia2": 428.9100036621094,
+     "ticker": "TSM",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 20.770000457763672,
+     "precio_dia2": 20.770000457763672,
+     "ticker": "UMC",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 280.5299987792969,
+     "precio_dia2": 280.5299987792969,
+     "ticker": "VRT",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 467.4599914550781,
+     "precio_dia2": 467.4599914550781,
+     "ticker": "WDC",
+     "variacion_pct": 0.0
+    },
+    {
+     "fecha_dia1": "2026-09-04",
+     "fecha_dia2": "2026-09-04",
+     "precio_dia1": 491.4500122070313,
+     "precio_dia2": 491.4500122070313,
+     "ticker": "XSD",
+     "variacion_pct": 0.0
+    }
+   ],
+   "meta": {
+    "advertencia": "Los cierres de yfinance son AJUSTADOS retroactivamente por splits y dividendos: la serie NO es point-in-time. Para el riel de dinero eso sesga a favor y está declarado como limitación, no corregido.",
+    "congelado_en_utc": "2026-09-08T04:21:27+00:00",
+    "desde": "2018-09-05",
+    "filas": 2011,
+    "fuente": "yfinance (mismo proveedor que ya ingiere el proyecto)",
+    "hasta": "2026-09-04",
+    "motivo": "bloque 10 de la corrida 11 (8-sep-2026): segundo congelado para el censo, descargado a las 04:21 UTC. TERMINA EN LA MISMA SESION que el primero (2026-09-04; el 7-sep fue feriado en NYSE): NO cuenta como segundo dia de censo. Se conserva como evidencia contra revision silenciosa de la fuente en 26 h (precios identicos, dif. rel. max. 8,4e-7).",
+    "sha256": "4222c8ecd0607497bf06e856e8a0debf8e84e6959e03dadeae5a8deceacec99d",
+    "tickers": [
+     "UMC",
+     "GFS",
+     "TSEM",
+     "GSM",
+     "ENTG",
+     "MKSI",
+     "LIN",
+     "SHECY",
+     "ASML",
+     "AMAT",
+     "LRCX",
+     "KLAC",
+     "TER",
+     "TOELY",
+     "TSM",
+     "INTC",
+     "MU",
+     "SNDK",
+     "WDC",
+     "ASX",
+     "AMKR",
+     "NVDA",
+     "AVGO",
+     "AMD",
+     "QCOM",
+     "ARM",
+     "SNPS",
+     "CDNS",
+     "MSFT",
+     "GOOGL",
+     "META",
+     "AMZN",
+     "VRT",
+     "SMH",
+     "SOXX",
+     "XSD"
+    ]
+   }
+  }
+ },
+ "meta": {
+  "artefacto": {
+   "bytes": 95742,
+   "generado_en": "2026-09-08T04:57:50.492105+00:00",
+   "nombre": "universo_operable.json",
+   "sha256": "c05935fcc68826352d7dff45eb3b39323a314bea080ef5aa93c6462ad5e50369"
+  },
+  "generado_en": "2026-09-09T02:31:07.143798+00:00",
+  "modelo_version": "4.6.0",
+  "plataforma_version": "5.1.0"
+ }
+}

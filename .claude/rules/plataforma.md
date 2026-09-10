@@ -24,7 +24,10 @@ paths:
 - Los scripts se **ramifican por `uname`**, no se reescriben a Linux-only. El
   Mac todavía puede correrlos si algún día vuelve.
 - `PLATAFORMA_VERSION` 5.0.3 quedó congelada al sellar la primera fila el
-  26-ago. No se cambia de paso.
+  26-ago. No se cambia de paso. **Nota fechada 9-sep-2026 (errata, acta §84.3):**
+  desde el 8-sep-2026 `PLATAFORMA_VERSION` es **5.1.0** (bump del §84.3, por el corte de
+  método del §84.1); la 5.0.3 quedó cerrada con su último sello el 7-sep. La regla sigue:
+  se lee de `version.py`, no de este documento, y no se cambia de paso.
 - Nunca `git pull` sobre el árbol de trabajo: es el código que los timers
   ejecutan. `git fetch` y leer desde `origin/main`.
 - Rama de trabajo: `main`. `migracion-wsl` está mergeada y muerta.

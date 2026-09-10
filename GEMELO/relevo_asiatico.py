@@ -234,6 +234,13 @@ REGISTRO_INTENTOS = (
     (6, "ADV-3b", "dictamen del adversario sobre el juez: campeón sobre las 254 filas de C1 (MAE, CRPS), dos contrastes "
                   "por bootstrap de bloques sobre medias diarias, dos con climatología por ticker",
      "GEMELO/resultados/corrida09/juez_lineal_d3.md §Dictamen; GEMELO/preregistro/juez_lineal_d3.md §Trazabilidad"),
+    # --- duodécima corrida (9-sep-2026), re-dictamen D18: el DSR deflacta por la BÚSQUEDA, no por
+    #     la publicación. Precedentes: la fila COLA cuenta reglas de filas alternativas que tampoco se
+    #     cablearon, y DEUDA-2f cuenta recomputaciones por clúster sobre cifras ya publicadas. ---
+    (2, "COHER-12", "la regla de filas `filtrar_sesion_coherente` (n=223, +14,3 pp; evaluada desde la quinta "
+                    "corrida y sin fila hasta hoy) y su recomputación por clúster de día y bajo R2 (bitácora 11, "
+                    "bloque 4). NO cableada: el piso lo pone la evaluación, no la publicación",
+     "GEMELO/resultados/intervalo_coherencia.md §3, §3b; GEMELO/resultados/dictamen_12/re_dictamen_corrida_11.md §Conteo"),
 )
 
 # EL número vigente. Se calcula, no se escribe.

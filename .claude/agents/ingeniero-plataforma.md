@@ -52,6 +52,10 @@ y `PYTHONUNBUFFERED=1`, `enable-linger`, rutas por `__MKI_DIR__`.
 `PLATAFORMA_VERSION` es 5.0.3 y quedó **congelada** al sellar la primera fila
 el 26-ago. Cambiarla no es una edición de paso.
 
+> **Nota fechada 9-sep-2026 (errata, acta §84.3):** el párrafo anterior describe el estado
+> hasta el 7-sep-2026. Desde el 8-sep `PLATAFORMA_VERSION` es **5.1.0** (§84.3); el primer
+> sello 5.1.0 es el del 8-sep a las 21:15 UTC. La versión viva se lee de `version.py`.
+
 ## Lado Windows, manual y de Nicolás
 
 Tarea `MKI-WSL-KeepAlive` (At system start up, S4U, cada 15 min,

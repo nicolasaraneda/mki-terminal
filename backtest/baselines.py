@@ -151,7 +151,11 @@ class ContextoRun:
                          / spread.rolling(120).std().replace(0, np.nan))
                     self.z_divergencia.setdefault(a, []).append(z)
                     self.z_divergencia.setdefault(b, []).append(-z)
-        self.z_divergencia = {t: pd.concat(series, axis=1).mean(axis=1)
+        # `sort=True` explícito (corrida 12, bloque 2.7): es el default actual
+        # de pandas 3 para índices DatetimeIndex y el que reproduce la salida
+        # (fixture congelada antes del cambio + reproducción 21/21 de
+        # backtest.linea_base como criterio de aceptación).
+        self.z_divergencia = {t: pd.concat(series, axis=1, sort=True).mean(axis=1)
                               for t, series in self.z_divergencia.items()}
 
         # --- cadena: Roca→Chip como percentil rodante (mismas ventanas del

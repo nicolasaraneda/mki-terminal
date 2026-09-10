@@ -311,8 +311,17 @@ def senales_sin_informacion(cierres: pd.DataFrame, tickers, horizonte: int,
 def correr_estrategia(cierres: pd.DataFrame, senales_por_dia: dict,
                       cfg: dict, nombre_juego: str, aportes: dict,
                       desliz_pb: float, techo_usd: float,
-                      retardo: int = RETARDO_IMPLEMENTACION) -> Libro:
+                      retardo: int = RETARDO_IMPLEMENTACION,
+                      fuga_precios_ref_dias: int = 0) -> Libro:
     """El libro de la estrategia, día por día.
+
+    `fuga_precios_ref_dias` (G3, corrida 12) es un parámetro de CONTRAPRUEBA
+    y sólo eso: con k > 0, `precios_ref` del día d se lee del cierre de
+    d + k (o del último disponible si no existe), que es exactamente la
+    fuga de 1 día que el auditor inyectó a mano en la corrida 11 y que el
+    gate con dos cortes a dedo no vio. Existe como argumento para que el
+    test la inyecte sin editar código; el valor por defecto 0 es el único
+    que produce una cuenta legítima, y `verificar_invariancia` lo declara.
 
     Orden dentro de cada sesión d (E4):
       1. se EJECUTAN, contra el cierre de d, las órdenes decididas en
@@ -368,8 +377,13 @@ def correr_estrategia(cierres: pd.DataFrame, senales_por_dia: dict,
         perdida = max(0.0, libro.aportado_usd - valor)
         estado = D.EstadoRiel(gasto_dia, gasto_semana, gasto_mes, perdida,
                               apagado, motivo)
-        precios_ref = {t: float(fila[t]) for t in cierres.columns
-                       if not pd.isna(fila.get(t))}
+        fila_ref = fila
+        if fuga_precios_ref_dias > 0:
+            # contraprueba G3: mirar k sesiones adelante; en la fuente
+            # truncada el futuro no existe y se cae al último cierre
+            fila_ref = cierres.iloc[min(i + fuga_precios_ref_dias, len(fechas) - 1)]
+        precios_ref = {t: float(fila_ref[t]) for t in cierres.columns
+                       if not pd.isna(fila_ref.get(t))}
         # la caja comprometida por órdenes pendientes no está disponible.
         # Misma convención que `linea_base`: n × precio de decisión con
         # deslizamiento (exigencia G4 del auditor). Con retardo = 1 esta

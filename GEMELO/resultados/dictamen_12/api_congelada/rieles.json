@@ -1,0 +1,142 @@
+{
+ "datos": {
+  "por_que_son_dos": "El proyecto mide una noche y quiere operar en semanas. Las dos cosas son legítimas y no son la misma. Ver VISION.md.",
+  "rieles": [
+   {
+    "cifras": [
+     {
+      "comparar_contra": "acierto de la base",
+      "es_diferencia": false,
+      "intervalo": [
+       61.5,
+       73.3
+      ],
+      "nombre": "acierto del modelo",
+      "tipo_intervalo": "Wilson 95 %",
+      "valor_pct": 67.6
+     },
+     {
+      "comparar_contra": null,
+      "es_diferencia": false,
+      "intervalo": [
+       51.6,
+       64.1
+      ],
+      "nombre": "acierto de la base",
+      "tipo_intervalo": "Wilson 95 %",
+      "valor_pct": 58.0
+     },
+     {
+      "cruza_cero": true,
+      "es_diferencia": true,
+      "intervalo": [
+       -7.2,
+       26.6
+      ],
+      "nombre": "ventaja sobre la base",
+      "tipo_intervalo": "IC95 de clúster de día",
+      "valor_pct": 9.7
+     },
+     {
+      "cruza_cero": true,
+      "es_diferencia": true,
+      "intervalo": [
+       -0.087,
+       0.996
+      ],
+      "nombre": "ganancia de MAE sobre predecir cero",
+      "tipo_intervalo": "IC95 t de clúster de día",
+      "valor_pct": 0.4547
+     }
+    ],
+    "cobertura_80_pct": 92.9,
+    "deff": 3.55,
+    "estatus": "MEDIDO",
+    "falta_para_veredicto": "El veredicto 5.1 está pre-registrado en backtest/DISEÑO.md y su ejecución es decisión humana. Gatillo: N ≥ 150 filas selladas más un cambio de régimen, o 3 meses, lo que llegue primero.",
+    "horizonte": "una noche",
+    "icc": 0.392,
+    "mcnemar_caveat": "Es un p de FILAS. Las ocho filas de un día no son observaciones independientes (ICC 0,39, DEFF 3,55): manda el intervalo de clúster de día, que contiene el cero.",
+    "mcnemar_p_filas": 0.0455,
+    "muestra": {
+     "dias": 34,
+     "hasta_sello": "2026-08-28",
+     "n": 238
+    },
+    "mueve_plata": false,
+    "n_efectivo": 67.0,
+    "nombre": "Riel de medición",
+    "procedencia": "backtest.linea_base.{cargar(dedup=True),aplicar_convencion,duelo,magnitud,calibracion} en mode=ro; clúster de día: GEMELO.bifurcaciones.{_bootstrap_dia,_ic_t_cluster,_p_permutacion_dia,icc_y_deff}",
+    "que_lo_mata": "V1–V7 y R1–R3 de GEMELO/DISEÑO.md §6, fijados antes de cualquier resultado. R2 —excluir la ventana 15–23 jul, que sostiene casi toda la ventaja— ya golpeó al titular: sin esa ventana la ventaja del campeón NO se distingue de cero en ninguna de las tres convenciones de conteo (GEMELO/resultados/concentracion.md A3; al 31-ago: +0,5 pp n=209 bajo `estricta`, −1,0 pp n=204 bajo `excluir_cero`, −1,9 pp n=209 bajo `verificador`; ningún p cerca de 0,05). Bajo la regla de deduplicación firmada el 1-sep NO está recomputada. La valla no se bajó.",
+    "que_mide": "si la apertura de Tokio, Taipéi y Seúl se puede anticipar desde el cierre del SOX, con la predicción sellada ANTES de la apertura que intenta predecir",
+    "vara": "«siempre al alza», sobre las mismas filas"
+   },
+   {
+    "cuenta_en_papel": {
+     "advertencia": "La señal que alimenta la estrategia NO tiene información: lo medido es fricción, no habilidad. Ninguna cifra es un resultado del proyecto y ninguna entra al README. PROPUESTA hasta el dictamen del adversario.",
+     "cifras_disponibles": true,
+     "comisiones_pct_del_aportado_juego_activo": 12.5,
+     "estatus": "PROPUESTA",
+     "reconstruccion": {
+      "fecha": "2026-09-08",
+      "gate_invariancia": "INVARIANTE"
+     },
+     "retirado": null,
+     "version": 2
+    },
+    "estatus": "SIMULADO",
+    "falta_para_veredicto": "52 semanas de cuenta en papel hacia adelante, con la señal congelada, UNA comparación declarada y una sola mirada al final (dinero/preregistro_dinero.md §2). Hoy: 0 semanas.",
+    "horizonte": "semanas (20 y 60 días hábiles)",
+    "mapa": {
+     "candidatos": 36,
+     "huecos": 0,
+     "huecos_exigiendo_liquidez": 0,
+     "representados": 6,
+     "representados_exigiendo_liquidez": 5,
+     "sustituidos": 2,
+     "sustituidos_exigiendo_liquidez": 3,
+     "verificados": 36
+    },
+    "muestra": {
+     "filas_selladas": 0,
+     "nota": "CERO filas selladas. El track record prospectivo es del riel de medición, no de éste. Nada de este riel es evidencia del mismo tipo."
+    },
+    "mueve_plata": false,
+    "nombre": "Riel de dinero",
+    "potencia": {
+     "base": "SMH",
+     "estatus": "PROPUESTA",
+     "intervalo": [
+      1.9952,
+      2.6686
+     ],
+     "juego": "conservador",
+     "nota": "σ de la diferencia semanal juego por defecto − SMH sobre la cuenta reconstruida (8-sep-2026), con intervalo. Es el parámetro de la tabla de potencia del pre-registro; la tabla misma se recomputa con el simulador validado (GEMELO/simulador/instrumento_dinero.py), que midió que el instrumento discrimina y sub-cubre bajo la nula. Con esta σ, 52 semanas sólo alcanzan para una ventaja del orden de 1 pp/semana (MDE80 del bloque 1); por qué una ventaja así no es plausible lo dice el pre-registro §2.1, no esta API.",
+     "semanas": 156,
+     "sigma_dif_semanal_pp": 2.3362,
+     "tipo_intervalo": "bootstrap circular de bloques de semanas, 95 %"
+    },
+    "que_lo_mata": "M1: 104 semanas sin distinguirse del cero y con punto negativo. M2: comisión acumulada sobre el 25 % del capital — la cifra vieja (14 % a 43 %) está RETIRADA por fuga; la cuenta reconstruida el 8-sep mide la comisión sobre 156 semanas, pero M2 sigue sin poder leerse hasta que se fije su período (§43, decisión de Nicolás). M3: cualquier fuga — disparó en la v1 de la cuenta en papel; la v2 pasa el gate de invariancia y el auditor no encontró fuga (dictamen 11, PROPUESTA). M4: que la señal larga no supere ninguna vara; hoy no se puede dar por leído, porque la segunda vara pre-registrada no se evaluó.",
+    "que_mide": "si un movimiento en un eslabón anticipa el de otro aguas abajo, y si actuar sobre eso supera a comprar un ETF del sector todas las semanas sin decidir nada",
+    "senal_larga": {
+     "L1_refutada": true,
+     "celdas": 6,
+     "contrastes": 30,
+     "estatus": "PROPUESTA",
+     "ganan_a_la_climatologia_sin_corregir": 1,
+     "ganan_tras_ablacion_anual": 0,
+     "ganan_tras_multiplicidad": 0,
+     "multiplicidad": 30,
+     "nota": "La forma simple de la hipótesis (L1, contagio directo) queda refutada por su propia regla pre-registrada. Ninguna celda sobrevive a la corrección de multiplicidad sobre su propia familia de 30 contrastes, y la única que gana sin corregir tampoco sobrevive a la ablación anual que el pre-registro del riel exige. La segunda vara pre-registrada no se evaluó. Nada de esta página autoriza nada.",
+     "pasan_holm": [],
+     "segunda_vara_preregistrada_evaluada": false
+    },
+    "vara": "aporte fijo semanal a SMH, con los mismos costos"
+   }
+  ]
+ },
+ "meta": {
+  "generado_en": "2026-09-09T02:31:04.460090+00:00",
+  "modelo_version": "4.6.0",
+  "plataforma_version": "5.1.0"
+ }
+}

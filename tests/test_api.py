@@ -298,3 +298,64 @@ def test_errores_homogeneos_con_codigo():
     r = cliente.get("/api/comparador?tickers=NVDA")  # falta el segundo ticker
     assert r.status_code == 400 and r.json()["codigo"] == "parametros_invalidos"
     assert "detail" in r.json()
+
+
+# ------------------------------------------------------------
+# Corrida 12 — re-dictamen del adversario (D1, D3, D9, D11, D12, D13, D15)
+# ------------------------------------------------------------
+def test_D1_la_friccion_del_juego_activo_viaja_como_objeto_con_banda():
+    from api.main import _estado_rieles
+    din = _estado_rieles()["rieles"][1]
+    c = din["cuenta_en_papel"]["comisiones_pct_del_aportado_juego_activo"]
+    assert isinstance(c, dict), "un escalar de fricción no sale más de esta API (D1)"
+    for k in ("mediana_pct", "banda_p2_5_p97_5", "K", "deslizamiento_pb", "semanas", "denominador_usd", "estatus"):
+        assert k in c, k
+    assert c["es_una_semilla"] is False and c["estatus"] == "SIMULADO"   # salida de simulación que pasó por el adversario (D1)
+    lo, hi = c["banda_p2_5_p97_5"]
+    assert lo <= c["mediana_pct"] <= hi
+
+
+def test_D3_la_sigma_servida_y_el_MDE80_no_comparten_oracion():
+    from api.main import _estado_rieles
+    pot = _estado_rieles()["rieles"][1]["potencia"]
+    sigma = pot["sigma_dif_semanal_pp"]
+    assert sigma is not None
+    frases = [f for f in pot["nota"].replace("\n", " ").split(". ") if f.strip()]
+    for f in frases:
+        if "MDE80" in f:
+            assert f"{sigma:.3f}" not in f and f"{sigma:.2f}" not in f, f
+    assert "nominal 95 %" in pot["tipo_intervalo"] and "cobertura medida" in pot["tipo_intervalo"]
+    assert "validado" not in pot["nota"]
+
+
+def test_D9_el_mapa_no_se_sirve_sin_presupuesto_ni_modo():
+    from api.main import _estado_rieles, _mapa_con_etiqueta
+    m = _estado_rieles()["rieles"][1]["mapa"]
+    assert m is None or all(k in m for k in ("presupuesto_usd", "modo", "al_borde", "dias_de_censo", "fecha_censo"))
+    assert _mapa_con_etiqueta({"resumen": {"huecos": 0}}) is None   # sin presupuesto no se sirve
+
+
+def test_D11_que_lo_mata_no_dice_que_R2_no_esta_recomputado():
+    import re
+    from api.main import _estado_rieles
+    q = _estado_rieles()["rieles"][0]["que_lo_mata"]
+    assert not re.search(r"NO est[áa] recomputad", q)
+    assert "regla de deduplicación firmada" in q and "+2.6 pp" in q
+
+
+def test_D12_D13_cobertura_con_wilson_y_etiqueta_de_regimen():
+    from api.main import _estado_rieles
+    med = _estado_rieles()["rieles"][0]
+    cob = med["cobertura_80"]
+    assert cob["intervalo"] and cob["intervalo"][0] <= cob["valor_pct"] <= cob["intervalo"][1]
+    assert cob["k"] + 0 <= cob["n"]
+    assert any(c["nombre"].startswith("cobertura") and c["intervalo"] for c in med["cifras"])
+    assert med["etiqueta_regimen"] and med["regimenes_en_ventana"]
+
+
+def test_D15_los_dos_denominadores_de_la_senal_larga_van_separados():
+    from api.main import _estado_rieles
+    sl = _estado_rieles()["rieles"][1]["senal_larga"]
+    d = sl["denominadores"]
+    assert d["ganan_sin_corregir_es_sobre"] == "celdas" and d["celdas"] == sl["celdas"]
+    assert d["contrastes_familia_holm"] == sl["contrastes"] and d["k_bajo_la_nula"] is None

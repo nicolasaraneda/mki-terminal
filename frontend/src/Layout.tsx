@@ -22,6 +22,7 @@ const VISTAS = [
   { ruta: '/rieles', etiqueta: 'Rieles' },
   { ruta: '/operable', etiqueta: 'Operable' },
   { ruta: '/dinero', etiqueta: 'Dinero' },
+  { ruta: '/sellos', etiqueta: 'Sellos' },
   { ruta: '/salud', etiqueta: 'Salud' },
 ]
 

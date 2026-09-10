@@ -107,13 +107,36 @@ Propuesta, para firma:
    totalidad.** Si el monto elegido no cumple esa condición, el monto está
    mal, no la regla.
 
+## 5-bis. Lo firmado el 8-sep-2026 (acta §84.4) y aplicado en la corrida 12 (9-sep-2026)
+
+- **Piso por posición: acciones ENTERAS** (§84.4.6, ítem §47 de `espera_firma.md`). `SMH`, el
+  benchmark declarado, no cabe con el piso a ningún presupuesto del rango: el riel se compara
+  contra él como línea base **sin poder tomar posición**, y el README y la vista lo dicen.
+  Las fraccionarias se descartaron por su 2 % de ida y vuelta a cualquier tamaño.
+- **N = 40 sesiones selladas prospectivas cierran E0** (§84.4.7). Fijado ANTES de la primera
+  fila (la primera se selló en la corrida 12, madrugada del 9-sep-2026); no se mueve. Cuentan
+  sólo las sesiones con `cuenta_para_N = 1` en `dinero/sello_dinero.db`: fila `pendiente`
+  (available_at < timestamp_utc < apertura objetivo, por calendario) de un día con sesión y con
+  el insumo en la sesión inmediatamente anterior a la objetivo. **Una fila sellada en día sin
+  sesión se sella igual con su marca (`dia_sin_sesion`) y NO cuenta para N**; tampoco cuenta una
+  `no_verificable_timing` ni una con insumo desactualizado (regla escrita el 9-sep-2026, pre-mortem
+  13 de la corrida 12).
+- **El monto de E2 NO se fija** en la corrida 12 (§84.4.7). Nota que hay que decir igual: la
+  regla 5.4 dice que el monto se fija antes de conocer el resultado de E0; con la primera fila
+  sellada, la ventana «sin mirar resultados» se cerró. Está en `espera_firma.md`.
+- **Qué señal sella E0 (declarado, no decidido):** la sonda sin información de la cuenta en papel,
+  por el mismo camino de piezas puras que pasó el gate (`dinero/sello_dinero.py`). Las filas prueban
+  la MAQUINARIA del sellado prospectivo; el contador lo dice. Si cambia la señal (L1 refutada,
+  otra, ninguna), es decisión de Nicolás (`espera_firma.md`, corrida 12) y reinicia el contador.
+
 ## 6. Lo que este documento deja abierto para tu firma
 
-- El piso por posición: opción (a) o (b) de la sección 4.
-- El monto del aporte único de E2, dentro del rango de 100 a 500.
-- N, el número de filas selladas prospectivas que cierra E0.
-- Si `SMH` entra al riel de dinero por fraccionarias o si el riel se compara
-  contra él sin poder tomarlo.
+- ~~El piso por posición: opción (a) o (b) de la sección 4.~~ **Firmado el 8-sep-2026: (a), enteras** (§5-bis).
+- El monto del aporte único de E2, dentro del rango de 100 a 500 (sigue abierto; ver §5-bis).
+- ~~N, el número de filas selladas prospectivas que cierra E0.~~ **Firmado el 8-sep-2026: N = 40** (§5-bis).
+- ~~Si `SMH` entra al riel de dinero por fraccionarias o si el riel se compara
+  contra él sin poder tomarlo.~~ **Firmado el 8-sep-2026: se compara sin poder tomarlo** (§5-bis).
+- **Nuevo (9-sep-2026):** qué señal sella E0 en adelante y si las filas de la sonda cuentan para N.
 
 ## 7. Nota que no es financiera y hay que decir igual
 

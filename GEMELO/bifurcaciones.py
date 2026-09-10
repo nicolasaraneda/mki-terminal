@@ -91,7 +91,14 @@ NOMINAL_INTERVALO = 0.80
 # día (`_bootstrap_dia`); el de bloques de 20 filas del módulo de la
 # skill se conserva SÓLO como segunda ruta del ΔMAE, para exhibir cuánto
 # del veredicto lo pone el supuesto de independencia.
-N_BOOT = 10_000     # el default del módulo de la skill; no se desvía sin decirlo
+# Corrida 12 (bloque 2.6): el número de réplicas vive en UN solo lugar, el
+# árbitro (`cifras.N_BOOT_DIA`, el que produce las cifras publicadas). Antes
+# este módulo usaba 10.000 (default de la skill) y `cifras.py` 4.000, y el
+# último decimal del IC de día difería entre los dos (26,6 vs 26,5; bitácora
+# 11, bloque 4). Dos módulos que computan la misma cifra con distinto número
+# de réplicas es una cifra que puede moverse sola. El valor único es el del
+# árbitro y NO el mayor: cambiarlo movería la cifra publicada.
+from cifras import N_BOOT_DIA as N_BOOT  # noqa: E402
 SEMILLA = 0         # obligatoria: un bootstrap sin semilla no reproduce
 MINIMO_FILAS = 30   # piso declarado: bajo esto una celda no se puntúa
 

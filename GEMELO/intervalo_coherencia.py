@@ -98,6 +98,9 @@ def medir_rama(df: pd.DataFrame, nombre: str) -> dict:
             "b": b2, "c": c2, "mcnemar_exacta": round(_p_exacta(b2, c2), 4),
         },
         "modelo_pct": d["modelo_pct"], "base_pct": d["base_pct"],
+        # D16 (re-dictamen, corrida 12): ningún puntual sin intervalo
+        "modelo_wilson": [float(x) for x in d["modelo_wilson"]],
+        "base_wilson": [float(x) for x in d["base_wilson"]],
         "ventaja_pp": d["ventaja_pp"],
         "ventaja_pp_exacta": round(100 * (d["modelo_aciertos"] - d["base_aciertos"]) / d["n"], 2),
         "ic95_percentil_dia": [round(100 * lo, 1), round(100 * hi, 1)],
@@ -207,8 +210,8 @@ def informe(r: dict) -> str:
     L.append("| rama | n | días | días informativos | modelo | base | ventaja | IC95 percentil de día | IC95 t de clúster | p permutación de día | ICC | DEFF | n efectivo | b/c | McNemar χ²cc | McNemar exacta |")
     L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for m in r["ramas"]:
-        L.append(f"| {m['rama']} | {m['n']} | {m['dias']} | {m['dias_informativos']} | {m['modelo_pct']} % | "
-                 f"{m['base_pct']} % | **{m['ventaja_pp']:+} pp** | {m['ic95_percentil_dia']} | {m['ic95_t_cluster']} | "
+        L.append(f"| {m['rama']} | {m['n']} | {m['dias']} | {m['dias_informativos']} | {m['modelo_pct']} % {m.get('modelo_wilson')} | "
+                 f"{m['base_pct']} % {m.get('base_wilson')} | **{m['ventaja_pp']:+} pp** | {m['ic95_percentil_dia']} | {m['ic95_t_cluster']} | "
                  f"{m['p_permutacion_dia']} | {m['icc']} | {m['deff']} | {m['n_efectivo']} | {m['b']}/{m['c']} | "
                  f"{m['mcnemar_chi2cc']} | {m['mcnemar_exacta']} |")
     L.append("")

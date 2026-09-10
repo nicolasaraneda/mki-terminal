@@ -387,8 +387,59 @@ es RETIRADO), `version`, `reconstruccion` (fecha y resultado del gate) y
 `tipo_intervalo`, `semanas`, `juego`, `base`— o queda `estatus: RETIRADO`
 sin número si el artefacto no lo trae con intervalo.
 
+Enmienda 9-sep-2026 (corrida 12, re-dictamen del `estadistico-adversario`,
+`GEMELO/resultados/dictamen_12/re_dictamen_corrida_11.md`, D1 a D15). Regla
+ampliada del bloque: **el intervalo viaja con su cobertura medida en el
+mismo objeto cuando existe, ninguna etiqueta de nivel se escribe a mano y
+ningún resumen se sirve sin el presupuesto y el modo con que se computó.**
+En concreto: (a) `cuenta_en_papel.comisiones_pct_del_aportado_juego_activo`
+deja de ser un escalar y es un objeto `{mediana_pct, banda_p2_5_p97_5,
+banda_es, K, deslizamiento_pb, semanas, denominador_usd, juego,
+es_una_semilla: false, estatus}` leído de `barrido_semillas` del artefacto,
+o `null`; (b) `potencia.tipo_intervalo` dice «nominal 95 %, cobertura medida
+X [Wilson] a 156 semanas» leído del instrumento, y lleva
+`cobertura_medida_ic_sd`, `advertencia_del_artefacto` y `mde80_bloque_1`
+(con su σ ancla, banda, valor al α real y las dos convenciones de
+anualización); la σ servida y el MDE80 nunca comparten oración; (c) `mapa`
+lleva `presupuesto_usd`, `modo`, `al_borde`, `alcanzables`, `dias_de_censo`,
+`fecha_censo`, `nota` y `estatus`, o es `null`; (d) el riel de medición lleva
+`cobertura_80` `{valor_pct, intervalo (Wilson 95 %), k, n, nominal_pct}`
+—también como quinta entrada de `cifras`—, `regimenes_en_ventana`,
+`un_solo_regimen` y `etiqueta_regimen`; y `que_lo_mata` se compone desde
+`GEMELO/resultados/intervalo_coherencia.json` (R2 bajo la regla firmada),
+no a mano; (e) `senal_larga.denominadores` separa las celdas (denominador
+de «ganan sin corregir») de los 30 contrastes de la familia de Holm y
+declara `k_bajo_la_nula: null`.
+
 Ninguno de los tres endpoints entra al envelope con `meta.regimen`: no
 dependen del motor ni del régimen. Llevan `meta` reducido
 (`generado_en`, `modelo_version`, `plataforma_version`) más `meta.artefacto`
 (nombre, `generado_en` del archivo y `sha256`) cuando la respuesta sale de un
 artefacto.
+
+
+### GET /api/dinero/sellos  *(añadido en la corrida 12, 9-sep-2026)*
+E0/E1 del riel de dinero, para la vista `/sellos`. Solo lectura:
+`dinero/sello_dinero.db` en `mode=ro` (vía `dinero.sello_dinero.estado()`) y
+`dinero/resultados/cuenta_papel.json` (gate de invariancia). `datos`:
+`estatus` (siempre PROPUESTA), `que_es`, `senal_fuente` (declara que la sonda
+no tiene información), `E0` `{estado, sesiones_selladas,
+sesiones_que_cuentan_para_N, N_objetivo, filas, nota, estatus}`, `E1`
+`{estado: "NO EJECUTADO" | ..., etiqueta: "PRÁCTICA", por_que, adaptador,
+cuenta_practica, posiciones, efectivo, ejecuciones, marca_retraso, estatus}`
+—sin datos de ejemplo jamás: si E1 no corrió, los campos son `null`—,
+`ultimo_sello` (fecha_insumo, timestamp_utc, available_at, sesion_objetivo,
+apertura_objetivo_utc, estado, cuenta_para_N, juego, presupuesto_usd, los dos
+sha256 del insumo, plataforma_version), `decisiones_proxima_apertura` (una por
+instrumento operable: ticker, decision, acciones_regla, tamano_nominal = 0,
+precio_ref_usd, señal con banda, motivo), `gate_invariancia_ultima_corrida`
+y la frase `smh`. La cuenta regresiva a la apertura la computa el frontend
+desde `apertura_objetivo_utc`; la actualización es sondeo corto (60 s) con el
+mismo `useApi`, sin dependencia nueva.
+
+**Norma del contrato (corrida 12, declarada por el `director-programa`):** ningún
+payload de `/api/rieles` ni `/api/dinero/sellos` contiene «rentable», «retorno
+esperado», «ganancia esperada», «confianza» ni la frase «sostiene casi toda»
+(ordena cantidades que el diseño no ordena); y mientras E1 esté NO EJECUTADO,
+`E1.posiciones/efectivo/ejecuciones` son `null` (nunca datos de ejemplo).
+Test: `tests/test_frontend_estatus.py::test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado`.

@@ -322,11 +322,12 @@ def componer() -> str:
              f"sobre {len(verificados)} instrumentos verificados):** de los "
              f"{len(U.ESLABONES)} eslabones, **{cuenta(estados,'REPRESENTADO')} quedan "
              f"representados, {cuenta(estados,'SUSTITUIDO')} sustituidos y "
-             f"{cuenta(estados,'HUECO')} huecos**. Exigiendo además que el instrumento "
+             f"{cuenta(estados,'HUECO')} huecos a {cfg['presupuesto']['techo_usd']:.0f} USD en acciones enteras** "
+             f"(censo de un solo día: a otros presupuestos el conteo es otro, ver la tabla por presupuesto). Exigiendo además que el instrumento "
              f"tenga liquidez verificada —que esta corrida NO verificó para los ADR de "
              f"mostrador— pasan a ser **{cuenta(estrictos,'REPRESENTADO')} representados, "
              f"{cuenta(estrictos,'SUSTITUIDO')} sustituidos y "
-             f"{cuenta(estrictos,'HUECO')} huecos**.\n")
+             f"{cuenta(estrictos,'HUECO')} huecos a {cfg['presupuesto']['techo_usd']:.0f} USD en acciones enteras**.\n")
     L.append("«Representado» significa aquí *un instrumento dominante comprable con el")
     L.append("techo del presupuesto*, no *un instrumento listado*: un dominante que")
     L.append("cotiza pero cuya acción cuesta más de lo que hay no representa nada. La")

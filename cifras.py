@@ -135,6 +135,19 @@ def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> di
         conn.close()
     r = crudo.merge(v, on=["fecha", "ticker", "retorno_real_pct"], how="inner").dropna(subset=["acierto_direccion"])
     ra, rn = int(r["acierto_direccion"].astype(int).sum()), int(len(r))
+    # --- D12 (re-dictamen, corrida 12): la cobertura del 80 % es una proporción y lleva Wilson ---
+    dcal = df.dropna(subset=["intervalo80_pp"])
+    dentro = ((dcal["gap_pct"] - dcal["apertura_estimada_pct"]).abs() <= dcal["intervalo80_pp"])
+    cob_k, cob_n = int(dentro.sum()), int(len(dcal))
+    # --- D13: cuántos regímenes hubo en la ventana (n en un solo régimen es más chico que n) ---
+    conn = sqlite3.connect(f"file:{lb.RUTA_SENALES}?mode=ro", uri=True)
+    try:
+        reg = pd.read_sql_query(
+            "SELECT regimen, COUNT(*) AS snapshots FROM snapshots WHERE fecha >= ? AND fecha <= ? "
+            "AND modelo_version = ? GROUP BY regimen", conn,
+            params=[str(df["fecha"].min()), str(df["fecha"].max()), lb.MODELO_VERSION])
+    finally:
+        conn.close()
     return {
         "hasta_sello": corte, "convencion": lb.CONVENCION_OFICIAL, "dedup": dedup,
         "n": n, "dias": int(df["fecha"].nunique()),
@@ -154,6 +167,11 @@ def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> di
         "mae_ganancia_ic_t_dia": [round(float(gan_lo), 3), round(float(gan_hi), 3)],
         "mae_ganancia_p_dia": round(float(gan_p), 3),
         "cobertura_80_pct": f(cal.get("cobertura_pct")), "ratio_ancho": f(cal.get("ratio_ancho_error")),
+        "cobertura_80_k": cob_k, "cobertura_80_n": cob_n,
+        "cobertura_80_wilson": [f(x) for x in lb._wilson(cob_k, cob_n)] if cob_n else None,
+        "regimenes_en_ventana": {(str(k) if isinstance(k, str) else "sin régimen sellado"): int(v)
+                                 for k, v in zip(reg["regimen"], reg["snapshots"])},
+        "un_solo_regimen": bool(len(reg) == 1),
         "ratio_ancho_ic_dia": _ic_ratio_dia(df),
         "procedencia": ("backtest.linea_base.{cargar(dedup=%s),aplicar_convencion,duelo,magnitud,calibracion} en mode=ro; "
                         "clúster de día: GEMELO.bifurcaciones.{_bootstrap_dia,_ic_t_cluster,_p_permutacion_dia,icc_y_deff}" % dedup),
@@ -237,7 +255,10 @@ def cifras_retiradas() -> list:
         celdas = [x.strip() for x in linea.strip().strip("|").split(" | ")]
         if len(celdas) < 4 or celdas[0] in ("`patrón`",):
             continue
-        out.append({"patron": celdas[0].strip("`"), "contexto": celdas[1], "retirada": celdas[2],
+        # `\|` es la única forma de escribir una alternación dentro de una celda
+        # de tabla markdown; se desescapa para que el regex la vea como `|`
+        # (corrida 12: siete patrones nuevos con alternación).
+        out.append({"patron": celdas[0].strip("`").replace("\\|", "|"), "contexto": celdas[1], "retirada": celdas[2],
                     "acta": celdas[3], "reemplazo": celdas[4] if len(celdas) > 4 else ""})
     return out
 

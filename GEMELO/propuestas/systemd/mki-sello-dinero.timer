@@ -1,0 +1,26 @@
+[Unit]
+Description=MKI — E0 sello prospectivo del riel de dinero (timer, PROPUESTA no instalada)
+
+[Timer]
+# Hora argumentada (corrida 12, bloque 3.5):
+#  · FUERA de la ventana de sellado del riel de medición (17:50–20:30 Chile):
+#    nada pesado ni ninguna descarga ahí, y este job descarga una extensión
+#    de 36 tickers.
+#  · DESPUÉS del cierre de NYSE en hora de Chile, con margen para que la
+#    fuente publique el cierre: NYSE cierra 20:00 UTC (EDT) o 21:00 UTC (EST);
+#    Chile es UTC−3 (sep–abr) o UTC−4 (abr–sep), así que el cierre cae entre
+#    las 16:00 y las 18:00 de Chile según la época. A las 21:00 Chile el
+#    cierre lleva ≥ 3 h publicado todo el año.
+#  · ANTES de la apertura objetivo: NYSE abre 13:30 UTC (EDT) / 14:30 UTC
+#    (EST) = 09:30 a 11:30 Chile según la época. A las 21:00 Chile faltan
+#    ≥ 12 h: la regla available_at < timestamp_utc < apertura se cumple con
+#    holgura, y un reintento tardío (Persistent) sigue llegando antes de abrir.
+#  · Un sello en fin de semana o feriado se marca `dia_sin_sesion` y no cuenta
+#    para N; el timer corre igual Mon..Fri para que el sellador sepa decirlo.
+OnCalendar=Mon..Fri 21:00 America/Santiago
+Persistent=true
+AccuracySec=1s
+Unit=mki-sello-dinero.service
+
+[Install]
+WantedBy=timers.target

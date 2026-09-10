@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (8-sep-2026, actualizado al cierre de la corrida 11)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (9-sep-2026, actualizado al cierre de la corrida 12)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -209,6 +209,30 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
     sostiene.)*
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
+
+- **Corrida 12 (9-sep), con re-dictamen del `estadistico-adversario` sobre las cifras re-corridas de la 11
+  («se sostienen en los artefactos y NO en la forma en que la API las servía»; cuatro cifras retiradas y
+  D1–D18 aplicadas al ejecutable), dictamen del `auditor-lookahead` sobre el sellador (primero «NO SE
+  SELLA», cinco fugas demostradas; tras E1–E8, «SE PUEDE SELLAR») y dictamen del adversario sobre el §43
+  (NO APLICABLE); `dictamen_12/`:** (i) **DEMOSTRADO por censo: el riel de dinero tiene UNA sesión sellada
+  prospectiva** (9-sep-2026 03:38 UTC, 33 filas, tamaño nominal cero, `available_at` por calendario
+  anterior a la emisión y ésta anterior a la apertura objetivo; `cuenta_para_N` 1 de 40; `senales.db`
+  intacta). Lo que esa fila NO es: un track record de habilidad — la señal sellada es la sonda sin
+  información y la fila lo declara (`dinero/sello_dinero.db`, `data/backups/sello_dinero.csv`). E1 (cuenta
+  de práctica) **NO EJECUTADO**: adaptador con guardia de papel probado contra una réplica escrita desde
+  documentación, que NO es evidencia de C1/C2. (ii) **M2 no tiene unidad de período** (numerador flujo,
+  denominador fijo): recomputado sobre la v2, el juego por defecto gasta 3,9 %/año [3,56, 4,58] del
+  capital aportado en comisiones (tasa anualizada, estable a 52/104/156 semanas; una sola trayectoria de
+  mercado, 20 sorteos, deslizamiento excluido) y no cruza el 25 % acumulado en ningún horizonte; la firma
+  §84.4.5 quedó NO APLICABLE y M2 vuelve a firma (`m2_periodo.md`). (iii) Las cifras del riel que la API
+  sirve ahora viajan con su cobertura medida (IC de σ: nominal 95 %, cobertura 0,850), la fricción como
+  objeto (mediana 12,4 % de 20 semillas, banda [6,35, 13,2], 156 semanas sobre 500 USD), el R2 recomputado
+  bajo la regla firmada (+2,6 pp, n=194, t de clúster [−15,7, +20,9], contiene el cero) y la cobertura del 80 % con Wilson
+  (92,9 % [88,9, 95,5]). (iv) Hallazgo del primer sello: reajuste retroactivo de yfinance en WDC entre el 7
+  y el 9-sep (dif. rel. 3,2 × 10⁻⁴), detectado y declarado, no corregido. **Registro de intentos:** gap
+  asiático 352 → 354 (fila `COHER-12`, exigencia D18: la regla de filas de coherencia se evaluó y nunca se
+  contó); veredicto 5.1 358 → 360; riel largo 3. Lo que nada de esto autoriza: ninguna afirmación positiva
+  sobre ningún riel.
 
 - **Corrida 11 (8-sep), con dictamen del `estadistico-adversario` («sostiene con
   exigencias» en los tres artefactos; exigencias aplicadas al ejecutable y re-corridas,

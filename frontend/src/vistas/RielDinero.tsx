@@ -33,13 +33,12 @@ export function RielDinero() {
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
       {/* La etiqueta, arriba de todo y sin scroll. */}
-      <Card className="capa-1 border-acento-2">
+      <Card className="capa-1 border-acento-2" estatus={d.estatus}>
         <div className="mb-2 flex flex-wrap items-baseline gap-3">
           <h2 className="font-display text-[15px] font-semibold text-text-1">
             Riel de dinero — cuenta en papel
           </h2>
           <Estatus valor="SIMULADO" />
-          <Estatus valor={d.estatus} />
         </div>
         {d.retirado && (
           <div className="mb-3 rounded border border-acento-2 bg-bg-2 px-3 py-2">
@@ -88,7 +87,7 @@ export function RielDinero() {
         </div>
       </Card>
 
-      <Card titulo="La comisión se come el capital — el hallazgo robusto" className="capa-1">
+      <Card titulo="La comisión se come el capital — estable entre los 20 sorteos" className="capa-1" estatus={d.estatus}>
         <p className="mb-3 max-w-3xl text-[11px] leading-relaxed text-text-2">
           Depende sobre todo de cuántas órdenes emite cada juego, y el número de órdenes
           depende del sorteo: por eso la banda entre semillas va debajo de la tabla. Con el
@@ -147,6 +146,7 @@ export function RielDinero() {
       <Card
         titulo={`Contra la línea base — deslizamiento ${DESLIZAMIENTO_MOSTRADO} pb por lado`}
         className="capa-1"
+        estatus={d.estatus}
       >
         <p className="mb-3 max-w-3xl text-[11px] leading-relaxed text-text-2">
           Diferencia de retorno semanal medio contra cada línea base, con intervalo de
@@ -173,7 +173,7 @@ export function RielDinero() {
         </div>
       </Card>
 
-      <Card titulo="Por qué no hay que creerle a un intervalo de esta página — lectura corregida" className="capa-1">
+      <Card titulo="Por qué no hay que creerle a un intervalo de esta página — lectura corregida" className="capa-1" estatus={d.estatus}>
         <div className="grid gap-3 lg:grid-cols-[auto_1fr] lg:items-center">
           <div className="rounded border border-border bg-bg-2 px-3 py-2">
             <div className="mini-label text-text-3">
@@ -193,7 +193,7 @@ export function RielDinero() {
         </div>
       </Card>
 
-      <Card titulo="El barrido de costo no es una curva de sensibilidad" className="capa-1">
+      <Card titulo="El barrido de costo no es una curva de sensibilidad" className="capa-1" estatus={d.estatus}>
         <p className="max-w-3xl text-[11px] leading-relaxed text-text-2">
           El barrido corre a {d.barrido_deslizamiento_pb.join(', ')} puntos básicos por lado.
           Las filas <span className="text-text-1">no son la misma estrategia a distinto

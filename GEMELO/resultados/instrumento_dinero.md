@@ -1,6 +1,6 @@
 # El instrumento del riel de dinero contra una verdad conocida — bloque 1, corrida 11 (PROPUESTA)
 
-> **PROPUESTA — bloque 1 de la corrida 11; hasta el dictamen del estadistico-adversario.** Dictamen del `estadistico-adversario` del 8-sep: sostiene con exigencias (aplicadas y re-corridas; las cifras re-corridas no volvieron a pasar por él). Generado 2026-09-08T04:36:40.086633+00:00 por `python -m GEMELO.simulador.instrumento_dinero`. Declaración previa en `GEMELO/resultados/bitacora_11.md` (bloque 1), escrita antes de correr.
+> **PROPUESTA — bloque 1 de la corrida 11; hasta el dictamen del estadistico-adversario.** Dictamen del `estadistico-adversario` del 8-sep: sostiene con exigencias (aplicadas y re-corridas; las cifras re-corridas no volvieron a pasar por él). Generado 2026-09-09T02:53:45.069542+00:00 por `python -m GEMELO.simulador.instrumento_dinero`. Declaración previa en `GEMELO/resultados/bitacora_11.md` (bloque 1), escrita antes de correr.
 >
 > **SIMULADO.** Ninguna cifra de esta página es un resultado sobre datos reales; ninguna entra al README. Intentos del DSR: 0.
 
@@ -34,16 +34,18 @@ si el Wilson del tamaño bilateral contiene 0,05 y el de la cobertura contiene 0
 potencia cerrada se recomputa al tamaño real medido (exigencia A5): la brecha
 «simulada > cerrada» de la tabla de abajo es exactamente el tamaño inflado.
 
-| semanas | tamaño bilateral [Wilson] | cobertura IC media [Wilson] | cobertura IC sd [Wilson] | ¿usable a α = 0,05? | α real | potencia cerrada al α real (0,25 / 0,50 / 1,00) | MDE80 pp/semana | ≈ pp/año |
-|---|---|---|---|---|---|---|---|---|
-| 52 | 0.086 [0.074, 0.099] | 0.914 [0.901, 0.926] | 0.783 [0.765, 0.801] | **NO** | 0.086 | 0.147 / 0.351 / 0.829 | **1.05** | 55 |
-| 104 | 0.067 [0.056, 0.078] | 0.933 [0.922, 0.944] | 0.821 [0.803, 0.837] | **NO** | 0.067 | 0.186 / 0.520 / 0.974 | **0.74** | 39 |
-| 156 | 0.064 [0.054, 0.075] | 0.936 [0.925, 0.946] | 0.850 [0.833, 0.865] | **NO** | 0.064 | 0.242 / 0.675 / 0.997 | **0.61** | 32 |
+| semanas | tamaño bilateral [Wilson] | cobertura IC media [Wilson] | cobertura IC sd [Wilson] | ¿usable a α = 0,05? | α real | potencia cerrada al α real (0,25 / 0,50 / 1,00) | MDE80 pp/semana a α 0,05 [banda σ] | MDE80 al α real [banda σ] | pp/año suma / capitalizado (α 0,05) |
+|---|---|---|---|---|---|---|---|---|---|
+| 52 | 0.086 [0.074, 0.099] | 0.914 [0.901, 0.926] | 0.783 [0.765, 0.801] | **NO** | 0.086 | 0.147 / 0.351 / 0.829 | **1.05** [0.7424, 1.5603] | 0.96 [0.678, 1.425] | 55 / 72 |
+| 104 | 0.067 [0.056, 0.078] | 0.933 [0.922, 0.944] | 0.821 [0.803, 0.837] | **NO** | 0.067 | 0.186 / 0.520 / 0.974 | **0.74** [0.5249, 1.1033] | 0.71 [0.5015, 1.0541] | 39 / 47 |
+| 156 | 0.064 [0.054, 0.075] | 0.936 [0.925, 0.946] | 0.850 [0.833, 0.865] | **NO** | 0.064 | 0.242 / 0.675 / 0.997 | **0.61** [0.4286, 0.9009] | 0.58 [0.4126, 0.8673] | 32 / 37 |
 
 **La corrida 11 habría cruzado este brazo a 52 semanas**: el instrumento discrimina pero no
 está calibrado a α = 0,05 (exigencia A1, declarado). El MDE80 dice en número lo que el
 pre-registro decía en prosa: a 52 semanas la regla §2.3 sólo detecta una ventaja del orden de
-1 pp/semana, ≈ 55 pp/año, que no es plausible con datos públicos.
+1.05 pp/semana (banda [0.7424, 1.5603] según la σ del sorteo; 0.96 al α real), o sea 55 pp/año como suma aritmética y 72 pp capitalizados: una ventaja así no es plausible con datos
+públicos. La banda del MDE viene de la banda entre sorteos de σ y no es un IC de muestreo (D5, D6).
+La σ de estos MDE es la ANCLA del simulador (2.704 pp/semana), no la σ realizada de la cuenta v2.
 
 **Contraste con la σ realizada de la cuenta reconstruida** (exigencias A6/C6): la cuenta v2 da σ = 2.336 pp/semana, IC [1.9952, 2.6686] (156 semanas, `conservador` vs `SMH`); el ancla 2.704 queda por encima del techo de ese IC, o sea el ancla es CONSERVADORA (menos potencia, criterio más difícil) y es un
 proxy estructural distinto (cartera estática de 4, siempre invertida, sin caja ni rotación).

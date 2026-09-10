@@ -1,0 +1,1461 @@
+{
+ "generado_en_utc": "2026-09-09T03:33:15.067482+00:00",
+ "estatus": "PROPUESTA — hasta el dictamen del estadistico-adversario sobre el §43 (corrida 12)",
+ "que_es": "M2 recomputado sobre la cuenta en papel v2 (sin fuga demostrada, gate INVARIANTE), señal sin información, arancel del §40 (PROPUESTA), K semillas del sorteo. Ninguna cifra de la v1 RETIRADA se usa.",
+ "umbral_pct": 25.0,
+ "deslizamiento_pb": 5.0,
+ "K": 20,
+ "definiciones": {
+  "pct_a_h_semanas": "comisión acumulada desde el inicio hasta h semanas / capital aportado hasta ahí",
+  "pct_peor_ventana_movil_52": "máximo sobre ventanas de 52 semanas de (comisión dentro de la ventana / aportado al final de la ventana)",
+  "banda": "percentiles 2,5 y 97,5 ENTRE SEMILLAS del sorteo (no un IC de cobertura nominal)"
+ },
+ "denominador": {
+  "denominador_usd": 500.0,
+  "n_aportes": 5,
+  "aportes_terminan_en": "2023-10-02",
+  "nota": "el denominador NO crece después del último aporte; el numerador (comisión) es un flujo"
+ },
+ "una_sola_trayectoria": true,
+ "n_historias_de_mercado": 1,
+ "la_banda_no_cubre": "variación de trayectoria de mercado (una sola historia 2023-09-05 a 2026-09-04)",
+ "deslizamiento_incluido_en_pct": false,
+ "deslizamiento_nota": "las lecturas pct_con_deslizamiento_* lo incluyen; si cuenta para M2 sigue sin firma (preregistro §7 B (ii))",
+ "pct_a_156_nota": "corta 156 semanas exactas desde el inicio (3 días antes del fin de la cuenta): NO es la cifra de vida entera de cuenta_papel.md",
+ "juego_por_defecto": "conservador (reglas.json 0.2.0-PROPUESTA, SIN FIRMA)",
+ "lectura_primaria": "pct_anualizado_desde_h (suma aritmética v × 52/h): la única invariante al período",
+ "convencion_anualizacion": "suma aritmética",
+ "periodo": "NO APLICABLE — la firma §84.4.5 («el horizonte pre-registrado de la vara») invoca un horizonte que el pre-registro no escribe (52 semanas es un piso prospectivo de duración, no una ventana de acumulación de M2); se dispara su propia cláusula de escape y vuelve a espera_firma §43 (dictamen_12/adversario_43_periodo_m2.md)",
+ "grado_de_libertad_declarado": "se computaron 12 lecturas (3 juegos × 4 períodos) y la firma eligió 1 con los resultados a la vista (E12 del dictamen)",
+ "resumen": {
+  "conservador": {
+   "pct_a_52_semanas": {
+    "mediana": 3.87,
+    "banda_p2_5_p97_5": [
+     3.56,
+     4.58
+    ],
+    "min_max": [
+     3.5,
+     4.69
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_a_104_semanas": {
+    "mediana": 8.57,
+    "banda_p2_5_p97_5": [
+     6.35,
+     9.38
+    ],
+    "min_max": [
+     6.26,
+     9.5
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_a_156_semanas": {
+    "mediana": 12.36,
+    "banda_p2_5_p97_5": [
+     6.35,
+     13.1
+    ],
+    "min_max": [
+     6.26,
+     13.1
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 5,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_peor_ventana_movil_52": {
+    "mediana": 5.03,
+    "banda_p2_5_p97_5": [
+     4.63,
+     5.58
+    ],
+    "min_max": [
+     4.6,
+     5.76
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_52": {
+    "mediana": 3.87,
+    "banda_p2_5_p97_5": [
+     3.56,
+     4.58
+    ],
+    "min_max": [
+     3.5,
+     4.69
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_104": {
+    "mediana": 4.28,
+    "banda_p2_5_p97_5": [
+     3.17,
+     4.69
+    ],
+    "min_max": [
+     3.13,
+     4.75
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_anualizado_desde_156": {
+    "mediana": 4.12,
+    "banda_p2_5_p97_5": [
+     2.12,
+     4.37
+    ],
+    "min_max": [
+     2.09,
+     4.37
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 5,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_con_deslizamiento_a_52_semanas": {
+    "mediana": 4.29,
+    "banda_p2_5_p97_5": [
+     3.95,
+     5.03
+    ],
+    "min_max": [
+     3.88,
+     5.18
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_con_deslizamiento_a_104_semanas": {
+    "mediana": 9.46,
+    "banda_p2_5_p97_5": [
+     7.04,
+     10.33
+    ],
+    "min_max": [
+     6.95,
+     10.45
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_con_deslizamiento_a_156_semanas": {
+    "mediana": 13.71,
+    "banda_p2_5_p97_5": [
+     7.04,
+     14.51
+    ],
+    "min_max": [
+     6.95,
+     14.51
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 5,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   }
+  },
+  "medio": {
+   "pct_a_52_semanas": {
+    "mediana": 9.38,
+    "banda_p2_5_p97_5": [
+     8.23,
+     10.82
+    ],
+    "min_max": [
+     8.14,
+     11.18
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_a_104_semanas": {
+    "mediana": 18.83,
+    "banda_p2_5_p97_5": [
+     14.56,
+     20.4
+    ],
+    "min_max": [
+     14.06,
+     20.57
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_a_156_semanas": {
+    "mediana": 26.57,
+    "banda_p2_5_p97_5": [
+     14.56,
+     28.54
+    ],
+    "min_max": [
+     14.06,
+     29.2
+    ],
+    "dispara_M2_en_mediana": true,
+    "semillas_que_disparan": 17,
+    "K": 20,
+    "semillas_congeladas": 3,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_peor_ventana_movil_52": {
+    "mediana": 10.13,
+    "banda_p2_5_p97_5": [
+     9.64,
+     11.24
+    ],
+    "min_max": [
+     9.47,
+     11.48
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_52": {
+    "mediana": 9.38,
+    "banda_p2_5_p97_5": [
+     8.23,
+     10.82
+    ],
+    "min_max": [
+     8.14,
+     11.18
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_104": {
+    "mediana": 9.41,
+    "banda_p2_5_p97_5": [
+     7.28,
+     10.2
+    ],
+    "min_max": [
+     7.03,
+     10.28
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_anualizado_desde_156": {
+    "mediana": 8.86,
+    "banda_p2_5_p97_5": [
+     4.86,
+     9.51
+    ],
+    "min_max": [
+     4.69,
+     9.73
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 3,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_con_deslizamiento_a_52_semanas": {
+    "mediana": 10.49,
+    "banda_p2_5_p97_5": [
+     9.32,
+     11.93
+    ],
+    "min_max": [
+     9.22,
+     12.31
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_con_deslizamiento_a_104_semanas": {
+    "mediana": 21.09,
+    "banda_p2_5_p97_5": [
+     16.29,
+     22.68
+    ],
+    "min_max": [
+     15.74,
+     22.83
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 1,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   },
+   "pct_con_deslizamiento_a_156_semanas": {
+    "mediana": 29.96,
+    "banda_p2_5_p97_5": [
+     16.29,
+     31.95
+    ],
+    "min_max": [
+     15.74,
+     32.61
+    ],
+    "dispara_M2_en_mediana": true,
+    "semillas_que_disparan": 17,
+    "K": 20,
+    "semillas_congeladas": 3,
+    "advertencia_congeladas": "una cuenta congelada (sin caja para una acción entera) acumula poca comisión por QUIEBRA operativa, no por baratura; su lectura de M2 baja por la razón equivocada"
+   }
+  },
+  "agresivo": {
+   "pct_a_52_semanas": {
+    "mediana": 6.44,
+    "banda_p2_5_p97_5": [
+     5.77,
+     7.78
+    ],
+    "min_max": [
+     5.66,
+     7.83
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_a_104_semanas": {
+    "mediana": 12.39,
+    "banda_p2_5_p97_5": [
+     11.62,
+     13.89
+    ],
+    "min_max": [
+     11.52,
+     14.02
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_a_156_semanas": {
+    "mediana": 18.73,
+    "banda_p2_5_p97_5": [
+     17.73,
+     19.89
+    ],
+    "min_max": [
+     17.43,
+     19.93
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_peor_ventana_movil_52": {
+    "mediana": 6.88,
+    "banda_p2_5_p97_5": [
+     6.38,
+     8.0
+    ],
+    "min_max": [
+     6.34,
+     8.14
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_52": {
+    "mediana": 6.44,
+    "banda_p2_5_p97_5": [
+     5.77,
+     7.78
+    ],
+    "min_max": [
+     5.66,
+     7.83
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_104": {
+    "mediana": 6.2,
+    "banda_p2_5_p97_5": [
+     5.81,
+     6.94
+    ],
+    "min_max": [
+     5.76,
+     7.01
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_anualizado_desde_156": {
+    "mediana": 6.24,
+    "banda_p2_5_p97_5": [
+     5.91,
+     6.63
+    ],
+    "min_max": [
+     5.81,
+     6.64
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_con_deslizamiento_a_52_semanas": {
+    "mediana": 7.65,
+    "banda_p2_5_p97_5": [
+     6.99,
+     9.0
+    ],
+    "min_max": [
+     6.87,
+     9.04
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_con_deslizamiento_a_104_semanas": {
+    "mediana": 14.82,
+    "banda_p2_5_p97_5": [
+     14.05,
+     16.31
+    ],
+    "min_max": [
+     13.94,
+     16.44
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   },
+   "pct_con_deslizamiento_a_156_semanas": {
+    "mediana": 22.38,
+    "banda_p2_5_p97_5": [
+     21.36,
+     23.54
+    ],
+    "min_max": [
+     21.08,
+     23.58
+    ],
+    "dispara_M2_en_mediana": false,
+    "semillas_que_disparan": 0,
+    "K": 20,
+    "semillas_congeladas": 0,
+    "advertencia_congeladas": null
+   }
+  }
+ },
+ "por_semilla": [
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.5,
+    "pct_anualizado_desde_52": 3.5,
+    "pct_con_deslizamiento_a_52_semanas": 3.88,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.2,
+    "pct_anualizado_desde_104": 4.1,
+    "pct_con_deslizamiento_a_104_semanas": 9.06,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.5,
+    "pct_anualizado_desde_156": 4.17,
+    "pct_con_deslizamiento_a_156_semanas": 13.87,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 4.78
+   },
+   "medio": {
+    "pct_a_52_semanas": 8.38,
+    "pct_anualizado_desde_52": 8.38,
+    "pct_con_deslizamiento_a_52_semanas": 9.46,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 17.26,
+    "pct_anualizado_desde_104": 8.63,
+    "pct_con_deslizamiento_a_104_semanas": 19.47,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 25.69,
+    "pct_anualizado_desde_156": 8.56,
+    "pct_con_deslizamiento_a_156_semanas": 29.07,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 9.47
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 7.83,
+    "pct_anualizado_desde_52": 7.83,
+    "pct_con_deslizamiento_a_52_semanas": 9.04,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 14.02,
+    "pct_anualizado_desde_104": 7.01,
+    "pct_con_deslizamiento_a_104_semanas": 16.44,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 19.36,
+    "pct_anualizado_desde_156": 6.45,
+    "pct_con_deslizamiento_a_156_semanas": 22.98,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 8.14
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.82,
+    "pct_anualizado_desde_52": 3.82,
+    "pct_con_deslizamiento_a_52_semanas": 4.24,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.76,
+    "pct_anualizado_desde_104": 4.38,
+    "pct_con_deslizamiento_a_104_semanas": 9.68,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 13.09,
+    "pct_anualizado_desde_156": 4.36,
+    "pct_con_deslizamiento_a_156_semanas": 14.51,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.06
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.42,
+    "pct_anualizado_desde_52": 9.42,
+    "pct_con_deslizamiento_a_52_semanas": 10.53,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 15.11,
+    "pct_anualizado_desde_104": 7.55,
+    "pct_con_deslizamiento_a_104_semanas": 16.89,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 15.11,
+    "pct_anualizado_desde_156": 5.04,
+    "pct_con_deslizamiento_a_156_semanas": 16.89,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 9.94
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 5.94,
+    "pct_anualizado_desde_52": 5.94,
+    "pct_con_deslizamiento_a_52_semanas": 7.14,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.18,
+    "pct_anualizado_desde_104": 6.09,
+    "pct_con_deslizamiento_a_104_semanas": 14.6,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.07,
+    "pct_anualizado_desde_156": 6.02,
+    "pct_con_deslizamiento_a_156_semanas": 21.68,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.43
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.81,
+    "pct_anualizado_desde_52": 3.81,
+    "pct_con_deslizamiento_a_52_semanas": 4.23,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 6.45,
+    "pct_anualizado_desde_104": 3.22,
+    "pct_con_deslizamiento_a_104_semanas": 7.13,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 6.45,
+    "pct_anualizado_desde_156": 2.15,
+    "pct_con_deslizamiento_a_156_semanas": 7.13,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 4.66
+   },
+   "medio": {
+    "pct_a_52_semanas": 8.61,
+    "pct_anualizado_desde_52": 8.61,
+    "pct_con_deslizamiento_a_52_semanas": 9.69,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.04,
+    "pct_anualizado_desde_104": 9.02,
+    "pct_con_deslizamiento_a_104_semanas": 20.23,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.29,
+    "pct_anualizado_desde_156": 8.76,
+    "pct_con_deslizamiento_a_156_semanas": 29.6,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 9.83
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 5.66,
+    "pct_anualizado_desde_52": 5.66,
+    "pct_con_deslizamiento_a_52_semanas": 6.87,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 11.52,
+    "pct_anualizado_desde_104": 5.76,
+    "pct_con_deslizamiento_a_104_semanas": 13.94,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.27,
+    "pct_anualizado_desde_156": 6.09,
+    "pct_con_deslizamiento_a_156_semanas": 21.89,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.88
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.76,
+    "pct_anualizado_desde_52": 3.76,
+    "pct_con_deslizamiento_a_52_semanas": 4.19,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.63,
+    "pct_anualizado_desde_104": 4.31,
+    "pct_con_deslizamiento_a_104_semanas": 9.54,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.33,
+    "pct_anualizado_desde_156": 4.11,
+    "pct_con_deslizamiento_a_156_semanas": 13.68,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.01
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.65,
+    "pct_anualizado_desde_52": 9.65,
+    "pct_con_deslizamiento_a_52_semanas": 10.74,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.55,
+    "pct_anualizado_desde_104": 9.77,
+    "pct_con_deslizamiento_a_104_semanas": 21.76,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.72,
+    "pct_anualizado_desde_156": 9.24,
+    "pct_con_deslizamiento_a_156_semanas": 31.07,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.29
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.31,
+    "pct_anualizado_desde_52": 6.31,
+    "pct_con_deslizamiento_a_52_semanas": 7.52,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.44,
+    "pct_anualizado_desde_104": 6.22,
+    "pct_con_deslizamiento_a_104_semanas": 14.87,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 19.17,
+    "pct_anualizado_desde_156": 6.39,
+    "pct_con_deslizamiento_a_156_semanas": 22.84,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.07
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.0,
+    "pct_anualizado_desde_52": 4.0,
+    "pct_con_deslizamiento_a_52_semanas": 4.41,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 7.53,
+    "pct_anualizado_desde_104": 3.77,
+    "pct_con_deslizamiento_a_104_semanas": 8.27,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 7.53,
+    "pct_anualizado_desde_156": 2.51,
+    "pct_con_deslizamiento_a_156_semanas": 8.27,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 4.86
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.21,
+    "pct_anualizado_desde_52": 9.21,
+    "pct_con_deslizamiento_a_52_semanas": 10.3,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.41,
+    "pct_anualizado_desde_104": 9.21,
+    "pct_con_deslizamiento_a_104_semanas": 20.63,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.48,
+    "pct_anualizado_desde_156": 8.83,
+    "pct_con_deslizamiento_a_156_semanas": 29.84,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 9.91
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 5.89,
+    "pct_anualizado_desde_52": 5.89,
+    "pct_con_deslizamiento_a_52_semanas": 7.12,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.29,
+    "pct_anualizado_desde_104": 6.14,
+    "pct_con_deslizamiento_a_104_semanas": 14.73,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.34,
+    "pct_anualizado_desde_156": 6.11,
+    "pct_con_deslizamiento_a_156_semanas": 21.99,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.54
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.64,
+    "pct_anualizado_desde_52": 3.64,
+    "pct_con_deslizamiento_a_52_semanas": 4.03,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.2,
+    "pct_anualizado_desde_104": 4.1,
+    "pct_con_deslizamiento_a_104_semanas": 9.08,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.2,
+    "pct_anualizado_desde_156": 4.07,
+    "pct_con_deslizamiento_a_156_semanas": 13.57,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 4.75
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.36,
+    "pct_anualizado_desde_52": 9.36,
+    "pct_con_deslizamiento_a_52_semanas": 10.47,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.7,
+    "pct_anualizado_desde_104": 9.35,
+    "pct_con_deslizamiento_a_104_semanas": 20.97,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.38,
+    "pct_anualizado_desde_156": 9.13,
+    "pct_con_deslizamiento_a_156_semanas": 30.8,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.0
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.05,
+    "pct_anualizado_desde_52": 6.05,
+    "pct_con_deslizamiento_a_52_semanas": 7.27,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.18,
+    "pct_anualizado_desde_104": 6.09,
+    "pct_con_deslizamiento_a_104_semanas": 14.61,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.1,
+    "pct_anualizado_desde_156": 6.03,
+    "pct_con_deslizamiento_a_156_semanas": 21.75,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.34
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.62,
+    "pct_anualizado_desde_52": 3.62,
+    "pct_con_deslizamiento_a_52_semanas": 4.02,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.47,
+    "pct_anualizado_desde_104": 4.23,
+    "pct_con_deslizamiento_a_104_semanas": 9.34,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.37,
+    "pct_anualizado_desde_156": 4.12,
+    "pct_con_deslizamiento_a_156_semanas": 13.74,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.14
+   },
+   "medio": {
+    "pct_a_52_semanas": 10.42,
+    "pct_anualizado_desde_52": 10.42,
+    "pct_con_deslizamiento_a_52_semanas": 11.51,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 20.57,
+    "pct_anualizado_desde_104": 10.28,
+    "pct_con_deslizamiento_a_104_semanas": 22.83,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 29.2,
+    "pct_anualizado_desde_156": 9.73,
+    "pct_con_deslizamiento_a_156_semanas": 32.61,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.87
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.55,
+    "pct_anualizado_desde_52": 6.55,
+    "pct_con_deslizamiento_a_52_semanas": 7.76,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 13.06,
+    "pct_anualizado_desde_104": 6.53,
+    "pct_con_deslizamiento_a_104_semanas": 15.48,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.88,
+    "pct_anualizado_desde_156": 6.29,
+    "pct_con_deslizamiento_a_156_semanas": 22.53,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.8
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.33,
+    "pct_anualizado_desde_52": 4.33,
+    "pct_con_deslizamiento_a_52_semanas": 4.76,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.5,
+    "pct_anualizado_desde_104": 4.25,
+    "pct_con_deslizamiento_a_104_semanas": 9.38,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.16,
+    "pct_anualizado_desde_156": 4.05,
+    "pct_con_deslizamiento_a_156_semanas": 13.5,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 4.82
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.72,
+    "pct_anualizado_desde_52": 9.72,
+    "pct_con_deslizamiento_a_52_semanas": 10.82,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.96,
+    "pct_anualizado_desde_104": 9.48,
+    "pct_con_deslizamiento_a_104_semanas": 21.21,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.13,
+    "pct_anualizado_desde_156": 8.71,
+    "pct_con_deslizamiento_a_156_semanas": 29.47,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.17
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.3,
+    "pct_anualizado_desde_52": 6.3,
+    "pct_con_deslizamiento_a_52_semanas": 7.51,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.25,
+    "pct_anualizado_desde_104": 6.12,
+    "pct_con_deslizamiento_a_104_semanas": 14.66,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.99,
+    "pct_anualizado_desde_156": 6.33,
+    "pct_con_deslizamiento_a_156_semanas": 22.63,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.98
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.92,
+    "pct_anualizado_desde_52": 3.92,
+    "pct_con_deslizamiento_a_52_semanas": 4.34,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.66,
+    "pct_anualizado_desde_104": 4.33,
+    "pct_con_deslizamiento_a_104_semanas": 9.56,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.4,
+    "pct_anualizado_desde_156": 4.13,
+    "pct_con_deslizamiento_a_156_semanas": 13.78,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 4.77
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.54,
+    "pct_anualizado_desde_52": 9.54,
+    "pct_con_deslizamiento_a_52_semanas": 10.64,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.27,
+    "pct_anualizado_desde_104": 9.63,
+    "pct_con_deslizamiento_a_104_semanas": 21.55,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.29,
+    "pct_anualizado_desde_156": 9.1,
+    "pct_con_deslizamiento_a_156_semanas": 30.7,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.59
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.27,
+    "pct_anualizado_desde_52": 6.27,
+    "pct_con_deslizamiento_a_52_semanas": 7.49,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.52,
+    "pct_anualizado_desde_104": 6.26,
+    "pct_con_deslizamiento_a_104_semanas": 14.95,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.21,
+    "pct_anualizado_desde_156": 6.07,
+    "pct_con_deslizamiento_a_156_semanas": 21.83,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.66
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.69,
+    "pct_anualizado_desde_52": 4.69,
+    "pct_con_deslizamiento_a_52_semanas": 5.18,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 9.24,
+    "pct_anualizado_desde_104": 4.62,
+    "pct_con_deslizamiento_a_104_semanas": 10.19,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.77,
+    "pct_anualizado_desde_156": 4.26,
+    "pct_con_deslizamiento_a_156_semanas": 14.16,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.38
+   },
+   "medio": {
+    "pct_a_52_semanas": 11.18,
+    "pct_anualizado_desde_52": 11.18,
+    "pct_con_deslizamiento_a_52_semanas": 12.31,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 20.22,
+    "pct_anualizado_desde_104": 10.11,
+    "pct_con_deslizamiento_a_104_semanas": 22.52,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.1,
+    "pct_anualizado_desde_156": 9.03,
+    "pct_con_deslizamiento_a_156_semanas": 30.43,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 11.48
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 7.73,
+    "pct_anualizado_desde_52": 7.73,
+    "pct_con_deslizamiento_a_52_semanas": 8.95,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 13.74,
+    "pct_anualizado_desde_104": 6.87,
+    "pct_con_deslizamiento_a_104_semanas": 16.16,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 19.84,
+    "pct_anualizado_desde_156": 6.61,
+    "pct_con_deslizamiento_a_156_semanas": 23.49,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.84
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.22,
+    "pct_anualizado_desde_52": 4.22,
+    "pct_con_deslizamiento_a_52_semanas": 4.65,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 7.43,
+    "pct_anualizado_desde_104": 3.71,
+    "pct_con_deslizamiento_a_104_semanas": 8.13,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 7.43,
+    "pct_anualizado_desde_156": 2.48,
+    "pct_con_deslizamiento_a_156_semanas": 8.13,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 5.33
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.32,
+    "pct_anualizado_desde_52": 9.32,
+    "pct_con_deslizamiento_a_52_semanas": 10.43,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.5,
+    "pct_anualizado_desde_104": 9.75,
+    "pct_con_deslizamiento_a_104_semanas": 21.77,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.7,
+    "pct_anualizado_desde_156": 9.23,
+    "pct_con_deslizamiento_a_156_semanas": 31.1,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.82
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.54,
+    "pct_anualizado_desde_52": 6.54,
+    "pct_con_deslizamiento_a_52_semanas": 7.76,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.75,
+    "pct_anualizado_desde_104": 6.38,
+    "pct_con_deslizamiento_a_104_semanas": 15.18,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.67,
+    "pct_anualizado_desde_156": 6.22,
+    "pct_con_deslizamiento_a_156_semanas": 22.32,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.87
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.62,
+    "pct_anualizado_desde_52": 3.62,
+    "pct_con_deslizamiento_a_52_semanas": 4.02,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.68,
+    "pct_anualizado_desde_104": 4.34,
+    "pct_con_deslizamiento_a_104_semanas": 9.58,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.3,
+    "pct_anualizado_desde_156": 4.1,
+    "pct_con_deslizamiento_a_156_semanas": 13.68,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.11
+   },
+   "medio": {
+    "pct_a_52_semanas": 8.55,
+    "pct_anualizado_desde_52": 8.55,
+    "pct_con_deslizamiento_a_52_semanas": 9.63,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 17.74,
+    "pct_anualizado_desde_104": 8.87,
+    "pct_con_deslizamiento_a_104_semanas": 19.97,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.49,
+    "pct_anualizado_desde_156": 8.83,
+    "pct_con_deslizamiento_a_156_semanas": 29.89,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 9.96
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.72,
+    "pct_anualizado_desde_52": 6.72,
+    "pct_con_deslizamiento_a_52_semanas": 7.94,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.37,
+    "pct_anualizado_desde_104": 6.19,
+    "pct_con_deslizamiento_a_104_semanas": 14.81,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.53,
+    "pct_anualizado_desde_156": 6.18,
+    "pct_con_deslizamiento_a_156_semanas": 22.18,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.79
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.65,
+    "pct_anualizado_desde_52": 3.65,
+    "pct_con_deslizamiento_a_52_semanas": 4.07,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 6.63,
+    "pct_anualizado_desde_104": 3.32,
+    "pct_con_deslizamiento_a_104_semanas": 7.33,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 6.63,
+    "pct_anualizado_desde_156": 2.21,
+    "pct_con_deslizamiento_a_156_semanas": 7.33,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 4.66
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.4,
+    "pct_anualizado_desde_52": 9.4,
+    "pct_con_deslizamiento_a_52_semanas": 10.51,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 14.06,
+    "pct_anualizado_desde_104": 7.03,
+    "pct_con_deslizamiento_a_104_semanas": 15.74,
+    "congelada_antes_de_104": true,
+    "pct_a_156_semanas": 14.06,
+    "pct_anualizado_desde_156": 4.69,
+    "pct_con_deslizamiento_a_156_semanas": 15.74,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 10.01
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 5.9,
+    "pct_anualizado_desde_52": 5.9,
+    "pct_con_deslizamiento_a_52_semanas": 7.12,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.03,
+    "pct_anualizado_desde_104": 6.02,
+    "pct_con_deslizamiento_a_104_semanas": 14.46,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.93,
+    "pct_anualizado_desde_156": 6.31,
+    "pct_con_deslizamiento_a_156_semanas": 22.59,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.09
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.27,
+    "pct_anualizado_desde_52": 4.27,
+    "pct_con_deslizamiento_a_52_semanas": 4.7,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.47,
+    "pct_anualizado_desde_104": 4.24,
+    "pct_con_deslizamiento_a_104_semanas": 9.39,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.54,
+    "pct_anualizado_desde_156": 4.18,
+    "pct_con_deslizamiento_a_156_semanas": 13.97,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.24
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.16,
+    "pct_anualizado_desde_52": 9.16,
+    "pct_con_deslizamiento_a_52_semanas": 10.22,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.97,
+    "pct_anualizado_desde_104": 9.49,
+    "pct_con_deslizamiento_a_104_semanas": 21.22,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.66,
+    "pct_anualizado_desde_156": 8.89,
+    "pct_con_deslizamiento_a_156_semanas": 30.03,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.1
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.57,
+    "pct_anualizado_desde_52": 6.57,
+    "pct_con_deslizamiento_a_52_semanas": 7.79,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 11.73,
+    "pct_anualizado_desde_104": 5.86,
+    "pct_con_deslizamiento_a_104_semanas": 14.17,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 17.43,
+    "pct_anualizado_desde_156": 5.81,
+    "pct_con_deslizamiento_a_156_semanas": 21.08,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.7
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.45,
+    "pct_anualizado_desde_52": 4.45,
+    "pct_con_deslizamiento_a_52_semanas": 4.87,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.74,
+    "pct_anualizado_desde_104": 4.37,
+    "pct_con_deslizamiento_a_104_semanas": 9.63,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.34,
+    "pct_anualizado_desde_156": 4.11,
+    "pct_con_deslizamiento_a_156_semanas": 13.69,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.31
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.62,
+    "pct_anualizado_desde_52": 9.62,
+    "pct_con_deslizamiento_a_52_semanas": 10.73,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.03,
+    "pct_anualizado_desde_104": 9.51,
+    "pct_con_deslizamiento_a_104_semanas": 21.32,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.17,
+    "pct_anualizado_desde_156": 9.06,
+    "pct_con_deslizamiento_a_156_semanas": 30.56,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.24
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.68,
+    "pct_anualizado_desde_52": 6.68,
+    "pct_con_deslizamiento_a_52_semanas": 7.9,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.61,
+    "pct_anualizado_desde_104": 6.31,
+    "pct_con_deslizamiento_a_104_semanas": 15.03,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.46,
+    "pct_anualizado_desde_156": 6.15,
+    "pct_con_deslizamiento_a_156_semanas": 22.09,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.81
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.78,
+    "pct_anualizado_desde_52": 3.78,
+    "pct_con_deslizamiento_a_52_semanas": 4.18,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 9.5,
+    "pct_anualizado_desde_104": 4.75,
+    "pct_con_deslizamiento_a_104_semanas": 10.45,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 13.1,
+    "pct_anualizado_desde_156": 4.37,
+    "pct_con_deslizamiento_a_156_semanas": 14.51,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.76
+   },
+   "medio": {
+    "pct_a_52_semanas": 8.14,
+    "pct_anualizado_desde_52": 8.14,
+    "pct_con_deslizamiento_a_52_semanas": 9.22,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 17.5,
+    "pct_anualizado_desde_104": 8.75,
+    "pct_con_deslizamiento_a_104_semanas": 19.76,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 25.54,
+    "pct_anualizado_desde_156": 8.51,
+    "pct_con_deslizamiento_a_156_semanas": 28.95,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 9.98
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.57,
+    "pct_anualizado_desde_52": 6.57,
+    "pct_con_deslizamiento_a_52_semanas": 7.79,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.41,
+    "pct_anualizado_desde_104": 6.21,
+    "pct_con_deslizamiento_a_104_semanas": 14.84,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.66,
+    "pct_anualizado_desde_156": 6.22,
+    "pct_con_deslizamiento_a_156_semanas": 22.31,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.76
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 3.72,
+    "pct_anualizado_desde_52": 3.72,
+    "pct_con_deslizamiento_a_52_semanas": 4.15,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 6.26,
+    "pct_anualizado_desde_104": 3.13,
+    "pct_con_deslizamiento_a_104_semanas": 6.95,
+    "congelada_antes_de_104": true,
+    "pct_a_156_semanas": 6.26,
+    "pct_anualizado_desde_156": 2.09,
+    "pct_con_deslizamiento_a_156_semanas": 6.95,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 4.6
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.28,
+    "pct_anualizado_desde_52": 9.28,
+    "pct_con_deslizamiento_a_52_semanas": 10.37,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.06,
+    "pct_anualizado_desde_104": 9.53,
+    "pct_con_deslizamiento_a_104_semanas": 21.28,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.28,
+    "pct_anualizado_desde_156": 9.09,
+    "pct_con_deslizamiento_a_156_semanas": 30.7,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.43
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.34,
+    "pct_anualizado_desde_52": 6.34,
+    "pct_con_deslizamiento_a_52_semanas": 7.55,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.22,
+    "pct_anualizado_desde_104": 6.11,
+    "pct_con_deslizamiento_a_104_semanas": 14.64,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.8,
+    "pct_anualizado_desde_156": 6.27,
+    "pct_con_deslizamiento_a_156_semanas": 22.44,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 6.95
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.27,
+    "pct_anualizado_desde_52": 4.27,
+    "pct_con_deslizamiento_a_52_semanas": 4.71,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.9,
+    "pct_anualizado_desde_104": 4.45,
+    "pct_con_deslizamiento_a_104_semanas": 9.8,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.7,
+    "pct_anualizado_desde_156": 4.23,
+    "pct_con_deslizamiento_a_156_semanas": 14.09,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 4.94
+   },
+   "medio": {
+    "pct_a_52_semanas": 8.34,
+    "pct_anualizado_desde_52": 8.34,
+    "pct_con_deslizamiento_a_52_semanas": 9.44,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 18.23,
+    "pct_anualizado_desde_104": 9.11,
+    "pct_con_deslizamiento_a_104_semanas": 20.48,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 26.33,
+    "pct_anualizado_desde_156": 8.78,
+    "pct_con_deslizamiento_a_156_semanas": 29.76,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.19
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.89,
+    "pct_anualizado_desde_52": 6.89,
+    "pct_con_deslizamiento_a_52_semanas": 8.11,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.28,
+    "pct_anualizado_desde_104": 6.14,
+    "pct_con_deslizamiento_a_104_semanas": 14.72,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 18.9,
+    "pct_anualizado_desde_156": 6.3,
+    "pct_con_deslizamiento_a_156_semanas": 22.55,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.08
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.3,
+    "pct_anualizado_desde_52": 4.3,
+    "pct_con_deslizamiento_a_52_semanas": 4.75,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.87,
+    "pct_anualizado_desde_104": 4.43,
+    "pct_con_deslizamiento_a_104_semanas": 9.78,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.93,
+    "pct_anualizado_desde_156": 4.31,
+    "pct_con_deslizamiento_a_156_semanas": 14.33,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.04
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.43,
+    "pct_anualizado_desde_52": 9.43,
+    "pct_con_deslizamiento_a_52_semanas": 10.52,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 15.29,
+    "pct_anualizado_desde_104": 7.65,
+    "pct_con_deslizamiento_a_104_semanas": 17.1,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 15.29,
+    "pct_anualizado_desde_156": 5.1,
+    "pct_con_deslizamiento_a_156_semanas": 17.1,
+    "congelada_antes_de_156": true,
+    "pct_peor_ventana_movil_52": 9.84
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 6.18,
+    "pct_anualizado_desde_52": 6.18,
+    "pct_con_deslizamiento_a_52_semanas": 7.4,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 12.93,
+    "pct_anualizado_desde_104": 6.47,
+    "pct_con_deslizamiento_a_104_semanas": 15.36,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 19.11,
+    "pct_anualizado_desde_156": 6.37,
+    "pct_con_deslizamiento_a_156_semanas": 22.76,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.07
+   }
+  },
+  {
+   "conservador": {
+    "pct_a_52_semanas": 4.02,
+    "pct_anualizado_desde_52": 4.02,
+    "pct_con_deslizamiento_a_52_semanas": 4.41,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 8.95,
+    "pct_anualizado_desde_104": 4.47,
+    "pct_con_deslizamiento_a_104_semanas": 9.84,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 12.61,
+    "pct_anualizado_desde_156": 4.2,
+    "pct_con_deslizamiento_a_156_semanas": 13.95,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 5.19
+   },
+   "medio": {
+    "pct_a_52_semanas": 9.56,
+    "pct_anualizado_desde_52": 9.56,
+    "pct_con_deslizamiento_a_52_semanas": 10.66,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 19.65,
+    "pct_anualizado_desde_104": 9.83,
+    "pct_con_deslizamiento_a_104_semanas": 21.9,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 27.81,
+    "pct_anualizado_desde_156": 9.27,
+    "pct_con_deslizamiento_a_156_semanas": 31.22,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 10.98
+   },
+   "agresivo": {
+    "pct_a_52_semanas": 7.13,
+    "pct_anualizado_desde_52": 7.13,
+    "pct_con_deslizamiento_a_52_semanas": 8.35,
+    "congelada_antes_de_52": false,
+    "pct_a_104_semanas": 13.29,
+    "pct_anualizado_desde_104": 6.65,
+    "pct_con_deslizamiento_a_104_semanas": 15.72,
+    "congelada_antes_de_104": false,
+    "pct_a_156_semanas": 19.93,
+    "pct_anualizado_desde_156": 6.64,
+    "pct_con_deslizamiento_a_156_semanas": 23.58,
+    "congelada_antes_de_156": false,
+    "pct_peor_ventana_movil_52": 7.32
+   }
+  }
+ ],
+ "intentos_dsr": 0
+}

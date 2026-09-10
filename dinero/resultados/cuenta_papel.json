@@ -43,6 +43,11 @@
     "2026-07-21",
     "2026-09-01"
    ],
+   "cortes_rotos": [],
+   "fuga_inyectada": {
+    "precios_ref_dias": 0,
+    "fabrica_senales": false
+   },
    "comparaciones": [
     {
      "corte": "2023-10-17",
@@ -196,12 +201,12 @@
     }
    ],
    "metodo": "se reconstruye la cuenta entera (membresía, señales, línea base, tres juegos, cuatro deslizamientos) con la fuente cortada en D y se exige que todo movimiento ejecutado hasta D (fecha, ticker, lado, acciones, precio, comisión, fecha de decisión y acciones decididas) y toda DECISIÓN tomada hasta D, ejecutada o no, sea idéntica a la de la fuente completa",
-   "alcance": "invariancia al truncado en 25 cortes por regla (una sesión de cada 30). Una fuga de k días sólo deja huella en los k días previos a cada corte: el poder contra fugas cortas es la probabilidad de que en esos días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa ausencia de fuga: significa que ninguna entró por las vías que estos cortes ven. La contraprueba de precios_ref (G3) está pendiente para la corrida 12.",
+   "alcance": "invariancia al truncado en 25 cortes por regla (una sesión de cada 30). Una fuga de k días sólo deja huella en los k días previos a cada corte: el poder contra fugas cortas es la probabilidad de que en esos días haya una decisión distinta. Medido por el auditor (corrida 11): una fuga de 1 día por precios_ref la veían 2 de 11 cortes. INVARIANTE no significa ausencia de fuga: significa que ninguna entró por las vías que estos cortes ven. La contraprueba de precios_ref (G3, corrida 12) existe como prueba de borde: el corte se pone en el primer día en que la fuga cambia una decisión, leído de Libro.decisiones, y ahí el gate dispara.",
    "cubre_solo_la_semilla_0": true,
-   "contraprueba": "tests/test_dinero.py inyecta una señal que mira un día adelante y exige que este gate dispare"
+   "contraprueba": "tests/test_dinero.py inyecta una señal que mira un día adelante (por fabrica_senales) y un precio de dimensionamiento que mira un día adelante (por fuga_precios_ref_dias, G3), y exige que este gate dispare en los dos casos"
   },
   "costo": {
-   "fuente": "GEMELO/propuestas/insumo_40_aranceles_*.md (corredor del §40, Pro Tiered, 7-sep-2026)",
+   "fuente": "GEMELO/propuestas/insumo_40_aranceles_ibkr.md (Interactive Brokers, Pro Tiered, tabla United States, consultado el 7-sep-2026)",
    "columna": "acciones enteras",
    "comision_por_accion_usd": 0.0035,
    "comision_minima_usd": 0.35,
@@ -379,7 +384,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -390,7 +400,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1294.3327697372424,
@@ -416,7 +431,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -427,7 +447,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1290.1979118543895,
@@ -453,7 +478,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -464,7 +494,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1247.8133866610801,
@@ -490,7 +525,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -501,7 +541,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1241.3785987749657,
@@ -527,7 +572,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -538,7 +588,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1033.54499149084,
@@ -564,7 +619,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -575,7 +635,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 938.7170521651215,
@@ -601,7 +666,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -612,7 +682,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1220.4166859590464,
@@ -638,7 +713,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -649,7 +729,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 1040.0829169431868,
@@ -675,7 +760,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -686,7 +776,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 765.4423396491992,
@@ -712,7 +807,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -723,7 +823,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 758.0917233186892,
@@ -749,7 +854,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -760,7 +870,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 741.0719019170434,
@@ -786,7 +901,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     },
     "XSD": {
      "semanas": 156,
@@ -797,7 +917,12 @@
      "bloque_semanas": 4,
      "replicas": 2000,
      "alpha": 0.05,
-     "semilla": 20260906
+     "semilla": 20260906,
+     "alpha_es": "nominal",
+     "alpha_real_medido": 0.0635,
+     "cobertura_medida_ic_media": 0.9365,
+     "cobertura_medida_horizonte_semanas": 156,
+     "fuente_cobertura": "GEMELO/resultados/instrumento_dinero.json calibracion.156"
     }
    },
    "final_usd": 717.9215884494542,
@@ -814,7 +939,7 @@
  "falsos_positivos": {
   "comparaciones": 24,
   "con_ic_que_excluye_cero": 5,
-  "nota": "NO es una tasa de falsos positivos: la nula no es cero (arrastre de comisión), un intervalo negativo es el resultado verdadero de la fricción, y las comparaciones comparten sorteo. Con 20 semillas del sorteo la fracción está medida con Wilson en `barrido_semillas` (§1b del .md); esta celda es la de la semilla de la página."
+  "nota": "NO es una tasa de falsos positivos: la nula no es cero (arrastre de comisión), un intervalo negativo es el resultado verdadero de la fricción, y las comparaciones comparten sorteo. Con 20 semillas del sorteo la fracción está en `barrido_semillas` con la semilla como unidad de replicación (§1b del .md); esta celda es la de la semilla de la página."
  },
  "sigma_dif_semanal": {
   "juego": "conservador",
@@ -903,12 +1028,37 @@
    "marcados": 51,
    "comparaciones": 480,
    "fraccion": 0.1062,
-   "wilson95": [
-    0.082,
-    0.137
+   "unidad_de_replicacion": "semilla",
+   "fraccion_por_semilla": [
+    0.2083,
+    0.1667,
+    0.0,
+    0.125,
+    0.25,
+    0.0,
+    0.0417,
+    0.1667,
+    0.25,
+    0.1667,
+    0.0,
+    0.0417,
+    0.0417,
+    0.0,
+    0.1667,
+    0.2917,
+    0.0,
+    0.0,
+    0.0833,
+    0.125
    ],
+   "ic95_t_entre_semillas": [
+    0.0604,
+    0.1521
+   ],
+   "wilson95_retirado": "el Wilson sobre K×24 comparaciones se retiró en el re-dictamen de la corrida 12 (D7): era iid sobre unidades agrupadas",
    "de_los_cuales_agresivo_negativo_vs_SMH": 9
   },
+  "banda_es": "percentiles 2,5 y 97,5 ENTRE SORTEOS de la señal (con K = 20 son casi el mínimo y el máximo), no un intervalo de cobertura nominal",
   "nota": "La fracción de IC que excluyen el cero NO es una tasa de falsos positivos (la nula no es cero: hay arrastre de comisión). Es cuánto produce este diseño con una señal sin información, con la misma semilla de bootstrap en las K×24."
  },
  "sesgo_de_la_sonda": {
@@ -966,6 +1116,32 @@
    "1.0": 0.9971
   },
   "mde80_pp_semana": 0.6066,
-  "mde80_pp_anio_aprox": 31.5
+  "mde80_pp_anio_aprox": 31.5,
+  "mde80_pp_anio_aprox_convencion": "suma aritmética 52 × MDE80 semanal (D6)",
+  "mde80_alpha_nominal": {
+   "pp_semana": 0.6066,
+   "banda_pp_semana": [
+    0.4286,
+    0.9009
+   ],
+   "pp_anio_suma_aritmetica": 31.5,
+   "pp_anio_capitalizado": 37.0,
+   "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+   "alpha": 0.05,
+   "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+  },
+  "mde80_alpha_real": {
+   "pp_semana": 0.584,
+   "banda_pp_semana": [
+    0.4126,
+    0.8673
+   ],
+   "pp_anio_suma_aritmetica": 30.4,
+   "pp_anio_capitalizado": 35.4,
+   "convencion_anualizacion": "pp_anio_suma_aritmetica = 52 × MDE80 semanal (lo que la tabla llamaba «≈ pp/año»); pp_anio_capitalizado = (1 + m/100)^52 − 1. Son dos cantidades distintas y se publican las dos.",
+   "alpha": 0.0635,
+   "banda_de": "banda entre sorteos de σ (percentiles 2,5 y 97,5), no un IC de muestreo"
+  },
+  "sigma_de_este_mde_pp_semana": 2.7042
  }
 }

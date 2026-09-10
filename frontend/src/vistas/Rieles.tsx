@@ -27,10 +27,9 @@ function Campo({ k, children }: { k: string; children: React.ReactNode }) {
 
 function Columna({ r }: { r: Riel }) {
   return (
-    <Card className="capa-1">
+    <Card className="capa-1" estatus={`${r.estatus} (cifras de la muestra; potencia y qué lo mata llevan el suyo)`}>
       <div className="mb-2 flex flex-wrap items-baseline gap-3">
         <h3 className="font-display text-[15px] font-semibold text-text-1">{r.nombre}</h3>
-        <Estatus valor={r.estatus} />
         {!r.mueve_plata && (
           <span className="text-[11px] text-text-3">no mueve plata</span>
         )}
@@ -166,7 +165,7 @@ export function Rieles() {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
-      <Card className="capa-1">
+      <Card className="capa-1" estatus="SIN CIFRAS">
         <h2 className="mb-2 font-display text-[15px] font-semibold text-text-1">
           Los dos rieles
         </h2>

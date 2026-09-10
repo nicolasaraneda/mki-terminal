@@ -1,0 +1,17 @@
+{
+ "_ORIGEN": "ESCRITO DESDE DOCUMENTACIÓN (TWS API, páginas oficiales consultadas el 8/9-sep-2026), NO GRABADO DE UNA SESIÓN REAL. Sirve para probar el adaptador y su guardia de papel. NO es evidencia de C1 ni de C2. Identificadores, horas y precios son inventados; la cuenta DU0000000 es sintética.",
+ "managedAccounts": ["DU0000000"],
+ "nextValidId": 1001,
+ "marketDataType": 3,
+ "orderStatus": {"orderId": null, "status": "Filled", "filled": 1, "remaining": 0, "avgFillPrice": 45.21, "permId": 900000001, "parentId": 0, "lastFillPrice": 45.21, "clientId": 12, "whyHeld": "", "mktCapPrice": 0.0},
+ "execDetails": [
+  {"execId": "0000e0d5.66df1c9a.01.01", "time": "20260909  10:31:02", "acctNumber": "DU0000000", "exchange": "ISLAND", "side": "BOT", "shares": 1, "price": 45.21, "permId": 900000001, "clientId": 12, "orderId": 1001, "liquidation": 0, "cumQty": 1, "avgPrice": 45.21, "orderRef": "", "evRule": "", "evMultiplier": 0, "modelCode": "", "lastLiquidity": 2, "symbol": "GFS"},
+  {"execId": "0000e0d5.66df1c9a.01.02", "time": "20260909  10:33:40", "acctNumber": "DU0000000", "exchange": "ISLAND", "side": "SLD", "shares": 1, "price": 45.18, "permId": 900000002, "clientId": 12, "orderId": 1002, "liquidation": 0, "cumQty": 1, "avgPrice": 45.18, "orderRef": "", "evRule": "", "evMultiplier": 0, "modelCode": "", "lastLiquidity": 2, "symbol": "GFS"}
+ ],
+ "commissionReport": [
+  {"execId": "0000e0d5.66df1c9a.01.01", "commission": 0.35, "currency": "USD", "realizedPNL": 0.0},
+  {"execId": "0000e0d5.66df1c9a.01.02", "commission": 0.35, "currency": "USD", "realizedPNL": -0.73}
+ ],
+ "positions": [],
+ "accountSummary": {"account": "DU0000000", "TotalCashValue": "999999.27", "NetLiquidation": "999999.27", "currency": "USD"}
+}

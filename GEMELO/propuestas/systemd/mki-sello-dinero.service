@@ -1,0 +1,16 @@
+[Unit]
+Description=MKI — E0: sella la decisión prospectiva del riel de dinero (tamaño cero) para la próxima apertura de NYSE
+Documentation=file://__MKI_DIR__/dinero/sello_dinero.py
+
+# PROPUESTA (corrida 12, 9-sep-2026). NO INSTALADA: instalar un timer es acto de
+# Nicolás (espera_firma.md). Riel de dinero, no de medición: no toca senales.db.
+[Service]
+Type=oneshot
+WorkingDirectory=__MKI_DIR__
+ExecStart=__MKI_DIR__/venv/bin/python -m dinero.sello_dinero --sellar
+TimeoutStartSec=600
+KillMode=mixed
+StandardOutput=append:__MKI_DIR__/data/sello_dinero.log
+StandardError=append:__MKI_DIR__/data/sello_dinero.log
+Environment=PYTHONUNBUFFERED=1
+Environment=TZ=America/Santiago

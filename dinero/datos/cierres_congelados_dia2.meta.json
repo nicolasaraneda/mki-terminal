@@ -44,5 +44,228 @@
  "desde": "2018-09-05",
  "hasta": "2026-09-04",
  "sha256": "4222c8ecd0607497bf06e856e8a0debf8e84e6959e03dadeae5a8deceacec99d",
- "advertencia": "Los cierres de yfinance son AJUSTADOS retroactivamente por splits y dividendos: la serie NO es point-in-time. Para el riel de dinero eso sesga a favor y está declarado como limitación, no corregido."
+ "advertencia": "Los cierres de yfinance son AJUSTADOS retroactivamente por splits y dividendos: la serie NO es point-in-time. Para el riel de dinero eso sesga a favor y está declarado como limitación, no corregido.",
+ "disponibilidad": {
+  "exchange": "XNYS",
+  "que_es": "por ticker: primer y último cierre con dato, cuántos, y available_at_utc = cierre UTC por calendario de la última sesión con dato. congelado_en_utc es la cota superior común: nada del archivo era conocible después de descargarlo, y ningún dato de un ticker era conocible antes de su available_at_utc.",
+  "sellado_el": "2026-09-09 (corrida 12, G8): campo agregado al metadato con el CSV intacto; sha256 verificado igual antes y después",
+  "por_ticker": {
+   "UMC": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "GFS": {
+    "primer_cierre": "2021-10-28",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 1218,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "TSEM": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "GSM": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "ENTG": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "MKSI": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "LIN": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "SHECY": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "ASML": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "AMAT": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "LRCX": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "KLAC": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "TER": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "TOELY": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "TSM": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "INTC": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "MU": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "SNDK": {
+    "primer_cierre": "2025-02-13",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 392,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "WDC": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "ASX": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "AMKR": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "NVDA": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "AVGO": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "AMD": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "QCOM": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "ARM": {
+    "primer_cierre": "2023-09-14",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 747,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "SNPS": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "CDNS": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "MSFT": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "GOOGL": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "META": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "AMZN": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "VRT": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "SMH": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "SOXX": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   },
+   "XSD": {
+    "primer_cierre": "2018-09-05",
+    "ultimo_cierre": "2026-09-04",
+    "n_cierres": 2011,
+    "available_at_utc": "2026-09-04T20:00:00+00:00"
+   }
+  }
+ }
 }

@@ -1317,7 +1317,23 @@ E5, E6 aplicados en `dinero/`, gate de invariancia en verde, página republicada
 8-sep a esta tarjeta (§82.4) se aplicó antes de que ningún frente la leyera. Ver §47 y
 §48 abajo por lo que la reconstrucción abrió.
 
-## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10)
+## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10) — FIRMADO el 8-sep (§84.4.5) y declarado NO APLICABLE el 9-sep: vuelve con la pregunta exacta
+
+> **Nota 9-sep-2026 (corrida 12, bloque 8.1).** Recomputado sobre la v2 (`GEMELO/resultados/m2_periodo.md`,
+> 20 semillas): conservador 3,9 % a 52 semanas [3,56, 4,58], 8,6 % a 104, 12,4 % a 156 (techo 13,1 %),
+> **no cruza el 25 % en ningún horizonte**; medio 26,6 % a 156 (17 de 20 semillas cruzan). Tasa anualizada
+> del conservador **3,9 %/año**, estable a través de los tres horizontes. El adversario
+> (`dictamen_12/adversario_43_periodo_m2.md`) declaró la firma **NO APLICABLE**: el 25 % no tiene unidad
+> de período (numerador flujo, denominador fijo en 500 USD), el «horizonte pre-registrado» que la firma
+> invoca no existe (el §2 escribe un piso prospectivo de duración), y elegirlo con las tres respuestas a
+> la vista es lo que el §5 declara ilegítimo aunque acá sea inerte. **Se computaron 12 lecturas y se eligió
+> 1** (declarado). **La pregunta exacta que vuelve:** ¿en qué unidad (%/año es la única invariante al
+> período) y contra qué umbral se lee M2, y sobre qué ventana de la cuenta prospectiva? Más la condición de
+> supervivencia operativa (5 de 20 semillas conservadoras se congelan y M2 las puntúa bajo por la razón
+> equivocada) y si el deslizamiento cuenta (§7 B (ii)). Recomendación del adversario: **(c)**, umbral
+> re-declarado en %/año ANTES de la primera fila prospectiva; enmienda en `preregistro_dinero.md` §8.
+> Dónde vive el contador de «lecturas de criterio» (distinto del DSR) es también tuyo.
+
 
 > **Nota 8-sep-2026 (corrida 11):** las cifras de esta tarjeta (14 % a 43 %; 10,1 %, 21,8 % y
 > 14,8 % de peor ventana móvil de 52 semanas) son de la cuenta v1 RETIRADA por fuga y **no se
@@ -1416,7 +1432,11 @@ operativa entren juntos. **Recomendación, marcada como tal: (c)**, porque el ar
 §82.3 es que a esas filas las descarta la regla maestra, y la regla maestra sólo dispara
 con el parche aplicado.
 
-## 47. El presupuesto del riel de dinero, con la tabla a la vista (§82.7)
+## 47. El presupuesto del riel de dinero, con la tabla a la vista (§82.7) — FIRMADO EN PARTE (acta §84.4.6 y 7, 8-sep-2026): piso ENTERAS y N = 40; el MONTO sigue abierto
+
+> **Nota 9-sep-2026 (corrida 12):** aplicado en `regla_aporte_y_dimensionamiento.md` §5-bis y en el sellador
+> (`dinero/sello_dinero.py`: el presupuesto con que se decide viaja dentro de cada fila, PROPUESTA). El monto de E2
+> no se fijó (§84.4.7): ver §52 abajo.
 
 **Qué hay que decidir en una frase.** Cuánto capital propio y en qué modo de compra.
 
@@ -1445,7 +1465,9 @@ SmartRouting). (b) Si los umbrales derivados tan bajos son lo que querés, o si 
 se revisa; revisarlo después de ver la cuenta es un grado de libertad y hay que declararlo
 como tal si se hace.
 
-## 49. El guardia de la rama del `except` (parche NO aplicado, §82.2 c)
+## 49. El guardia de la rama del `except` (§82.2 c) — FIRMADO Y APLICADO (acta §84.2, 8-sep-2026)
+
+> **Nota 9-sep-2026:** el parche está aplicado desde `1508fad`; la máquina lo confirma (`mki_vigia.py::chequear_ancla_temporal`). El texto de abajo describe el estado anterior.
 
 `GEMELO/propuestas/parches/guardia_ancla_temporal.diff` toca `snapshot.py` (aviso en el
 log cuando `available_at` cae al reloj de pared, por `except` o por `sox_fecha` vacío),
@@ -1466,3 +1488,77 @@ bilateral es 0,086 [0,074, 0,099] contra 0,05 y la cobertura 0,914 [0,901, 0,926
 A midió en el riel de medición. **Cambiar el estimador después de ver la cobertura es un
 grado de libertad**: la opción (t de bloques, más réplicas, bloque distinto) es tuya, y hasta
 entonces cada `✓` de la cuenta en papel se lee sabiendo que el nominal 95 % es ~91 %.
+
+## 51. Qué señal sella E0, y si las filas de la sonda cuentan para N (corrida 12, 9-sep-2026)
+
+**Qué hay que decidir en una frase.** El sellador prospectivo (`dinero/sello_dinero.py`) sella la
+decisión del juego por defecto alimentado por la **sonda sin información** de la cuenta en papel,
+porque el riel de dinero no tiene ninguna señal con ventaja medida (L1 refutada, WS2b negativo). El
+encargo lo ordenó así («la decisión sale de `cuenta_papel`»); el pre-mortem marcó que 40 filas de
+ruido publicadas como track record es el defecto. Se selló igual **con `senal_fuente` en cada fila y
+el contador rotulado «prueba de maquinaria, no track record»**.
+
+**Opciones.** (a) Seguir sellando la sonda hasta N = 40: E0 prueba maquinaria (timestamps,
+available_at, inmutabilidad, timer) y se declara así; las filas nunca se leen como habilidad.
+(b) Sellar la señal larga L1 (REFUTADA) para tener filas prospectivas de la hipótesis que se
+puso a prueba, con su etiqueta. (c) No sellar ninguna señal hasta que exista una con estatus, y
+que E0 se cierre sólo con la maquinaria probada. **Consecuencia de cambiar:** reinicia el
+contador de N.
+
+**Estado al 9-sep-2026 00:38:** la primera sesión ya está sellada con la sonda (33 filas, 0 compras,
+`cuenta_para_N = 1` de 40). **Recomendación:** (a) con la etiqueta, porque lo que E0 compra es la maquinaria y eso no depende
+de la señal; y decidir (b) o (c) después de ver las primeras filas es exactamente el grado de
+libertad que el sellado existe para cerrar. **Cuánto cuesta decidirlo:** 10 minutos.
+
+## 52. La ventana para fijar el monto de E2 «sin mirar resultados» se cerró con la primera fila (corrida 12)
+
+La regla de aporte 5.4 dice que el monto se fija ANTES de conocer el resultado de E0 y E1. El
+§84.4.7 decidió no fijarlo en la corrida 12, y la corrida 12 selló la primera fila. Desde el
+9-sep-2026 cualquier monto que se fije se fija sabiendo algo de E0 (aunque sea que la maquinaria
+anduvo). **Qué hay que decidir:** fijarlo ahora con esa declaración, o reescribir la regla 5.4
+para que el monto se fije antes de E2 y no antes de E0 (con la razón escrita). Ninguna de las dos
+es cosmética: la primera es un grado de libertad declarado; la segunda es una enmienda a una regla
+propuesta. **Recomendación:** ninguna; es tuya.
+
+## 53. Instalar el timer del sellador E0 (`GEMELO/propuestas/systemd/mki-sello-dinero.{service,timer}`)
+
+`Mon..Fri 21:00 America/Santiago`, argumentado en el archivo (fuera de la ventana 17:50–20:30; ≥ 3 h
+después del cierre de NYSE todo el año; ≥ 12 h antes de la apertura objetivo). **Instalar un timer es
+acto tuyo.** Hasta entonces el sello se corre a mano (`python -m dinero.sello_dinero --sellar`) o no
+se corre, y los días sin sello no cuentan para N. Costo de postergarlo: cada noche sin timer es una
+sesión menos hacia N = 40.
+
+## 54. `ibapi`: la dependencia autorizada (D-C bis) no es instalable con licencia verificada desde PyPI
+
+Hallazgo de la corrida 12 (bloque 4.1, fuentes en la bitácora): el cliente Python oficial de la TWS
+API se distribuye desde `interactivebrokers.github.io` (API 10.50, 26-ago-2026) bajo la «TWS API
+Non-Commercial License» con aceptación previa; el `ibapi` de PyPI es 9.81.1.post1 (dic-2020). Por eso
+`requirements.txt` lleva la versión fijada **como línea comentada** y el adaptador (`corredor/ibkr.py`)
+importa `ibapi` de forma perezosa. **Qué hay que decidir:** (a) instalarlo vos desde el zip oficial
+(aceptando la licencia; ¿el uso del proyecto cabe en «no comercial / herramientas internas»?), y
+entonces la línea se descomenta con la versión real; (b) otra ruta oficial (Client Portal Web API,
+descartada en §84.4.2 por la sesión que expira). No se revirtió D-C bis: se anota.
+
+## 55. Automatizar el método de los parches (`GEMELO/propuestas/test_parches_en_worktree.py`)
+
+Aplica cada `.diff` de `GEMELO/propuestas/parches/` sobre un `git worktree` temporal y corre ahí los
+tests de aislamiento (lección del `snapshot140.diff`, `docs/manual-agentes.md`). Toca `.git/worktrees`
+y tarda segundos por parche: instalarlo en la suite es decisión tuya. Hasta entonces se corre a mano.
+
+## 56. La distribución de k bajo la nula para la señal larga (re-dictamen D15)
+
+El bloque `senal_larga` publica «1 de 6 celdas gana sin corregir» y «30 contrastes»; el adversario
+exige que ningún «k de m» se publique sin la distribución de k bajo la nula con el ICC medido. La
+corrida 12 separó los denominadores y declaró `k_bajo_la_nula: null`; **computarla es una corrida de
+simulación (≈ el Frente A del riel de medición) y es un intento más del registro del riel largo**.
+Decidir si se hace y cuándo.
+
+## 57. Confirmar la definición operativa de «sesión que cuenta para N = 40» (una línea)
+
+N = 40 lo firmaste (§84.4.7); la definición de qué sesión cuenta la escribió la corrida 12
+(`regla_aporte_y_dimensionamiento.md` §5-bis, `dinero/sello_dinero.py`): sólo una fila `pendiente`
+(available_at < timestamp_utc < apertura objetivo, por calendario) de un día con sesión en Nueva
+York, con el insumo en la sesión inmediatamente anterior a la objetivo y COMPLETO (33 de 33 con
+cierre). Días sin sesión, sellos tardíos e insumos incompletos o desactualizados se sellan igual y no
+cuentan. Es la definición conservadora; es una definición de agente sobre una cifra tuya, y por eso
+se confirma con una línea o se cambia (y cambiarla reinicia el contador).

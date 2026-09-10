@@ -1,5 +1,5 @@
 {
- "generado_en_utc": "2026-09-08T04:31:22.253305+00:00",
+ "generado_en_utc": "2026-09-09T02:47:51.387348+00:00",
  "etiqueta": "PROPUESTA — bloque 4 de la corrida 11; computado, NO cableado; ninguna cifra publicada se mueve",
  "corte": "2026-08-28",
  "convencion": "excluir_cero",
@@ -114,6 +114,14 @@
    },
    "modelo_pct": 67.6,
    "base_pct": 58.0,
+   "modelo_wilson": [
+    61.5,
+    73.3
+   ],
+   "base_wilson": [
+    51.6,
+    64.1
+   ],
    "ventaja_pp": 9.7,
    "ventaja_pp_exacta": 9.66,
    "ic95_percentil_dia": [
@@ -197,6 +205,14 @@
    },
    "modelo_pct": 70.9,
    "base_pct": 56.5,
+   "modelo_wilson": [
+    64.6,
+    76.4
+   ],
+   "base_wilson": [
+    49.9,
+    62.8
+   ],
    "ventaja_pp": 14.3,
    "ventaja_pp_exacta": 14.35,
    "ic95_percentil_dia": [
