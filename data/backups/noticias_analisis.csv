@@ -4512,7 +4512,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 5532,0.7,AVGO,alto,Cartera de órdenes de Broadcom justifica valuaciones premium considerando demanda sostenida de infraestructura semiconductor.,2026-08-27T22:13:21.166864+00:00,0.85
 5533,0.65,"INTC,NVDA",medio,"Intel valuation se fortalece comparativamente mientras Nvidia sigue siendo atractiva, mejorando sentimiento sobre el sector de chips.",2026-08-27T22:12:58.067784+00:00,0.7
 5534,0.6,INTC,medio,Expansión de partnership de Intel con Kasm para IA privada en Xeon 6 fortalece posición de Intel en mercado empresarial de IA.,2026-08-27T22:13:34.872551+00:00,0.8
-5535,0.8,"NVDA,AMD,INTC,MRVL,MU",alto,Semiconductores superando a Big Tech en rally de IA destaca la centralidad de chipmakers en la revolución tecnológica actual.,2026-08-27T22:12:32.134668+00:00,0.95
 5536,-0.6,"NVDA,INTC,TSM,AVGO,MU",alto,Aranceles potenciales en semiconductores generan incertidumbre regulatoria que podría afectar toda la cadena de suministro estadounidense.,2026-08-27T22:13:21.166816+00:00,0.9
 5537,0.85,"NVDA,AMD,QCOM,AVGO",alto,"Las ganancias excepcionales de Nvidia generan optimismo sistémico en todo el sector de semiconductores, elevando perspectivas de crecimiento para competidores y proveedores.",2026-08-27T22:12:45.235749+00:00,0.95
 5538,0.65,"NVDA,TSM,AVGO,INTC,ARM",medio,Rally simultáneo de software y chips refleja sentimiento positivo generalizado en sector semiconductores.,2026-08-27T22:13:21.166851+00:00,0.7
@@ -4726,7 +4725,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 5746,0.7,TSM,alto,"Compra de billonario en TSMC señala confianza en el fabricante líder de semiconductores, reflejando demanda sostenida de chips.",2026-08-28T22:16:31.057542+00:00,0.9
 5747,0.6,ASML,alto,"ASML consolida su posición monopolista en litografía de memoria de alto ancho de banda, crítico para la industria de semiconductores.",2026-08-28T22:16:31.057507+00:00,1.0
 5748,0.8,ASML,alto,ASML destacada como mejor posicionada en cohort AI; crítica para cadena de suministro de chips por equipos litográficos.,2026-08-28T22:16:44.129435+00:00,0.95
-5749,0.3,BHP,bajo,"Noticia sobre financiamiento en sector de energía con mención tangencial a empresas de semiconductores, impacto limitado en el sector.",2026-08-28T22:16:07.147483+00:00,0.3
 5750,-0.7,,bajo,Caída de Freeport-McMoRan (minería) sin conexión al sector de semiconductores.,2026-08-28T22:15:55.058825+00:00,0.05
 5751,0.2,,bajo,"Análisis de minería de cobre sin conexión directa con semiconductores, sector completamente distinto.",2026-08-28T22:16:07.147725+00:00,0.0
 5752,-0.3,,bajo,"Noticia sobre minería de cobre sin relación directa con semiconductores, solo menciona valoración de FCX.",2026-08-28T22:16:44.129175+00:00,0.1
