@@ -17,7 +17,7 @@ Description=MKI — E0 sello prospectivo del riel de dinero (timer, PROPUESTA no
 #    holgura, y un reintento tardío (Persistent) sigue llegando antes de abrir.
 #  · Un sello en fin de semana o feriado se marca `dia_sin_sesion` y no cuenta
 #    para N; el timer corre igual Mon..Fri para que el sellador sepa decirlo.
-OnCalendar=Mon..Fri 21:00 America/Santiago
+OnCalendar=Mon..Fri 23:30 America/New_York
 Persistent=true
 AccuracySec=1s
 Unit=mki-sello-dinero.service

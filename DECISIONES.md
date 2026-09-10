@@ -9168,3 +9168,23 @@ El sellador E0.1 tenía cinco defectos que el auditor tuvo que demostrar (el gat
 ### 85.9 Lo que queda a firma
 
 §51 qué señal sella E0 y si las filas de la sonda cuentan para N; §52 la ventana del monto de E2 se cerró con la primera fila; §53 instalar el timer del sellador; §54 `ibapi` desde el zip oficial; §55 automatizar el método de parches; §56 distribución de k bajo la nula (señal larga); §57 confirmar la definición de «sesión que cuenta para N»; §43 vuelve con la pregunta exacta (unidad y umbral de M2); y el contador de «lecturas de criterio». **Verdes de cierre, con el árbol quieto (9-sep 00:50 a 00:57):** suite completa **856 passed, 4 skipped, 1 xfailed** en 402,67 s (798 al abrir: +58 tests); `tests/test_motor.py` EXIT 0; `npm run build` EXIT 0. Dictámenes de cierre: `guardian-constitucion` OBSERVADO (tres observaciones, las tres corregidas antes del cierre: el rojo de `test_epistemico` por dos intervalos sin decir que contienen el cero en la bitácora, el §85.9 sin cifra de verdes, y la deuda de los puertos/prefijo no verificados en `ESTADO.md`); `director-programa`: nada se revierte, dos correcciones aplicadas (85.8 bis).
+
+### 85.9 Aceptación de las normas del §85.8 bis (9-sep-2026, Nicolás)
+
+Acepto las seis normas instaladas de paso por el director-programa en la corrida 12 y declaradas en §85.8 bis (estatus obligatorio en Card, censo de palabras sobre el JSON servido, gate vacuo revienta, patrones de cifras retiradas escapados, definición de sesión que cuenta para N, test del corredor de «no hablar»). Las leí una por una; me hacen sentido. Quedan como normas del proyecto desde esta acta.
+
+## Acta §86, 9-sep-2026 (noche). Firmas de las tarjetas §51, §52, §53 y §57
+
+Corrida 12 commiteada como 490f984 tal como recomendó la revisión del 9-sep, incluida la fila del 9-sep sellada por el timer a las 21:00 Chile.
+
+86.1 (§57) Confirmo la definición de «sesión que cuenta para N» tal como quedó en código: cuenta_para_N = (estado == pendiente) and insumo_fresco, donde pendiente exige día con sesión, insumo completo y sello a tiempo. La fila del 9-sep (estado insumo_incompleto) se sella y no cuenta. Contador según sello_dinero.db: 1 de 40. Sesiones perdidas no se recuperan con un segundo sello.
+
+86.2 (§51) E0 sigue sellando el sorteo sin información, etiquetado «prueba de maquinaria, no track record», hasta N = 40. Razón: prueba que la maquinaria funciona cada noche, es precisamente lo que queremos. Cambiar de señal reiniciaría el contador; no se cambia.
+
+86.3 (§52) Opción (a). Monto de E2: 500 USD, tope del rango declarado en REGLAS_DE_CAPITAL.md. Se fija hoy, sabiendo que E0 lleva dos noches de maquinaria (una completa, una con insumo incompleto), es decir después de lo que la regla 5.4 exigía; queda declarado como grado de libertad y no se enmienda la regla. E1 se ejecuta completo antes de E2. E2 arranca sólo con la vara pre-registrada cumplida. Cualquier cambio del monto exige acta nueva firmada antes de que E2 empiece; durante la ventana de E2 el monto no se mueve. Razón: es un monto razonable para probar E2 sin limitarnos a comprar fracciones, es la decisión adecuada.
+
+86.4 (§53) Timer instalado el 9-sep como unidad de usuario (Mon..Fri 21:00 America/Santiago) y disparado a las 21:00. Hallazgo de la primera noche: a esa hora (00:00 UTC) yfinance no tenía el cierre del 9-sep para 34 de 36 columnas; a las 22:00 Chile la fila del día existía con Close = NaN; a las 00:38 del día anterior el insumo estaba completo. El argumento de la hora en el .timer no sobrevivió a la primera noche. El timer pasa a Mon..Fri 23:30 America/New_York. Razón: Nueva York es el epicentro de una de las bolsas que más nos interesan; rijámonos por eso. Sonda de disponibilidad horaria del cierre: va al encargo 13, escrita con las convenciones del repo y su test.
+
+86.5 La fila del 9-sep se deja como está (33 filas, cuenta_para_N = 0, motivo declarado). No se intenta un segundo sello de la misma sesión.
+
+Pendiente de firma: §43 (unidad y umbral de M2), con m2_periodo.md delante.
