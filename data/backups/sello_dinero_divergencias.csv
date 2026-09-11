@@ -1,1 +1,2 @@
 id,fecha_insumo,timestamp_utc,sha_sellado,sha_nuevo,decisiones_distintas,detalle,creado_en
+1,2026-09-09,2026-09-10T03:30:04.599658+00:00,126e4f2c769bae8c8a25a24b0afa55dd69196ccd45ceb50534de8920e45a57ca,7300787b015b5f4e9245a8e6d380b42ee8cc3ff8399a1cda61d0771e81a6e4f8,1,segundo sello del 2026-09-09 con otro insumo; 1 decisión(es) distinta(s); las filas selladas no se tocan,2026-09-10T03:30:04.752105+00:00

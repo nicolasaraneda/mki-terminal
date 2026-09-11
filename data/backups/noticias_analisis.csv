@@ -3662,7 +3662,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 3960,0.75,"AVGO,NVDA",alto,Doble noticia positiva: financiamiento de Broadcom de $100B y potencial inversión de Nvidia en Cloverleaf refuerzan ecosistema de IA.,2026-08-22T00:43:35.907345+00:00,0.95
 3961,0.8,AVGO,alto,Combinación de financiamiento de chips y movimientos positivos de stock refuerzan momentum alcista de Broadcom.,2026-08-22T00:43:35.907865+00:00,0.9
 3962,0.5,NVDA,medio,"BMO identifica historia más amplia en NVIDIA más allá del consenso, sugiriendo oportunidad de upside.",2026-08-22T00:43:10.209411+00:00,0.7
-3963,-0.7,TXN,medio,Caída de 6.8% en Texas Instruments post-earnings refleja preocupaciones sobre demanda y márgenes en productos analógicos.,2026-08-22T00:43:35.907703+00:00,0.75
 3964,0.0,,bajo,"Sin tickers de semiconductores mencionados, análisis comparativo de empresas fuera del enfoque principal.",2026-08-22T00:43:47.142223+00:00,0.0
 3965,0.5,TXN,medio,"Texas Instruments valorado como 'picks and shovels' de IA, con demanda sostenida de herramientas semiconductoras.",2026-08-22T00:43:59.625086+00:00,0.8
 3966,0.2,TXN,medio,Aumento de volatilidad implícita en opciones de Texas Instruments sugiere incertidumbre sobre perspectivas futuras del fabricante.,2026-08-22T00:43:59.624047+00:00,0.7
@@ -3741,7 +3740,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 4050,0.7,TXN,alto,Análisis de Texas Instruments como máquina de flujo de caja despierta sugiere recuperación de empresa clave en semiconductores analógicos e industriales.,2026-08-22T00:44:12.774353+00:00,0.85
 4051,0.4,TXN,medio,"Texas Instruments lanza MCUs para edge AI, demostrando posicionamiento en tendencia de IA distribuida.",2026-08-22T00:44:25.062546+00:00,0.7
 4052,0.6,TXN,medio,"Texas Instruments con fuerte crecimiento Q2 y dividendos en ascenso, posicionado bien en ciclos de AI y chips.",2026-08-22T00:43:59.625045+00:00,0.8
-4053,-0.7,TXN,medio,Repetición de noticia negativa sobre TXN confirma tendencia bajista tras resultados decepcionantes.,2026-08-22T00:43:35.907727+00:00,0.75
 4055,0.6,ARM,medio,Objetivo de valuación de $25 mil millones para Arm Holdings refleja importancia estratégica en arquitectura de semiconductores.,2026-08-22T00:42:43.229783+00:00,0.9
 4056,0.2,ARM,medio,"Arm supera pronósticos Q2 por demanda de IA pero cae por dudas en crecimiento de regalías, generando sentimiento mixto sobre futuros ingresos.",2026-08-22T00:42:57.420891+00:00,0.8
 4057,0.75,ARM,alto,"Arm supera estimaciones de Q1 FY2027 impulsado por demanda de IA, confirmando tesis de crecimiento acelerado para arquitectura de propiedad intelectual crítica.",2026-08-22T00:44:52.813295+00:00,0.8
@@ -4527,7 +4525,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 5548,0.3,AVGO,bajo,Análisis histórico técnico sobre movimiento de Broadcom post-evento con relevancia limitada a fundamentales del negocio de semiconductores.,2026-08-27T22:13:34.872545+00:00,0.6
 5549,0.7,NVDA,alto,Repunte de Nvidia en contexto macroeconómico favorable (Jackson Hole) refuerza narrativa de crecimiento sostenido en semiconductores IA.,2026-08-27T22:12:32.134726+00:00,0.85
 5550,0.65,TXN,medio,Desempeño superior de Texas Instruments respecto al mercado sugiere demanda robusta en analógicos y procesamiento de señales.,2026-08-27T22:12:18.553327+00:00,0.7
-5551,0.3,TXN,bajo,Análisis de valoración de Texas Instruments es positivo pero especulativo sobre múltiplos futuros.,2026-08-27T22:13:09.472271+00:00,0.6
 5552,0.75,MU,alto,"Duplicación de capex de Micron responde a escasez de memoria AI, posicionando la empresa para capturar demanda estructural a largo plazo.",2026-08-27T22:12:18.553408+00:00,0.9
 5553,0.75,MU,alto,Reconocimiento presidencial de inversión de Micron en labs de investigación impulsa confianza en estrategia de localización de manufactura.,2026-08-27T22:12:32.134657+00:00,0.85
 5554,-0.4,MU,medio,"A pesar del respaldo presidencial, caída de 5% en Micron sugiere volatilidad de mercado y preocupaciones de valuación.",2026-08-27T22:12:32.134685+00:00,0.6
@@ -5047,7 +5044,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 6106,-0.4,META,bajo,"El gasto publicitario de Temu afecta Meta pero es tangencial al sector semiconductor; impacta márgenes de publicidad, no hardware.",2026-08-31T22:17:09.519408+00:00,0.2
 6107,0.5,,alto,"Applied Materials presenta soluciones de escalado 3D y HBM para resolver cuello de botella crítico en memoria IA, con impacto industria-ancho.",2026-08-31T22:17:23.561732+00:00,0.8
 6108,0.7,000660.KS,alto,"SK Hynix inaugura planta de HBM en Indiana, diversificando geografía de producción y respondiendo a reshoring de semiconductor estadounidense.",2026-08-31T22:17:23.561826+00:00,0.8
-6109,0.2,"SK,MU,KIOXIA",medio,Datos positivos sobre memoria como mitad de ingresos pero con advertencia; muestra crecimiento en segmento crítico con caveat de márgenes.,2026-08-31T22:17:49.605366+00:00,0.7
 6110,0.0,,bajo,CXMT es fabricante de chips de memoria memoria sin cotización pública; el acuerdo con Xiaomi es relevante pero no afecta tickers cotizados.,2026-08-31T22:17:09.519411+00:00,0.1
 6112,-0.6,,medio,"Experto de Harvard advierte que euforia de memoria para IA es temporal, generando escepticismo sobre sostenibilidad de rally del sector.",2026-08-31T22:18:10.434015+00:00,0.75
 6113,0.0,,bajo,Artículo educativo sobre el Índice de Semiconductores de Filadelfia sin noticias de compañías específicas.,2026-08-31T22:16:54.624984+00:00,0.3
