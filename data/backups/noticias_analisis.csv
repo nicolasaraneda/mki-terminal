@@ -4553,7 +4553,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 5577,0.7,MU,alto,"Análisis destacando potencial de Micron como ganador principal en boom de memoria para IA, posicionándola por encima de competidores directos.",2026-08-27T22:13:34.872482+00:00,0.95
 5578,0.75,NVDA,alto,Resultados e indicaciones de Nvidia impulsan fuertemente el sector semiconductora a nivel industria.,2026-08-27T22:13:46.326259+00:00,0.9
 5579,-0.3,NVDA,medio,Los resultados de Nvidia son positivos pero los precios del petróleo y debilidad asiática generan presiones mixtas en el mercado de semiconductores.,2026-08-27T22:13:46.325978+00:00,0.6
-5580,0.0,,bajo,Comparativa de empresas mineras de cobre sin conexión al sector de semiconductores.,2026-08-27T22:13:34.872523+00:00,0.05
 5581,-0.3,,bajo,Caída de producción de cobre tiene escasa relevancia directa para semiconductores.,2026-08-27T22:13:21.166829+00:00,0.1
 5582,0.7,"MSFT,NVDA,AMD",alto,Transición de IA experimental a producción escalable en Microsoft aumenta demanda crítica de semiconductores de alto rendimiento.,2026-08-27T22:12:32.134694+00:00,0.9
 5583,0.7,"MRVL,MSFT,GOOGL",alto,"Marvell posicionándose como proveedor clave de Microsoft, AWS y Google en IA impulsará demanda y crecimiento significativo.",2026-08-27T22:12:32.134640+00:00,0.9
@@ -5201,7 +5200,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 6277,-0.2,ASML,medio,ASML totalmente valuado tras subida del 161% pero con ganancias sólidas; advierte sobre euforia en equipamiento semiconductor.,2026-09-01T22:19:50.163191+00:00,0.9
 6278,-0.5,ASML,medio,Análisis de UBS sobre incapacidad de China de replicar tecnología de ASML en próxima década afecta perspectiva de monopolio tecnológico.,2026-09-01T22:18:36.757366+00:00,0.8
 6279,-0.4,8035.T,bajo,Caída accionaria de Tokyo Electron sin contexto claro sugiere presiones de mercado en proveedor de equipos.,2026-09-01T22:18:25.481850+00:00,0.5
-6280,0.7,8035.T,alto,"Complejidad IA expande participación de mercado de Tokyo Electron en equipamiento de wafer, validación de crecimiento.",2026-09-01T22:18:25.481892+00:00,0.9
 6281,0.6,8035.T,medio,"Tokyo Electron posicionado para crecer en avances IA en semiconductores, impulso favorable por demanda futura.",2026-09-01T22:18:25.481859+00:00,0.8
 6282,0.1,8035.T,bajo,Datos de plantilla de Tokyo Electron tienen relevancia operacional limitada sin contexto de productividad o estrategia empresarial.,2026-09-03T22:05:50.227749+00:00,0.25
 6284,0.2,6857.T,bajo,"Noticia sobre margen de Kioxia sin eventos específicos, información administrativa sobre negociación bursátil.",2026-09-01T22:19:13.264227+00:00,0.5
@@ -5333,7 +5331,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 6416,0.65,LRCX,medio,Rol de Lam Research en manufactura avanzada subraya importancia de proveedores de equipos para cadena de valor.,2026-09-03T22:04:59.391339+00:00,0.87
 6417,0.5,"KLAC,AMAT,8035.T",medio,Análisis de mercado de equipos de inspección de obleas muestra oportunidades crecientes para proveedores de tecnología de fabricación.,2026-09-03T22:05:12.273475+00:00,0.8
 6423,0.4,IFX.DE,bajo,Asociación de Sirin Software con Infineon expande ecosistema pero impacto limitado en valuación de Infineon.,2026-09-03T22:04:59.391417+00:00,0.6
-6426,0.2,BHP,bajo,Proyecto piloto de minería verde; impacto mínimo y tangencial para sector de semiconductores.,2026-09-03T22:03:02.732303+00:00,0.1
 6427,0.0,,bajo,Noticia sobre compra de cobre sin relación con semiconductores; irrelevante para el sector.,2026-09-03T22:02:37.731160+00:00,0.0
 6428,0.35,FCX,bajo,Volatilidad de cobre tiene impacto mínimo directo en fabricantes de semiconductores.,2026-09-03T22:04:59.391327+00:00,0.1
 6429,-0.5,FCX,bajo,Caída de empresa minera en mercado alcista; relevancia baja para semiconductores.,2026-09-03T22:02:37.731075+00:00,0.05
