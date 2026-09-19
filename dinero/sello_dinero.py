@@ -284,10 +284,54 @@ def _solape_contra_congelado(cierres_ext: pd.DataFrame, base_hasta: str, toleran
             "reajuste_detectado": bool(fuera), "tickers_con_reajuste": fuera}
 
 
-def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str) -> tuple:
+def sello_previo(fecha_insumo: str, ruta_db: str | None = None) -> dict | None:
+    """E4-bis: ¿esta `fecha_insumo` ya tiene filas selladas? Devuelve el sha y
+    el nombre del archivo de extensión que esas filas citan, o None. Sólo
+    lectura (`mode=ro`); una base inexistente o sin tabla es «no hay sello».
+    No filtra por `juego` (R4 del auditor, corrida 13): la fecha sellada es
+    una sola, la lleve el juego que la lleve."""
+    ruta_db = ruta_db or RUTA_DB
+    if not os.path.exists(ruta_db):
+        return None
+    con = conectar(ruta_db, solo_lectura=True)
+    try:
+        fila = con.execute("SELECT insumo_ext_sha256, insumo_ext_archivo FROM sellos_dinero "
+                           "WHERE fecha_insumo = ? ORDER BY id LIMIT 1", (fecha_insumo,)).fetchone()
+    except sqlite3.OperationalError:      # base sin la tabla todavía
+        return None
+    finally:
+        con.close()
+    return {"sha256": fila[0], "archivo": fila[1]} if fila else None
+
+
+def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str | None = None) -> tuple:
     """Escribe la extensión recortada a las sesiones POSTERIORES a `base_hasta`
     y su metadato con disponibilidad por ticker (G8) y solape (E7).
-    Devuelve (ruta_csv, meta)."""
+    Devuelve (ruta_csv, meta).
+
+    E4-bis (corrida 13, dictamen del `auditor-lookahead`, opción A):
+    `ext_<fecha>.csv` y su meta son la EVIDENCIA que citan las filas selladas
+    de esa fecha (`insumo_ext_sha256`), y una vez que hay sello NO SE VUELVEN
+    A ESCRIBIR ni se escribe ningún otro archivo de esa fecha en DIR_EXT. El
+    10-sep-2026 a las 03:30 UTC el timer disparó sobre el 09-sep ya sellado
+    con otro insumo: `sellar()` hizo lo correcto con la base (divergencia,
+    cero inserciones), pero esta función ya había pisado el archivo sellado
+    con el insumo nuevo, y el árbol quedó nueve días citando un sha
+    (`126e4f2c…`) que el disco no tenía. Ahora:
+      · fecha sin sello → `ext_<fecha>.csv` como siempre;
+      · fecha sellada con el MISMO sha → no se escribe nada (ni bytes
+        idénticos: el mtime es lo único que distingue «emitido antes» de
+        «reproducible después»), se devuelve lo que hay;
+      · fecha sellada con OTRO sha → el insumo divergente NO se conserva: va
+        a un archivo temporal FUERA de DIR_EXT (`meta["persistido"] = False`)
+        sólo para que `sellar()` pueda contar las decisiones distintas y
+        registrar la divergencia, y `main()` lo borra. El sha que
+        `divergencias_sello` cita es el de un contenido que ya no existe y
+        el `detalle` lo declara. Un archivo divergente en DIR_EXT era una
+        ruta de escritura nueva sobre la carpeta de la evidencia y, sin
+        política de retención, otra forma de que `--sin-red` levante mañana
+        un insumo que E4 rechazó."""
+    ruta_db = ruta_db or RUTA_DB
     os.makedirs(DIR_EXT, exist_ok=True)
     idx = pd.to_datetime(cierres_ext.index)
     if getattr(idx, "tz", None) is not None:
@@ -300,8 +344,28 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str) -> tuple:
         raise RuntimeError(f"la descarga no trae ninguna sesión posterior a {base_hasta}: no hay insumo nuevo que sellar")
     solape = _solape_contra_congelado(cierres_ext, base_hasta)
     hasta = str(ext.index.max().date())
+    contenido = ext.to_csv().encode("utf-8")
+    sha_nuevo = hashlib.sha256(contenido).hexdigest()
     ruta = os.path.join(DIR_EXT, f"ext_{hasta}.csv")
-    ext.to_csv(ruta)
+    ruta_meta = os.path.splitext(ruta)[0] + ".meta.json"
+    divergente_de = None
+    previo = sello_previo(hasta, ruta_db)
+    if previo is not None:
+        if previo["sha256"] == sha_nuevo and os.path.exists(ruta) and os.path.exists(ruta_meta):
+            with open(ruta_meta, encoding="utf-8") as f:
+                return ruta, json.load(f)
+        import tempfile
+        fd, ruta = tempfile.mkstemp(prefix=f"ext_{hasta}{SUFIJO_DIVERGENTE}", suffix=".csv")
+        os.close(fd)
+        ruta_meta = None
+        divergente_de = {"archivo": previo["archivo"] or f"ext_{hasta}.csv", "sha256_sellado": previo["sha256"],
+                         "nota": ("la sesión ya estaba sellada con otro insumo; el archivo sellado no se toca y este "
+                                  "insumo NO se conserva (temporal fuera de la carpeta de evidencia, borrado por main)")}
+    with open(ruta, "wb") as f:
+        f.write(contenido)
+    sha_archivo = _sha256(ruta)
+    if sha_archivo != sha_nuevo:
+        raise RuntimeError(f"el sha del archivo escrito ({sha_archivo[:12]}) no es el del contenido ({sha_nuevo[:12]})")
     meta = {
         "congelado_en_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "motivo": "extensión del congelado para el sellado prospectivo E0 (dinero/sello_dinero.py)",
@@ -309,21 +373,35 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str) -> tuple:
         "extiende_a": {"archivo": os.path.basename(precios.RUTA_CIERRES), "hasta": base_hasta},
         "tickers": list(ext.columns), "filas": int(len(ext)),
         "desde": str(ext.index.min().date()), "hasta": hasta,
-        "sha256": _sha256(ruta),
+        "sha256": sha_archivo,
         "disponibilidad": {"exchange": EXCHANGE, "por_ticker": precios.disponibilidad_por_ticker(ext)},
         "solape_con_congelado": solape,
         "advertencia": "cierres ajustados retroactivamente por yfinance: no point-in-time (declarado, no corregido)",
     }
-    with open(os.path.splitext(ruta)[0] + ".meta.json", "w", encoding="utf-8") as f:
+    if divergente_de is not None:
+        meta["divergente_de"] = divergente_de
+        meta["persistido"] = False
+        return ruta, meta
+    with open(ruta_meta, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=1, ensure_ascii=False)
         f.write("\n")
     return ruta, meta
 
 
+SUFIJO_DIVERGENTE = "_divergente_"
+_NOMBRE_EXTENSION_SELLABLE = re.compile(r"^ext_\d{4}-\d{2}-\d{2}\.csv$")
+
+
+def es_extension_sellable(nombre: str) -> bool:
+    """Sólo `ext_YYYY-MM-DD.csv` es insumo de un sello (`--sin-red` no levanta
+    ninguna otra cosa que haya en la carpeta)."""
+    return bool(_NOMBRE_EXTENSION_SELLABLE.match(os.path.basename(nombre)))
+
+
 def ultima_extension() -> tuple | None:
     if not os.path.isdir(DIR_EXT):
         return None
-    csvs = sorted(a for a in os.listdir(DIR_EXT) if a.startswith("ext_") and a.endswith(".csv"))
+    csvs = sorted(a for a in os.listdir(DIR_EXT) if es_extension_sellable(a))
     if not csvs:
         return None
     ruta = os.path.join(DIR_EXT, csvs[-1])
@@ -509,14 +587,19 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
                                      "AND juego = ? ORDER BY ticker", (fecha_insumo, dec["juego"])).fetchall()
             ahora_por_t = {f["ticker"]: (f["decision"], f["acciones_regla"]) for f in dec["filas"]}
             distintas = sum(1 for (t, d, n) in filas_prev if ahora_por_t.get(t) != (d, n))
+            conservado = bool(meta_ext.get("persistido", True))
+            detalle = (f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
+                       f"las filas selladas no se tocan; ")
+            detalle += (f"insumo divergente en {os.path.basename(ruta_ext)}" if conservado else
+                        "contenido divergente NO conservado (E4-bis, corrida 13): el archivo sellado no se reescribe "
+                        "y el insumo divergente no se persiste; sha_nuevo es el de un contenido que ya no existe")
             con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
                         "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
-                        (fecha_insumo, ts_emision, sorted(shas)[0], meta_ext["sha256"], distintas,
-                         f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
-                         f"las filas selladas no se tocan", creado))
+                        (fecha_insumo, ts_emision, sorted(shas)[0], meta_ext["sha256"], distintas, detalle, creado))
             con.commit()
             return {"resultado": "divergencia_registrada", "fecha_insumo": fecha_insumo, "filas_insertadas": 0,
-                    "sha_sellado": sorted(shas)[0], "sha_nuevo": meta_ext["sha256"], "decisiones_distintas": distintas}
+                    "sha_sellado": sorted(shas)[0], "sha_nuevo": meta_ext["sha256"], "decisiones_distintas": distintas,
+                    "insumo_divergente_conservado": conservado}
         insertadas = 0
         for f in dec["filas"]:
             cur = con.execute("""
@@ -657,12 +740,21 @@ def main(argv=None) -> int:
     if (meta.get("solape_con_congelado") or {}).get("reajuste_detectado"):
         print("AVISO: reajuste retroactivo detectado entre la extensión y el congelado:",
               meta["solape_con_congelado"].get("tickers_con_reajuste"))
-    r = sellar(ruta, meta)
+    try:
+        r = sellar(ruta, meta)
+    finally:
+        # E4-bis: un insumo divergente vive en un temporal fuera de DIR_EXT y
+        # no se conserva (dictamen del auditor, corrida 13)
+        if not meta.get("persistido", True) and os.path.exists(ruta):
+            os.remove(ruta)
     print(json.dumps(r, indent=1, ensure_ascii=False, default=str))
     if r.get("resultado") == "sellada":
         exportar_csv(RUTA_DB)
         respaldar_extension(ruta)
         print("export:", RUTA_BACKUP_CSV, "| extensión respaldada en", DIR_BACKUP_EXT)
+    elif r.get("resultado") == "divergencia_registrada":
+        exportar_csv(RUTA_DB)          # la tabla de divergencias también se versiona; la extensión sellada no se toca
+        print("export:", RUTA_BACKUP_CSV, "| divergencia registrada, ninguna extensión escrita ni respaldada")
     return 0
 
 

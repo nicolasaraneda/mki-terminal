@@ -12,19 +12,19 @@
 >
 > **The central measurement is a step across exchanges, not a score, and not
 > (yet) a mechanism.** Reconstructed over
-> eight years (n=14.618), the model beats the "always up" baseline by
-> **+19.1 pp in Tokyo, +16.8 in Taipei and +15.4 in Seoul** — the three
+> eight years (n={{larga_n}}), the model beats the "always up" baseline by
+> **{{larga_tokio_ventaja_pp}} pp in Tokyo, {{larga_taipei_ventaja_pp}} in Taipei and {{larga_seul_ventaja_pp}} in Seoul** — the three
 > exchanges that open **within three hours** of the emission — and by
-> **+2.5 pp with p = 0.111 in Frankfurt**, which opens **8.75 hours**
+> **{{larga_francfort_ventaja_pp}} pp with p = {{larga_p_francfort}} in Frankfurt**, which opens **{{larga_francfort_margen_h}} hours**
 > later. The obvious reading, an information cascade fading with elapsed
 > time, was **pre-registered as a prediction for three new exchanges and
 > failed** in two (Hong Kong: predicted +14.0 pp, measured +4.1; India:
 > predicted +8.6, measured -12.7); the best predictor of the per-exchange
 > advantage is the base rate of positive gaps (r = -0.89), not hours elapsed.
 > **The hand-off to Asia was refuted too.** The step is measured; the
-> mechanism is a PROPOSAL. On the point-in-time sealed window (n=238) the advantage is
-> **+9.7 pp, day-cluster 95% CI [-7.2, +26.6]: still not distinguishable
-> from zero** (nominal 95%, measured coverage ~0.93; cluster-t [-8.1, +27.4]) (row-level McNemar p = 0.0455, χ² with Edwards continuity correction; exact binomial 0.0451, but the eight rows of a day
+> mechanism is a PROPOSAL. On the point-in-time sealed window (n={{n}}) the advantage is
+> **{{ventaja_pp}} pp, day-cluster 95% CI {{ventaja_ic_dia}}: still not distinguishable
+> from zero** (nominal 95%, measured coverage ~0.93; cluster-t {{ventaja_ic_t_cluster}}) (row-level McNemar p = {{mcnemar_p}}, χ² with Edwards continuity correction; exact binomial {{mcnemar_p_exacta}}, but the eight rows of a day
 > share one SOX move: the day is the unit, and with it the interval
 > contains zero). Until 2-sep it read n=248, +6.5 pp, p = 0.1849 under a
 > convention since repealed (errata, D1).
@@ -40,8 +40,8 @@
 ![tests](https://img.shields.io/badge/tests-650%20passing-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
 ![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
-![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
-![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
+![sellada](https://img.shields.io/badge/ventana%20sellada-{{ventaja_pp_url}}%20pp%20·%20IC%20d%C3%ADa%20{{ventaja_ic_dia_url}}%20·%20n%3D{{n}}-b45309?style=flat-square)
+![larga](https://img.shields.io/badge/ventana%20larga-{{larga_ventaja_pp_url}}%20pp%20·%20n%3D{{larga_n}}-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
 
 ---
@@ -56,10 +56,10 @@ opens. Eight years of reconstructed data say something more precise:
 
 | Exchange | n | Model | Baseline | Advantage | McNemar p | Emission→open margin |
 |---|---|---|---|---|---|---|
-| **Tokyo** (XTKS) | 7.230 | 72.9% | 53.8% | **+19.1 pp** | ≈0 | **1.75 h** |
-| **Taipei** (XTAI) | 1.807 | 72.0% | 55.2% | **+16.8 pp** | ≈0 | **2.75 h** |
-| **Seoul** (XKRX) | 3.626 | 71.2% | 55.8% | **+15.4 pp** | ≈0 | **1.75 h** |
-| **Frankfurt** (XETR) | 1.955 | 57.2% | 54.7% | **+2.5 pp** | **0.111** | **8.75 h** |
+| **Tokyo** (XTKS) | {{larga_tokio_n}} | 72.9% | 53.8% | **{{larga_tokio_ventaja_pp}} pp** | ≈0 | **{{larga_tokio_margen_h}} h** |
+| **Taipei** (XTAI) | {{larga_taipei_n}} | 72.0% | 55.2% | **{{larga_taipei_ventaja_pp}} pp** | ≈0 | **{{larga_taipei_margen_h}} h** |
+| **Seoul** (XKRX) | {{larga_seul_n}} | 71.2% | 55.8% | **{{larga_seul_ventaja_pp}} pp** | ≈0 | **{{larga_seul_margen_h}} h** |
+| **Frankfurt** (XETR) | {{larga_francfort_n}} | 57.2% | 54.7% | **{{larga_francfort_ventaja_pp}} pp** | **{{larga_p_francfort}}** | **{{larga_francfort_margen_h}} h** |
 
 The three exchanges that open **within three hours** give between +15 and
 +19 pp. The one that opens almost **nine hours** later **is not
@@ -144,15 +144,15 @@ never the freshest; decision D1, minutes §78):
 
 | | Gap hit rate | Wilson 95% CI (rows) |
 |---|---|---|
-| **Model 4.6.0** | **67.6%** (161/238) | [61.5 – 73.3] |
-| **"Always up", same rows** | **58.0%** (138/238) | [51.6 – 64.1] |
-| **Advantage** | **+9.7 pp** | day-cluster 95% CI **[-7.2, +26.6]** · McNemar p = 0.0455 (χ² with continuity correction; exact binomial 0.0451); day percentile with measured coverage ~0.93 (`calibracion_instrumento.md` A1), cluster-t [-8.1, +27.4] |
+| **Model 4.6.0** | **{{modelo_pct}}%** ({{modelo_aciertos}}/{{n}}) | {{modelo_wilson}} |
+| **"Always up", same rows** | **{{base_pct}}%** ({{base_aciertos}}/{{n}}) | {{base_wilson}} |
+| **Advantage** | **{{ventaja_pp}} pp** | day-cluster 95% CI **{{ventaja_ic_dia}}** · McNemar p = {{mcnemar_p}} (χ² with continuity correction; exact binomial {{mcnemar_p_exacta}}); day percentile with measured coverage ~0.93 (`calibracion_instrumento.md` A1), cluster-t {{ventaja_ic_t_cluster}} |
 
 **Still NOT distinguishable from zero.** The row-level McNemar crosses 5%,
 but the eight rows of a day share the same SOX move: the unit is the day
-(34 days, ICC 0.39, DEFF 3.55, ~67 effective observations), and
+({{dias}} days, ICC {{icc}}, DEFF {{deff}}, ~{{n_efectivo}} effective observations), and
 with that unit the interval contains zero and the per-day sign permutation
-gives p = 0.29. The row-level McNemar is published alongside because
+gives p = {{p_permutacion_dia}}. The row-level McNemar is published alongside because
 it is the test of the original design, not because it decides (minutes §61).
 
 **TESTED AND FAILED: the advantage is not capturable.** Entering at the open
@@ -170,11 +170,11 @@ input could not predict; of the 10, 7 were discordant and the 7 favoured
 the baseline. The jump from +6.5 to +9.7 pp is the rule, not new rows,
 and it is published with its cause.
 
-| Other metrics (n=238) | Value | Honest caveat |
+| Other metrics (n={{n}}) | Value | Honest caveat |
 |---|---|---|
-| Session-return hit rate | 62.1% · 95% CI [55.9–68.0] (n=243) | a single regime observed |
-| **Gap MAE** | **2.52 pp** vs **2.98** for predicting zero | gain +0.45 pp per row, day-cluster t 95% CI [-0.09, +1.00], day p 0.10: **contains zero, not distinguishable at the day level**; part of the improvement over the withdrawn branch is that the rule removes rows with huge gaps from 29-Jul |
-| 80% interval coverage | 92.9% (nominal 80%) | intervals **2.19× wider** than needed (day-cluster 95% CI [1.71, 2.78]) |
+| Session-return hit rate | {{retorno_pct}}% · 95% CI {{retorno_wilson}} (n={{retorno_n}}) | a single regime observed |
+| **Gap MAE** | **{{mae_modelo_pp}} pp** vs **{{mae_cero_pp}}** for predicting zero | gain {{mae_ganancia_pp}} pp per row, day-cluster t 95% CI {{mae_ganancia_ic_t_dia}}, day p {{mae_ganancia_p_dia}}: **contains zero, not distinguishable at the day level**; part of the improvement over the withdrawn branch is that the rule removes rows with huge gaps from 29-Jul |
+| 80% interval coverage | {{cobertura_80_pct}}% (nominal 80%) | intervals **{{ratio_ancho}}× wider** than needed (day-cluster 95% CI {{ratio_ancho_ic_dia}}) |
 | Regime | 1 label only in 37 of 39 snapshots (2 unlabelled) | the column has no variance |
 
 All of this is recomputed with `python -m backtest.linea_base`, which reads
@@ -182,7 +182,7 @@ All of this is recomputed with `python -m backtest.linea_base`, which reads
 
 ### Long — reconstructed, 59× the sample
 
-**n = 14.618 · +15.66 pp · McNemar p ≈ 0** (χ² with continuity correction, `GEMELO/control_lineal._mcnemar`; the exact binomial was not computed at this n), over eight years and four
+**n = {{larga_n}} · {{larga_ventaja_pp}} pp · McNemar p ≈ 0** (χ² with continuity correction, `GEMELO/control_lineal._mcnemar`; the exact binomial was not computed at this n), over eight years and four
 exchanges, with the production model reconstructed (same function, same
 rolling window of 120 sessions; only the date range is widened). No
 day-cluster CI computed; reconstruction over the v1 cache, which omits
@@ -254,7 +254,7 @@ champion and denied to the baseline**. It is the same tie asymmetry that
 §2.8 had **frozen** months earlier — and that WS3 did not apply.
 
 **Magnitude: 105 rows out of 15.033 (0.70%). Under the frozen convention
-the advantage is +15.66 pp.**
+the advantage is {{larga_ventaja_pp}} pp.**
 
 It inflated 0.24 pp by not following its own rule, and **an adversarial
 audit commissioned to tear down the finding was the one that caught it**.
@@ -392,9 +392,9 @@ awaits the trigger (N ≥ 150 live verifications and a regime change, or
   for the next NYSE open with nominal size zero, driven by a
   no-information random draw (labelled “machinery test, not a track
   record”). Sealed prospective sessions so far:
-  **9**, of which **7** count
-  towards N = 40; the ones that do not (2026-09-09, 2026-09-18) had
-  incomplete or late input (last sealed input session: 2026-09-18). The count is read from `data/backups/sello_dinero.csv`, the exported copy of the sealing database that the daily backup job versions (it moves one session per night), not typed by hand.
+  **{{e0_sesiones_selladas}}**, of which **{{e0_cuentan_para_N}}** count
+  towards N = {{e0_N_objetivo}}; the ones that do not ({{e0_no_cuentan}}) had
+  incomplete or late input (last sealed input session: {{e0_ultima_fecha_insumo}}). The count is read from `data/backups/sello_dinero.csv`, the exported copy of the sealing database that the daily backup job versions (it moves one session per night), not typed by hand.
 - **E1 not executed** — broker paper account. Exit condition: the machine
   sends an order and reads back its own execution through the official
   API in the same cycle. No practice account and no gateway exist yet;

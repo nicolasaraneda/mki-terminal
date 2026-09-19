@@ -238,11 +238,14 @@ def test_sobre_datos_reales_el_cluster_es_mas_conservador_que_mcnemar():
 
 
 def test_las_dos_rutas_de_mcnemar_se_reportan_y_no_son_la_misma():
-    """DECISIONES.md §55: 0.1849 por chi2, 0.1847 exacto. Las dos son
-    correctas y el informe debe llevar las dos."""
+    """DECISIONES.md §55: 0.1849 por chi2, 0.1847 exacto — las dos son
+    cifras RETIRADAS de la rama sin deduplicar (acta §78) y acá sólo prueban
+    que las dos rutas de McNemar difieren sobre el mismo par (72, 56). Las
+    dos son correctas y el informe debe llevar las dos."""
     m = bf.metricas(bf.aplicar(_grande(), CELDA_NEUTRA), n_boot=200)
     assert "p_exacto" in m and "p_chi2" in m and "p_dia" in m
     assert bf.mcnemar_exact(72, 56) != bf.mcnemar_chi2(72, 56)
+    # par (72, 56) de la rama retirada (§78): prueba de método, no cifra viva
     assert abs(bf.mcnemar_chi2(72, 56) - 0.1849) < 0.0005
     assert abs(bf.mcnemar_exact(72, 56) - 0.1847) < 0.0005
 

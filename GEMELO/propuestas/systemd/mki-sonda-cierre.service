@@ -1,0 +1,16 @@
+[Unit]
+Description=MKI — sonda: a qué hora existe el cierre de hoy en yfinance (una fila por ticker en data/sonda_cierre.csv)
+Documentation=file://__MKI_DIR__/GEMELO/sonda_cierre.py
+
+# PROPUESTA (corrida 13, 19-sep-2026). NO INSTALADA: instalar un timer es acto
+# de Nicolás (espera_firma.md §58). No sella, no toca dinero/, no abre bases.
+[Service]
+Type=oneshot
+WorkingDirectory=__MKI_DIR__
+ExecStart=__MKI_DIR__/venv/bin/python -m GEMELO.sonda_cierre
+TimeoutStartSec=300
+KillMode=mixed
+StandardOutput=append:__MKI_DIR__/data/sonda_cierre.log
+StandardError=append:__MKI_DIR__/data/sonda_cierre.log
+Environment=PYTHONUNBUFFERED=1
+Environment=TZ=America/Santiago

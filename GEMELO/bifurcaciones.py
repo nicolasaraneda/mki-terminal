@@ -103,7 +103,8 @@ SEMILLA = 0         # obligatoria: un bootstrap sin semilla no reproduce
 MINIMO_FILAS = 30   # piso declarado: bajo esto una celda no se puntúa
 
 # ------------------------------------------------------------
-# EL ANCLA PUBLICADA — README.md líneas 124-126, ventana sellada canónica
+# EL ANCLA PUBLICADA — README.es.md líneas 139-143 (tabla de la ventana sellada;
+# hasta el 19-sep-2026 vivía en README.md), ventana sellada canónica
 # ------------------------------------------------------------
 # Esta celda de la matriz ES la cifra publicada. Si deja de reproducir, el
 # informe no se escribe: o cambió la base, o cambió el código, y en

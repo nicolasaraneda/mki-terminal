@@ -43,7 +43,8 @@ _RAIZ = os.path.dirname(os.path.abspath(__file__))
 # `CORTE_SECCION_2` (24-ago, la línea base de la §2.8, n = 223) y de
 # `CORTE_REGLA_FIRMADA` (31-ago). Tres instantes pinchados, tres nombres.
 # El README publicaba la rama sin deduplicar en este mismo corte (era
-# n = 248); desde el 3-sep-2026 publica la regla firmada (D1), mismo corte.
+# n = 248, cifra RETIRADA el 3-sep-2026, acta §78); desde entonces publica
+# la regla firmada (D1), mismo corte.
 CORTE_README = "2026-08-28"
 # La convención publicada. `True` = regla de deduplicación firmada el
 # 1-sep-2026 (`backtest.linea_base.deduplicar_por_sesion`: entre dos filas
@@ -188,7 +189,7 @@ class Larga:
     por_bolsa: tuple = (("Tokio", "XTKS", 7230, 19.1, 1.75), ("Taipéi", "XTAI", 1807, 16.8, 2.75),
                         ("Seúl", "XKRX", 3626, 15.4, 1.75), ("Fráncfort", "XETR", 1955, 2.5, 8.75))
     p_francfort: float = 0.111
-    procedencia: str = ("GEMELO/ventana_larga.py sobre el caché de gaps v1 (26-ago-2026); README.md:46-49 y :146. "
+    procedencia: str = ("GEMELO/ventana_larga.py sobre el caché de gaps v1 (26-ago-2026); README.es.md:55-58 y :173 (hasta el 19-sep-2026, README.md:46-49 y :146). "
                         "ADVERTENCIA (2-sep-2026, acta de la octava corrida): el caché v1 omitía toda sesión "
                         "posterior a un feriado local (~4,5% de las filas); recomputar mueve los doce bloques y lleva firma.")
 
@@ -214,18 +215,40 @@ def doce_bloques(c: dict) -> list:
     ic = f"[{c['ventaja_ic_dia'][0]:+.1f}, {c['ventaja_ic_dia'][1]:+.1f}]"
     ric = f"[{c['ratio_ancho_ic_dia'][0]:.2f}, {c['ratio_ancho_ic_dia'][1]:.2f}]"
     return [
-        ("README.md", f"sealed window (n={n})"),                                          # 1 TL;DR
-        ("README.md", f"**{v} pp, day-cluster 95% CI {ic}"),                             # 2 TL;DR cifra + IC de día
-        ("README.md", f"n%3D{n}"),                                                        # 3 badge
-        ("README.md", f"**{c['modelo_pct']:.1f}%** ({c['modelo_aciertos']}/{n})"),        # 4 tabla modelo
-        ("README.md", f"**{c['base_pct']:.1f}%** ({c['base_aciertos']}/{n})"),            # 5 tabla base
-        ("README.md", f"**{v} pp** | IC95 de día **{ic}** · McNemar p = {c['mcnemar_p']:.4f}"),  # 6 tabla ventaja
-        ("README.md", f"| Otras métricas (n={n}) |"),                                     # 7 otras métricas
-        ("README.md", f"**{c['mae_modelo_pp']:.2f} pp** vs **{c['mae_cero_pp']:.2f}** de predecir cero | ganancia {c['mae_ganancia_pp']:+.2f} pp por fila, IC95 t de clúster de día [{c['mae_ganancia_ic_t_dia'][0]:+.2f}, {c['mae_ganancia_ic_t_dia'][1]:+.2f}]"),   # 8 MAE con su ganancia e IC de día
-        ("README.md", f"{c['cobertura_80_pct']:.1f}% (nominal 80%) | intervalos **{c['ratio_ancho']:.2f}× más anchos** de lo necesario (IC95 de día {ric})"),  # 9 cobertura + ratio con IC
+        ("README.es.md", f"sealed window (n={n})"),                                          # 1 TL;DR
+        ("README.es.md", f"**{v} pp, day-cluster 95% CI {ic}"),                             # 2 TL;DR cifra + IC de día
+        ("README.es.md", f"n%3D{n}"),                                                        # 3 badge
+        ("README.es.md", f"**{c['modelo_pct']:.1f}%** ({c['modelo_aciertos']}/{n})"),        # 4 tabla modelo
+        ("README.es.md", f"**{c['base_pct']:.1f}%** ({c['base_aciertos']}/{n})"),            # 5 tabla base
+        ("README.es.md", f"**{v} pp** | IC95 de día **{ic}** · McNemar p = {c['mcnemar_p']:.4f}"),  # 6 tabla ventaja
+        ("README.es.md", f"| Otras métricas (n={n}) |"),                                     # 7 otras métricas
+        ("README.es.md", f"**{c['mae_modelo_pp']:.2f} pp** vs **{c['mae_cero_pp']:.2f}** de predecir cero | ganancia {c['mae_ganancia_pp']:+.2f} pp por fila, IC95 t de clúster de día [{c['mae_ganancia_ic_t_dia'][0]:+.2f}, {c['mae_ganancia_ic_t_dia'][1]:+.2f}]"),   # 8 MAE con su ganancia e IC de día
+        ("README.es.md", f"{c['cobertura_80_pct']:.1f}% (nominal 80%) | intervalos **{c['ratio_ancho']:.2f}× más anchos** de lo necesario (IC95 de día {ric})"),  # 9 cobertura + ratio con IC
         (".claude/skills/cifras-canonicas/SKILL.md", f"**{n}** | **{c['modelo_pct']:.1f}%** | **{c['base_pct']:.1f}%** | **{v} pp** | **{ic}** | **{c['mcnemar_p']:.4f}**"),  # 10 skill
         (".claude/skills/cifras-canonicas/SKILL.md", f"MAE del gap {c['mae_modelo_pp']:.2f} contra {c['mae_cero_pp']:.2f}"),   # 11 skill MAE
         ("GEMELO/resultados/estado_epistemico.md", f"+{c['ventaja_pp']:.1f} pp, n = {n}".replace(".", ",")),  # 12 estado epistémico (coma decimal)
+    ]
+
+
+def bloques_readme_en(c: dict) -> list:
+    """Los mismos nueve bloques de la ventana sellada, en inglés, para
+    README.md (la página en inglés desde el 19-sep-2026, corrida 13). Salen del
+    mismo dict que `doce_bloques`, así que si n cambia en el árbitro cambian los
+    dos README o no cambia ninguno; el test los exige textuales."""
+    n = c["n"]
+    v = f"{c['ventaja_pp']:+.1f}"
+    ic = f"[{c['ventaja_ic_dia'][0]:+.1f}, {c['ventaja_ic_dia'][1]:+.1f}]"
+    ric = f"[{c['ratio_ancho_ic_dia'][0]:.2f}, {c['ratio_ancho_ic_dia'][1]:.2f}]"
+    return [
+        ("README.md", f"sealed window (n={n})"),
+        ("README.md", f"**{v} pp, day-cluster 95% CI {ic}"),
+        ("README.md", f"n%3D{n}"),
+        ("README.md", f"**{c['modelo_pct']:.1f}%** ({c['modelo_aciertos']}/{n})"),
+        ("README.md", f"**{c['base_pct']:.1f}%** ({c['base_aciertos']}/{n})"),
+        ("README.md", f"**{v} pp** | day-cluster 95% CI **{ic}** · McNemar p = {c['mcnemar_p']:.4f}"),
+        ("README.md", f"| Other metrics (n={n}) |"),
+        ("README.md", f"**{c['mae_modelo_pp']:.2f} pp** vs **{c['mae_cero_pp']:.2f}** for predicting zero | gain {c['mae_ganancia_pp']:+.2f} pp per row, day-cluster t 95% CI [{c['mae_ganancia_ic_t_dia'][0]:+.2f}, {c['mae_ganancia_ic_t_dia'][1]:+.2f}]"),
+        ("README.md", f"{c['cobertura_80_pct']:.1f}% (nominal 80%) | intervals **{c['ratio_ancho']:.2f}× wider** than needed (day-cluster 95% CI {ric})"),
     ]
 
 
@@ -237,7 +260,11 @@ RUTA_RETIRADAS = os.path.join(_RAIZ, "GEMELO", "cifras_retiradas.md")
 # nació en la corrida 10 con once cifras canónicas adentro y sin correa, o sea
 # un sitio publicado más donde una cifra puede desincronizarse sin que nadie se
 # entere. O entra al árbitro, o no publica cifras.
-DOCUMENTOS_PUBLICADOS = ("README.md", "GEMELO/resultados/estado_epistemico.md",
+# README.es.md se agregó el 19-sep-2026 (corrida 13, bloque 5): desde entonces
+# README.md es la página en inglés y README.es.md la española, las dos
+# GENERADAS por `scripts/generar_readme.py` desde plantillas con marcadores que
+# este módulo llena. Los guardias corren sobre las dos.
+DOCUMENTOS_PUBLICADOS = ("README.md", "README.es.md", "GEMELO/resultados/estado_epistemico.md",
                          ".claude/skills/cifras-canonicas/SKILL.md",
                          "VISION.md")
 
@@ -270,7 +297,7 @@ MARCAS_DE_RETIRO = ("retirad", "errata", "decía", "decia", "era ", "refutad", "
 # Marcas que hablan inequívocamente de un retiro. Las otras ("corregid",
 # "era ", "falso"…) son ambiguas: pueden estar hablando de cualquier cosa
 # que pase cerca. El 7-sep-2026 una "corregida" que hablaba de OTRO tema
-# exentó una reintroducción real del 91,4 % en
+# exentó una reintroducción real del 91,4 % (cifra retirada, acta §68) en
 # `dinero/resultados/senal_larga_v1.md`, y el falso verde lo tuvo que cazar
 # un lector. Desde entonces las ambiguas sólo exentan si el contexto además
 # NOMBRA la cifra retirada.

@@ -1,0 +1,26 @@
+[Unit]
+Description=MKI — sonda del cierre en yfinance (timer, PROPUESTA no instalada)
+
+[Timer]
+# Cada media hora de la tarde/noche de Nueva York, desde las 17:05 hasta las
+# 23:35 (encargo 13 §5.3 pedía 17:00–23:30 en punto y media; el pre-mortem
+# del director marcó que 23:30 NY es el minuto exacto en que el sellador de
+# producción baja su insumo de yfinance, así que la grilla va desplazada
+# cinco minutos y nunca coincide con él). Validado con
+# `systemd-analyze calendar`: forma normalizada `Mon..Fri *-*-* 17..23:05,35:00 America/New_York`.
+#
+# La ventana de sellado del riel de medición (17:50–20:30 Chile) cae dentro
+# de esta grilla: la sonda es UNA descarga liviana de 36 tickers × 7 días.
+# Si Nicolás prefiere no descargar nada en esa ventana, la expresión
+# alternativa es `Mon..Fri 20..23:05,35 America/New_York` (desde las 20:05 NY
+# = 21:05 Chile en esta época) y se pierde la información de 17:05–19:35.
+OnCalendar=Mon..Fri 17..23:05,35 America/New_York
+
+# Una sonda atrasada no sirve: la pregunta es «a qué hora», y un disparo
+# ejecutado al despertar la máquina responde a otra hora.
+Persistent=false
+AccuracySec=1s
+Unit=mki-sonda-cierre.service
+
+[Install]
+WantedBy=timers.target

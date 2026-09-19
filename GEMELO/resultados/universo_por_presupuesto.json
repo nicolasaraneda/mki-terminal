@@ -1,0 +1,2423 @@
+{
+ "generado_en_utc": "2026-09-19T20:30:33+00:00",
+ "estatus": "PROPUESTA — insumo para la reevaluación del monto de E2 (acta §86.3); no fija ni recomienda ningún monto; hasta el dictamen del estadistico-adversario",
+ "que_es": "universo operable con acciones ENTERAS por presupuesto, al último cierre del congelado grande, con el `construir_mapa` del riel; posiciones simultáneas = una acción entera de cada instrumento, las más baratas primero; semillas congeladas = cuenta en papel v2 (señal sin información, K semillas) cuyo último movimiento es anterior a 156 − 26 semanas (definición de `GEMELO.m2_periodo.lecturas_m2`, E4 del §43)",
+ "congelado": {
+  "archivo": "cierres_congelados.csv",
+  "hasta": "2026-09-04",
+  "sha256": "69ca7283ae18fd37736827e1b19a79d3557e2e8177dbfd05c9685be22502402b",
+  "tickers": 36
+ },
+ "juego": "conservador",
+ "K": 20,
+ "reglas_version": "0.2.0-PROPUESTA",
+ "presupuestos_usd": [
+  100.0,
+  150.0,
+  200.0,
+  250.0,
+  300.0,
+  350.0,
+  400.0,
+  450.0,
+  500.0
+ ],
+ "reproduccion_corrida_12": {
+  "presupuesto_usd": 500.0,
+  "semillas_congeladas": 5,
+  "K": 20,
+  "fuente": "GEMELO/resultados/m2_periodo.json → resumen.conservador.pct_a_156_semanas",
+  "recomputado": 5,
+  "K_recomputado": 20,
+  "coincide": true,
+  "que_es": "reproducción determinista (misma función, mismas semillas, mismo congelado): chequeo de regresión, NO verificación independiente"
+ },
+ "filas": [
+  {
+   "presupuesto_usd": 100.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 7,
+   "tickers_alcanzan": [
+    "AMKR",
+    "ASX",
+    "GFS",
+    "GSM",
+    "INTC",
+    "SHECY",
+    "UMC"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "ASX": 37.51,
+    "GFS": 45.21,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "SHECY": 18.61,
+    "UMC": 20.77
+   },
+   "acciones_con_techo": {
+    "AMKR": 2,
+    "ASX": 2,
+    "GFS": 2,
+    "GSM": 21,
+    "INTC": 1,
+    "SHECY": 5,
+    "UMC": 4
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "AMZN",
+    "ARM",
+    "ASML",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GOOGL",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GOOGL": 338.46,
+    "KLAC": 185.6,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "META": 616.77,
+    "MKSI": 260.31,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "TSM": 428.91,
+    "VRT": 280.53,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 4,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 12,
+   "conservador_fraccion": 0.6,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.387,
+    0.781
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 8,
+    "mediana": 20.7,
+    "min_max": [
+     19.64,
+     21.16
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 12,
+    "mediana": 10.42,
+    "min_max": [
+     9.77,
+     11.45
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 18,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMKR",
+    "ASX",
+    "AVGO",
+    "GFS",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "MU",
+    "NVDA",
+    "SHECY",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": true,
+     "friccion_pct_a_156": 11.45
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 20.47
+    },
+    {
+     "semilla": 20260908,
+     "congelada": true,
+     "friccion_pct_a_156": 10.41
+    },
+    {
+     "semilla": 20260909,
+     "congelada": true,
+     "friccion_pct_a_156": 11.15
+    },
+    {
+     "semilla": 20260910,
+     "congelada": false,
+     "friccion_pct_a_156": 20.95
+    },
+    {
+     "semilla": 20260911,
+     "congelada": true,
+     "friccion_pct_a_156": 11.1
+    },
+    {
+     "semilla": 20260912,
+     "congelada": true,
+     "friccion_pct_a_156": 10.43
+    },
+    {
+     "semilla": 20260913,
+     "congelada": true,
+     "friccion_pct_a_156": 9.77
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 19.64
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 20.92
+    },
+    {
+     "semilla": 20260916,
+     "congelada": true,
+     "friccion_pct_a_156": 11.08
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 20.66
+    },
+    {
+     "semilla": 20260918,
+     "congelada": false,
+     "friccion_pct_a_156": 20.59
+    },
+    {
+     "semilla": 20260919,
+     "congelada": true,
+     "friccion_pct_a_156": 10.16
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 10.25
+    },
+    {
+     "semilla": 20260921,
+     "congelada": true,
+     "friccion_pct_a_156": 10.39
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 21.16
+    },
+    {
+     "semilla": 20260923,
+     "congelada": false,
+     "friccion_pct_a_156": 20.75
+    },
+    {
+     "semilla": 20260924,
+     "congelada": true,
+     "friccion_pct_a_156": 9.78
+    },
+    {
+     "semilla": 20260925,
+     "congelada": true,
+     "friccion_pct_a_156": 11.08
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 150.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 8,
+   "tickers_alcanzan": [
+    "AMKR",
+    "ASX",
+    "ENTG",
+    "GFS",
+    "GSM",
+    "INTC",
+    "SHECY",
+    "UMC"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "ASX": 37.51,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "SHECY": 18.61,
+    "UMC": 20.77
+   },
+   "acciones_con_techo": {
+    "AMKR": 3,
+    "ASX": 3,
+    "ENTG": 1,
+    "GFS": 3,
+    "GSM": 32,
+    "INTC": 1,
+    "SHECY": 8,
+    "UMC": 7
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "AMZN",
+    "ARM",
+    "ASML",
+    "AVGO",
+    "CDNS",
+    "GOOGL",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "GOOGL": 338.46,
+    "KLAC": 185.6,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "META": 616.77,
+    "MKSI": 260.31,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "TSM": 428.91,
+    "VRT": 280.53,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 5,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 17,
+   "conservador_fraccion": 0.85,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.64,
+    0.948
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 3,
+    "mediana": 23.2,
+    "min_max": [
+     22.18,
+     23.53
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 17,
+    "mediana": 11.92,
+    "min_max": [
+     0.97,
+     13.11
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 24,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 22.18
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 23.53
+    },
+    {
+     "semilla": 20260908,
+     "congelada": true,
+     "friccion_pct_a_156": 11.59
+    },
+    {
+     "semilla": 20260909,
+     "congelada": true,
+     "friccion_pct_a_156": 10.74
+    },
+    {
+     "semilla": 20260910,
+     "congelada": true,
+     "friccion_pct_a_156": 12.44
+    },
+    {
+     "semilla": 20260911,
+     "congelada": true,
+     "friccion_pct_a_156": 12.37
+    },
+    {
+     "semilla": 20260912,
+     "congelada": true,
+     "friccion_pct_a_156": 0.97
+    },
+    {
+     "semilla": 20260913,
+     "congelada": true,
+     "friccion_pct_a_156": 11.65
+    },
+    {
+     "semilla": 20260914,
+     "congelada": true,
+     "friccion_pct_a_156": 11.92
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 23.2
+    },
+    {
+     "semilla": 20260916,
+     "congelada": true,
+     "friccion_pct_a_156": 11.94
+    },
+    {
+     "semilla": 20260917,
+     "congelada": true,
+     "friccion_pct_a_156": 9.34
+    },
+    {
+     "semilla": 20260918,
+     "congelada": true,
+     "friccion_pct_a_156": 12.21
+    },
+    {
+     "semilla": 20260919,
+     "congelada": true,
+     "friccion_pct_a_156": 11.5
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 10.92
+    },
+    {
+     "semilla": 20260921,
+     "congelada": true,
+     "friccion_pct_a_156": 12.05
+    },
+    {
+     "semilla": 20260922,
+     "congelada": true,
+     "friccion_pct_a_156": 11.33
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 13.11
+    },
+    {
+     "semilla": 20260924,
+     "congelada": true,
+     "friccion_pct_a_156": 12.73
+    },
+    {
+     "semilla": 20260925,
+     "congelada": true,
+     "friccion_pct_a_156": 12.14
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 200.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 11,
+   "tickers_alcanzan": [
+    "AMKR",
+    "ASX",
+    "ENTG",
+    "GFS",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "QCOM",
+    "SHECY",
+    "TOELY",
+    "UMC"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "ASX": 37.51,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "TOELY": 176.49,
+    "UMC": 20.77
+   },
+   "acciones_con_techo": {
+    "AMKR": 4,
+    "ASX": 5,
+    "ENTG": 1,
+    "GFS": 4,
+    "GSM": 42,
+    "INTC": 2,
+    "KLAC": 1,
+    "QCOM": 1,
+    "SHECY": 10,
+    "TOELY": 1,
+    "UMC": 9
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "AMZN",
+    "ARM",
+    "ASML",
+    "AVGO",
+    "CDNS",
+    "GOOGL",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TSEM",
+    "TSM",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "GOOGL": 338.46,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "META": 616.77,
+    "MKSI": 260.31,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "NVDA": 230.36,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TSEM": 222.34,
+    "TSM": 428.91,
+    "VRT": 280.53,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 6,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 7,
+   "conservador_fraccion": 0.35,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.181,
+    0.567
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 13,
+    "mediana": 20.81,
+    "min_max": [
+     19.74,
+     21.38
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 7,
+    "mediana": 11.08,
+    "min_max": [
+     10.32,
+     12.48
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 27,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 21.0
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 19.74
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 20.82
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 21.38
+    },
+    {
+     "semilla": 20260910,
+     "congelada": false,
+     "friccion_pct_a_156": 20.81
+    },
+    {
+     "semilla": 20260911,
+     "congelada": false,
+     "friccion_pct_a_156": 20.25
+    },
+    {
+     "semilla": 20260912,
+     "congelada": true,
+     "friccion_pct_a_156": 11.05
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 21.34
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 20.3
+    },
+    {
+     "semilla": 20260915,
+     "congelada": true,
+     "friccion_pct_a_156": 11.08
+    },
+    {
+     "semilla": 20260916,
+     "congelada": true,
+     "friccion_pct_a_156": 10.32
+    },
+    {
+     "semilla": 20260917,
+     "congelada": true,
+     "friccion_pct_a_156": 11.05
+    },
+    {
+     "semilla": 20260918,
+     "congelada": true,
+     "friccion_pct_a_156": 12.48
+    },
+    {
+     "semilla": 20260919,
+     "congelada": true,
+     "friccion_pct_a_156": 11.65
+    },
+    {
+     "semilla": 20260920,
+     "congelada": false,
+     "friccion_pct_a_156": 20.62
+    },
+    {
+     "semilla": 20260921,
+     "congelada": false,
+     "friccion_pct_a_156": 20.76
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 21.12
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 12.07
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 20.32
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 21.08
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 250.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 13,
+   "tickers_alcanzan": [
+    "AMKR",
+    "ASX",
+    "ENTG",
+    "GFS",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "TOELY",
+    "TSEM",
+    "UMC"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "ASX": 37.51,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "UMC": 20.77
+   },
+   "acciones_con_techo": {
+    "AMKR": 5,
+    "ASX": 6,
+    "ENTG": 1,
+    "GFS": 5,
+    "GSM": 53,
+    "INTC": 2,
+    "KLAC": 1,
+    "NVDA": 1,
+    "QCOM": 1,
+    "SHECY": 13,
+    "TOELY": 1,
+    "TSEM": 1,
+    "UMC": 12
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "AMZN",
+    "ARM",
+    "ASML",
+    "AVGO",
+    "CDNS",
+    "GOOGL",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TSM",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "GOOGL": 338.46,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "META": 616.77,
+    "MKSI": 260.31,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TSM": 428.91,
+    "VRT": 280.53,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 6,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 12,
+   "conservador_fraccion": 0.6,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.387,
+    0.781
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 8,
+    "mediana": 19.09,
+    "min_max": [
+     17.59,
+     19.85
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 12,
+    "mediana": 10.3,
+    "min_max": [
+     7.59,
+     11.04
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 29,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 19.09
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 17.59
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 19.85
+    },
+    {
+     "semilla": 20260909,
+     "congelada": true,
+     "friccion_pct_a_156": 10.81
+    },
+    {
+     "semilla": 20260910,
+     "congelada": true,
+     "friccion_pct_a_156": 11.0
+    },
+    {
+     "semilla": 20260911,
+     "congelada": true,
+     "friccion_pct_a_156": 10.27
+    },
+    {
+     "semilla": 20260912,
+     "congelada": true,
+     "friccion_pct_a_156": 10.57
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 19.4
+    },
+    {
+     "semilla": 20260914,
+     "congelada": true,
+     "friccion_pct_a_156": 11.04
+    },
+    {
+     "semilla": 20260915,
+     "congelada": true,
+     "friccion_pct_a_156": 9.73
+    },
+    {
+     "semilla": 20260916,
+     "congelada": true,
+     "friccion_pct_a_156": 10.12
+    },
+    {
+     "semilla": 20260917,
+     "congelada": true,
+     "friccion_pct_a_156": 10.42
+    },
+    {
+     "semilla": 20260918,
+     "congelada": false,
+     "friccion_pct_a_156": 18.6
+    },
+    {
+     "semilla": 20260919,
+     "congelada": true,
+     "friccion_pct_a_156": 9.34
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 9.73
+    },
+    {
+     "semilla": 20260921,
+     "congelada": false,
+     "friccion_pct_a_156": 19.27
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 18.54
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 7.59
+    },
+    {
+     "semilla": 20260924,
+     "congelada": true,
+     "friccion_pct_a_156": 10.34
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 19.09
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 300.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 18,
+   "tickers_alcanzan": [
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASX",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "MKSI",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "TOELY",
+    "TSEM",
+    "UMC",
+    "VRT"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASX": 37.51,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "MKSI": 260.31,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "UMC": 20.77,
+    "VRT": 280.53
+   },
+   "acciones_con_techo": {
+    "AMKR": 6,
+    "AMZN": 1,
+    "ARM": 1,
+    "ASX": 7,
+    "CDNS": 1,
+    "ENTG": 2,
+    "GFS": 6,
+    "GSM": 64,
+    "INTC": 3,
+    "KLAC": 1,
+    "MKSI": 1,
+    "NVDA": 1,
+    "QCOM": 1,
+    "SHECY": 16,
+    "TOELY": 1,
+    "TSEM": 1,
+    "UMC": 14,
+    "VRT": 1
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "AVGO",
+    "GOOGL",
+    "LIN",
+    "LRCX",
+    "META",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TSM",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "GOOGL": 338.46,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "META": 616.77,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TSM": 428.91,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 7,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 7,
+   "conservador_fraccion": 0.35,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.181,
+    0.567
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 13,
+    "mediana": 17.05,
+    "min_max": [
+     16.23,
+     17.99
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 7,
+    "mediana": 9.33,
+    "min_max": [
+     8.86,
+     10.25
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 30,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 17.33
+    },
+    {
+     "semilla": 20260907,
+     "congelada": true,
+     "friccion_pct_a_156": 9.07
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 17.05
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 16.61
+    },
+    {
+     "semilla": 20260910,
+     "congelada": false,
+     "friccion_pct_a_156": 17.87
+    },
+    {
+     "semilla": 20260911,
+     "congelada": true,
+     "friccion_pct_a_156": 9.36
+    },
+    {
+     "semilla": 20260912,
+     "congelada": false,
+     "friccion_pct_a_156": 17.38
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 16.98
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 16.73
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 17.69
+    },
+    {
+     "semilla": 20260916,
+     "congelada": false,
+     "friccion_pct_a_156": 16.35
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 16.79
+    },
+    {
+     "semilla": 20260918,
+     "congelada": true,
+     "friccion_pct_a_156": 9.8
+    },
+    {
+     "semilla": 20260919,
+     "congelada": true,
+     "friccion_pct_a_156": 9.0
+    },
+    {
+     "semilla": 20260920,
+     "congelada": false,
+     "friccion_pct_a_156": 17.66
+    },
+    {
+     "semilla": 20260921,
+     "congelada": true,
+     "friccion_pct_a_156": 10.25
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 16.23
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 9.33
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 17.99
+    },
+    {
+     "semilla": 20260925,
+     "congelada": true,
+     "friccion_pct_a_156": 8.86
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 350.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 20,
+   "tickers_alcanzan": [
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASX",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "TOELY",
+    "TSEM",
+    "UMC",
+    "VRT"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASX": 37.51,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GOOGL": 338.46,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "LRCX": 307.65,
+    "MKSI": 260.31,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "UMC": 20.77,
+    "VRT": 280.53
+   },
+   "acciones_con_techo": {
+    "AMKR": 7,
+    "AMZN": 1,
+    "ARM": 1,
+    "ASX": 9,
+    "CDNS": 1,
+    "ENTG": 2,
+    "GFS": 7,
+    "GOOGL": 1,
+    "GSM": 74,
+    "INTC": 3,
+    "KLAC": 1,
+    "LRCX": 1,
+    "MKSI": 1,
+    "NVDA": 1,
+    "QCOM": 2,
+    "SHECY": 18,
+    "TOELY": 1,
+    "TSEM": 1,
+    "UMC": 16,
+    "VRT": 1
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "AVGO",
+    "LIN",
+    "META",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TSM",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "ASML": 1714.88,
+    "AVGO": 357.9,
+    "LIN": 477.57,
+    "META": 616.77,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SNPS": 393.84,
+    "SOXX": 519.86,
+    "TER": 357.03,
+    "TSM": 428.91,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 7,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 5,
+   "conservador_fraccion": 0.25,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.112,
+    0.469
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 15,
+    "mediana": 15.49,
+    "min_max": [
+     14.16,
+     16.56
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 5,
+    "mediana": 8.99,
+    "min_max": [
+     8.46,
+     9.32
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 31,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 16.3
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 16.56
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 15.49
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 16.19
+    },
+    {
+     "semilla": 20260910,
+     "congelada": false,
+     "friccion_pct_a_156": 15.31
+    },
+    {
+     "semilla": 20260911,
+     "congelada": true,
+     "friccion_pct_a_156": 9.06
+    },
+    {
+     "semilla": 20260912,
+     "congelada": false,
+     "friccion_pct_a_156": 15.02
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 15.38
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 15.27
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 15.74
+    },
+    {
+     "semilla": 20260916,
+     "congelada": false,
+     "friccion_pct_a_156": 15.94
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 15.24
+    },
+    {
+     "semilla": 20260918,
+     "congelada": false,
+     "friccion_pct_a_156": 15.42
+    },
+    {
+     "semilla": 20260919,
+     "congelada": false,
+     "friccion_pct_a_156": 14.16
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 9.32
+    },
+    {
+     "semilla": 20260921,
+     "congelada": true,
+     "friccion_pct_a_156": 8.99
+    },
+    {
+     "semilla": 20260922,
+     "congelada": true,
+     "friccion_pct_a_156": 8.46
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 8.64
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 15.98
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 15.86
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 400.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 23,
+   "tickers_alcanzan": [
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SNPS",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "UMC",
+    "VRT"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASX": 37.51,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GOOGL": 338.46,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "LRCX": 307.65,
+    "MKSI": 260.31,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "SNPS": 393.84,
+    "TER": 357.03,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "UMC": 20.77,
+    "VRT": 280.53
+   },
+   "acciones_con_techo": {
+    "AMKR": 8,
+    "AMZN": 1,
+    "ARM": 1,
+    "ASX": 10,
+    "AVGO": 1,
+    "CDNS": 1,
+    "ENTG": 2,
+    "GFS": 8,
+    "GOOGL": 1,
+    "GSM": 85,
+    "INTC": 4,
+    "KLAC": 2,
+    "LRCX": 1,
+    "MKSI": 1,
+    "NVDA": 1,
+    "QCOM": 2,
+    "SHECY": 21,
+    "SNPS": 1,
+    "TER": 1,
+    "TOELY": 2,
+    "TSEM": 1,
+    "UMC": 19,
+    "VRT": 1
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "LIN",
+    "META",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SOXX",
+    "TSM",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "ASML": 1714.88,
+    "LIN": 477.57,
+    "META": 616.77,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SOXX": 519.86,
+    "TSM": 428.91,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 7,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 4,
+   "conservador_fraccion": 0.2,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.081,
+    0.416
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 16,
+    "mediana": 14.47,
+    "min_max": [
+     13.44,
+     15.43
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 4,
+    "mediana": 7.57,
+    "min_max": [
+     0.5,
+     8.86
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 32,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 15.26
+    },
+    {
+     "semilla": 20260907,
+     "congelada": true,
+     "friccion_pct_a_156": 8.04
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 13.96
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 14.56
+    },
+    {
+     "semilla": 20260910,
+     "congelada": false,
+     "friccion_pct_a_156": 15.19
+    },
+    {
+     "semilla": 20260911,
+     "congelada": false,
+     "friccion_pct_a_156": 15.01
+    },
+    {
+     "semilla": 20260912,
+     "congelada": false,
+     "friccion_pct_a_156": 13.9
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 15.43
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 14.44
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 14.18
+    },
+    {
+     "semilla": 20260916,
+     "congelada": false,
+     "friccion_pct_a_156": 14.51
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 14.9
+    },
+    {
+     "semilla": 20260918,
+     "congelada": true,
+     "friccion_pct_a_156": 0.5
+    },
+    {
+     "semilla": 20260919,
+     "congelada": false,
+     "friccion_pct_a_156": 14.57
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 8.86
+    },
+    {
+     "semilla": 20260921,
+     "congelada": false,
+     "friccion_pct_a_156": 13.61
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 14.07
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 7.1
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 13.44
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 14.12
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 450.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 24,
+   "tickers_alcanzan": [
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LRCX",
+    "MKSI",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SNPS",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT"
+   ],
+   "precios_alcanzan": {
+    "AMKR": 47.77,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASX": 37.51,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GOOGL": 338.46,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "LRCX": 307.65,
+    "MKSI": 260.31,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "SNPS": 393.84,
+    "TER": 357.03,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "TSM": 428.91,
+    "UMC": 20.77,
+    "VRT": 280.53
+   },
+   "acciones_con_techo": {
+    "AMKR": 9,
+    "AMZN": 1,
+    "ARM": 1,
+    "ASX": 11,
+    "AVGO": 1,
+    "CDNS": 1,
+    "ENTG": 3,
+    "GFS": 9,
+    "GOOGL": 1,
+    "GSM": 96,
+    "INTC": 4,
+    "KLAC": 2,
+    "LRCX": 1,
+    "MKSI": 1,
+    "NVDA": 1,
+    "QCOM": 2,
+    "SHECY": 24,
+    "SNPS": 1,
+    "TER": 1,
+    "TOELY": 2,
+    "TSEM": 2,
+    "TSM": 1,
+    "UMC": 21,
+    "VRT": 1
+   },
+   "no_alcanzan": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "LIN",
+    "META",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SOXX",
+    "WDC",
+    "XSD"
+   ],
+   "precios_no_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "ASML": 1714.88,
+    "LIN": 477.57,
+    "META": 616.77,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SOXX": 519.86,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "cota_superior_posiciones_nominal": 8,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 3,
+   "conservador_fraccion": 0.15,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.052,
+    0.36
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 17,
+    "mediana": 13.59,
+    "min_max": [
+     12.56,
+     14.49
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 3,
+    "mediana": 7.16,
+    "min_max": [
+     5.87,
+     7.87
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 32,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 14.06
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 13.19
+    },
+    {
+     "semilla": 20260908,
+     "congelada": false,
+     "friccion_pct_a_156": 13.59
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 13.47
+    },
+    {
+     "semilla": 20260910,
+     "congelada": true,
+     "friccion_pct_a_156": 7.87
+    },
+    {
+     "semilla": 20260911,
+     "congelada": false,
+     "friccion_pct_a_156": 12.56
+    },
+    {
+     "semilla": 20260912,
+     "congelada": false,
+     "friccion_pct_a_156": 13.91
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 13.35
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 14.49
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 13.6
+    },
+    {
+     "semilla": 20260916,
+     "congelada": false,
+     "friccion_pct_a_156": 13.76
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 14.03
+    },
+    {
+     "semilla": 20260918,
+     "congelada": false,
+     "friccion_pct_a_156": 13.31
+    },
+    {
+     "semilla": 20260919,
+     "congelada": false,
+     "friccion_pct_a_156": 13.5
+    },
+    {
+     "semilla": 20260920,
+     "congelada": true,
+     "friccion_pct_a_156": 7.16
+    },
+    {
+     "semilla": 20260921,
+     "congelada": false,
+     "friccion_pct_a_156": 13.92
+    },
+    {
+     "semilla": 20260922,
+     "congelada": false,
+     "friccion_pct_a_156": 13.15
+    },
+    {
+     "semilla": 20260923,
+     "congelada": true,
+     "friccion_pct_a_156": 5.87
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 12.8
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 13.61
+    }
+   ]
+  },
+  {
+   "presupuesto_usd": 500.0,
+   "verificados": 36,
+   "alcanzan_una_accion_entera": 29,
+   "tickers_alcanzan": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "MKSI",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SNPS",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "precios_alcanzan": {
+    "AMAT": 454.71,
+    "AMD": 477.57,
+    "AMKR": 47.77,
+    "AMZN": 258.51,
+    "ARM": 252.09,
+    "ASX": 37.51,
+    "AVGO": 357.9,
+    "CDNS": 292.7,
+    "ENTG": 138.74,
+    "GFS": 45.21,
+    "GOOGL": 338.46,
+    "GSM": 4.67,
+    "INTC": 95.8,
+    "KLAC": 185.6,
+    "LIN": 477.57,
+    "LRCX": 307.65,
+    "MKSI": 260.31,
+    "NVDA": 230.36,
+    "QCOM": 168.74,
+    "SHECY": 18.61,
+    "SNPS": 393.84,
+    "TER": 357.03,
+    "TOELY": 176.49,
+    "TSEM": 222.34,
+    "TSM": 428.91,
+    "UMC": 20.77,
+    "VRT": 280.53,
+    "WDC": 467.46,
+    "XSD": 491.45
+   },
+   "acciones_con_techo": {
+    "AMAT": 1,
+    "AMD": 1,
+    "AMKR": 10,
+    "AMZN": 1,
+    "ARM": 1,
+    "ASX": 13,
+    "AVGO": 1,
+    "CDNS": 1,
+    "ENTG": 3,
+    "GFS": 11,
+    "GOOGL": 1,
+    "GSM": 106,
+    "INTC": 5,
+    "KLAC": 2,
+    "LIN": 1,
+    "LRCX": 1,
+    "MKSI": 1,
+    "NVDA": 2,
+    "QCOM": 2,
+    "SHECY": 26,
+    "SNPS": 1,
+    "TER": 1,
+    "TOELY": 2,
+    "TSEM": 2,
+    "TSM": 1,
+    "UMC": 24,
+    "VRT": 1,
+    "WDC": 1,
+    "XSD": 1
+   },
+   "no_alcanzan": [
+    "ASML",
+    "META",
+    "MSFT",
+    "MU",
+    "SMH",
+    "SNDK",
+    "SOXX"
+   ],
+   "precios_no_alcanzan": {
+    "ASML": 1714.88,
+    "META": 616.77,
+    "MSFT": 499.7,
+    "MU": 1016.59,
+    "SMH": 567.01,
+    "SNDK": 1740.0,
+    "SOXX": 519.86
+   },
+   "cota_superior_posiciones_nominal": 8,
+   "cota_superior_posiciones_nota": "más baratas primero, precio crudo sin comisión, regla que la cuenta no usa; punto de un solo día",
+   "conservador_K": 20,
+   "conservador_semillas_congeladas": 5,
+   "conservador_fraccion": 0.25,
+   "conservador_wilson_95_error_de_simulacion": [
+    0.112,
+    0.469
+   ],
+   "conservador_wilson_nota": "Wilson sobre K semillas = error de Monte Carlo condicional a UN solo camino de mercado; no es incertidumbre de mundo",
+   "conservador_friccion_pct_a_156_vivas": {
+    "n": 15,
+    "mediana": 12.5,
+    "min_max": [
+     12.16,
+     13.1
+    ]
+   },
+   "conservador_friccion_pct_a_156_congeladas": {
+    "n": 5,
+    "mediana": 6.63,
+    "min_max": [
+     6.26,
+     7.53
+    ]
+   },
+   "conservador_friccion_definicion": "100 × comisiones acumuladas / capital aportado acumulado, a 156 semanas, SIN anualizar (m2_periodo.lecturas_m2)",
+   "conservador_operables_en_DESDE": 33,
+   "conservador_tickers_operables_en_DESDE": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SHECY",
+    "SMH",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TOELY",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "conservador_por_semilla": [
+    {
+     "semilla": 20260906,
+     "congelada": false,
+     "friccion_pct_a_156": 12.5
+    },
+    {
+     "semilla": 20260907,
+     "congelada": false,
+     "friccion_pct_a_156": 13.09
+    },
+    {
+     "semilla": 20260908,
+     "congelada": true,
+     "friccion_pct_a_156": 6.45
+    },
+    {
+     "semilla": 20260909,
+     "congelada": false,
+     "friccion_pct_a_156": 12.33
+    },
+    {
+     "semilla": 20260910,
+     "congelada": true,
+     "friccion_pct_a_156": 7.53
+    },
+    {
+     "semilla": 20260911,
+     "congelada": false,
+     "friccion_pct_a_156": 12.2
+    },
+    {
+     "semilla": 20260912,
+     "congelada": false,
+     "friccion_pct_a_156": 12.37
+    },
+    {
+     "semilla": 20260913,
+     "congelada": false,
+     "friccion_pct_a_156": 12.16
+    },
+    {
+     "semilla": 20260914,
+     "congelada": false,
+     "friccion_pct_a_156": 12.4
+    },
+    {
+     "semilla": 20260915,
+     "congelada": false,
+     "friccion_pct_a_156": 12.77
+    },
+    {
+     "semilla": 20260916,
+     "congelada": true,
+     "friccion_pct_a_156": 7.43
+    },
+    {
+     "semilla": 20260917,
+     "congelada": false,
+     "friccion_pct_a_156": 12.3
+    },
+    {
+     "semilla": 20260918,
+     "congelada": true,
+     "friccion_pct_a_156": 6.63
+    },
+    {
+     "semilla": 20260919,
+     "congelada": false,
+     "friccion_pct_a_156": 12.54
+    },
+    {
+     "semilla": 20260920,
+     "congelada": false,
+     "friccion_pct_a_156": 12.34
+    },
+    {
+     "semilla": 20260921,
+     "congelada": false,
+     "friccion_pct_a_156": 13.1
+    },
+    {
+     "semilla": 20260922,
+     "congelada": true,
+     "friccion_pct_a_156": 6.26
+    },
+    {
+     "semilla": 20260923,
+     "congelada": false,
+     "friccion_pct_a_156": 12.7
+    },
+    {
+     "semilla": 20260924,
+     "congelada": false,
+     "friccion_pct_a_156": 12.93
+    },
+    {
+     "semilla": 20260925,
+     "congelada": false,
+     "friccion_pct_a_156": 12.61
+    }
+   ]
+  }
+ ],
+ "lectura": "las filas NO son pareadas ni anidadas: `universo_operable` depende del techo, así que a cada presupuesto la cuenta juega con otra membresía (columna «operables en DESDE») y, con la misma semilla, otro flujo de sorteos. La tabla no se lee en columna: comparar la fracción de congeladas entre presupuestos mezcla presupuesto, membresía y realización. Tres poblaciones y tres fechas por fila, separadas en la tabla.",
+ "advertencias": [
+  "una semilla congelada acumula poca comisión por QUIEBRA operativa, no por baratura (E4 del §43)",
+  "los cierres del congelado son ajustados retroactivamente por yfinance: no point-in-time (declarado)",
+  "la membresía del universo se fija en DESDE (2023-09-05) para la cuenta y al último cierre para el alcance: son dos preguntas distintas y se declaran las dos"
+ ]
+}

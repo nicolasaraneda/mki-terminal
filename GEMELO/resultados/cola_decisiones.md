@@ -9,7 +9,42 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 9-sep-2026, corrida 12. Las siete decisiones del 8-sep (acta §84.4) están aplicadas o anotadas en su ítem; la cola no se reordenó.
+**Actualizada:** 19-sep-2026, corrida 13. Las firmas del §86 (§51, §52, §53, §57) están marcadas en sus ítems; la cola no se reordenó.
+
+## Qué movió la decimotercera corrida (19-sep)
+
+- **Cerrado (fuga en producción):** E4-bis en `dinero/sello_dinero.py`: con la fecha ya sellada no se escribe ningún
+  archivo de esa fecha en `dinero/datos/sello/` (opción A del `auditor-lookahead`, `dictamen_13/auditor_e4_archivo.md`;
+  F2 no pedida: con el MISMO insumo también se reescribía). Test permanente de integridad (disco = lo que la base cita,
+  tres carpetas) en la suite. Base y filas selladas intactas (sha256 antes = después).
+- **Firmado el 9-sep, marcado hoy:** §51 (86.2), §52 (86.3), §53 (86.4), §57 (86.1). §43 sigue abierta.
+- **Nuevo, espera firma:** **§58** (hora del sellador de dinero y definición de «completo»: el dato de nueve noches, la
+  sonda `GEMELO/sonda_cierre.py` y su unidad propuesta `mki-sonda-cierre.timer`, tres opciones; instalar la sonda es
+  acto de Nicolás), **§59** (`visible_en`: Z1 no está definida; la pregunta con tres candidatos), **§60** (la opción (a)
+  del hallazgo 2, `.gitignore` para `dinero/datos/sello/`, no consta firmada en ningún documento: 4.3 NO ejecutado).
+- **README:** `README.md` es la página en inglés y `README.es.md` la española, las dos generadas por
+  `scripts/generar_readme.py` desde `docs/readme/*.tmpl.md` y el árbitro; guardias extendidos a las dos; cifras
+  IDÉNTICAS entre idiomas y con el árbitro (adversario). **Erratas pendientes de Nicolás, en las DOS páginas, no
+  movidas esta noche:** el N de intentos publica 352/358 y el registro dice 354/360 (`backtest/veredicto_51.py`);
+  el «59×» de la ventana larga es 14.618/248 (n de la rama derogada; con n = 238 es 61,4×); los badges `tests-650` y
+  `plataforma-5.0.3` (hoy 897 recolectados y 5.1.0); `ventana_larga.md:42` y `:176` siguen publicando dos cifras
+  retiradas porque ese archivo no está en `DOCUMENTOS_PUBLICADOS`; el n del encabezado de la tabla del holdout
+  (393 / 2.548) no gobierna las celdas E1 (399 / 2.574). El CSV `data/backups/sello_dinero.csv` va sin commitear:
+  el contador de E0 del README (9 / 7 / 2026-09-18) sólo es regenerable desde HEAD cuando se commitee con él.
+- **Bloque 6:** `GEMELO/resultados/universo_por_presupuesto.{md,json}` (PROPUESTA, descriptivo) como insumo del §52
+  para la reevaluación del monto de E2; rehecho tras cinco exigencias del adversario (reproducción, no verificación;
+  membresía por presupuesto como columna; fricción condicionada a vivas/congeladas; Wilson rotulado como error de
+  simulación sobre un solo camino; tres poblaciones separadas).
+- **`bifurcaciones` NO regenerado (4.5):** con 4.000 réplicas el ancla mueve sólo el último decimal, pero el nivel `vivo`
+  del corte creció de 251 a 371 filas y la matriz pasa de 0 a 20 de 192 celdas con p < 0,05 por clúster: es una
+  medición nueva, no un cambio de réplicas. Se revirtió a HEAD. **Decisión de Nicolás:** pinchar `vivo` a una fecha
+  declarada y regenerar, o tratar la regeneración como medición nueva con dictamen e intento propio.
+- **Registro de intentos:** riel largo 3 → **4** (barrido descriptivo del bloque 6, por dictamen del adversario;
+  **norma instalada de paso, §87.9: aceptarla o volver a 3 es de Nicolás**; asimetría: la re-medición de
+  `bifurcaciones` no se contó);
+  gap asiático **354** y veredicto 5.1 **360**, sin cambio.
+- **Hallazgo TOELY (MEDIDO, n = 1 par de descargas):** en dos descargas por la misma ruta separadas 24 h los cierres del
+  08 al 15-sep pasaron de estar a estar vacíos; que sea Yahoo y no la ruta es PROPUESTA sin segunda vía (§58).
 
 ## Qué movió la duodécima corrida (9-sep)
 
@@ -200,7 +235,7 @@ que saberlo al firmar.
 | n | 241 | 241 | 256 |
 | ventaja | +6,64 pp | **+9,96 pp** | +6,25 pp |
 | McNemar b/c | 72/56 | 70/46 | 72/56 |
-| p (χ²cc / exacta) | 0,1849 / 0,1847 | **0,0327 / 0,0323** | 0,1849 / 0,1847 |
+| p (χ²cc / exacta) | 0,1849 / 0,1847 (rama retirada, acta §78) | **0,0327 / 0,0323** | 0,1849 / 0,1847 (rama retirada, acta §78) |
 
 **El p va al final y como CONSECUENCIA, nunca como argumento.** El orden
 correcto es: primero qué es una fila, después qué sale.
@@ -239,7 +274,7 @@ con p < 0,05 por clúster NO cambió**).
 
 | rama | n | ventaja | b/c | p exacta |
 |---|---|---|---|---|
-| sin deduplicar (publicado) | 248 | +6,5 pp | 72/56 | 0,1847 |
+| sin deduplicar (publicado hasta el 2-sep; rama derogada y cifras retiradas, acta §78) | 248 | +6,5 pp | 72/56 | 0,1847 |
 | **REGLA FIRMADA** | **238** | **+9,7 pp** | **72/49** | **0,0451** |
 | `keep="last"` (prohibida) | 233 | +10,3 pp | 70/46 | 0,0323 |
 
@@ -472,7 +507,7 @@ su argumento; **la elección es de Nicolás**.
 
 **Qué se bloquea:** el README y tres archivos vivos de referencia
 (`cifras-canonicas`, `estadistica-evaluacion`, `estadistico-adversario.md`)
-siguen citando +6,5 pp sin la advertencia. Cualquiera que lea el proyecto
+siguen citando +6,5 pp (cifra retirada el 3-sep-2026, acta §78) sin la advertencia. Cualquiera que lea el proyecto
 hoy —incluida una sesión futura de este mismo agente— cita la cifra sin el
 matiz que la vuelve honesta.
 
@@ -492,14 +527,14 @@ barato resolver varias preguntas de reporte en una sola pasada.
 **Qué decidir:** cuál de las tres salidas se toma ante el hecho de que el
 proyecto tiene **dos árbitros** para la misma pregunta.
 
-**El hallazgo, y no es el que se creía:** el 0.1849 del README es el **χ²
+**El hallazgo, y no es el que se creía:** el 0.1849 del README (cifra retirada desde el 3-sep-2026, acta §78) es el **χ²
 de McNemar con corrección de continuidad** (0.184898) y el 0.1847 del
 módulo es la **binomial exacta** (0.184683). Mismo par (b=72, c=56), mismo
 n, **métodos distintos, ninguno mal**. Verificado por varas independientes
 en las dos rutas.
 
 **No es una cifra, son cuatro**, y es una regla escrita rota: los tres p
-de la ventana sellada (0.1158 / 0.2542 / 0.1849) y el de la línea base
+de la ventana sellada (0.1158 / 0.2542 / 0.1849, rama retirada el 3-sep-2026) y el de la línea base
 congelada (0.4633) salen de `backtest/linea_base.py`:126, que reimplementa
 McNemar a mano cuando `.claude/rules/backtest.md`:26-27 dice literal que
 no se reimplemente. **Atenuante:** `linea_base.py` es del 25-ago y la
@@ -1033,7 +1068,7 @@ Lo publicable hoy, sin firma: el hallazgo de las fechas que contribuyen
 cero, que explica por qué la dirección necesita ~250 días y la magnitud
 ~100.
 
-**Y una nota sobre el §18:** cita «potencia 0,36 [0,34, 0,37]» de
+**Y una nota sobre el §18:** cita «potencia 0,36 [0,34, 0,37]» (cifra retirada, acta §75) de
 `horizonte.md`, instrumento que el dictamen A midió optimista; con el
 simulador calibrado es 0,31 [0,27, 0,35].
 

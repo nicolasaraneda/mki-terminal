@@ -281,3 +281,323 @@ def test_la_extension_real_si_existe_es_consistente_con_su_meta():
     assert pd.Timestamp(meta["desde"]) > pd.Timestamp(meta["extiende_a"]["hasta"])
     copia = os.path.join(S.DIR_BACKUP_EXT, os.path.basename(ruta))
     assert os.path.exists(copia) and S._sha256(copia) == meta["sha256"]
+
+
+# ------------------------------------------------------------
+# 3. E4-bis (corrida 13): el ARCHIVO de la extensión sellada tampoco se toca
+# ------------------------------------------------------------
+# El 10-sep-2026 03:30 UTC el timer disparó sobre el 09-sep ya sellado con
+# otro insumo. `sellar()` registró la divergencia y no insertó nada (E4),
+# pero `main()` ya había llamado a `congelar_extension()`, que pisó
+# `ext_2026-09-09.csv` + meta con el insumo nuevo: nueve días el disco tuvo
+# el sha 7300787b… mientras las filas citaban 126e4f2c…. Estos tests recorren
+# el camino de `main()` (congelar + sellar), no sólo `sellar`. Los tres
+# primeros (`test_E4_archivo_*`) los escribió el `auditor-lookahead` ANTES de
+# la corrección y fallaban (dictamen_13/auditor_e4_archivo.md); los demás
+# fijan la forma de la corrección que el auditor dictaminó (opción A: con la
+# fecha ya sellada no se escribe NINGÚN archivo de esa fecha en DIR_EXT).
+BASE_HASTA = "2026-09-04"        # última sesión del congelado grande
+FECHA = "2026-09-08"             # primera sesión posterior (el 7-sep es feriado)
+
+
+def _cierres_ext_sinteticos(base, sesiones=(FECHA,), factor=1.01) -> pd.DataFrame:
+    """Lo que `descargar_extension()` devolvería: cierres crudos SIN recortar
+    (es `congelar_extension` quien recorta a lo posterior a `base_hasta`).
+    Último cierre del congelado × factor; dos factores distintos = dos insumos
+    distintos, igual que dos descargas de Yahoo en la misma noche."""
+    ult = base.iloc[-1]
+    ext = pd.DataFrame({pd.Timestamp(s): ult * factor for s in sesiones}).T
+    ext.index.name = "Date"
+    return ext
+
+
+def _camino_main(cierres_ext, db, ahora, base_hasta=BASE_HASTA):
+    """El camino que recorre `main()`: congela la extensión EN DISCO, sella y
+    borra el temporal de un insumo divergente no conservado."""
+    ruta, meta = S.congelar_extension(cierres_ext, base_hasta)
+    try:
+        return ruta, meta, S.sellar(ruta, meta, ahora_utc=ahora, ruta_db=db)
+    finally:
+        if not meta.get("persistido", True) and os.path.exists(ruta):
+            os.remove(ruta)
+
+
+def _huella_ext(fecha=FECHA) -> dict:
+    """(sha256, mtime_ns) de los archivos CANÓNICOS de esa fecha en S.DIR_EXT.
+    El mtime va incluido a propósito: la exigencia es que el archivo sellado
+    NO SE TOQUE, no que se reescriba con bytes parecidos."""
+    huella = {}
+    for nombre in (f"ext_{fecha}.csv", f"ext_{fecha}.meta.json"):
+        r = os.path.join(S.DIR_EXT, nombre)
+        huella[nombre] = (S._sha256(r), os.stat(r).st_mtime_ns) if os.path.exists(r) else None
+    return huella
+
+
+def _volcado_sellos(db) -> list:
+    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    try:
+        return con.execute("SELECT * FROM sellos_dinero ORDER BY id").fetchall()
+    finally:
+        con.close()
+
+
+def _cuenta(db, tabla) -> int:
+    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    try:
+        return con.execute(f"SELECT COUNT(*) FROM {tabla}").fetchone()[0]
+    finally:
+        con.close()
+
+
+@pytest.fixture
+def entorno_temporal(tmp_path, monkeypatch):
+    """Directorio de extensiones y base, los dos temporales. `S.RUTA_DB` se
+    parchea además de pasar `ruta_db=` porque cualquier ruta que lea el global
+    (`congelar_extension`, `exportar_csv`) tiene que caer también en tmp_path."""
+    dir_ext = tmp_path / "datos" / "sello"
+    db = str(tmp_path / "sello_dinero.db")
+    monkeypatch.setattr(S, "DIR_EXT", str(dir_ext))
+    monkeypatch.setattr(S, "RUTA_DB", db)
+    monkeypatch.setattr(S, "DIR_BACKUP_EXT", str(tmp_path / "backups_ext"))
+    return db
+
+
+def test_E4_archivo_un_segundo_sello_con_otro_insumo_no_toca_la_extension_sellada(
+        entorno_temporal, base):
+    """REPRODUCE el 10-sep: mismo día, mismo `fecha_insumo`, insumo distinto.
+    E4 hace lo correcto con la base; el archivo que el sha sellado cita tiene
+    que quedar igual, byte a byte, y `ultima_extension()` tiene que seguir
+    devolviendo el insumo SELLADO (si no, `--sin-red` sella mañana con el
+    insumo divergente)."""
+    db = entorno_temporal
+    t0 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
+
+    _, meta_a, r1 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0)
+    assert r1["resultado"] == "sellada" and r1["filas_insertadas"] == 33
+    assert r1["insumo_ext_sha256"] == meta_a["sha256"]
+    sellado = _huella_ext()
+    volcado = _volcado_sellos(db)
+    assert sellado[f"ext_{FECHA}.csv"][0] == meta_a["sha256"]
+
+    # segunda pasada del mismo día con OTRO insumo (Yahoo ya trajo el cierre)
+    _, meta_b, r2 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.03), db, t0 + timedelta(minutes=30))
+    assert meta_b["sha256"] != meta_a["sha256"], "el insumo tiene que ser distinto o el test no prueba nada"
+    assert r2["resultado"] == "divergencia_registrada" and r2["filas_insertadas"] == 0
+
+    # la base: ninguna fila sellada cambia; la divergencia SÍ se registra (E4)
+    assert _volcado_sellos(db) == volcado
+    assert _cuenta(db, "divergencias_sello") == 1
+
+    # el disco: el archivo que el sha sellado cita no se toca
+    assert _huella_ext() == sellado, (
+        "FUGA E4-archivo: congelar_extension() reescribió la extensión de una "
+        "fecha ya sellada con otro insumo; el sha de la base deja de apuntar a "
+        "lo que hay en disco")
+
+    # y el insumo divergente, exista o no como archivo aparte, nunca es el que
+    # `--sin-red` levanta mañana
+    ruta_u, meta_u = S.ultima_extension()
+    assert os.path.basename(ruta_u) == f"ext_{FECHA}.csv"
+    assert meta_u["sha256"] == meta_a["sha256"] == S._sha256(ruta_u)
+
+
+def test_E4_archivo_un_segundo_sello_con_el_MISMO_insumo_tampoco_reescribe_nada(
+        entorno_temporal, base):
+    """Mismo día, MISMO insumo: `sellar()` devuelve «ya_sellada» y no inserta,
+    pero `congelar_extension()` reescribía los dos archivos antes de que nadie
+    mirara la base. El CSV volvía con bytes idénticos (el sha no lo delata) y
+    el `.meta.json` lleva `congelado_en_utc`, así que EN PRODUCCIÓN —dos
+    disparos separados por minutos— cambiaba también de sha; dentro de un
+    test que corre en menos de un segundo los bytes coinciden, y por eso la
+    evidencia determinista de la reescritura es el mtime, no el sha.
+    La exigencia es que un archivo sellado no se TOQUE."""
+    db = entorno_temporal
+    t0 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
+
+    _, meta_a, r1 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0)
+    assert r1["resultado"] == "sellada"
+    sellado = _huella_ext()
+    volcado = _volcado_sellos(db)
+
+    _, meta_b, r2 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0 + timedelta(minutes=30))
+    assert meta_b["sha256"] == meta_a["sha256"]
+    assert r2["resultado"] == "ya_sellada" and r2["filas_insertadas"] == 0
+
+    assert _volcado_sellos(db) == volcado
+    assert _cuenta(db, "divergencias_sello") == 0
+    assert _huella_ext() == sellado, (
+        "FUGA E4-archivo (variante idempotente): la extensión de una fecha ya "
+        "sellada se reescribe aunque el insumo sea el mismo")
+
+
+def test_E4_archivo_el_respaldo_en_backups_tampoco_cambia(entorno_temporal, base):
+    """E5: el sha sellado tiene que apuntar a algo que exista mañana. La copia
+    en data/backups/ es la única versionada; una segunda pasada con otro
+    insumo no puede pisarla (antes no la pisaba porque `main()` sólo respalda
+    con resultado «sellada», un accidente feliz que acá se fija con test)."""
+    db = entorno_temporal
+    t0 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
+
+    ruta_a, meta_a, r1 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0)
+    assert r1["resultado"] == "sellada"
+    copias = S.respaldar_extension(ruta_a, S.DIR_BACKUP_EXT)          # lo que hace main()
+    antes = {os.path.basename(c): (S._sha256(c), os.stat(c).st_mtime_ns) for c in copias}
+    assert antes[f"ext_{FECHA}.csv"][0] == meta_a["sha256"]
+
+    ruta_b, meta_b, r2 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.03), db, t0 + timedelta(minutes=30))
+    assert r2["resultado"] == "divergencia_registrada"
+    despues = {n: (S._sha256(os.path.join(S.DIR_BACKUP_EXT, n)), os.stat(os.path.join(S.DIR_BACKUP_EXT, n)).st_mtime_ns)
+               for n in antes}
+    assert despues == antes, "el respaldo versionado del insumo sellado cambió"
+
+
+def test_E4bis_el_insumo_divergente_no_se_conserva_y_la_divergencia_lo_declara(entorno_temporal, base):
+    """Opción A del dictamen: con la fecha ya sellada no aparece NINGÚN archivo
+    nuevo en DIR_EXT; el divergente vive en un temporal fuera de la carpeta,
+    `main()` lo borra, y `divergencias_sello.detalle` dice que el sha apunta a
+    un contenido que ya no existe."""
+    db = entorno_temporal
+    t0 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
+    ruta_a, meta_a, r1 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0)
+    antes = sorted(os.listdir(S.DIR_EXT))
+    ruta_b, meta_b, r2 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.03), db, t0 + timedelta(minutes=30))
+    assert sorted(os.listdir(S.DIR_EXT)) == antes == [f"ext_{FECHA}.csv", f"ext_{FECHA}.meta.json"]
+    assert meta_b["persistido"] is False and not os.path.exists(ruta_b)
+    assert os.path.dirname(os.path.abspath(ruta_b)) != os.path.abspath(S.DIR_EXT)
+    assert meta_b["divergente_de"]["archivo"] == f"ext_{FECHA}.csv"
+    assert meta_b["divergente_de"]["sha256_sellado"] == meta_a["sha256"]
+    assert r2["insumo_divergente_conservado"] is False and r2["sha_nuevo"] == meta_b["sha256"]
+    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    detalle, sha_nuevo = con.execute("SELECT detalle, sha_nuevo FROM divergencias_sello").fetchone()
+    con.close()
+    assert "NO conservado" in detalle and "ya no existe" in detalle and sha_nuevo == meta_b["sha256"]
+    # el sha del contenido en memoria ES el sha que se habría escrito
+    assert "persistido" not in meta_a and S._sha256(ruta_a) == meta_a["sha256"]
+
+
+def test_E4bis_sin_sello_previo_la_extension_se_escribe_como_siempre(entorno_temporal, base):
+    """Sin base (primera noche) o con base sin esa fecha, nada cambia respecto
+    de E0.2: `ext_<fecha>.csv` con su sha en el meta, igual al del archivo."""
+    db = entorno_temporal
+    assert S.sello_previo(FECHA, db) is None                              # la base no existe todavía
+    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA)
+    assert os.path.basename(ruta) == f"ext_{FECHA}.csv" and "divergente_de" not in meta and "persistido" not in meta
+    assert S._sha256(ruta) == meta["sha256"]
+    S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
+    assert S.sello_previo(FECHA, db) == {"sha256": meta["sha256"], "archivo": f"ext_{FECHA}.csv"}
+    # con base pero otra fecha: tampoco es divergencia, y el archivo del 08 sigue intacto
+    huella_08 = _huella_ext()
+    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, (FECHA, "2026-09-09")), BASE_HASTA)
+    assert os.path.basename(ruta2) == "ext_2026-09-09.csv" and "divergente_de" not in meta2
+    assert _huella_ext() == huella_08
+
+
+def test_E4bis_sello_previo_no_filtra_por_juego(entorno_temporal, base):
+    """R4 del auditor: E4 dentro de `sellar` filtra por juego, así que un
+    cambio de `juego_activo` habría vuelto a escribir la extensión de una
+    fecha sellada. `sello_previo` mira la fecha y nada más."""
+    db = entorno_temporal
+    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA)
+    S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
+    con = sqlite3.connect(db)
+    juego = con.execute("SELECT DISTINCT juego FROM sellos_dinero").fetchone()[0]
+    con.close()
+    assert juego == "conservador"
+    sellado = _huella_ext()
+    # `sello_previo` no recibe juego y encuentra la fecha igual; el guardia de
+    # `congelar_extension` no tiene por dónde dejar pasar un juego distinto
+    assert S.sello_previo(FECHA, db) is not None
+    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, factor=1.05), BASE_HASTA)
+    assert meta2.get("persistido") is False and _huella_ext() == sellado
+    if os.path.exists(ruta2):
+        os.remove(ruta2)
+
+
+def test_solo_ext_fecha_csv_es_insumo_sellable():
+    assert S.es_extension_sellable("ext_2026-09-09.csv")
+    assert S.es_extension_sellable("/x/y/ext_2026-09-09.csv")
+    assert not S.es_extension_sellable("ext_2026-09-09_divergente_20260910T033004Z.csv")
+    assert not S.es_extension_sellable("ext_2026-09-09.meta.json")
+    assert not S.es_extension_sellable("cierres_congelados.csv")
+
+
+# ------------------------------------------------------------
+# 4. Integridad permanente: la evidencia en disco es la que la base cita
+# ------------------------------------------------------------
+# Corre sobre la base REAL en `mode=ro` y sobre los archivos reales. Si falla,
+# el diagnóstico es «el disco no tiene lo que la base cita»: se PARA y se
+# reporta; el archivo no se «arregla» (la fila sellada tampoco). En un
+# checkout sin base (`*.db` está en .gitignore) se salta con razón declarada:
+# saltar no es pasar. Itera por `fecha_insumo` SIN filtrar por juego (R4).
+def _citas_selladas(ruta_db):
+    if not os.path.exists(ruta_db):
+        pytest.skip(f"sin base real en {ruta_db}: nada que verificar en este checkout")
+    con = S.conectar(ruta_db, solo_lectura=True)
+    try:
+        filas = con.execute("SELECT DISTINCT fecha_insumo, insumo_ext_archivo, insumo_ext_sha256 "
+                            "FROM sellos_dinero ORDER BY fecha_insumo").fetchall()
+    finally:
+        con.close()
+    if not filas:
+        pytest.skip("la base real no tiene filas selladas todavía")
+    return filas
+
+
+def _verificar_citas_en(directorio, filas):
+    fallas = []
+    por_fecha = {}
+    for fecha, archivo, sha in filas:
+        por_fecha.setdefault(fecha, set()).add(sha)
+        ruta = os.path.join(directorio, archivo or f"ext_{fecha}.csv")
+        if not os.path.exists(ruta):
+            fallas.append(f"{fecha}: falta {ruta}")
+        elif S._sha256(ruta) != sha:
+            fallas.append(f"{fecha}: {os.path.basename(ruta)} tiene sha {S._sha256(ruta)[:12]}… y la base cita {sha[:12]}…")
+    # una fecha sellada cita UN solo insumo (E4: el segundo no inserta)
+    fallas += [f"{f}: {len(s)} shas distintos sellados" for f, s in por_fecha.items() if len(s) != 1]
+    assert not fallas, "PARAR Y REPORTAR (no arreglar el archivo):\n" + "\n".join(fallas)
+
+
+def test_integridad_cada_extension_sellada_en_disco_es_la_que_la_base_cita():
+    """Para cada `fecha_insumo` sellada, sha256(dinero/datos/sello/<insumo_ext_archivo>)
+    == `insumo_ext_sha256` de sus filas. Es el test que habría estado rojo del
+    10-sep al 19-sep-2026."""
+    _verificar_citas_en(S.DIR_EXT, _citas_selladas(S.RUTA_DB))
+
+
+def test_integridad_la_copia_versionada_en_backups_es_la_que_la_base_cita():
+    """`respaldar_extension` copia byte a byte a data/backups/sello_dinero_ext/
+    (E5); el sha citado tiene que existir también ahí."""
+    _verificar_citas_en(S.DIR_BACKUP_EXT, _citas_selladas(S.RUTA_DB))
+
+
+def test_integridad_el_congelado_grande_es_el_que_la_base_cita():
+    """R5 del auditor: `insumo_base_sha256` de toda fila cita el congelado
+    grande; si `precios.congelar` lo reescribiera, todas las filas quedarían
+    citando un archivo que no existe."""
+    if not os.path.exists(S.RUTA_DB):
+        pytest.skip("sin base real: nada que verificar en este checkout")
+    con = S.conectar(S.RUTA_DB, solo_lectura=True)
+    try:
+        shas = [r[0] for r in con.execute("SELECT DISTINCT insumo_base_sha256 FROM sellos_dinero").fetchall()]
+    finally:
+        con.close()
+    if not shas:
+        pytest.skip("la base real no tiene filas selladas todavía")
+    assert shas == [S._sha256(precios.RUTA_CIERRES)], "PARAR Y REPORTAR: el congelado grande no es el que la base cita"
+
+
+def test_contraprueba_la_integridad_ve_un_archivo_pisado(tmp_path):
+    """Un verificador que no puede fallar no verifica: con una cita que el
+    disco no cumple, tiene que decir «parar y reportar»."""
+    d = tmp_path / "d"; d.mkdir()
+    (d / "ext_2026-09-09.csv").write_text("Date,NVDA\n2026-09-09,1.0\n")
+    sha_real = S._sha256(str(d / "ext_2026-09-09.csv"))
+    _verificar_citas_en(str(d), [("2026-09-09", "ext_2026-09-09.csv", sha_real)])          # coincide: pasa
+    with pytest.raises(AssertionError, match="PARAR Y REPORTAR"):
+        _verificar_citas_en(str(d), [("2026-09-09", "ext_2026-09-09.csv", "0" * 64)])       # pisado: falla
+    with pytest.raises(AssertionError, match="falta"):
+        _verificar_citas_en(str(d), [("2026-09-10", "ext_2026-09-10.csv", sha_real)])       # ausente: falla
+    with pytest.raises(AssertionError, match="shas distintos"):                              # R4: dos insumos una fecha
+        _verificar_citas_en(str(d), [("2026-09-09", "ext_2026-09-09.csv", sha_real),
+                                     ("2026-09-09", "ext_2026-09-09.csv", sha_real.replace(sha_real[0], "f", 1))])

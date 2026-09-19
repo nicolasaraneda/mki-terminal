@@ -460,7 +460,7 @@ establecida. **(b)** Si el criterio **R2** se reformula.
 
 **Qué desbloquea:** el README y **tres archivos vivos de referencia**
 —`cifras-canonicas`, `estadistica-evaluacion`, `estadistico-adversario.md`—
-siguen citando +6,5 pp sin la advertencia. Cualquiera que lea el proyecto hoy
+siguen citando +6,5 pp (cifra retirada el 3-sep-2026, acta §78) sin la advertencia. Cualquiera que lea el proyecto hoy
 —**incluida una sesión futura de este mismo agente**— cita la cifra sin el
 matiz que la vuelve honesta.
 
@@ -908,7 +908,7 @@ ganancia de CRPS es la media), y «predecir cero» no es la baseline pareada
 MAE —el dictamen leyó el complemento, 0,405 es lo que el modelo gana SOBRE la
 constante—); (f) intentos de E: **2**, no
 3 (DIR es el endpoint congelado; el MAE ya está en el tramo ESTIM).
-**§17 arriba y `cola_decisiones.md` §18 citan «potencia 0,36 [0,34, 0,37]»
+**§17 arriba y `cola_decisiones.md` §18 citan «potencia 0,36 [0,34, 0,37]» (cifra retirada, acta §75)
 de `horizonte.md`, instrumento medido OPTIMISTA (+2,7 pp [1,8, 3,6],
 dictamen A): con el simulador es 0,31 [0,27, 0,35].** La frase de dos
 versiones no está lista para firma hasta que la rama del efecto se decida.
@@ -1346,7 +1346,7 @@ E5, E6 aplicados en `dinero/`, gate de invariancia en verde, página republicada
 el 25 % del capital aportado «en el período», y hay que decir **qué período**.
 
 **Por qué no es cosmético.** El pre-registro concluía que M2 estaba «a punto de
-dispararse antes de empezar» citando el 14 % a 43 %, que está medido sobre **156
+dispararse antes de empezar» citando el 14 % a 43 % (cifra retirada el 7-sep-2026, `dictamen_10/auditor_lookahead.md` E8), que está medido sobre **156
 semanas**. Sobre la ventana de **52 semanas** que la §2 declara como período de
 evaluación, **ningún juego llega al 25 %**: la peor ventana móvil de 52 semanas
 da 10,1 %, 21,8 % y 14,8 %. Recién a 104 semanas se dispara, y sólo para dos
@@ -1489,7 +1489,7 @@ A midió en el riel de medición. **Cambiar el estimador después de ver la cobe
 grado de libertad**: la opción (t de bloques, más réplicas, bloque distinto) es tuya, y hasta
 entonces cada `✓` de la cuenta en papel se lee sabiendo que el nominal 95 % es ~91 %.
 
-## 51. Qué señal sella E0, y si las filas de la sonda cuentan para N (corrida 12, 9-sep-2026)
+## 51. Qué señal sella E0, y si las filas de la sonda cuentan para N (corrida 12, 9-sep-2026) — FIRMADA el 9-sep-2026 (acta §86.2): opción (a), la sonda etiquetada «prueba de maquinaria, no track record» hasta N = 40
 
 **Qué hay que decidir en una frase.** El sellador prospectivo (`dinero/sello_dinero.py`) sella la
 decisión del juego por defecto alimentado por la **sonda sin información** de la cuenta en papel,
@@ -1510,7 +1510,7 @@ contador de N.
 de la señal; y decidir (b) o (c) después de ver las primeras filas es exactamente el grado de
 libertad que el sellado existe para cerrar. **Cuánto cuesta decidirlo:** 10 minutos.
 
-## 52. La ventana para fijar el monto de E2 «sin mirar resultados» se cerró con la primera fila (corrida 12)
+## 52. La ventana para fijar el monto de E2 «sin mirar resultados» se cerró con la primera fila (corrida 12) — FIRMADA el 9-sep-2026 (acta §86.3): opción (a), monto de E2 = 500 USD, fijado después de la primera fila de E0 (grado de libertad declarado frente a la regla 5.4, que no se enmienda); E1 completo antes de E2, E2 sólo con vara; cambios de monto sólo por acta firmada antes de E2 y durante la ventana de E2 el monto no se mueve
 
 La regla de aporte 5.4 dice que el monto se fija ANTES de conocer el resultado de E0 y E1. El
 §84.4.7 decidió no fijarlo en la corrida 12, y la corrida 12 selló la primera fila. Desde el
@@ -1520,7 +1520,15 @@ para que el monto se fije antes de E2 y no antes de E0 (con la razón escrita). 
 es cosmética: la primera es un grado de libertad declarado; la segunda es una enmienda a una regla
 propuesta. **Recomendación:** ninguna; es tuya.
 
-## 53. Instalar el timer del sellador E0 (`GEMELO/propuestas/systemd/mki-sello-dinero.{service,timer}`)
+> **Insumo para la reevaluación del monto (corrida 13, encargo §8.3; no es tarjeta, no fija nada):**
+> `GEMELO/resultados/universo_por_presupuesto.md` (PROPUESTA, descriptivo, dictamen del adversario en
+> `dictamen_13/adversario_universo_presupuesto.md`): por presupuesto de 100 a 500 USD, cuántos de los 36 verificados
+> alcanzan una acción entera al último cierre congelado (7 a 100 USD, 13 a 250, 29 a 500), la membresía en DESDE con la
+> que juega la cuenta a cada techo (18 a 33), las semillas conservadoras congeladas antes de 156 semanas (5 de 20 a
+> 500 USD, reproducción de la corrida 12) y la fricción a 156 semanas condicionada a vivas / congeladas. La tabla no se
+> lee en columna (las filas no son pareadas: cambia la membresía).
+
+## 53. Instalar el timer del sellador E0 (`GEMELO/propuestas/systemd/mki-sello-dinero.{service,timer}`) — FIRMADA el 9-sep-2026 (acta §86.4): instalado por Nicolás; la hora pasó de 21:00 Santiago a `Mon..Fri 23:30 America/New_York` tras la primera noche (34 de 36 columnas faltaban a las 21:00). El encargo 13 manda producir el dato de la sonda; elegir la hora siguiente sigue en espera de firma (§58)
 
 `Mon..Fri 21:00 America/Santiago`, argumentado en el archivo (fuera de la ventana 17:50–20:30; ≥ 3 h
 después del cierre de NYSE todo el año; ≥ 12 h antes de la apertura objetivo). **Instalar un timer es
@@ -1553,7 +1561,7 @@ corrida 12 separó los denominadores y declaró `k_bajo_la_nula: null`; **comput
 simulación (≈ el Frente A del riel de medición) y es un intento más del registro del riel largo**.
 Decidir si se hace y cuándo.
 
-## 57. Confirmar la definición operativa de «sesión que cuenta para N = 40» (una línea)
+## 57. Confirmar la definición operativa de «sesión que cuenta para N = 40» (una línea) — FIRMADA el 9-sep-2026 (acta §86.1): la definición queda tal como está en código; las sesiones perdidas no se recuperan con un segundo sello
 
 N = 40 lo firmaste (§84.4.7); la definición de qué sesión cuenta la escribió la corrida 12
 (`regla_aporte_y_dimensionamiento.md` §5-bis, `dinero/sello_dinero.py`): sólo una fila `pendiente`
@@ -1562,3 +1570,104 @@ York, con el insumo en la sesión inmediatamente anterior a la objetivo y COMPLE
 cierre). Días sin sesión, sellos tardíos e insumos incompletos o desactualizados se sellan igual y no
 cuentan. Es la definición conservadora; es una definición de agente sobre una cifra tuya, y por eso
 se confirma con una línea o se cambia (y cambiarla reinicia el contador).
+
+## 58. A qué hora dispara el sellador de dinero, y qué es «insumo completo» (corrida 13, 19-sep-2026)
+
+**El dato, leído de la máquina el 19-sep (MEDIDO).** Nueve sesiones selladas por el timer sin intervención
+humana (la del 9-sep, con el timer todavía en 21:00 Santiago); contador 7 de 40 (E0 sella el sorteo
+**sin información**: prueba de maquinaria, no track record — §86.2). Dos no contaron por
+`insumo_incompleto`: el 9-sep (timer a las 21:00 Chile, 34 de las 36 columnas de la extensión vacías —
+la extensión trae 36 tickers, el universo operable sellado son 33—; los únicos con dato eran **SHECY y
+TOELY, los dos ADR de mostrador**) y el 18-sep (timer a las 23:30 de Nueva York, **una sola columna vacía: TOELY**, Tokyo
+Electron, ADR OTC; su último cierre en la extensión era el 17-sep). Y algo más que la hora: en la
+extensión descargada el 17-sep 03:30 UTC, TOELY tenía cierre en TODAS las sesiones del 08 al 16 de
+septiembre; en la descargada 24 h después, esas mismas fechas siguen en el índice pero con el cierre
+VACÍO, y sólo 16 y 17 traen dato (idéntico los dos días: `164.55…`, candidato a cotización rezagada,
+presencia no es frescura). **MEDIDO:** en dos descargas por la misma ruta separadas 24 h, los cierres de
+TOELY del 08 al 15 pasaron de estar a estar vacíos (n = 1 par de descargas, 1 ticker); las filas
+selladas del 10, 11, 14 y 15 con `cuenta_para_N = 1` son la evidencia independiente, desde la base, de que
+esos cierres existían al sellar. **PROPUESTA:** que el borrado ocurra en Yahoo y no en la ruta de descarga
+(yfinance/caché) no se probó con una segunda vía. Con la definición firmada en §57 (33 de 33 con cierre),
+una columna alcanza para perder la sesión, y ese ticker ya la perdió una vez en nueve noches.
+
+**Qué existe para decidir con dato y no con otro argumento.** La sonda `GEMELO/sonda_cierre.py`
+(sin red en sus tests; no sella, no toca `dinero/`, no abre ninguna base) pregunta a yfinance qué
+tickers ya tienen el cierre de hoy y lo anota en `data/sonda_cierre.csv`; el resumen
+`GEMELO/sonda_cierre_resumen.py` da por ticker la hora mediana y máxima a la que apareció el cierre
+y por noche la hora en que estuvieron los 36. La unidad propuesta
+`GEMELO/propuestas/systemd/mki-sonda-cierre.{service,timer}` dispara `Mon..Fri 17..23:05,35
+America/New_York` (cada media hora desde las 17:05 hasta las 23:35 NY, **desplazada cinco minutos
+para no coincidir nunca con el sellador de las 23:30**; `Persistent=false`, una sonda atrasada no
+sirve). Validada con `systemd-analyze calendar`. **Instalarla es acto tuyo**; su primera corrida
+real también. Hasta que corra unas noches no hay dato; con 5–10 noches ya hay una mediana y un
+máximo por ticker.
+
+**Las tres opciones, con sus consecuencias:**
+
+- **(a) Mantener 23:30 NY y §57 tal cual.** Nada cambia; el contador sigue. Consecuencia: cada
+  noche en que un ADR OTC publique tarde (o Yahoo retire una sesión) se pierde, y la sonda medirá
+  cuántas son. Con 1 pérdida en 9 noches (MEDIDO; Wilson 95 % [0,02, 0,44]), N = 40 tardaría entre
+  ~41 y ~71 noches hábiles en vez de 40 (PROPUESTA: ~45 es el punto, no una predicción); si los cierres
+  siguen vaciándose, puede ser peor. No reinicia nada. N = 40 compra maquinaria probada, no habilidad.
+- **(b) Mover el timer a una hora más tarde que la sonda justifique.** Consecuencia: acta nueva con
+  la hora y el dato de la sonda que la sostiene; la regla maestra sigue holgada (la apertura
+  objetivo es 09:30 NY del día siguiente, así que incluso 02:00 NY deja 7,5 h). No reinicia el
+  contador (la definición de «cuenta» no cambia). Límite: si el cierre de un ADR OTC no existe en
+  yfinance a NINGUNA hora de la noche (lo que el 17→18-sep sugiere para TOELY), mover la hora no
+  lo arregla.
+- **(c) Redefinir «completo» por ticker:** la sesión cuenta si el insumo está fresco y completo para
+  los operables con dato, y el ticker rezagado queda `sin_dato` en su fila (como hoy, pero sin
+  arrastrar la sesión). Consecuencia: cambia una regla firmada el 9-sep (§57 / §86.1); hay que
+  decidir si reinicia el contador (las 7 sesiones que cuentan hoy también contarían bajo (c), y
+  las 2 perdidas NO se recuperan: la regla de §86.1 «sesiones perdidas no se recuperan» se
+  mantiene aunque cambie la definición hacia adelante) y desde qué fecha rige. Riesgo: un
+  ticker que se atrase siempre deja de estar en el experimento sin que nadie lo decida.
+
+**Recomendación del agente, etiquetada como tal:** correr la sonda 5–10 noches ANTES de elegir
+entre (b) y (c); mientras tanto (a). Si la sonda muestra que TOELY/SHECY aparecen a una hora
+estable, (b); si muestra que no aparecen o que Yahoo los reescribe, (c) con la fecha de vigencia
+escrita. **Cuánto cuesta decidirlo:** instalar la sonda, 5 minutos; leer el resumen, 10 minutos.
+**No se eligió nada en esta corrida.**
+
+## 59. `visible_en` en el sellador de dinero: la zona ciega Z1 del dictamen 12 no la define (corrida 13)
+
+El `auditor-lookahead` de la corrida 12 dejó abierta la zona ciega Z1, nombrada como «sellado
+(`visible_en`)» y como «`ts_emision` se estampa al entrar y no hay `visible_en`», tres veces, **sin
+definir qué campo es ni cómo se calcula**. El encargo 13 (bloque 4.4) mandó agregarlo con test si
+el dictamen lo definía con precisión y, si no, escribir la pregunta acá y no inventar. No lo
+define. Además el pre-mortem del director marcó que dos cambios al sellador en producción la misma
+noche (E4-bis y esto) son un sospechoso de más: E4-bis se aplicó; esto no se toca.
+
+**La pregunta exacta.** ¿Qué instante quiere Z1 que se selle? Candidatos, con lo que cada uno
+costaría: (1) **el instante en que la fila queda commiteada en la base** (`creado_en` ya existe:
+es el reloj de pared al armar la fila, ~150 ms después de `timestamp_utc`; se podría estampar
+DESPUÉS del `commit` con una segunda columna, pero una fila inmutable no admite un UPDATE, así que
+sería una tabla aparte o un campo que se calcula antes del commit y por tanto no lo prueba);
+(2) **el instante en que el CSV exportado quedó commiteado en git** (`commiteado_en`, el nombre que
+`expedientes.md` §2 usa): eso lo sabe `git log` de `data/backups/sello_dinero.csv`, no la base, y
+el job de backup corre a las 18:40 Chile del día siguiente, ~18 h después de la emisión: sería un
+campo derivado en el export, no en la fila; (3) **un tercero que reciba el sha de la fila antes de
+la apertura** (`H1_sello_verificable.md`, §23 de esta lista): es el único que hace la marca
+verificable desde afuera, y es una decisión de diseño que ya espera firma. Si Z1 es (3), no es un
+campo del sellador: es el §23. Si es (1) o (2), decí cuál y se implementa con test en worktree;
+ninguno de los tres prueba nada que `timestamp_utc < apertura_objetivo` + el commit diario de
+`data/backups/` no prueben ya, y eso también hay que decirlo.
+
+## 60. Confirmar la opción (a) del hallazgo 2 de la revisión del 9-sep: `.gitignore` para `dinero/datos/sello/` (corrida 13)
+
+El encargo 13 (§2, tabla) dice que la opción (a) —una línea en `.gitignore` para
+`dinero/datos/sello/`, con `data/backups/sello_dinero_ext/` como única copia versionada— quedó
+«pendiente de confirmación explícita en el chat». El `orientador` no encontró esa confirmación en
+ningún documento (§86, esta lista, `cola_decisiones.md`, `bitacora_12.md`, `dictamen_12/`), así que el
+punto 4.3 **NO se ejecutó** (pre-mortem del director, ítem 6). Dos cosas que pesan antes de firmar:
+(i) `git rm --cached` de `ext_2026-09-08.*` y `ext_2026-09-09.*` retira de git la copia que salvó al
+09-sep de la fuga E4 (la restauración del 19-sep fue un `git checkout` de ESA ruta); con (a), la
+única red pasa a ser `data/backups/sello_dinero_ext/`, que el job de backup commitea al día
+siguiente, y hoy `ext_2026-09-18.*` todavía no está commiteado ahí. (ii) Desde la corrida 13 el
+test permanente `test_integridad_*` verifica las dos carpetas contra la base en cada suite, así que
+la inconsistencia se ve al día siguiente aunque git no la guarde. **Opciones:** (a) tal como estaba
+(una línea de `.gitignore` + `git rm --cached` de los cuatro archivos), con la condición de que cada
+`fecha_insumo` sellada tenga su par commiteado en backups antes; (b) dejar `dinero/datos/sello/`
+sin versionar pero sin `git rm --cached` de lo ya rastreado (las dos primeras fechas quedan en
+git como están, las siguientes no); (c) versionar TODO `dinero/datos/sello/` (unos 13 KB por
+noche) y aceptar dos copias. Sin firma escrita acá o en acta, no se ejecuta ninguna.

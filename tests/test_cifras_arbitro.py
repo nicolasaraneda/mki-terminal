@@ -63,6 +63,19 @@ def test_los_doce_bloques_estan_en_sus_archivos(sellada):
     assert not faltan, "bloques que no coinciden con el árbitro:\n" + "\n".join(f"  {a}: {f}" for a, f in faltan)
 
 
+def test_los_nueve_bloques_del_readme_en_ingles_estan_en_su_archivo(sellada):
+    """Corrida 13: README.md es la página en inglés y lleva los mismos nueve
+    bloques de la ventana sellada que README.es.md, del mismo dict."""
+    faltan = []
+    for archivo, fragmento in cifras.bloques_readme_en(sellada):
+        texto = open(os.path.join(RAIZ, archivo), encoding="utf-8").read()
+        if fragmento not in texto:
+            faltan.append((archivo, fragmento))
+    assert not faltan, "bloques en inglés que no coinciden con el árbitro:\n" + "\n".join(f"  {a}: {f}" for a, f in faltan)
+    assert len(cifras.bloques_readme_en(sellada)) == 9
+    assert [a for a, _ in cifras.doce_bloques(sellada)].count("README.es.md") == 9
+
+
 def test_si_n_cambia_cambian_los_doce_bloques(sellada):
     otro = dict(sellada)
     otro["n"] = sellada["n"] + 1

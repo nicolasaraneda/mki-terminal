@@ -1,50 +1,49 @@
 # ESTADO
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es historia
-(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 9-sep-2026 (corrida 12).
+(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 19-sep-2026 (corrida 13).
 
 ## Producción
-- **Titular: este PC (WSL), en `main`**, 6 timers, emite; el modo se le pregunta a
-  `modo.py`. Modelo 4.6.0 congelado; `PLATAFORMA_VERSION` 5.1.0 desde el 8-sep (§84). El sello
-  vigente se lee de `./mki estado`. `.env` en 600. **La corrida 12 no tocó nada del camino de
-  sellado**; `senales.db` idéntica antes y después del primer sello del riel de dinero.
+- **Titular: este PC (WSL), en `main`**, 6 timers del riel de medición + `mki-sello-dinero.timer`
+  (usuario, `Mon..Fri 23:30 America/New_York`), emite; el modo se le pregunta a `modo.py`. Modelo
+  4.6.0 congelado; `PLATAFORMA_VERSION` 5.1.0 (§84). El sello vigente se lee de `./mki estado`.
+  **La corrida 13 no tocó el camino de sellado**; `senales.db` y `dinero/sello_dinero.db` con el
+  mismo sha256 antes y después.
 
 ## Los dos rieles (detalle en `VISION.md`, acta §80)
 - **Medición:** gap asiático sellado, una noche. n 238 / 34 días, +9,7 pp, **IC95 de día
-  [−7,2, +26,6] contiene el cero**; R2 bajo la regla firmada +2,6 pp (n 194, t de clúster
-  [−15,7, +20,9], contiene el cero). La rama de coherencia (n 223, +14,3 pp) sigue NO cableada (`espera` §46).
-- **Dinero** (`dinero/`): todo SIMULADO. **E0 EN CURSO: 1 sesión sellada prospectiva de 40**
-  (9-sep 03:38 UTC, 33 filas, tamaño cero, señal = sonda sin información: prueba de maquinaria,
-  no track record). **E1 NO EJECUTADO** (sin cuenta de práctica ni gateway; adaptador con
-  guardia de papel contra réplica, NO evidencia de C1/C2). Aislado del sellado con test.
+  [−7,2, +26,6] contiene el cero**; R2 bajo la regla firmada +2,6 pp (n 194, contiene el cero).
+  La rama de coherencia (§46) sigue NO cableada. **La ventaja no es capturable** (CONTESTADA, §10).
+- **Dinero** (`dinero/`): todo SIMULADO. **E0 EN CURSO: 9 sesiones selladas por el timer, 7 cuentan
+  de 40** (leído de la base; no cuentan 09 y 18-sep por `insumo_incompleto`; señal = sorteo sin
+  información: prueba de maquinaria, no track record, §86.2). **E1 NO EJECUTADO** (sin cuenta de
+  práctica ni gateway). E2: monto 500 USD firmado (§86.3), no iniciado.
 
-## Corrida 12 (8/9-sep): re-dictamen, E0 sellado, E1 en réplica, pantalla, §43 (acta §85)
-- **Re-dictamen de la 11 (adversario):** las cifras se sostenían en los artefactos y NO en la
-  API. Cuatro retiradas (12,5 pelado; «95 %» del IC de σ; «NO está recomputada»; huecos sin
-  presupuesto) y D1–D18 aplicadas: intervalos con cobertura medida, fricción como objeto
-  (mediana 12,4 %, banda [6,35, 13,2], 20 semillas, 156 semanas / 500 USD), R2 desde el
-  artefacto, cobertura 80 % con Wilson, régimen etiquetado. Intentos 352 → **354** (COHER-12);
-  veredicto 5.1 358 → **360**.
-- **G3 y G8 hechos**; gate con modo diagnóstico (5 de 10 cortes ven una fuga de 1 día).
-- **Sellador `dinero/sello_dinero.py` (E0.2):** base propia inmutable, `available_at` por
-  calendario, día del sello del calendario de NY, disponibilidad por ticker, divergencias
-  registradas, extensión respaldada en `data/backups/`. El auditor dijo NO (5 fugas), se
-  aplicaron E1–E8, re-verificó: SE PUEDE SELLAR. Hallazgo del primer sello: reajuste
-  retroactivo de yfinance en WDC (3,2 × 10⁻⁴), detectado y declarado.
-- **§43 NO APLICABLE** (adversario): M2 no tiene unidad de período; conservador 3,9 %/año
-  [3,56, 4,58] en comisiones, no cruza el 25 % en ningún horizonte; vuelve a firma.
-- **§47 aplicada** (enteras, N = 40, sin sesión no cuenta). Vista `/sellos` (curador: 4
-  bloqueantes, aplicados). **Bloque 6 (README inglés) NO INICIADO**: ni borrador ni generador.
+## Corrida 13 (19-sep): E4-bis, sonda, README en dos idiomas, universo por presupuesto (acta §87)
+- **Fuga cerrada en producción (E4-bis):** el sellador pisaba `ext_<fecha>.csv` de una fecha ya
+  sellada cuando el timer volvía a disparar (10-sep; nueve días con el disco citando otro sha). Con la
+  fecha sellada ya no se escribe ningún archivo de esa fecha (opción A del auditor); test permanente
+  de integridad disco = base en la suite. Aplicado a las 17:02 −03, fuera de la ventana 00:00–01:00.
+- **Sonda del cierre** (`GEMELO/sonda_cierre.py` + resumen + unidad propuesta, sin instalar): el dato
+  para decidir la hora del timer (§58). TOELY perdió el 18-sep; en dos descargas separadas 24 h sus
+  cierres del 08 al 15 pasaron de estar a estar vacíos (MEDIDO, n = 1 par; atribuirlo a Yahoo es
+  PROPUESTA).
+- **README:** `README.md` inglés y `README.es.md` español, generados por `scripts/generar_readme.py`
+  desde plantillas y el árbitro; guardias sobre los dos; cifras idénticas entre idiomas (adversario).
+- **Bloque 6:** `universo_por_presupuesto.md` (PROPUESTA, descriptivo) como insumo del monto de E2.
+- **Bookkeeping:** §51/§52/§53/§57 marcadas firmadas (§86); §58, §59, §60 nuevas; 4.3 NO ejecutado.
+- Registro de intentos: gap asiático **354**, veredicto 5.1 **360** (sin cambio); riel largo **4**.
 
 ## Deuda
-- Registro de intentos del riel largo: **3**. Contador de «lecturas de criterio» (§43): sin sitio.
-- `inventario_abierto_2026-09-07.md` y `README_en_borrador.md` **no existen**. 2 snapshots de
-  la ventana sin `regimen`. `bifurcaciones.md` con nota fechada (10.000 réplicas), sin regenerar.
-  Puertos 4001/4002 del Gateway y prefijo «DU»: NO VERIFICADOS DIRECTAMENTE (Campus 403); los
-  cierra E1 con gateway a la vista.
-- Reintroducciones de cifras retiradas PREEXISTENTES (`DECISIONES.md`, `espera_firma.md`, `cola`): sin tocar.
+- **Erratas en los dos README, pendientes de Nicolás:** N de intentos 352/358 (registro 354/360);
+  «59×» (n derogado; con 238 es 61,4×); badges `tests-650` y `plataforma-5.0.3`; `ventana_larga.md`
+  fuera de `DOCUMENTOS_PUBLICADOS` con dos cifras retiradas vivas. `data/backups/sello_dinero.csv` sin
+  commitear: el contador de E0 del README sólo es regenerable desde HEAD cuando se commitee.
+- Contador de «lecturas de criterio» (§43): sin sitio. `bifurcaciones.md` sin regenerar: el nivel `vivo`
+  creció (251 → 371 filas) y regenerar es medir de nuevo, no cambiar réplicas (§87.4; decisión de Nicolás).
+- Reintroducciones en `DECISIONES.md` (53 líneas de actas históricas): no se tocan por diseño.
 
 ## Lo más urgente, que sigue siendo de Nicolás
-Instalar el **timer del sellador** (§53) o sellar a mano cada noche; decidir **§51** (qué señal
-sella E0), **§54** (`ibapi` desde el zip oficial), **§43** (unidad y umbral de M2), **§52**,
-**§46**, **§48**, **§50**, V1-bis (§30). Commit de la corrida 12 con los dictámenes a la vista.
+Instalar (o no) la sonda y decidir **§58** con su dato; **§60** (gitignore de las extensiones);
+**§59** (`visible_en`); **§43**, **§46**, **§48**, **§50**, **§54**, V1-bis (§30). Commit de la
+corrida 13 con `data/backups/sello_dinero.csv` y los dictámenes a la vista. **No hay push.**

@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (9-sep-2026, actualizado al cierre de la corrida 12)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (19-sep-2026, actualizado al cierre de la corrida 13)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -17,7 +17,7 @@ dinero. Lo que sigue es cada afirmación del proyecto con su **estatus**:
 | **PROPUESTA** | medida esta semana, pendiente de dictamen adversario; no es una afirmación del proyecto |
 
 Ninguna cifra se cita de memoria: cada una tiene su archivo. Las canónicas
-viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
+viven en `README.md` (inglés) y `README.es.md` (español), generados desde el árbitro; las de esta semana, en `GEMELO/resultados/`.
 
 ---
 
@@ -209,6 +209,27 @@ viven en `README.md`; las de esta semana, en `GEMELO/resultados/`.
     sostiene.)*
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
+
+- **Corrida 13 (19-sep), con dictámenes del `auditor-lookahead` (E4-bis), del `curador-epistemico` (bitácora, tarjetas,
+  README inglés) y del `estadistico-adversario` (README y bloque 6); `dictamen_13/`:** (i) **DEMOSTRADO por censo de la
+  base en `mode=ro`: el riel de dinero lleva 9 sesiones selladas prospectivas por el timer sin intervención humana
+  (08 al 18-sep), de las que 7 cuentan para N = 40** (E0 sella el sorteo sin información: prueba de maquinaria, no
+  track record, §86.2); las dos que no cuentan (09 y 18-sep) fueron `insumo_incompleto`. (ii) **DEMOSTRADO con test
+  escrito antes de la corrección:** el sellador pisaba `ext_<fecha>.csv` de una fecha ya sellada cuando el timer volvía
+  a disparar (el 10-sep, nueve días con el disco citando otro sha que la base); corregido (opción A: con la fecha
+  sellada no se escribe ningún archivo de esa fecha), con test permanente de integridad disco = base en la suite.
+  `senales.db` y `dinero/sello_dinero.db` intactas (sha256 antes = después). (iii) **MEDIDO (n = 1 par de descargas, 1
+  ticker):** en dos descargas de yfinance por la misma ruta separadas 24 h, los cierres de TOELY del 08 al 15-sep
+  pasaron de estar a estar vacíos; que el borrado ocurra en Yahoo y no en la ruta es PROPUESTA sin segunda vía. Con la
+  definición firmada (§57) una columna vacía pierde la sesión: 1 pérdida en 9 noches (Wilson 95 % [0,02, 0,44]). La hora
+  del timer se decide con el dato de la sonda (§58, sin instalar). (iv) **PROPUESTA (descriptivo, sin verdad conocida
+  para este estimador):** universo operable por presupuesto con acciones enteras (`universo_por_presupuesto.md`): 7 de
+  36 alcanzan una acción entera a 100 USD, 13 a 250, 29 a 500; semillas conservadoras congeladas 5 de 20 a 500 USD
+  (reproducción de la corrida 12, no verificación); las filas no son pareadas. (v) **PARIDAD DEMOSTRADA por instrumento
+  propio del adversario:** README.md (inglés) ≡ README.es.md ≡ árbitro, token a token; ninguna cifra movida por la
+  traducción; ninguna afirmación de ventaja en ningún idioma. Erratas pendientes de Nicolás en las dos páginas (N de
+  intentos 352/358 contra 354/360; «59×»; badges): `cola_decisiones.md`. **Registro de intentos:** gap asiático 354 y
+  veredicto 5.1 360 sin cambio; riel largo 3 → 4 (barrido descriptivo del bloque 6).
 
 - **Corrida 12 (9-sep), con re-dictamen del `estadistico-adversario` sobre las cifras re-corridas de la 11
   («se sostienen en los artefactos y NO en la forma en que la API las servía»; cuatro cifras retiradas y

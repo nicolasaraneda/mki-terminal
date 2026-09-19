@@ -41,6 +41,12 @@ REGISTRO_INTENTOS = (
      "L1 (contagio directo del eslabón aguas arriba), L2 (impulso relativo "
      "del eslabón contra la cesta) y L3 (dispersión entre eslabones). "
      "Suman las tres, hayan servido o no."),
+    ("universo_por_presupuesto — bloque 6 de la corrida 13 (19-sep-2026)", 1,
+     "Barrido DESCRIPTIVO de 9 presupuestos (100 a 500 USD) × 20 semillas de la "
+     "señal sin información sobre la cuenta en papel v2 (GEMELO/universo_por_presupuesto.py): "
+     "no deflacta ningún Sharpe (la ventaja verdadera es cero por construcción), pero queda "
+     "declarado como UNA hipótesis descriptiva, por dictamen del estadistico-adversario, para "
+     "que elegir después un presupuesto de esa tabla no se llame pre-especificado."),
 )
 
 N_INTENTOS_RIEL_LARGO = sum(n for _, n, _ in REGISTRO_INTENTOS)

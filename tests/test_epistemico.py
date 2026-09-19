@@ -824,8 +824,10 @@ def test_toda_p_publicada_declara_con_que_test_se_computo():
         pytest.skip("las dos rutas coinciden a la precisión publicada; "
                     "no hay discrepancia que declarar")
 
-    hallazgos = detectar_p_publicadas_sin_metodo(
-        _leer(os.path.join(_RAIZ, "README.md")))
+    hallazgos = []
+    for readme in ("README.md", "README.es.md"):          # corrida 13: inglés y español, los dos
+        hallazgos += [(readme, l, t) for _, l, t in detectar_p_publicadas_sin_metodo(
+            _leer(os.path.join(_RAIZ, readme)))]
     assert not hallazgos, (
         f"Sobre el par real de la ventana sellada (b={b}, c={c}) la ruta del "
         f"README da {p_publicada:.4f} y el módulo árbitro {p_arbitro:.4f}. "
