@@ -40,3 +40,6 @@ micro/bin/
 .DS_Store
 .claude/settings.local.json
 .claude.respaldo-*
+
+# Extensiones del sellador: la copia versionada vive en data/backups/sello_dinero_ext/ (acta 88.3)
+dinero/datos/sello/
