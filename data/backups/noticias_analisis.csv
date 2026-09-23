@@ -2219,7 +2219,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 2374,0.65,"TSM,2330.TW,ASML",alto,Demanda de TSMC impulsa ASML pero titular sugiere preocupaciones de valoración en proveedora de equipos críticos.,2026-08-12T00:20:46.302496+00:00,0.95
 2375,0.6,ASML,alto,"Caída en ASML presenta oportunidad de compra para inversores en IA, dado su rol crítico en manufactura de semiconductores avanzados.",2026-08-12T00:21:00.285071+00:00,0.9
 2376,0.3,ASML,bajo,"Análisis especulativo sobre ASML con poco sustancia fundamental, impacto limitado en la evaluación del sector.",2026-08-12T00:21:25.506440+00:00,0.5
-2377,0.25,"TSM,2330.TW,ASML",medio,"Comparación de inversión a largo plazo entre TSMC y ASML, dos pilares de la cadena de suministro de semiconductores.",2026-08-12T00:22:22.708227+00:00,0.85
 2384,0.65,"TSM,2330.TW",alto,"JSR construye planta de fotorresinas en Taiwán con TSMC, refuerza capacidad de fabricación avanzada para 2028.",2026-08-12T00:23:02.505749+00:00,0.9
 2387,-0.2,MSFT,medio,Ecosistema de IA en expansión de Microsoft con escrutinio regulatorio creciente presenta riesgos y oportunidades balanceadas.,2026-08-12T00:20:21.517074+00:00,0.6
 2388,0.4,"MSFT,META",medio,"Hedge funds prefieren Microsoft sobre Meta, reflejo de mayor confianza en ecosistema de IA de Microsoft.",2026-08-12T00:20:21.517137+00:00,0.5
@@ -2901,7 +2900,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 3109,-0.4,QCOM,medio,Caída significativa de Qualcomm con análisis de márgenes sugiere presión operativa en proveedor crítico de semiconductores.,2026-08-17T23:27:15.918035+00:00,0.8
 3110,0.1,QCOM,medio,Análisis de divergencias en valoración de Qualcomm sugiere incertidumbre sobre su posicionamiento en chips móviles y 5G.,2026-08-17T23:27:42.725427+00:00,0.65
 3111,0.2,,bajo,"Especificaciones de nuevo procesador Snapdragon C son noticias de producto, pero sin ticker específico y impacto limitado en cadena de valor.",2026-08-17T23:27:15.918499+00:00,0.6
-3112,0.3,AVGO,medio,"Análisis comparativo favorable a Broadcom en contexto de AI, destacando su posición competitiva en semiconductores.",2026-08-17T23:27:56.833611+00:00,0.7
 3113,0.6,AVGO,medio,"Venta por estrés de VMware genera oportunidad de compra en Broadcom, sugiriendo sobrevendida en múltiplos.",2026-08-17T23:27:42.725931+00:00,0.7
 3114,-0.6,"INTC,AVGO,MU",alto,"Cambio de posición de inversionista élite: dumping masivo de Intel, Broadcom y Micron señala pérdida de confianza en líderes.",2026-08-17T23:27:15.918730+00:00,0.85
 3115,-0.5,"AVGO,CIENA",alto,Caída significativa de fabricante líder de semiconductores de comunicaciones señala contracción de demanda o deterioro de perspectivas.,2026-08-17T23:28:18.890916+00:00,0.85
