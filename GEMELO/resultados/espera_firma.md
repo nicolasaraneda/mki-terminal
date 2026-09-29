@@ -1,5 +1,10 @@
 # Lo que espera tu firma
 
+> **Actualizado el 28-sep-2026 (corrida 14).** El acta §88 (19-sep) firmó §43, §54, §58 (en
+> parte), §59 (por remisión) y §60, y hasta la corrida 14 este archivo no lo reflejaba: los cinco
+> encabezados llevan ahora su marca, **sin borrar el texto de la tarjeta**. La corrida 14 abrió
+> §61 a §65. Lo anterior queda como estaba.
+>
 > **Actualizado el 8-sep-2026 (corrida 11).** Los seis ítems firmados en el acta §82
 > (§45, §41, §55/§8, §42, §26 y 2a-ter/§3) salieron de la cola y quedaron como stubs con
 > referencia a su acta; lo que sigue esperando no se tocó. **Firmado no es ejecutado:**
@@ -9,7 +14,7 @@
 
 | Firma | Qué falta, y de quién es |
 |---|---|
-| §82.2 (§26, §1) | **Aplicar el parche `snapshot140.diff` junto con el guardia `guardia_ancla_temporal.diff`** (§49), en el mismo acto, con bump de `PLATAFORMA_VERSION`. Los dos aplican juntos sobre copias (`tests/test_parche_guardia_ancla_temporal.py`). El conteo de la parte (d) está hecho: **0 filas** pasaron por la rama del `except` (bitácora 11, bloque 6). |
+| §82.2 (§26, §1) | **Nota de la corrida 14 (`curador-epistemico`): `snapshot140.diff` ya está aplicado en producción** por el acta §84.1 —`snapshot.py:163` ancla la sesión objetivo en `available_at`, que es código vivo—, así que esta fila pide algo hecho. No se corrigió de paso; va al encargo 15. Texto original: **Aplicar el parche `snapshot140.diff` junto con el guardia `guardia_ancla_temporal.diff`** (§49), en el mismo acto, con bump de `PLATAFORMA_VERSION`. Los dos aplican juntos sobre copias (`tests/test_parche_guardia_ancla_temporal.py`). El conteo de la parte (d) está hecho: **0 filas** pasaron por la rama del `except` (bitácora 11, bloque 6). |
 | §82.3 (2a-ter, §3) | El intervalo de clúster está computado (`intervalo_coherencia.md`): **contiene el cero en las tres rutas**, como predijo el acta. **Cablear** `filtrar_sesion_coherente` al árbitro y mover el README es decisión aparte, no firmada (§46). |
 | §82.4 (§42) | Reconstruida. Espera los dictámenes del auditor y del adversario (en la bitácora 11); si exigen algo, entra a la corrida 12. Lo que abrió: §47 y §48. |
 | §82.1, §82.5, §82.6 | Ejecutadas por completo (bloques 7 y 8; §82.6 no tenía nada que ejecutar). |
@@ -886,6 +891,10 @@ Intentos del DSR de este frente: **3** (una métrica, un intento).
 
 ## 23. Tres propuestas con expediente (H1, H2, I) — `cola_decisiones.md` §23–25
 
+> **Nota de la corrida 14 (acta §88.2):** **Z1 vive acá.** La §59 se cerró por remisión a este
+> ítem: `visible_en` no es un campo del sellador, es la pregunta de H1. Mientras H1 no se decida,
+> Z1 sigue abierta y es parte de este expediente.
+
 Sello verificable por un tercero (segunda salida de red + copia de
 insumos), pre-registro del RTL con criterio de muerte (y la corrección de
 que 8,79 ms es un TCP a 1.1.1.1, no la FPGA), y V1-bis como ADICIÓN
@@ -1317,7 +1326,46 @@ E5, E6 aplicados en `dinero/`, gate de invariancia en verde, página republicada
 8-sep a esta tarjeta (§82.4) se aplicó antes de que ningún frente la leyera. Ver §47 y
 §48 abajo por lo que la reconstrucción abrió.
 
-## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10) — FIRMADO el 8-sep (§84.4.5) y declarado NO APLICABLE el 9-sep: vuelve con la pregunta exacta
+## 43. El período de M2, que hoy no se puede leer (cierre de la corrida 10) — **FIRMADA el 19-sep-2026 (acta §88.7 y §88.11 a §88.13)**
+
+> **FIRMADA (§88.7, §88.11, §88.12, §88.13).** M2 se lee en **%/año** (opción c); umbral **8,3 %/año**
+> (25/3); el **deslizamiento no cuenta**; acumulado desde el primer aporte con **primera lectura
+> válida a las 52 semanas**; **cuenta congelada como estado aparte** que no cuenta como M2 cumplida.
+> Redactada como **§9 de `dinero/preregistro_dinero.md`** por la corrida 14 (bloque 4.4), en estado
+> PROPUESTA — y el `estadistico-adversario` la dictaminó **NO APLICABLE: FALTAN DEFINICIONES**, con un
+> defecto de redacción que la corrida corrigió antes de que llegara acá (afirmaba que el umbral «no
+> endurece ni ablanda», y es **3× más duro** a 52 semanas: `medio` pasa de 0/20 a **19/20** semillas).
+>
+> **Son SEIS las definiciones que faltan, no cuatro** (la primera versión de esta nota listaba cuatro; lo
+> corrigió el `curador-epistemico`, porque omitía justamente la urgente):
+>
+> 1. **El denominador durante la rampa de aportes.** La bifurcación real es **ponderado por tiempo o no**
+>    (las otras dos opciones son numéricamente la misma para todo h ≥ 5). Factor 1,0375× con el calendario
+>    actual, **1,957× si el flujo fuera sostenido** — más que toda la distancia entre `conservador` y
+>    `medio`. Las cifras de la §9 ya usan «aportado a la fecha de lectura».
+> 2. **Qué es exactamente «congelada»**, y la cifra «5 de 20» **no mide el concepto que el acta firmó**:
+>    el código usa «26 semanas sin movimiento» y §88.13 define un **estado de caja**; sólo se implementó
+>    una de las dos condiciones que pedía E4, y la caja se verificó a mano en 2 de las 5 semillas.
+> 3. **Si una cuenta congelada mata la pista o sólo sale del cómputo.** §88.13 firma una **tercera** cosa
+>    («estado aparte, y se informa como tal»); E13 pedía que **disparara** M2. La diferencia decide si el
+>    riel muere o se pausa.
+> 4. **Dónde vive el contador de «lecturas de criterio»** (§88.14 lo deja sin dueño).
+> 5. **URGENTE — qué es «el primer aporte».** Es el cero de *h* y la identidad del denominador, y no está
+>    definido. Con la cuenta IBKR **ya fondeada con 5,00 USD** (§88.10), bajo la letra de la enmienda
+>    **dos órdenes al mínimo dan 14 %/año y M2 DISPARA**; las mismas cinco órdenes sobre 500 USD dan
+>    0,35 %/año. **Cien veces de diferencia según qué aporte cuente**, y toca la validez de la propia
+>    enmienda: si *h* ya arrancó con ese fondeo, puede estar llegando tarde a su propio reloj.
+> 6. **La convención de anualización** (`× 52/h` lineal) **no está firmada**: §88.7 firmó «tasa anualizada
+>    (%/año)» y el factor lineal es una elección de módulo — la que produce el sesgo que premia a la
+>    cuenta que dejó de operar.
+>
+> Más cuatro huecos menores (D7 a D10) en `dictamen_14/adversario_m2.md`. Y una advertencia del adversario
+> que no bloquea el texto: mientras `GEMELO/simulador/` no tenga múltiples trayectorias de mercado,
+> **ninguna afirmación de la forma «M2 dispara cuando debe» está autorizada**.
+> **El texto original de la tarjeta no se borra:**
+
+*(Encabezado anterior, conservado: FIRMADO el 8-sep (§84.4.5) y declarado NO APLICABLE el 9-sep:
+vuelve con la pregunta exacta.)*
 
 > **Nota 9-sep-2026 (corrida 12, bloque 8.1).** Recomputado sobre la v2 (`GEMELO/resultados/m2_periodo.md`,
 > 20 semillas): conservador 3,9 % a 52 semanas [3,56, 4,58], 8,6 % a 104, 12,4 % a 156 (techo 13,1 %),
@@ -1536,7 +1584,14 @@ acto tuyo.** Hasta entonces el sello se corre a mano (`python -m dinero.sello_di
 se corre, y los días sin sello no cuentan para N. Costo de postergarlo: cada noche sin timer es una
 sesión menos hacia N = 40.
 
-## 54. `ibapi`: la dependencia autorizada (D-C bis) no es instalable con licencia verificada desde PyPI
+## 54. `ibapi`: la dependencia autorizada (D-C bis) no es instalable con licencia verificada desde PyPI — **FIRMADA el 19-sep-2026 (acta §88.8)**
+
+> **FIRMADA (§88.8), opción (a), con su condición a la vista:** Nicolás instala el `ibapi` oficial
+> del zip de IBKR, **licencia no comercial leída por él**, y entonces se descomenta la línea de
+> `requirements.txt`. El Gateway va **dentro de WSL** con la versión Linux (§88.9). Estado de la
+> cuenta al 19-sep: solicitud completa y fondeada con 5,00 USD, **todavía en revisión** (§88.10);
+> **E1 no empieza hasta el correo de aprobación**. La corrida 14 no tocó `corredor/`, no instaló
+> `ibapi` y no abrió ninguna conexión. Texto original conservado:
 
 Hallazgo de la corrida 12 (bloque 4.1, fuentes en la bitácora): el cliente Python oficial de la TWS
 API se distribuye desde `interactivebrokers.github.io` (API 10.50, 26-ago-2026) bajo la «TWS API
@@ -1571,7 +1626,43 @@ cierre). Días sin sesión, sellos tardíos e insumos incompletos o desactualiza
 cuentan. Es la definición conservadora; es una definición de agente sobre una cifra tuya, y por eso
 se confirma con una línea o se cambia (y cambiarla reinicia el contador).
 
-## 58. A qué hora dispara el sellador de dinero, y qué es «insumo completo» (corrida 13, 19-sep-2026)
+## 58. A qué hora dispara el sellador de dinero, y qué es «insumo completo» (corrida 13, 19-sep-2026) — **FIRMADA EN PARTE el 19-sep-2026 (acta §88.1)**
+
+> **FIRMADA EN PARTE (§88.1):** «opción (a) por ahora» — el timer sigue en
+> `Mon..Fri 23:30 America/New_York` y **§57 no cambia**. La elección entre **(b)** (mover el sellador
+> más tarde) y **(c)** sigue **ABIERTA** y espera 5 a 10 noches de dato de la sonda.
+>
+> **Estado del dato al 28-sep (corrida 14, bloque 1.6, DESCRIPTIVO):** **4 noches** con sesión
+> (sesiones NY 21, 22, 23 y 24-sep). Las cuatro coinciden **ticker por ticker** con lo que el meta
+> del sello vio a las 23:30 NY, por dos vías independientes: 21 y 24-sep completas (36/36, todos a
+> las 23:35 y 21:35 respectivamente), 23-sep con **TOELY** faltando y 22-sep con **34 de 36
+> faltando a las 23:35 NY**, que es la hora más tardía que la sonda mira hoy. La noche del 22 es
+> justamente la que ninguna decisión sobre (b) o (c) puede usar: **no se sabe a qué hora
+> aparecieron, sólo que fue después de la última observación disponible.** Por eso la corrida 14
+> propone la franja de madrugada (`Tue..Sat 00..03:05,35 America/New_York`, plantilla en
+> `GEMELO/propuestas/systemd/`, **no instalada**); instalarla es acto de Nicolás, y agrega el doble
+> de tráfico a yfinance en la máquina de la que depende la cadena de sellos.
+>
+> **Cómo leer el artefacto `sonda_cierre_resumen.md` antes de decidir:** su filtro descarta
+> **observaciones** hechas antes del cierre de su sesión, **no noches**. Que el 2026-09-28 no aparezca en
+> la tabla «Por noche» es porque su única observación al generarlo era la de las 13:42; las ocho sondas
+> post-cierre de esa noche sí entrarían. **Excluir el 28 del conteo de noches es un juicio declarado, no
+> una consecuencia del código** — y su razón no es la higiene sino que para esa fecha **no va a existir
+> la segunda vía** (el sellador de las 00:30 entra por divergencia y no persiste ningún meta nuevo, así
+> que el único `disponibilidad.por_ticker` en disco es el intradía). Costo de declinarla: **un día**, no
+> una semana.
+>
+> **Dato nuevo de la noche del 28, de la primera sonda con el código corregido (21:05 Chile = 20:05 NY):
+> 1 de 36 tickers tenía el cierre del 28-sep, cuatro horas DESPUÉS del cierre.** Es peor, a esa hora, que la
+> noche del 22-sep. DESCRIPTIVO, n = 1 noche, y **no mueve la regla**: siguen siendo 4 noches completas. Pero
+> apunta en la misma dirección que el 22-sep: **la hora que hoy tiene el sellador puede estar sistemáticamente
+> antes de que la fuente publique**, y eso es lo que (b) y (c) existen para decidir.
+>
+> **Con 4 noches no se escribió ninguna recomendación.** Y queda declarada la tentación que se
+> declinó: con las sondas de esta noche el 28-sep sería la quinta noche, pero el 28 es la noche
+> contaminada (sonda de las 13:42 con el mercado abierto) y la que el sellador marcó
+> `no_verificable_timing`. Cruzar el umbral con la peor noche del registro sería usar el dato para
+> pasar la vara. **No se cuenta.** Texto original conservado:
 
 **El dato, leído de la máquina el 19-sep (MEDIDO).** Nueve sesiones selladas por el timer sin intervención
 humana (la del 9-sep, con el timer todavía en 21:00 Santiago); contador 7 de 40 (E0 sella el sorteo
@@ -1629,7 +1720,11 @@ estable, (b); si muestra que no aparecen o que Yahoo los reescribe, (c) con la f
 escrita. **Cuánto cuesta decidirlo:** instalar la sonda, 5 minutos; leer el resumen, 10 minutos.
 **No se eligió nada en esta corrida.**
 
-## 59. `visible_en` en el sellador de dinero: la zona ciega Z1 del dictamen 12 no la define (corrida 13)
+## 59. `visible_en` en el sellador de dinero: la zona ciega Z1 del dictamen 12 no la define (corrida 13) — **CERRADA POR REMISIÓN al §23, el 19-sep-2026 (acta §88.2)**
+
+> **CERRADA POR REMISIÓN (§88.2):** «candidato (3)» — Z1 **no es un campo del sellador**, es la
+> pregunta del §23 / H1. **No se agrega ningún campo.** Z1 queda abierta hasta que se decida H1, y
+> vive en el §23 de esta lista. La corrida 14 no tocó el sellador. Texto original conservado:
 
 El `auditor-lookahead` de la corrida 12 dejó abierta la zona ciega Z1, nombrada como «sellado
 (`visible_en`)» y como «`ts_emision` se estampa al entrar y no hay `visible_en`», tres veces, **sin
@@ -1653,7 +1748,13 @@ campo del sellador: es el §23. Si es (1) o (2), decí cuál y se implementa con
 ninguno de los tres prueba nada que `timestamp_utc < apertura_objetivo` + el commit diario de
 `data/backups/` no prueben ya, y eso también hay que decirlo.
 
-## 60. Confirmar la opción (a) del hallazgo 2 de la revisión del 9-sep: `.gitignore` para `dinero/datos/sello/` (corrida 13)
+## 60. Confirmar la opción (a) del hallazgo 2 de la revisión del 9-sep: `.gitignore` para `dinero/datos/sello/` (corrida 13) — **FIRMADA el 19-sep-2026 (acta §88.3)**
+
+> **FIRMADA (§88.3):** opción (a), confirmada por escrito («para efectos de legibilidad»), y
+> **ejecutada por Nicolás** en el commit de firmas. Verificado por la corrida 14:
+> `git check-ignore -v dinero/datos/sello/…` responde `.gitignore:45:dinero/datos/sello/`, y
+> `git ls-files dinero/datos` sólo lista los cuatro archivos del congelado grande. Texto original
+> conservado:
 
 El encargo 13 (§2, tabla) dice que la opción (a) —una línea en `.gitignore` para
 `dinero/datos/sello/`, con `data/backups/sello_dinero_ext/` como única copia versionada— quedó
@@ -1671,3 +1772,310 @@ la inconsistencia se ve al día siguiente aunque git no la guarde. **Opciones:**
 sin versionar pero sin `git rm --cached` de lo ya rastreado (las dos primeras fechas quedan en
 git como están, las siguientes no); (c) versionar TODO `dinero/datos/sello/` (unos 13 KB por
 noche) y aceptar dos copias. Sin firma escrita acá o en acta, no se ejecuta ninguna.
+
+---
+
+## 61. El riel de medición sella sin el término de conocibilidad, y el 28-sep-2026 lo demostró (corrida 14)
+
+**El hecho, MEDIDO y dictaminado — con una inferencia marcada.** El 28-sep-2026 los ocho timers
+dispararon juntos a las **14:42:52** (medido, journal). **Que la máquina volviera de suspensión, y a las
+14:40, es INFERENCIA y no hecho registrado:** WSL2 no anota suspend/resume, lo medido es el hueco del
+journal entre `2026-09-25T02:16:24` y `2026-09-28T14:42:52` más el `systemd[317]` sobreviviente más el
+uptime, y **la ventana sólo se acota a [vie 02:16, vie 17:50]**; las «14:40» vienen del encargo, no de
+una medición. Lo exigió el `auditor-lookahead` y lo marcó el `curador-epistemico`. `snapshot.py` selló a las **17:42:58 UTC = 13:42 de
+Nueva York, con NYSE abierto**. Las 24 filas de `senales_ticker` de ese día llevan
+`available_at = 2026-09-28T20:00:00+00:00` (el cierre) y `timestamp_utc = 2026-09-28T17:42:58Z`:
+el sello **declara que su insumo fue conocible 2 h 17 min después de que la fila ya existía**.
+`SELECT fecha, COUNT(*) FROM senales_ticker WHERE available_at > timestamp_utc GROUP BY fecha`
+devuelve **una sola fecha en toda la historia sellada**: ésa, con 24 filas. Confirmado en dos
+fuentes independientes (la base y el CSV versionado de HEAD, que antes del evento da 0 inversiones).
+
+**No es look-ahead** —la fila usó MENOS información de la que declara, y `tests/test_motor.py` pasa
+sus 18 casos— pero el `auditor-lookahead` dictaminó
+`FILAS INVÁLIDAS ENTRARON COMO VÁLIDAS`, por tres razones medidas:
+
+1. El sello de conocibilidad es **aritméticamente imposible**, y ese campo existe justamente para
+   que un tercero verifique la conocibilidad.
+2. **La predicción no es reproducible desde el registro sellado.** Las 8 predicciones del día son
+   exactamente `beta × (−1,63)`, donde −1,63 es `sox_usado_pct`, una lectura intradía de las 13:42
+   NY que el registro etiqueta `sox_fecha = 2026-09-28`. Quien reproduzca leerá el cierre real del
+   28-sep y obtendrá otro escalar. Y como **las 8 betas son positivas**, si el retorno del cierre
+   real tiene signo opuesto a −1,63, **las 8 direcciones predichas se invierten**.
+3. La fila es inválida **según una regla que el proyecto ya tiene escrita y aplicada en el otro
+   riel**: `dinero/sello_dinero.py` exige `available_at < timestamp_utc < apertura` y marcó sus 33
+   filas del mismo evento `estado_timing='roto'`, `no_verificable_timing`, `cuenta_para_N=0`.
+   `senales.py::verificar_apertura_pendientes()` tiene **una sola** guarda, `emitida >= apertura`,
+   y nunca compara `available_at` contra `timestamp_utc`.
+
+**Y hay un canal de look-ahead en el mismo camino que esta tarjeta pide firmar, que el auditor encontró,
+midió NULO en efecto, y hasta ahora vivía sólo en su dictamen** (lo trajo acá el `curador-epistemico`,
+porque «el §61 pide firmar una regla justo sobre ese camino»): `snapshot.py:163` elige la sesión objetivo
+con `proxima_sesion_despues_de(exchange, available_at)`, o sea **ancla en un instante que el 28-sep estaba
+2 h 17 min en el FUTURO de la emisión**. Medido con ancla=emisión contra ancla=`available_at`: da
+`2026-09-29` bajo las dos para XKRX, XTKS, XTAI, XETR y XNYS, así que **no alteró ninguna
+`sesion_objetivo` en esta fecha** — pero, con las palabras del auditor, es «coincidencia de esta fecha, no
+garantía». Es código vivo, aplicado por el acta §84.1. **Quien firme una opción de esta tarjeta debería
+decidir también si ese ancla se mueve a la emisión**, porque hoy la regla nueva se escribiría sobre un
+camino que sigue anclando en el futuro.
+
+**Tres guardas que existen y no lo vieron, cada una por su razón:**
+- `mki_vigia.py` chequea `av is None or av == ts` — **igualdad, no orden**: una inversión la pasa
+  muda. Y además esa noche corrió 5,6 s ANTES de que las filas existieran (los ocho timers en el
+  mismo segundo), registrando «OK ancla temporal: sin predicciones selladas hoy que revisar».
+- `tests/test_motor.py` trunca con `df[df.index.date <= fecha]`, **inclusive**: la barra parcial de
+  `fecha` está en las dos ramas con el mismo valor y **se cancela**. El test es estructuralmente
+  incapaz de ver una barra no liquidada EN `t`. Su verde sigue siendo válido para lo que mide.
+- `descarga_ok = 28/28` sólo exige que cada ticker tenga algún dato en los últimos 7 días; nada
+  dice sobre si la última barra es un cierre liquidado.
+
+**Qué está y qué no está contaminado, con precisión.** Nada publicado: `cifras.CORTE_README` es
+`2026-08-28` y `verificacion_apertura` no tiene ninguna fila del 28-sep. Lo futuro sí: las 8 filas
+entran a `verificacion_apertura` cuando cierren las sesiones del 29-sep, las 24 entran a
+`verificacion_puntaje` alrededor del 5-oct, y `backtest/linea_base.py::sesion_correcta` las acepta
+porque el sello falso es **auto-consistente** con la `sesion_objetivo` sellada.
+
+**Y no hay auto-corrección posible:** `senales.ya_existe_snapshot_hoy()` compara
+`fecha = date.today()`, así que el disparo de las 18:15 devuelve «ya existe snapshot de hoy» y no
+re-sella. **Las filas de las 13:42 NY son el registro permanente del 28-sep.**
+
+**Opciones.** Ninguna se implementó: todas tocan el camino de sellado o las métricas.
+
+> **Aviso del `guardian-constitucion`: dos de estas cuatro opciones tocan la Constitución, y la
+> tarjeta tiene que decirlo con esas palabras.** Las opciones **(a) y (c) chocan con el punto (3) de la
+> Constitución 5.0 de `CLAUDE.md`** («las filas selladas JAMÁS se reescriben — los errores históricos
+> se vuelven erratas fechadas en `DECISIONES.md`»). Firmar (a) con efecto retroactivo **es enmendar la
+> constitución**, no sólo cambiar código, y eso se firma como enmienda o no se firma. **(d) es la única
+> que deja el camino de sellado intacto.**
+
+- **(a) Agregar el término que falta al verificador**: una fila con `available_at > timestamp_utc`
+  pasa a `no_verificable_timing`, igual que en el riel de dinero. **Agregar la guarda ENDURECE la regla
+  maestra**, así que hacia adelante es admisible en especie; lo que toca la constitución es el efecto
+  **retroactivo** sobre las 24 filas del 28-sep, que es cambiar el `estado` de filas ya selladas —cosa
+  que el proyecto sí hace en el ciclo de vida `pendiente→verificada` pero **nunca para invalidar**.
+  Coste: toca `senales.py`, que es camino de sellado, y cambia el significado de las filas futuras
+  respecto de las ya selladas, lo que hay que declarar **antes** y no descubrir después.
+- **(b) Guarda de ventana en el job**, antes de sellar: `snapshot.py` se niega a sellar si la sesión
+  de `sox_fecha` no ha cerrado. Coste: toca `snapshot.py`; y un día en que la fuente se atrase
+  dejaría de sellar en vez de sellar mal — hay que decidir si eso es mejor.
+- **(c) Dejar las 24 filas como están y documentar la errata**, sin tocar código, aceptando que 8
+  predicciones no reproducibles entren a las métricas del modelo 4.6.0. Es la forma que el punto (3) de
+  la Constitución prescribe para un error histórico (errata fechada, la fila no se toca). Coste: es
+  exactamente lo que el otro riel decidió NO hacer con las suyas del mismo evento.
+- **(d) Excluir sólo esas 24 filas por fecha en la capa de medición** (como `excluir_cero` de la
+  §2.8 del GEMELO, que vive en la medición y no en `senales.py`), dejando el camino de sellado
+  intacto. Coste: la exclusión es una decisión por fecha y hay que escribir su criterio ANTES, o es
+  elegir qué filas cuentan después de verlas.
+
+**EL ORDEN IMPORTA, y es lo primero que hay que leer de esta tarjeta: la magnitud NO decide la
+regla.** Lo marcó el `director-programa` al revisar el cierre. Si las filas se retiran sólo cuando el
+signo salió mal, eso es **elegir qué filas cuentan después de verlas** — la fuga de selección que el
+auditor advirtió que esta auditoría podía crear, entrando por la puerta que una tarjeta mal ordenada
+deja abierta. **La regla se firma por su mérito** —es la que el otro riel ya aplica, y agregarla
+ENDURECE la regla maestra, nunca la ablanda— **y después se lee el daño.** Lo que sigue es el daño.
+
+**El daño, MEDIDO a las 17:31 del 28-sep (sección 9 de `bitacora_14.md`).** Se pudo medir porque el
+cierre de NYSE es a las 17:00 de Chile y la ventana prohibida empieza a las 17:50; y no había riesgo,
+porque el sello del 28 ya existía y `ya_existe_snapshot_hoy()` garantiza que las 18:15 no lo rehacen.
+Recomputado con funciones puras, sin escribir ninguna base:
+
+> **PROVISIONAL, y hay que leerlo antes de la tabla.** El job de las 18:15 marcó
+> `8035.T` con un salto de **−80 %** el 28-sep (`data/snapshot.log:147`: «revisar split/dato corrupto»;
+> `salud_datos_al` con umbral 0,40). 8035.T cotiza cerca de **55.000 yenes** y −80 % es exactamente un
+> **split 5:1** — INFERIDO, con evidencia fuerte y sin el cierre a la vista, porque medirlo exigía bajar
+> datos dentro de la ventana prohibida. Como 8035.T es eslabón de un nivel de tres sobre cinco niveles de
+> peso igual, un desplazamiento de −80 pp en su `mom20` mueve el crudo de la cadena **(80/3)/5 = 5,33 pp**,
+> y el salto observado del crudo es 6,44 pp: **ese solo ticker explica ~83 %**. Por eso **el 17, los 27
+> puntos y la lectura «chica en el canal lineal, grande en el agregado» quedan PROVISIONALES** hasta
+> contrastar 8035.T (después de las 20:30: mirar su `Close` del 25 y del 28 y recién entonces releer
+> `roca_chip_al`). Lo levantó el `curador-epistemico`. **Nada de esto mejora la fila:** un insumo corrupto
+> *además* de intradía no la arregla, y el veredicto no se apoya en la magnitud.
+>
+> Y **el 0,11 pp de la fila «peor predicción» no mide el efecto de la barra parcial**: con 0,02 pp de
+> desvío en el escalar, el máximo propagable es 0,81 × 0,02 = **0,016 pp**. El 0,11 existe porque **la
+> beta de 8035.T se reestimó** (0,56 → ≈0,497) — el mismo ticker marcado. **Entre los siete tickers sin
+> dato marcado la peor diferencia es 0,03 pp**, y ése es el número que mide la barra parcial.
+
+| cifra | sellado 13:42 NY | recomputado post cierre | dif. |
+|---|---|---|---|
+| `sox_usado_pct` | −1,63 | **−1,61** | 0,02 pp, **mismo signo** |
+| direcciones de las 8 predicciones | — | — | **0 invertidas de 8** |
+| peor predicción (8035.T) | −0,91 | −0,80 | **0,11 pp** |
+| `regimen` | `Alcista · vol baja` | `Alcista · vol baja` | **idéntico** |
+| **`roca_chip`** (percentil del año) | **44** | **17** *(PROVISIONAL)* | **27 puntos** *(PROVISIONAL)* |
+
+**Dos sospechas del auditor no se materializaron en esta fecha** (no se invirtió ninguna dirección, y el
+cambio de etiqueta de volatilidad respecto del 24-sep es real y no un artefacto — aunque la coincidencia
+de una etiqueta binaria es evidencia débil por construcción, con un margen de 1,3: vol 37,5 contra mediana
+38,8). **No «quedan refutadas»:** el mecanismo sigue ahí, porque con las 8 betas positivas un día en que la
+barra intradía y el cierre caigan a distinto lado del cero invierte las ocho direcciones a la vez. Y las
+dos estaban en su dictamen bajo «SOSPECHAS SIN DEMOSTRAR», **fuera** de los cuatro fundamentos del
+veredicto.
+
+**Lo que esta medición APORTA en contra de las filas, y es lo que más pesa: CONFIRMA la
+no-reproducibilidad.** El dictamen la deducía; un tercero reprodujo y obtuvo −1,61 y 17. En su dictamen
+complementario el auditor **ratificó el veredicto sin cambio de forma y con fuerza neta MAYOR**. Su
+argumento, que es más fuerte que «el daño fue chico» y hay que firmarlo con él a la vista: **el argumento
+a favor de esta regla no puede ser la magnitud**, porque el canal donde el daño resultó grande
+(`roca_chip`) es justamente el que nadie puso primero. «Una regla que dependa de que alguien jerarquice
+bien los canales ex ante falla la primera vez que alguien jerarquiza mal, y esta corrida es esa primera
+vez.» **La regla se sostiene en la violación de orden, ex ante, sin consultar el daño.**
+
+**Y sigue SIN MEDIR lo que más filas tiene en juego:** `puntaje_v0`, `puntaje_ia` y `divergencias` del
+28-sep. `puntaje_ia` es el campo de las **24** filas —no de las 8— que entran a `verificacion_puntaje`
+alrededor del **5-oct**. Esa diferencia **ya no se puede medir**: la barra parcial de las 13:42 no existe
+más, así que sólo se puede medir el valor correcto de hoy, nunca el desvío.
+**Y aparece la que nadie había buscado:** `roca_chip` se movió 27 puntos — **PROVISIONAL**, ver el aviso
+de arriba: el 28 hubo una caída brusca del ratio roca→chip (crudo −2,8 % contra +2,6 a +3,6 los cuatro días
+anteriores), y **~83 % de ese movimiento lo explica el `8035.T` que el propio sistema marcó**. Es una cifra
+que la pantalla muestra y que el reporte de Telegram ya publicó como 44.
+
+**Y la no-reproducibilidad es IRREVERSIBLE, medido la misma noche.** La sonda de las 20:05 NY mostró que
+**35 de 36 tickers ya no tenían la barra del 28-sep** que sí estaba a las 13:42: yfinance retiró la barra
+intradía provisional al cerrar la sesión. O sea que **el insumo que las 24 filas citan ya no lo sirve la
+fuente**. La zona ciega #10 del auditor —«esta comparación no se puede repetir nunca»— pasó de declarada a
+medida (`bitacora_14.md` sección 11).
+
+Salvedades que van pegadas al número: **la columna «recomputado» no es reproducible por nadie** —se corrió
+sin dejar script ni log, y el auditor verificó su coherencia interna y la aceptó «por la palabra de la
+bitácora»—; **−1,61 tampoco es necesariamente el cierre liquidado** (se leyó
+31 min después de la campana, y esta misma corrida midió que en 2 de 4 noches no todos los tickers
+tienen su cierre en yfinance ni a las 23:35 NY); y es **una** fecha, en un día que cayó fuerte al
+final, así que no dice cuánto se desvía una barra parcial en general.
+
+---
+
+## 62. Qué debe hacer el sellador de dinero con un disparo fuera de hora que deja una fecha «sellada» en estado no verificable (corrida 14)
+
+**El hecho.** El 28-sep a las 14:42:52 el sellador disparó con la bolsa abierta y escribió 33 filas
+con `fecha_insumo` 2026-09-28, `estado='no_verificable_timing'`, `estado_timing='roto'`,
+`cuenta_para_N=0`, más `ext_2026-09-28.{csv,meta.json}`. El guardia E4 hizo su trabajo. Pero
+`sello_previo()` **no distingue `pendiente` de `no_verificable_timing`**: sólo pregunta si la fecha
+tiene filas. Leído el código, a las 23:30 NY del 28 el sellador bajará el cierre final, el sha
+diferirá del intradía, entrará por la rama de divergencia y escribirá **cero filas**. La sesión del
+lunes 28 se pierde, igual que la del viernes 25 (que se perdió por el apagón, en los tres rieles).
+
+**La consecuencia que agrava el caso:** `ext_2026-09-28.csv` es la evidencia que 33 filas citan por
+sha256, y **es una matriz de precios de media sesión**. Por diseño de E4-bis (opción A del auditor,
+corrida 13) el archivo de una fecha ya sellada no se reescribe nunca. Así que el cupo de evidencia
+de esa fecha queda ocupado permanentemente por un insumo que E4 ya rechazó, y `mki-backup` lo
+commitea.
+
+**Opciones.**
+- **(a) Que `sello_previo()` distinga estados:** una fecha cuyas únicas filas son
+  `no_verificable_timing` cuenta como no sellada, y el sellador de las 23:30 puede sellarla bien.
+  Coste: hay que definir qué pasa con las 33 filas viejas (¿conviven dos sellos de la misma fecha
+  con estados distintos?) y toca `dinero/sello_dinero.py`.
+- **(b) `Persistent=false` en `mki-sello-dinero.timer`.** Coste: **no sirve para este caso** y hay
+  que decirlo — ver §63: un disparo atrasado por suspensión ocurre igual. Sí evitaría el caso
+  distinto de que el manager se reinicie.
+- **(c) Dejarlo como está y aceptar la pérdida.** Coste: cada despertar fuera de hora quema una
+  sesión de N, y además quema el archivo de evidencia de esa fecha.
+- **(d) (agregada por el pre-mortem) Que un sello no verificable no reclame el cupo de evidencia:**
+  escribir `ext_<fecha>.no_verificable.csv`, o no escribir `ext_` cuando `timing_ok` es falso. Coste:
+  es una ruta de escritura nueva sobre la carpeta de la evidencia, que es lo que E4-bis cerró a
+  propósito; habría que escribir su política de retención.
+
+Sin (d) la tarjeta se firma resolviendo el problema chico y deja el grande.
+
+---
+
+## 63. La supresión de un disparo atrasado no es configurable en systemd: la guarda va en el job (corrida 14)
+
+> **Nota del `director-programa` al cierre de la corrida 14: esto es más una PREMISA que una tarjeta.**
+> Su contenido —no hay knob de systemd, la guarda va en el job— es lo que sostiene la opción (b) de §61
+> y la (a) de §62, y su única decisión propia (si el job de la sonda debe marcar la fila al escribir) es
+> menor, porque el lado lector **ya está aplicado**. Recomienda **fundir esa decisión en §61 y §62** y
+> dejar este ítem como hallazgo medido del acta §89.5, para no diluir con cinco tarjetas una cola que se
+> ordena por costo y tiene tres decisiones. **Fundirla o no es de Nicolás**; hasta entonces queda acá,
+> con la recomendación a la vista.
+
+**Medido.** `~/.config/systemd/user/mki-sonda-cierre.timer` lleva `Persistent=false` y **disparó
+igual** a las 14:42:52 del 28-sep, 36 filas a las 13:42 NY con el mercado abierto. `Persistent=`
+gobierna una sola cosa: recuperar disparos perdidos **mientras el manager no estaba corriendo**. El
+manager nunca se cayó (`systemd[317]` a los dos lados del fin de semana; `uptime` «up 5 days»). Lo
+que pasó es que la máquina estuvo suspendida, el reloj de pared siguió, la hora venció y el timer
+corrió al reanudar. **Ninguna directiva de `[Timer]` desactiva eso.** El journal de WSL2 no registra
+suspend/resume: el evento se reconstruye del hueco más el PID sobreviviente.
+
+Por lo tanto la pregunta «qué timers deberían llevar `Persistent=false`» no tiene la respuesta que
+busca, y la defensa tiene que ser **una guarda de ventana en el job**. El riel de dinero ya la tiene
+(E4); el riel de medición no (§61); la sonda tampoco.
+
+**Opciones para la sonda** (el sellador va por §62 y el riel de medición por §61):
+- **(a) Guarda en el script:** `sonda_cierre.main()` se niega a escribir si la hora NY no cae en la
+  grilla. Barato; se pierde la fila y con ella la evidencia de que hubo un despertar.
+- **(b) Guarda en el lector:** la fila se escribe y el resumen la rotula fuera de grilla. No pierde
+  evidencia, y **es la única que arregla el dato que ya está en disco**. *Aplicada en parte por la
+  corrida 14*: `sonda_cierre_resumen` ya descarta y DECLARA las observaciones anteriores al cierre
+  de su sesión (las 36 del 28-sep). Falta decidir si además el job debe marcarlas al escribir.
+- **(c) Nada, y aceptar una fila fuera de grilla por despertar.**
+
+**Errata que sale de la misma lectura, no corregible por un agente:** las dos unidades instaladas
+(`mki-sonda-cierre.timer` y `mki-sello-dinero.timer`) siguen diciendo **«PROPUESTA no instalada»**
+en su `Description=`, visible en `systemctl status`. Están instaladas y corriendo. La plantilla del
+repo se corrigió en la corrida 14; la unidad instalada la edita Nicolás.
+
+---
+
+## 64. Entre los ocho jobs no hay ninguna dependencia: el orden lo da sólo el reloj (corrida 14)
+
+**Medido**, del journal del 28-sep:
+
+```
+14:42:52  Starting   los ocho mki-*
+14:42:53  Finished   mki-backup          ← un segundo después de arrancar
+14:43:01  Finished   mki-sello-dinero
+14:43:30  Finished   mki-snapshot
+```
+
+`mki-backup.timer` no declara `After=` ni `Requires=`. Con todos disparando en el mismo segundo,
+backup ganó. Resultado: el commit `5321f6b`, llamado **«Backup diario 2026-09-28»**, **no contiene
+el sello de ese día**, y los seis CSV que snapshot y el sellador escribieron después quedaron sin
+commitear. Es un artefacto publicado cuyo nombre no describe su contenido. En operación normal el
+orden se cumple sólo porque 18:40 > 18:15.
+
+Medido y tranquilizador: `mki_backup.py` commitea con pathspec (`commit -m … -- data/backups`), así
+que nada fuera de `data/backups/` se cuela.
+
+**Opciones:** (a) `After=mki-snapshot.service mki-sello-dinero.service` en `mki-backup.service`
+—no basta `After=` si no hay `Requires=`, hay que escribir la semántica exacta—; (b) mover backup
+más tarde, que no resuelve el caso del despertar simultáneo; (c) que `mki_backup.py` se niegue a
+commitear si el snapshot del día no está sellado; (d) nada, y aceptar que un despertar produce un
+commit mal nombrado. Toca unidades instaladas: no se aplicó nada.
+
+---
+
+## 65. El README lleva un contador vivo que nada regenera (corrida 14)
+
+**Medido.** La suite abrió y cerró la corrida 14 con **dos rojos**:
+`tests/test_readme.py::test_los_dos_readme_son_lo_que_el_generador_produce` y
+`::test_el_contador_de_e0_del_readme_es_el_de_la_copia_versionada`. La causa no es una regresión:
+`README.md` publica **cuatro** valores del 19-sep a la vez —«9 sesiones selladas, de las cuales 7
+cuentan para N = 40; las que no (2026-09-09, 2026-09-18) … última sesión de insumo sellada:
+2026-09-18»— y `contador_e0()` hoy da `sesiones_selladas 14`, `cuentan_para_N 9`, **cinco** fechas
+que no cuentan y `ultima_fecha_insumo 2026-09-28`. El timer mueve ese contador cada noche y **nada
+regenera el README**, así que la página se vence sola y la suite se pone roja sola.
+
+`README.es.md` pasa el test del generador por una razón que también es hallazgo: **la sección de E0
+no existe en español.** `README.md` tiene `## Execution rail (paper only)` entre «The laboratory» y
+«Audit every figure»; `README.es.md` va de «El laboratorio» directo a «Auditar cada cifra». Eso es
+lo que hace que el test de paridad numérica entre idiomas la excluya (la deuda que el director de la
+corrida 13 anotó): **no es un hueco del test, es que no hay nada en español con que comparar.**
+Extender el test exige primero escribir la sección en español, que es contenido nuevo en una página
+publicada y no lo firmó ninguna acta.
+
+**Opciones para el contador:** (a) que el job de backup diario regenere los README después de
+commitear (los pone en el árbol todos los días, y habría que decidir si commitea el README también);
+(b) que el README **no** lleve el contador vivo y remita a `/salud` o al CSV versionado; (c) que el
+contador quede congelado con su fecha a la vista («al 19-sep-2026: 9 de las cuales 7…»); (d) nada, y
+aceptar dos rojos permanentes en la suite, que es lo peor porque vuelve el rojo invisible.
+
+**Opciones para los badges `tests-650` y `plataforma-5.0.3`** (§88.5 firmó reemplazarlos por valores
+leídos de la máquina, «de preferencia generados»; reales hoy: la suite recolecta **904** tests bajo `tests/` (leído de `pytest tests/ --collect-only -q`;
+`pytest --collect-only -q` sin alcance da **907**, porque suma tres casos parametrizados de
+`GEMELO/propuestas/`) y
+`PLATAFORMA_VERSION` es **5.1.0**): (a) generados desde un artefacto declarado, lo que obliga a
+decidir quién produce ese artefacto y cuándo —la única fuente del número de tests es correr la
+suite—; (b) congelados con su fecha a la vista; (c) retirados. El acta firmó reemplazarlos, **no**
+quitarlos, así que (c) necesita firma nueva. La corrida 14 no escribió código de badges a propósito
+(el director lo marcó como rama lateral: máquina nueva para un badge).

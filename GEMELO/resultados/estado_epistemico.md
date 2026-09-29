@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (19-sep-2026, actualizado al cierre de la corrida 13)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (28-sep-2026, actualizado al cierre de la corrida 14)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -209,6 +209,127 @@ viven en `README.md` (inglés) y `README.es.md` (español), generados desde el �
     sostiene.)*
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
+
+- **Corrida 14 (28-sep), con dictámenes del `auditor-lookahead` (el sello del 28-sep, más su complementario sobre la
+  medición), del `director-programa` (pre-mortem y alcance del cierre), del `estadistico-adversario` (la
+  enmienda de M2), del `guardian-constitucion` (el diff, dos veces) y del `curador-epistemico` (estos
+  textos); `dictamen_14/`. **Los ítems (v), (vi) y (viii) se retiraron** —eran los de la sonda, sin
+  dictamen que los cubriera— y por eso la numeración salta de (iv) a (vii) y de (vii) a (ix):**
+
+  (i) **DEMOSTRADO por censo de la base en `mode=ro`, y confirmado por una segunda fuente independiente
+  (el CSV versionado de HEAD, que da 0 inversiones antes del evento): el 2026-09-28 es la ÚNICA fecha de
+  toda la historia sellada del riel de medición con `available_at > timestamp_utc`** — 24 filas cuyo sello
+  declara que su insumo fue conocible 2 h 17 min DESPUÉS de que la fila se escribió. Causa: el PC volvió de
+  suspensión a las 14:40 y los ocho timers dispararon juntos a las 14:42:52, así que `snapshot.py` selló a
+  las 13:42 de Nueva York con NYSE abierto. **Dictamen del `auditor-lookahead`: FILAS INVÁLIDAS ENTRARON
+  COMO VÁLIDAS.** Decisión de qué hacer: **PENDIENTE de Nicolás** (`espera_firma.md` §61).
+
+  (ii) **DEMOSTRADO: no hay fuga temporal en esas filas.** `tests/test_motor.py` pasa sus 18 casos, y a las
+  17:42:58Z no existía nada posterior a `t` que borrar: la fila usó MENOS información de la que declara.
+  **Y DEMOSTRADO por lectura del test: su verde es ciego a este eje** — trunca con `df[df.index.date <= fecha]`,
+  **inclusive**, así que la barra parcial de `t` está en las dos ramas con el mismo valor y se cancela. El
+  verde sigue siendo válido para lo que mide.
+
+  (iii) **MEDIDO: las 8 predicciones selladas de esa fecha son exactamente `beta × (−1,63)`**, donde
+  −1,63 es una lectura intradía de `^SOX` que el registro etiqueta `sox_fecha = 2026-09-28`. **No son
+  reproducibles por un tercero.**
+
+  (iii-bis) **MEDIDO al cierre de la corrida (17:31 Chile, con la sesión del 28 ya cerrada): el daño es
+  chico en la predicción y grande en otra cifra.** **Cubierto por el dictamen complementario del
+  `auditor-lookahead`**, que lo autorizó en este documento con tres condiciones de redacción, las tres
+  aplicadas abajo.
+
+  **Lo primero, porque es el aporte más fuerte y leído al revés invierte el sentido del ítem: esta
+  medición CONFIRMA la no-reproducibilidad del ítem (iii).** El dictamen original **deducía** que un
+  tercero que reprodujera obtendría otro número; esta medición es ese tercero, y obtuvo **−1,61 donde el
+  sello dice −1,63** y **17 donde dice 44**. La no-reproducibilidad **dejó de ser inferencia y es un
+  hecho medido**, así que el veredicto se sostiene **con fuerza neta mayor**, no menor. Y el principio que
+  lo ordena: **la validez de un sello no es función del tamaño del error** — el riel de dinero invalidó
+  sus 33 filas por la violación de orden, sin preguntar cuánto se había desviado el insumo. Recomputado con funciones puras y sin escribir ninguna
+  base: `sox_usado_pct` **−1,61** contra **−1,63** sellado (0,02 pp, **mismo signo**); **0 de 8
+  direcciones invertidas**; peor diferencia entre los siete tickers sin dato marcado **0,03 pp** (el
+  0,11 pp es de 8035.T y viene de su **beta reestimada**, no de la barra parcial: con 0,02 pp de desvío en
+  el escalar el máximo propagable es 0,016 pp); y régimen recomputado
+  **idéntico** al sellado (`Alcista · vol baja`), así que el cambio de etiqueta respecto del 24-sep es
+  **real**. Las dos sospechas centrales del dictamen del auditor **no se materializaron en esta fecha** (no «quedan
+  refutadas»: el mecanismo sigue ahí, porque con las 8 betas positivas un día en que la barra intradía y
+  el cierre caigan a distinto lado del cero invierte las ocho a la vez).
+  **Y `roca_chip` —el ratio roca→chip como percentil de su último año— pasa de 44 sellado a 17
+  recomputado, 27 puntos: PROVISIONAL.** El job de las 18:15 marcó `8035.T` con un salto de **−80 %** el
+  28-sep (`data/snapshot.log:147`, «revisar split/dato corrupto»); 8035.T cotiza cerca de 55.000 yenes y
+  −80 % es exactamente un **split 5:1** (INFERIDO, sin el cierre a la vista). Como es eslabón de un nivel
+  de tres sobre cinco de peso igual, ese solo ticker mueve el crudo de la cadena ~5,33 pp de los 6,44 pp
+  observados: **explica del orden del 83 %**. El 17, los 27 puntos y la lectura «chica en el canal lineal,
+  grande en el agregado» quedan **PROVISIONALES** hasta contrastar 8035.T. Lo levantó el
+  `curador-epistemico`.
+  **Y `roca_chip` no se publica sólo por Telegram:** `senales.historial_roca_chip(dias=365)` lee la
+  columna sellada, `api/main.py` la sirve en `/` y `/cadena`, y el frontend la muestra como tarjeta hero
+  con su sparkline y grafica la serie — o sea que el 44 es **un punto permanente de una serie de 365 días
+  que la interfaz grafica**, y las filas selladas no se reescriben. Atenuante real: `roca_chip_al`
+  recomputa desde precios, así que los percentiles futuros **no** quedan envenenados.
+
+  **Lo que esta medición NO midió, y hay que decirlo porque si no se lee «el daño está medido»:**
+  `puntaje_v0`, `puntaje_ia` y `divergencias` del 28-sep **siguen SIN MEDIR**, y `puntaje_ia` es el campo
+  de las **24** filas —no de las 8— que entran a `verificacion_puntaje` alrededor del **5-oct**. Es el
+  ítem con más filas en juego, y **esa diferencia ya no se puede medir nunca**: la barra parcial de las
+  13:42 no existe más, así que sólo se puede medir el valor correcto.
+
+  Salvedades: −1,61 se leyó 31 min después de la campana y **no es necesariamente el cierre liquidado**;
+  es **una** fecha; la coincidencia del régimen es **evidencia débil por construcción** (etiqueta binaria,
+  margen 37,5 contra 38,8); los 27 puntos son el **piso** —el crudo sellado implícito es ≈ +3 % contra el
+  −2,8 % real, o sea **cambio de signo, ~5,8 pp, INFERIDO** e inmedible porque se sella el percentil y no
+  el crudo—; la columna «recomputado» **no es reproducible por nadie** (se corrió sin dejar artefacto; el
+  auditor verificó su coherencia interna y la aceptó por la palabra de la bitácora); y **esta medición no
+  decide la regla** (retirar filas sólo si el signo salió mal sería elegir qué filas cuentan después de
+  verlas — y rescatarlas porque salió chico, también).
+
+  (iv) **MEDIDO, nada publicado contaminado:** `cifras.CORTE_README = 2026-08-28` y `verificacion_apertura`
+  no tiene ninguna fila con `fecha_senal = 2026-09-28`. Lo que se verifique desde el 29, sí. Y el riel de
+  dinero descartó sus 33 filas del mismo evento por su guarda E4 (`no_verificable_timing`,
+  `cuenta_para_N = 0`): **el mismo evento físico, dos resultados, por una regla que un riel tiene escrita y
+  el otro no.**
+
+  **Lo que la corrida 14 midió sobre la sonda y que NO entra acá, por regla:** el cruce ticker por
+  ticker contra el meta del sello en las cuatro noches, las 0 transiciones «el cierre estaba y deja de
+  estar» dentro de una noche, y la equivalencia de la regla nueva de atribución sobre las 1.188 filas ya
+  escritas. **Son MEDIDOS por censo y reproducibles, pero ningún dictamen los cubre**, y este documento
+  es publicado: el encargo condiciona la entrada a que un dictamen lo autorice. Viven completos en
+  `bitacora_14.md` (bloques 1.2 y 1.6) hasta que un dictamen los tome. Lo marcó el
+  `guardian-constitucion` al cierre.
+
+  (vii) **MEDIDO: yfinance etiqueta la barra intradía con la fecha del día.** A las 13:42 NY del 28, con el
+  mercado abierto, 35 de 36 tickers ya daban `ultima_fecha_close = 2026-09-28`. Consecuencia: el campo
+  `es_sesion_de_hoy` de la sonda **sólo es interpretable fuera del horario de mercado**, y el resumen ahora
+  descarta y declara las observaciones anteriores al cierre de su sesión.
+
+  (ix) **MEDIDO: `Persistent=false` no impide un disparo atrasado por suspensión.** La unidad instalada de
+  la sonda lo lleva y disparó igual; `Persistent=` sólo gobierna disparos perdidos mientras el *manager* no
+  corría, y el manager no se cayó. **Que la máquina estuviera suspendida y no apagada es una INFERENCIA**
+  (hueco del journal + PID sobreviviente + uptime): WSL2 no registra suspend/resume, y la ventana sólo se
+  puede acotar a [vie 02:16, vie 17:50] Chile.
+
+  (x) **MEDIDO y dictaminado por el `estadistico-adversario`: el umbral de M2 firmado en §88.11
+  (25/3 = 8,3333 %/año) es 156/h veces MÁS EXIGENTE que el 25 % acumulado** — 3× a las 52 semanas, que es la
+  única lectura que la propia enmienda autoriza. Sobre la cuenta v2 simulada a h = 52, el umbral viejo
+  dispara **0 de 20 semillas** en los tres juegos y el nuevo dispara **19 de 20** en el juego `medio`
+  (Wilson 95 % [76,4 · 99,1] **sobre semillas**, una sola trayectoria de mercado). La primera versión de la
+  §9 del pre-registro afirmaba que el umbral «no endurece ni ablanda el criterio»: **era falso y se corrigió
+  antes de cualquier commit.** **El 19/20 se computó FUERA del módulo dueño del umbral** (`GEMELO/m2_periodo.py` sigue con
+  `UMBRAL_M2_PCT = 25.0`), así que **no es reproducible corriendo ese módulo** — la misma vara que el
+  §61 le aplica a las 24 filas del 28-sep. La enmienda queda **PROPUESTA y NO APLICABLE: le faltan seis
+  definiciones**,
+  la más urgente **qué es «el primer aporte»** (con la cuenta IBKR ya fondeada con 5,00 USD, dos órdenes al
+  mínimo dan 14 %/año y M2 dispara).
+
+  (xi) **DEMOSTRADO por censo: el riel de dinero lleva 14 sesiones selladas prospectivas por el timer, de
+  las que 9 cuentan para N = 40** (no cuentan 09, 18, 22 y 23-sep por `insumo_incompleto` ni el 28 por
+  `no_verificable_timing`). **La sesión del viernes 25-sep se perdió en los TRES rieles** (sellador, medición
+  y sonda), y leído el código la del 28 también se pierde en el riel de dinero. E0 sella el sorteo sin
+  información: **prueba de maquinaria, no track record**.
+
+  **Registro de intentos:** gap asiático 354, veredicto 5.1 360 y riel largo 4, **los tres sin cambio** — el
+  único bloque que iba a probar una hipótesis (`bifurcaciones`) no se ejecutó. **Los bloques que publican
+  cifras NO se ejecutaron** por el veredicto del auditor, así que ninguna cifra publicada se movió.
 
 - **Corrida 13 (19-sep), con dictámenes del `auditor-lookahead` (E4-bis), del `curador-epistemico` (bitácora, tarjetas,
   README inglés) y del `estadistico-adversario` (README y bloque 6); `dictamen_13/`:** (i) **DEMOSTRADO por censo de la

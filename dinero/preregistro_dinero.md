@@ -285,3 +285,222 @@ son de Nicolás; nada de esto se firma acá.
 **Grado de libertad declarado (E12):** se computaron 12 lecturas (3 juegos × 4 períodos) y la firma
 eligió 1 con los resultados a la vista. Va al registro de «lecturas de criterio» (contador distinto del
 DSR; dónde vive es decisión pendiente).
+
+---
+
+## 9. Enmienda fechada, 28-sep-2026 (corrida 14, bloque 4.4): M2 en %/año, umbral 8,3 %/año — PROPUESTA, sin firmar
+
+**Qué la autoriza y qué no.** El acta §88 del 19-sep-2026 firmó cuatro cosas sobre M2: §88.7 la
+unidad, §88.11 el umbral, §88.12 el deslizamiento, §88.13 la ventana y las cuentas congeladas. Esta
+sección **redacta** esas cuatro firmas en el lenguaje del pre-registro y **no firma ninguna**: es
+PROPUESTA hasta que Nicolás la firme por acta. Es la respuesta a la cláusula de escape que la §8 dejó
+abierta el 9-sep («vuelve a la cola con la pregunta exacta»). Como manda la §5, se escribe con fecha
+posterior, dice qué cambia y por qué, y **no borra nada de lo anterior**.
+
+**Nota de redacción, 28-sep, misma corrida.** La primera versión de esta §9 afirmaba que el umbral
+«no endurece ni ablanda el criterio». El `estadistico-adversario` la midió y **es falsa**: ver (b).
+La frase se corrigió antes de que Nicolás la leyera y antes de cualquier commit, junto con seis
+lugares donde esta sección le ponía en la boca del acta cosas que el acta no dice. Todo eso queda
+dicho abajo en su sitio; nada del §8 ni de lo anterior se tocó.
+
+**Qué cambia, punto por punto.**
+
+**(a) Unidad — §88.7, opción (c).** M2 se lee como **tasa anualizada en %/año** y no como porcentaje
+acumulado sin período:
+
+> **M2 = (comisión acumulada desde el primer aporte) × (52 / h) ÷ (capital aportado)**,
+> con *h* en semanas transcurridas desde el primer aporte.
+
+Razón, medida en la §8: el cociente acumulado es proporcional a *h* —el numerador es un flujo que
+crece, el denominador son 500 USD que dejan de crecer en la semana 5—, así que un umbral sin unidad
+de período no es un umbral, es una función del horizonte que se elija después. La tasa anualizada es
+la única lectura invariante al período que la §8 encontró (conservador: 3,9 · 4,3 · 4,1 %/año leído
+desde 52, 104 y 156 semanas), y el adversario verificó que esa estabilidad **no** es un artefacto del
+congelamiento de semillas: la mediana se mueve del 4,12 (con todas) al 4,17 (sólo vivas) a h = 156.
+
+**Lo que el acta NO firmó y esta sección declara como elección, no como firma:** §88.7 firmó «tasa
+anualizada (%/año)». El **factor lineal `× 52/h`** (anualización aritmética) es una convención del
+módulo (`GEMELO/m2_periodo.py`, `"convencion_anualizacion": "suma aritmética"`), no una línea del
+acta. Es defendible para un ratio de costo —la alternativa geométrica no tiene sentido acá— pero es
+una elección y queda declarada como tal, porque es la que produce el sesgo del párrafo siguiente.
+
+**Sesgo declarado del factor lineal: premia a la cuenta que se murió.** Medido por el adversario
+sobre las semillas del juego `medio` que se congelan, leídas a h = 52 / 104 / 156: 9,42 → 7,55 → 5,04;
+9,40 → 7,03 → 4,69; 9,43 → 7,65 → 5,10. A h = 156, **17 de 17 semillas vivas cruzan el umbral y 0 de 3
+congeladas lo cruzan**: el factor lineal convierte una cuenta que M2 habría matado por caro en una
+cuenta que M2 declara barata, por haber dejado de operar. Es E13 del dictamen 12, ahora medido contra
+este umbral. Y hay un límite estructural que hay que decir: **a h = 52 no hay ninguna semilla
+congelada**, así que la única lectura que (d) autoriza es exactamente la que no puede ver este sesgo;
+aparece a 104 y 156, cuando ya no hay nada que decidir.
+
+**(b) Umbral — §88.11: 8,3 %/año.** Sale de 25/3: el 25 % original repartido en 156 semanas. La razón
+de Nicolás, citada del acta: «pq se deriva de mi numero original».
+
+**Y es un criterio más duro, no el mismo.** Esto es lo que la primera versión de esta sección decía
+mal. El umbral nuevo es **156/h veces más exigente** que el 25 % acumulado en todo horizonte menor a
+156 semanas: **3× a las 52 semanas**, que es justamente la primera lectura que (d) autoriza; 1,5× a
+las 104; y 1× a las 156, donde coincide por álgebra (8,333 × 3 = 25). Medido sobre la cuenta v2
+simulada, la misma cuenta y el mismo *h*, el umbral viejo contra el nuevo:
+
+| juego | h = 52 | h = 104 | h = 156 |
+|---|---|---|---|
+| conservador | 0/20 → 0/20 | 0/20 → 0/20 | 0/20 → 0/20 |
+| agresivo | 0/20 → 0/20 | 0/20 → 0/20 | 0/20 → 0/20 |
+| medio | **0/20 → 19/20** | 0/20 → 17/20 | 17/20 → 17/20 |
+
+A h = 52 el estadístico es idéntico bajo las dos lecturas (52/52 = 1), así que la comparación no
+depende de ninguna convención de anualización. **El juego `medio` pasa de no disparar nunca a disparar
+en 19 de 20 semillas.** El umbral se elige más duro a propósito y queda declarado.
+
+**Y hay que decir de dónde NO sale ese 19/20:** `GEMELO/m2_periodo.py` sigue con
+`UMBRAL_M2_PCT = 25.0` y cuenta contra ese 25 %, así que el conteo contra 8,3333 %/año **se computó
+fuera del módulo** que hoy es dueño del umbral. Es la misma vara que el §61 le aplica a las 24 filas del
+28-sep —«no reproducible por un tercero»— y corresponde aplicársela también acá: **mientras el módulo no
+lleve el umbral firmado, el 19/20 no es reproducible corriendo `m2_periodo.py`**. Cambiar el módulo sería
+aplicar una enmienda que este mismo documento declara NO APLICABLE, y con el arancel del §40 sin firma
+(§48), así que **no se cambió**: se declara.
+
+**De las tres re-expresiones redondas del 25 %, la elegida es la única que mata algo:** 25/1
+(25,0 %/año) y 25/2 (12,5 %/año) dan 0/20 en los tres juegos; 25/3 (8,333 %/año) da 19/20 en `medio`.
+Con las 12 lecturas a la vista. Eso no lo hace ilegítimo —Nicolás puede querer un criterio 3× más
+duro y lo firmó con las cifras delante— pero **es un grado de libertad con consecuencia, no un
+re-expresado inerte.**
+
+**Procedencia del 25 %, con su marca.** El 25 % se escribió dentro de la banda **«14 % a 43 %», cifra
+RETIRADA por fuga temporal** (§6 A, §7 A, `dictamen_10/auditor_lookahead.md`), medida sobre 156
+semanas. Este documento se contradice consigo mismo sobre a qué horizonte pertenecía el 25 % (la §6 E
+dice «un umbral escrito para 52»; la §8 dice «mirando una banda de 156 semanas»), y ninguna de las
+dos consta como decisión: **no se certifica ninguna**. Lo certificable es que 25/3 = 8,3333… es
+aritmética correcta y que su procedencia es el horizonte de una cifra retirada.
+
+**Precisión del número (hay que decirla porque M2 es un interruptor duro):** el umbral es
+**25/3 = 8,3333…**, no 8,3 redondeado. Hoy no cambia ninguna lectura (no hay semilla en el intervalo
+(8,3 · 8,3333)), pero un pre-registro tiene que decir el número exacto.
+
+**(c) Deslizamiento — §88.12: no cuenta.** M2 se lee **sólo** de las comisiones que informa el
+corredor. El deslizamiento se registra aparte y no entra en el numerador de M2. Esto cierra hacia
+adelante lo que la §7 B (ii) dejó sin firma. **Advertencia: la serie separada de deslizamiento no
+existe todavía**, y el acta no la nombra; que exista antes de la primera fila prospectiva es parte de
+lo que falta (D7 abajo).
+
+**(d) Ventana — §88.13.** El acumulado corre **desde el primer aporte** y se anualiza. La **primera
+lectura válida es a las 52 semanas, y después sigue** (la cadencia posterior es de las definiciones
+que faltan, D8). Antes de ese plazo M2 no se lee: no está disparada ni no-disparada.
+
+**(e) Cuenta congelada — §88.13: estado aparte.** Una cuenta que se queda sin caja para comprar una
+acción entera **no cuenta como M2 cumplida**: es un estado aparte **y se informa como tal**, que es la
+letra del acta. Razón de Nicolás: «es la decision prudente». Nada más que eso se afirma acá: qué
+consecuencia tiene ese estado es una de las definiciones que faltan (D3), y la primera versión de esta
+sección agregaba «y no se promedia con las cuentas vivas», que el acta no dice y que **no tiene
+referente en la cuenta prospectiva, donde hay UNA cuenta y ningún promedio**.
+
+**Grado de libertad declarado (E12 y §88.11).** El umbral se fijó con **12 lecturas ya computadas a la
+vista** (3 juegos × 4 períodos, `GEMELO/resultados/m2_periodo.md`, dictamen de la corrida 12): la firma
+eligió una de doce con los resultados delante. Va al registro de «lecturas de criterio», contador
+distinto del DSR, **cuyo domicilio sigue siendo decisión pendiente** (§88.14). El adversario agrega
+tres lecturas más (las tres re-expresiones de (b)), que tampoco se pueden archivar mientras ese
+contador no tenga sitio.
+
+**El costo aceptado, dicho como número.** Por (d), M2 **no puede disparar durante el primer año**. Y
+sobre las lecturas simuladas de la cuenta v2 sin fuga, con el umbral en 8,3333 %/año:
+
+| juego | anualizada desde 52 semanas | mín–máx | ¿dispara? |
+|---|---|---|---|
+| conservador (por defecto) | 3,9 % [3,56 · 4,58] | [3,5 · 4,69] | **0 de 20 semillas** |
+| agresivo | 6,4 % [5,77 · 7,78] | [5,66 · 7,83] | **0 de 20 semillas** |
+| medio | 9,4 % [8,23 · 10,82] | [8,14 · 11,18] | **19 de 20 semillas**, Wilson 95 % [76,4 · 99,1] |
+
+Cómo se lee esa banda, y es importante: son los percentiles 2,5 y 97,5 **entre 20 semillas del sorteo
+sobre UNA sola trayectoria de mercado** — **no es un intervalo de cobertura nominal**, y no cubre la
+variación de mercado. Con K = 20 el percentil 2,5 **no es estimable**: el 8,23 de `medio` es una
+interpolación entre la semilla más baja (8,14) y la segunda (8,34), o sea que «el borde inferior de la
+banda» **es una semilla**. Por eso la lectura honesta es el conteo con Wilson sobre semillas, y la
+unidad de replicación es la semilla, no el mercado. La única semilla de `medio` que no cruza es la más
+baja de las veinte.
+
+**Y hay que decir por qué `agresivo` (6,4) gasta MENOS que `medio` (9,4), porque los nombres engañan.**
+El costo por orden es casi el mismo en los tres juegos (≈ 0,30 · 0,30 · 0,24 USD por orden, de los
+conteos de `dinero/resultados/cuenta_papel.md`), así que **M2 ≈ número de órdenes × ~0,3 USD ÷
+capital**. `medio` gasta más porque hace más órdenes (443 contra 393), por ser más granular con 500
+USD y acciones enteras. Consecuencia: **el umbral no mata al juego más arriesgado, mata al más
+granular.** Y las holguras no son comparables: la peor semilla de `agresivo` está a +6,4 % del umbral
+(7,83 contra 8,333) y la de `conservador` a +77,7 %; decir «no dispara» con la misma frase para los dos
+aplana una diferencia de holgura de 12×.
+
+El juego por defecto sigue siendo el conservador, `reglas.json` sigue **SIN FIRMA**, y **el arancel
+del §40 que fija el numerador también sigue SIN FIRMA** (tarjeta §48). Todo esto es un «qué habría
+pasado» sobre una cuenta simulada, no una lectura de la cuenta prospectiva, que no existe: la tabla se
+cita para declarar el costo de la elección, no como resultado. Y nadie ha medido
+`P(M2 dispara | tasa verdadera = 8,333 %/año)` para una cuenta leída a 52 semanas: `GEMELO/simulador/`
+no tiene nada de M2 ni de comisiones, y con una sola trayectoria de mercado no se puede. **Ninguna
+afirmación de la forma «M2 dispara cuando debe» está autorizada hasta que el simulador se extienda a
+múltiples trayectorias.**
+
+**Lo que esta enmienda NO define, y por lo que todavía no se puede aplicar.** Son **seis**, no cuatro:
+las cuatro que esta sección ya declaraba (con el juego de opciones de la primera corregido) más dos
+que el adversario encontró. Ninguna se rellena acá, y todas van a **completar la tarjeta §43**, que ya
+lista los huecos sin opciones — **no se abren tarjetas nuevas**: el contador de lecturas de criterio ya
+está en §88.14 y el arancel en §48.
+
+1. **El denominador mientras los aportes no terminan.** La bifurcación real **no** es «aportado final
+   contra aportado a la fecha de lectura»: bajo el calendario declarado (5 aportes que terminan en la
+   semana 5) esos dos son **numéricamente idénticos** para todo h ≥ 5, y además «aportado final» no es
+   computable en el momento de la lectura si los aportes siguen fluyendo. La bifurcación es
+   **ponderado por tiempo o no**: con el calendario actual el factor es 1,0375 (`medio` pasa de 9,38 a
+   9,73 %/año), y si el flujo prospectivo fuera sostenido 100 USD/semana durante 52 semanas el factor
+   llega a **1,957 — casi 2×, más que toda la distancia entre `conservador` y `medio`**. Hay que
+   declarar además que **las cifras que esta sección cita ya usan «aportado a la fecha de lectura»**
+   (`GEMELO/m2_periodo.py:91`), y que la **§6 C** —declarar el flujo de aportes prospectivo antes de
+   empezar— sigue sin declararse.
+2. **Qué es exactamente «congelada»**, y es peor de lo que parecía. La cifra «5 de 20 congeladas» que
+   la §8 cita **no mide el concepto que el acta firmó**: el código usa «26 semanas sin ningún
+   movimiento» (`GEMELO/m2_periodo.py:96`), una proxy de inactividad con una constante que no aparece
+   en ninguna especificación, mientras §88.13 define un **estado de caja** («sin caja para una acción
+   entera»). E4 del dictamen 12 pedía **las dos** condiciones y sólo se implementó la primera; la caja
+   se verificó a mano en **2 de las 5** semillas. Y `dinero/contabilidad.py:215` dice que la cuenta
+   **no se detiene** por falta de caja: «si el aporte no alcanza para una acción entera, ACUMULA» —
+   no existe estado terminal en el código.
+3. **Si una cuenta congelada mata la pista o sólo sale del cómputo.** §88.13 firma una **tercera**
+   cosa, ni disparada ni absuelta: «estado aparte, y se informa como tal». E13 del dictamen 12 pedía
+   que **disparara** M2 («una cuenta que no puede tomar una posición entera está muerta»). La
+   diferencia decide si el riel muere o se pausa, y es la pieza que debería tapar el sesgo de (a):
+   sin ella, una cuenta matada por la fricción lee 5,0 %/año y sale «M2 no disparada».
+4. **Dónde vive el contador de «lecturas de criterio»** (§88.14 y §8 lo dejan sin dueño). No necesita
+   tarjeta nueva; necesita que §43 se complete con opciones.
+5. **NUEVO Y URGENTE: qué es «el primer aporte».** Es el cero de *h* y la identidad de «capital
+   aportado», y no está definido en ninguna parte. §88.10 registra la cuenta de IBKR **ya fondeada con
+   5,00 USD** al 19-sep, con los 500 de E2 sin depositar. Bajo la letra de (a)+(d), en la ventana
+   entre ese fondeo y E2: 1 orden al mínimo de 0,35 USD sobre 5,00 de capital da 7,0 %/año; **2
+   órdenes dan 14,0 %/año y M2 DISPARA**; las mismas 5 órdenes sobre 500 USD dan 0,35 %/año. **Cien
+   veces de diferencia según qué aporte cuente, y dos órdenes cierran el riel.** Además la §4 declara
+   que los primeros 100-500 USD son «costo de aprendizaje operativo, no una apuesta» y **no** están
+   condicionados a la §2: si sus comisiones entran al numerador, M2 mide el aprendizaje. Y toca la
+   validez de esta misma enmienda: si *h* ya arrancó con el fondeo de 5,00 USD, la enmienda puede
+   estar llegando tarde a su propio reloj. **Hay que definirlo antes de firmar.**
+6. **NUEVO: la convención de anualización** (`× 52/h` lineal) no está firmada; ver el final de (a).
+
+**Y cuatro huecos menores, de una línea cada uno.** (D7) **Dónde se sella la comisión del corredor y
+qué pasa si falta:** `corredor/ibkr.py` lee `commissionReport` pero **no persiste nada**, y
+`sellos_dinero` no tiene columna de comisión ni de ejecución, así que la serie que M2 leería **no
+tiene sello** y una consulta viva a la API no es reproducible; `comision_usd` puede volver `None` sin
+regla de dato faltante; el `commissionReport` de IBKR llega asíncrono y puede revisarse después, lo que
+choca con la inmutabilidad de sellos; y **el alcance del numerador no coincide con el de la
+calibración** — `reglas.json` declara que las tarifas de terceros (SEC, FINRA, compensación, venue)
+NO están en el modelo con el que se calibró el 8,3, pero M2 se leerá de «lo que informa el corredor»,
+y un numerador 10 % mayor lleva la peor semilla de `agresivo` de 7,83 a 8,61 y **la cruza**.
+(D8) **La cadencia después de la semana 52, y si leer M2 cuenta como «mirada»:** un interruptor de un
+solo lado leído repetidamente tiene problema de miradas múltiples, y la §2 punto 4 dice que «si se
+mira antes, el período se reinicia»; falta también el orden de precedencia cuando la lectura de M2 y la
+evaluación única de la §2 caen el mismo día. (D9) **Descongelamiento y *h* con el riel interrumpido:**
+(e) no dice qué pasa si la cuenta se descongela, y *h* se mide en semanas de **calendario**, así que
+una interrupción del riel (Gateway caído, cuenta en revisión) baja la tasa por dejar de operar igual
+que el congelamiento, sin ser «sin caja para una acción entera». (D10) la precisión del umbral, ya
+dicha en (b).
+
+**Qué haría ilegítima esta enmienda.** Todo lo de la §5 sigue rigiendo sin cambios. Se agrega, para
+esta enmienda en particular: mover el 8,3333 %/año **después** de ver la primera lectura de la cuenta
+prospectiva, o cambiar la unidad otra vez para que un resultado que no alcanzó alcance. El umbral y la
+unidad quedan fijos desde la firma de Nicolás y antes de la primera fila prospectiva; si esta enmienda
+se firmara después de esa fila, deja de ser un pre-registro y hay que decirlo así. La corrección de la
+frase de neutralidad **no** es una de esas formas: no ablanda ningún criterio ni mueve el umbral,
+corrige una caracterización falsa del criterio, con fecha, como la propia §5 autoriza.

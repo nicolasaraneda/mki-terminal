@@ -1,0 +1,381 @@
+{
+ "noches": 4,
+ "noches_con_todos": 2,
+ "hora_todos_mediana_ny": "22:35",
+ "hora_todos_maxima_ny": "23:35",
+ "tickers": {
+  "AMAT": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "AMD": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "AMKR": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "AMZN": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "ARM": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "ASML": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "ASX": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "AVGO": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "CDNS": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "ENTG": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "GFS": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "GOOGL": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "GSM": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "INTC": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "KLAC": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "LIN": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "LRCX": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "META": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "MKSI": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "MSFT": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "MU": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "NVDA": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "QCOM": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "SHECY": {
+   "noches": 4,
+   "noches_con_cierre": 4,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 0,
+   "hora_mediana_ny": "20:05",
+   "hora_maxima_ny": "20:05",
+   "hora_minima_ny": "20:05"
+  },
+  "SMH": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "SNDK": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "SNPS": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "SOXX": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "TER": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "TOELY": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "23:35",
+   "hora_maxima_ny": "23:35",
+   "hora_minima_ny": "20:05"
+  },
+  "TSEM": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "TSM": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "UMC": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "VRT": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "WDC": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  },
+  "XSD": {
+   "noches": 4,
+   "noches_con_cierre": 3,
+   "noches_sin_cierre_hasta_la_ultima_sonda": 1,
+   "hora_mediana_ny": "21:35",
+   "hora_maxima_ny": "21:35",
+   "hora_minima_ny": "21:35"
+  }
+ },
+ "por_noche": {
+  "2026-09-21": {
+   "tickers": 36,
+   "con_cierre": 36,
+   "minutos_todos": 1415,
+   "hora_todos_ny": "23:35",
+   "faltan_hasta_la_ultima_sonda": [],
+   "ultima_sonda_ny": "23:35",
+   "sondas": 8
+  },
+  "2026-09-22": {
+   "tickers": 36,
+   "con_cierre": 2,
+   "minutos_todos": null,
+   "hora_todos_ny": null,
+   "faltan_hasta_la_ultima_sonda": [
+    "AMAT",
+    "AMD",
+    "AMKR",
+    "AMZN",
+    "ARM",
+    "ASML",
+    "ASX",
+    "AVGO",
+    "CDNS",
+    "ENTG",
+    "GFS",
+    "GOOGL",
+    "GSM",
+    "INTC",
+    "KLAC",
+    "LIN",
+    "LRCX",
+    "META",
+    "MKSI",
+    "MSFT",
+    "MU",
+    "NVDA",
+    "QCOM",
+    "SMH",
+    "SNDK",
+    "SNPS",
+    "SOXX",
+    "TER",
+    "TSEM",
+    "TSM",
+    "UMC",
+    "VRT",
+    "WDC",
+    "XSD"
+   ],
+   "ultima_sonda_ny": "23:35",
+   "sondas": 8
+  },
+  "2026-09-23": {
+   "tickers": 36,
+   "con_cierre": 35,
+   "minutos_todos": null,
+   "hora_todos_ny": null,
+   "faltan_hasta_la_ultima_sonda": [
+    "TOELY"
+   ],
+   "ultima_sonda_ny": "23:35",
+   "sondas": 8
+  },
+  "2026-09-24": {
+   "tickers": 36,
+   "con_cierre": 36,
+   "minutos_todos": 1295,
+   "hora_todos_ny": "21:35",
+   "faltan_hasta_la_ultima_sonda": [],
+   "ultima_sonda_ny": "23:35",
+   "sondas": 8
+  }
+ },
+ "descartadas_antes_del_cierre": {
+  "filas": 36,
+  "motivo": "observación anterior al cierre de su sesión: no es evidencia de cuándo apareció el cierre",
+  "por_sesion": {
+   "2026-09-28": [
+    "13:42"
+   ]
+  }
+ },
+ "estatus": "PROPUESTA: dato de la sonda, no decisión; la hora del timer la fija Nicolás por acta (§58)"
+}

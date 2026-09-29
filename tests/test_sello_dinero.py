@@ -313,7 +313,25 @@ def _cierres_ext_sinteticos(base, sesiones=(FECHA,), factor=1.01) -> pd.DataFram
 
 def _camino_main(cierres_ext, db, ahora, base_hasta=BASE_HASTA):
     """El camino que recorre `main()`: congela la extensión EN DISCO, sella y
-    borra el temporal de un insumo divergente no conservado."""
+    borra el temporal de un insumo divergente no conservado.
+
+    Guarda de la corrida 14 (deuda que el guardián de la corrida 13 dejó
+    anotada): `congelar_extension` se llama a propósito SIN `ruta_db`, igual que
+    lo hace `main()`, así que el `sello_previo()` de adentro lee el GLOBAL
+    `S.RUTA_DB`. Eso es seguro sólo mientras el fixture lo tenga parcheado a la
+    base temporal. Si algún día deja de parchearlo, este helper consultaría la
+    base REAL de producción sin decir nada y el test pasaría igual. Que reviente
+    acá, con el motivo escrito, en vez de mirar producción en silencio.
+    """
+    raiz_tmp = os.path.dirname(os.path.abspath(db))
+    assert os.path.abspath(S.RUTA_DB) == os.path.abspath(db), (
+        "el fixture dejó de parchear S.RUTA_DB: congelar_extension() leería "
+        f"{S.RUTA_DB} y no la base temporal {db}")
+    for nombre in ("DIR_EXT", "DIR_BACKUP_EXT"):
+        destino = os.path.abspath(getattr(S, nombre))
+        assert destino.startswith(raiz_tmp + os.sep), (
+            f"el fixture dejó de parchear S.{nombre}: apunta a {destino}, "
+            f"fuera del tmp_path {raiz_tmp}")
     ruta, meta = S.congelar_extension(cierres_ext, base_hasta)
     try:
         return ruta, meta, S.sellar(ruta, meta, ahora_utc=ahora, ruta_db=db)

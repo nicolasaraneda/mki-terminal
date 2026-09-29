@@ -23,6 +23,23 @@
 # LA RESPUESTA GRABADA: cada `dinero/datos/sello/ext_<fecha>.csv` es la
 # matriz `Close` que yfinance devolvió esa noche a las 23:30 NY; el test
 # alimenta `observar()` con una de ellas y no toca la red.
+#
+# CORRIDA 14, bloque 1: `sesion_ny` se deriva de `sesion_atribuida()` y no de
+# `sesion_de_hoy()`. El ESQUEMA NO CAMBIA —las mismas 8 columnas— y no se
+# agrega ninguna: la regla nueva reproduce, fila por fila, el `sesion_ny` de
+# las 1.188 filas ya escritas (todas son sondas de 20:05-23:35 NY en días con
+# sesión, donde las dos reglas coinciden), y hay test que lo comprueba contra
+# el CSV real. Así `sesion_ny` significa lo mismo en las filas viejas y en
+# las nuevas, y el resumen no tiene que leer dos formatos. Ninguna fila ya
+# escrita se reescribe.
+#
+# `es_sesion_de_hoy` conserva su nombre por estabilidad del esquema; lo que
+# dice es «la última fecha con cierre es la de la sesión ATRIBUIDA». Sólo es
+# interpretable fuera del horario de mercado: el 28-sep-2026 a las 13:42 NY,
+# con la bolsa abierta (los timers dispararon juntos al despertar el PC), 35
+# de 36 tickers ya daban `ultima_fecha_close` = ese mismo día, porque
+# yfinance etiqueta la barra intradía con la fecha del día. MEDIDO. Las dos
+# franjas de la unidad propuesta caen fuera del horario de mercado.
 # ============================================================
 from __future__ import annotations
 
@@ -67,10 +84,46 @@ def hora_ny(instante_utc: datetime) -> str:
 
 def sesion_de_hoy(instante_utc: datetime) -> str | None:
     """La sesión de XNYS cuya fecha es la fecha de Nueva York del instante,
-    o None si ese día no hay sesión (fin de semana, feriado). Es la sesión
-    cuyo cierre la sonda quiere ver aparecer."""
+    o None si ese día no hay sesión (fin de semana, feriado). NO es la que la
+    sonda atribuye a una observación: para eso está `sesion_atribuida()`."""
     fecha = pd.Timestamp(_a_utc(instante_utc)).tz_convert(ZONA_NY).normalize().tz_localize(None)
     return str(fecha.date()) if _cal().is_session(fecha) else None
+
+
+def sesion_atribuida(instante_utc: datetime) -> str:
+    """La sesión de XNYS de la que HABLA una observación.
+
+    Corrección de la corrida 14 (bloque 1.2). Regla: una observación anterior
+    a la apertura de Nueva York —o hecha en un día sin sesión— habla del
+    cierre de la sesión hábil ANTERIOR, no de la del día del calendario. Una
+    sonda a las 00:35 NY del martes mira el cierre del LUNES; una del sábado
+    de madrugada, el del VIERNES.
+
+    Por qué era un defecto atribuirla al día del calendario: la fila decía
+    «la sesión de hoy todavía no tiene cierre», que a las 00:35 es
+    trivialmente cierto y no es lo que la sonda pregunta; y en un sábado de
+    madrugada `sesion_de_hoy()` daba None y la observación se perdía entera
+    (el resumen descarta las filas sin sesión). La franja de madrugada que
+    esta corrida propone —la única que puede sostener o descartar la opción
+    (b) de §58, mover el sellador más tarde— no produce ni un dato utilizable
+    sin esta corrección.
+
+    Consecuencia declarada: la tarde de un feriado se atribuye a la sesión
+    hábil anterior, así que la «noche» de un viernes puede incluir
+    observaciones del lunes feriado. No contamina la hora de aparición, que
+    el resumen toma como el MÍNIMO de las sondas que vieron el cierre; sí
+    estira `ultima_sonda_ny`, y el resumen lo muestra con su desfase de días.
+
+    Devuelve siempre una sesión: nunca None. Es función pura del instante.
+    """
+    ahora = _a_utc(instante_utc)
+    fecha = pd.Timestamp(ahora).tz_convert(ZONA_NY).normalize().tz_localize(None)
+    cal = _cal()
+    if cal.is_session(fecha) and pd.Timestamp(ahora) >= cal.session_open(fecha):
+        return str(fecha.date())
+    # la última sesión ESTRICTAMENTE anterior a esa fecha de Nueva York:
+    # `previous_session` exige que su argumento sea sesión y un sábado no lo es
+    return str(cal.date_to_session(fecha - pd.Timedelta(days=1), direction="previous").date())
 
 
 def descargar(tickers, dias: int = DIAS_DESCARGA) -> pd.DataFrame:
@@ -93,7 +146,7 @@ def observar(cierres: pd.DataFrame, ahora_utc: datetime, tickers=None) -> list:
         idx = idx.tz_localize(None)
     cierres = cierres.copy()
     cierres.index = idx
-    hoy = sesion_de_hoy(ahora)
+    hoy = sesion_atribuida(ahora)
     filas = []
     for t in (tickers or list(cierres.columns)):
         s = cierres[t].dropna() if t in cierres.columns else pd.Series(dtype=float)

@@ -9,7 +9,85 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 19-sep-2026, corrida 13. Las firmas del §86 (§51, §52, §53, §57) están marcadas en sus ítems; la cola no se reordenó.
+**Actualizada:** 28-sep-2026, corrida 14. Las firmas del §88 (§43, §54, §58 en parte, §59 por remisión, §60) están marcadas en `espera_firma.md`.
+
+**El orden, escrito, porque el documento tenía dos «primeros».** El `director-programa` lo marcó al
+cerrar la corrida 14: esta página dice que se ordena por costo de postergar, pero decía además «la cola
+no se reordenó», y su §1 seguía afirmando «primero de la cola» sobre la réplica. El orden vigente, con su
+razón:
+
+1. **`espera_firma.md` §61** — las 24 filas inválidas del 28-sep. Vencimiento duro: **mañana 29-sep a las
+   18:15 el verificador escribe las 8 filas en `verificacion_apertura`**, y el mecanismo sigue armado para
+   el próximo despertar.
+2. **`espera_firma.md` §65** — se firma en la misma sentada que §61, porque el parche de §61 toca
+   `senales.py` y se escribiría contra una suite que ya tiene dos rojos.
+3. **`espera_firma.md` §58** — dicho por el director y medido en la bitácora 14: de 14 sesiones selladas,
+   **4 se perdieron por `insumo_incompleto`** (09, 18, 22, 23) y **1 por el despertar**. La hora del
+   sellador quema N **cuatro veces más rápido** que los despertares, así que §58 cuesta más que §62.
+4. **§1 de esta cola, la réplica** — es el único ítem cuyo costo de postergación **ya se materializó**
+   (el SSD del PC falló una vez y hoy emite una sola máquina), y arrastra una fecha: el pre-registro
+   secuencial necesita **§2a-ter y el MDE firmados antes del 2026-11-19**. Eso no necesita una corrida,
+   necesita dos firmas, y el director pide pedirlas **en paralelo** al trabajo de §61, no después.
+5. **§62, §64 y §63** (§63 con la recomendación de fundirse en §61/§62).
+
+Donde el §1 diga «primero de la cola», hay que leerlo contra esta lista: sigue siendo lo más caro de lo
+que **no** abrió el despertar del 28-sep.
+
+## Qué movió la decimocuarta corrida (28-sep)
+
+**El costo de postergar un mes cambió de dueño esta noche.** Lo que sube al tope de la cola no lo
+eligió la corrida: lo puso el despertar del PC.
+
+- **NUEVO Y ES LO MÁS CARO — `espera_firma.md` §61: el riel de medición sella sin el término de
+  conocibilidad.** El 28-sep los ocho timers dispararon juntos a las 14:42:52 y `snapshot.py` selló a las
+  13:42 de Nueva York, **con la bolsa abierta** (que la máquina volviera de suspensión es **inferencia**:
+  WSL2 no registra suspend/resume). Las 24 filas de ese día son la **única fecha en toda la historia
+  sellada** con `available_at > timestamp_utc`. El `auditor-lookahead` dictaminó
+  `FILAS INVÁLIDAS ENTRARON COMO VÁLIDAS`: no hay look-ahead, pero el sello declara una
+  conocibilidad imposible y las 8 predicciones son `beta × (−1,63)` sobre un escalar intradía que
+  el registro etiqueta como cierre, así que **no son reproducibles por un tercero**. El mismo evento
+  produjo 33 filas descartadas en el riel de dinero, por una regla que ese riel ya tiene escrita.
+  **Nada publicado está contaminado** (el corte del README es el 28-ago); **todo lo que se verifique
+  desde mañana, sí.** Costo de postergar: cada día que pasa son más filas verificadas encima de un
+  sello que el proyecto ya descarta en su otro riel.
+- **NUEVO — §62:** qué hace el sellador de dinero cuando un disparo fuera de hora deja una fecha
+  «sellada» en estado no verificable. Se pierden la sesión del 25 (apagón) y la del 28, y el archivo
+  de evidencia del 28 queda ocupado por una matriz de media sesión que E4-bis ya no permite
+  reescribir. Costo de postergar: cada despertar fuera de hora quema una sesión de N = 40.
+- **NUEVO — §63:** `Persistent=false` **no** frena un disparo atrasado por suspensión, y la
+  plantilla de la sonda afirmaba lo contrario. Medido: la sonda lo lleva y disparó igual. La guarda
+  tiene que vivir en el job.
+- **NUEVO — §64:** entre los ocho jobs no hay ninguna dependencia; el orden lo da sólo el reloj. El
+  commit `5321f6b «Backup diario 2026-09-28»` no contiene el sello de ese día.
+- **NUEVO — §65:** el README lleva un contador vivo de E0 que nada regenera, y por eso la suite
+  tiene **dos rojos permanentes**. Incluye los badges `tests-650` / `plataforma-5.0.3` (reales: **904**
+  tests bajo `tests/`, `PLATAFORMA_VERSION` 5.1.0) que §88.5 firmó reemplazar. Costo de postergar: un
+  rojo permanente vuelve el rojo invisible.
+- **Movidas por el §88, ya marcadas:** §43 (M2 en %/año, umbral 8,3, redactada como §9 del
+  pre-registro por esta corrida, PROPUESTA), §54 (`ibapi` oficial, cuenta en revisión al 19-sep),
+  §58 (opción (a) por ahora; (b)/(c) siguen abiertas, con 4 noches de dato descriptivo), §59
+  (cerrada por remisión al §23, donde ahora vive Z1), §60 (firmada y ejecutada).
+- **Lo que esta corrida NO movió, por dictamen:** los bloques 2 (erratas de los README) y 3
+  (`bifurcaciones`) **no se ejecutaron**, porque los dos publican cifras y el veredicto del auditor
+  lo prohíbe hasta que Nicolás decida el §61. Las erratas del §88.5 siguen sin aplicar.
+- **Inventario, no corrección — este documento se contradice consigo mismo en el número de tests.** La
+  línea 89 (que viene de la corrida 13 y está **en HEAD**, no la escribió la corrida 14) dice «hoy **897**
+  recolectados»; la línea 62, escrita hoy, dice **904**, que es el valor real de
+  `pytest tests/ --collect-only -q` (**sin** el alcance `tests/`, el mismo comando da **907**, porque suma
+  tres casos parametrizados de `GEMELO/propuestas/`: también lo corrigió el `curador-epistemico`, porque
+  el badge que §88.5 manda publicar depende de qué comando se cite). La corrida 14 **no arregló el 897**: mover una cifra de un documento por
+  ser de paso es justo lo que la regla prohíbe, y además es exactamente el patrón que la tarjeta §65
+  denuncia —un contador vivo que nada regenera, ahora visible dentro de esta misma página—. Lo cazó el
+  `guardian-constitucion` en su re-dictamen. Va al encargo 15.
+- **Los seis arreglos de una línea que la corrida 14 declinó a propósito, todos para el encargo 15:**
+  (1) el `897` de arriba; (2) `GEMELO/m2_periodo.py` sigue en `UMBRAL_M2_PCT = 25.0`, así que el «19 de 20»
+  de M2 no es reproducible desde el módulo dueño del umbral —cambiarlo sería aplicar una enmienda que la
+  §9 declara NO APLICABLE—; (3) `informe()` de `sonda_cierre_resumen.py`, para que el artefacto diga que
+  su filtro descarta observaciones y no noches, y para que la mediana lleve su `n`; (4) el `raise` de
+  `minutos_del_cierre`, que revienta con `NotSessionError` en vez de saltar una fila con `sesion_ny` que
+  no sea sesión (hoy inalcanzable); (5) el gate de entorno de la skill `gate`, que importa `scipy` y
+  `sklearn`, que este proyecto **no** tiene a propósito; (6) el recordatorio de la skill `cierre-sesion`,
+  que describe el estado anterior al switch y remite a `/switch-titular`, que no existe.
 
 ## Qué movió la decimotercera corrida (19-sep)
 

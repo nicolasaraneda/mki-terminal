@@ -1,23 +1,60 @@
 [Unit]
-Description=MKI — sonda del cierre en yfinance (timer, PROPUESTA no instalada)
+Description=MKI — sonda del cierre en yfinance (timer, PROPUESTA: la franja de madrugada no está instalada)
 
 [Timer]
-# Cada media hora de la tarde/noche de Nueva York, desde las 17:05 hasta las
-# 23:35 (encargo 13 §5.3 pedía 17:00–23:30 en punto y media; el pre-mortem
-# del director marcó que 23:30 NY es el minuto exacto en que el sellador de
-# producción baja su insumo de yfinance, así que la grilla va desplazada
-# cinco minutos y nunca coincide con él). Validado con
-# `systemd-analyze calendar`: forma normalizada `Mon..Fri *-*-* 17..23:05,35:00 America/New_York`.
+# DOS franjas, cada media hora de Nueva York. systemd las combina con OR.
 #
-# La ventana de sellado del riel de medición (17:50–20:30 Chile) cae dentro
-# de esta grilla: la sonda es UNA descarga liviana de 36 tickers × 7 días.
-# Si Nicolás prefiere no descargar nada en esa ventana, la expresión
-# alternativa es `Mon..Fri 20..23:05,35 America/New_York` (desde las 20:05 NY
-# = 21:05 Chile en esta época) y se pierde la información de 17:05–19:35.
-OnCalendar=Mon..Fri 17..23:05,35 America/New_York
+# 1) TARDE/NOCHE — `Mon..Fri 20..23:05,35`, desde las 20:05 hasta las 23:35 NY.
+#    Es la que Nicolás instaló el 19-sep-2026 al firmar el acta §88.1, y esta
+#    plantilla queda alineada con ella (antes decía `17..23:05,35`, que nunca
+#    se instaló: el encargo 14 la alinea). Empieza a las 20:05 NY = 21:05 de
+#    Chile en esta época, o sea FUERA de la ventana de sellado del riel de
+#    medición (17:50–20:30 Chile); el precio de esa elección es que no se ve
+#    nada entre las 17:05 y las 19:35 NY.
+#    La grilla va a :05 y :35 y no en punto y media a propósito: 23:30 NY es
+#    el minuto exacto en que el sellador de producción baja su insumo de
+#    yfinance, y las dos descargas nunca coinciden.
+#
+# 2) MADRUGADA — `Tue..Sat 00..03:05,35`, desde las 00:05 hasta las 03:35 NY.
+#    PROPUESTA de la corrida 14 (encargo §3.4). Por qué hace falta: la opción
+#    (b) de §58 es mover el sellador MÁS TARDE, y una sonda que termina a las
+#    23:35 no puede ni sostenerla ni descartarla — no mira después de la hora
+#    que habría que cambiar. Cada noche sin esta franja es un dato que no
+#    vuelve. Termina a las 03:35 NY, seis horas antes de la apertura, así que
+#    no toca ninguna ventana de emisión: en Chile es 01:05 a 04:35, después
+#    del sellador de las 23:30 NY (00:30 Chile) y muy antes de las 17:50.
+#
+# Las dos expresiones validadas con `systemd-analyze calendar`; formas
+# normalizadas `Mon..Fri *-*-* 20..23:05,35:00 America/New_York` y
+# `Tue..Sat *-*-* 00..03:05,35:00 America/New_York`. Hay test.
+#
+# Una observación de madrugada habla de la sesión hábil ANTERIOR, no de la
+# del día del calendario: eso lo resuelve `sesion_atribuida()` en
+# GEMELO/sonda_cierre.py (corrida 14, bloque 1.2). Sin esa corrección esta
+# franja no produce ni un dato utilizable.
+OnCalendar=Mon..Fri 20..23:05,35 America/New_York
+OnCalendar=Tue..Sat 00..03:05,35 America/New_York
 
 # Una sonda atrasada no sirve: la pregunta es «a qué hora», y un disparo
 # ejecutado al despertar la máquina responde a otra hora.
+#
+# ADVERTENCIA MEDIDA (corrida 14): `Persistent=false` NO alcanza para eso, y
+# creer que sí alcanza fue un error de esta plantilla. El 28-sep-2026 esta
+# unidad disparó a las 14:42:52 Chile con la bolsa ABIERTA, 36 filas a las
+# 13:42 NY, pese a llevar `Persistent=false`. (Que la máquina estuviera
+# SUSPENDIDA y no apagada es una INFERENCIA, no un hecho registrado: WSL2 no
+# anota suspend/resume, y lo medido es el hueco del journal más el mismo
+# `systemd[317]` a los dos lados más `uptime` «up 5 days». La ventana sólo se
+# puede acotar a [vie 02:16, vie 17:50].) La razón: `Persistent=` sólo gobierna la recuperación
+# de disparos perdidos mientras el *manager* no estaba corriendo, y el
+# manager no se cayó — el journal muestra el mismo `systemd[317]` antes y
+# después del fin de semana, y `uptime` dijo «up 5 days». Un timer cuya hora
+# de disparo pasó mientras la máquina estaba SUSPENDIDA dispara al reanudar,
+# y eso systemd no lo desactiva con ninguna directiva de esta sección.
+# La defensa tiene que vivir en el JOB, que es lo que el riel de dinero ya
+# hace (su guarda E4 marcó sus filas de ese disparo `no_verificable_timing`).
+# Cómo debería comportarse esta sonda ante un disparo fuera de franja es
+# pregunta de firma, no algo que esta plantilla decida.
 Persistent=false
 AccuracySec=1s
 Unit=mki-sonda-cierre.service
