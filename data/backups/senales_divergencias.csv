@@ -346,3 +346,9 @@ id,fecha,par,spread_20d_pct,z_score,explicacion,spread_simple_pct,z_simple
 345,2026-09-28,TSMC (Taiwán) vs UMC (ADR),-25.29,-1.64,UMC (ADR) le saca 25.3 pp de rendimiento propio 20d a TSMC (Taiwán) (limpiado de índice local y moneda) — inusual vs su historia (z=-1.6).,-17.4,-1.23
 346,2026-09-28,ASML (ADR) vs Tokyo Electron,-0.37,-0.05,Tokyo Electron le saca 0.4 pp de rendimiento propio 20d a ASML (ADR) (limpiado de índice local y moneda) — inusual vs su historia (z=-0.1).,2.87,0.31
 347,2026-09-28,BHP Group vs Freeport-McMoRan,-4.16,-0.56,Freeport-McMoRan le saca 4.2 pp de rendimiento propio 20d a BHP Group (limpiado de índice local y moneda) — inusual vs su historia (z=-0.6).,-3.11,-0.3
+348,2026-09-29,SK Hynix vs Micron,-8.87,-0.67,Micron le saca 8.9 pp de rendimiento propio 20d a SK Hynix (limpiado de índice local y moneda) — inusual vs su historia (z=-0.7).,-8.76,-0.79
+349,2026-09-29,SK Hynix vs Samsung Electronics,-1.83,-0.16,Samsung Electronics le saca 1.8 pp de rendimiento propio 20d a SK Hynix (limpiado de índice local y moneda) — inusual vs su historia (z=-0.2).,-0.15,-0.36
+350,2026-09-29,Micron vs Samsung Electronics,7.04,0.44,Micron le saca 7.0 pp de rendimiento propio 20d a Samsung Electronics (limpiado de índice local y moneda) — inusual vs su historia (z=+0.4).,8.6,0.28
+351,2026-09-29,TSMC (Taiwán) vs UMC (ADR),-25.16,-1.63,UMC (ADR) le saca 25.2 pp de rendimiento propio 20d a TSMC (Taiwán) (limpiado de índice local y moneda) — inusual vs su historia (z=-1.6).,-19.58,-1.38
+352,2026-09-29,ASML (ADR) vs Tokyo Electron,2.83,0.29,ASML (ADR) le saca 2.8 pp de rendimiento propio 20d a Tokyo Electron (limpiado de índice local y moneda) — inusual vs su historia (z=+0.3).,0.15,0.03
+353,2026-09-29,BHP Group vs Freeport-McMoRan,-1.85,-0.24,Freeport-McMoRan le saca 1.8 pp de rendimiento propio 20d a BHP Group (limpiado de índice local y moneda) — inusual vs su historia (z=-0.2).,-4.31,-0.45
