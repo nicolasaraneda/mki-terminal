@@ -18,10 +18,34 @@ Qué sale del árbitro y en qué formato (el formato es parte del contrato: una
 traducción que redondea distinto es una cifra movida):
   · ventana sellada: `cifras.sellada()` (computada desde senales.db en mode=ro
     en el corte `CORTE_README`);
-  · ventana larga: `cifras.larga()` (congelada con procedencia);
-  · contador de E0: `data/backups/sello_dinero.csv` (la copia VERSIONADA de la
-    base del riel de dinero, para que el README sea regenerable en cualquier
-    checkout), N objetivo de `dinero/sello_dinero.py` como texto.
+  · ventana larga: `cifras.larga()` (congelada con procedencia); el «N× la
+    muestra» de su título es el cociente `cifras.larga().n / cifras.sellada()['n']`
+    en el mismo formato entero que tenía el literal (acta §88.5 iii: el
+    literal anterior era un resto de la rama sin deduplicar, derogada por D1;
+    dictamen_13/adversario_readme.md punto 5);
+  · riel de dinero (E0): SÓLO el N objetivo, leído de `dinero/sello_dinero.py`
+    como texto. **El README ya no lleva contador vivo** (acta §90.3, firma de
+    la tarjeta §65, opción b): el sellador mueve `data/backups/sello_dinero.csv`
+    cada noche y nada regenera el README, así que la página se vencía sola y
+    la suite se ponía roja sola. Este generador NO abre ese CSV; la página
+    remite a él con un enlace;
+  · N de intentos del DSR: `backtest/veredicto_51.py`, leído COMO TEXTO
+    (`N_INTENTOS_PREVIO` y `N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS`), sin
+    importar el módulo (acta §88.5 i: manda la máquina). Si el literal no
+    está donde se lo espera, el generador revienta nombrándolo: no adivina;
+  · badges `tests` y `plataforma`: `docs/readme/badges_congelados.json` (acta
+    §90.4, opción b). Son valores CONGELADOS con su fecha de lectura a la
+    vista; este generador no corre la suite ni lee `version.py`. Dos
+    decisiones de redacción, con su razón:
+      (i) el badge decía «passing» y dice «recolectados», porque N sale de
+          `pytest tests/ --collect-only -q` y cuenta también los saltados y
+          los xfail: «passing» al lado de un conteo de recolección diría
+          más que la cifra;
+      (ii) la fecha va DENTRO del badge, idéntica en los dos idiomas, para no
+          agregar prosa nueva en español y para que la paridad numérica
+          entre las dos páginas se mantenga. Va con los guiones duplicados
+          (`2026--09--30`) porque en un badge estático de shields.io el
+          guion simple separa campos.
 Lo que NO está en el árbitro queda LITERAL en la plantilla, en los dos idiomas
 por igual (el test de paridad numérica de tests/test_readme.py exige que sean los
 mismos tokens); su procedencia está censada en el dictamen del adversario de la
@@ -31,7 +55,8 @@ declarada del árbitro, no una cifra a mano nueva.
 from __future__ import annotations
 
 import argparse
-import csv
+import datetime
+import json
 import os
 import re
 import sys
@@ -43,13 +68,20 @@ import cifras  # noqa: E402
 
 DIR_PLANTILLAS = os.path.join(RAIZ, "docs", "readme")
 PLANTILLAS = {"README.es.md": "README.es.tmpl.md", "README.md": "README.en.tmpl.md"}
-RUTA_CSV_DINERO = os.path.join(RAIZ, "data", "backups", "sello_dinero.csv")
 RUTA_SELLADOR = os.path.join(RAIZ, "dinero", "sello_dinero.py")
+RUTA_VEREDICTO = os.path.join(RAIZ, "backtest", "veredicto_51.py")
+RUTA_BADGES = os.path.join(DIR_PLANTILLAS, "badges_congelados.json")
 _RE_MARCADOR = re.compile(r"\{\{([a-zA-Z0-9_]+)\}\}")
 
 
 class MarcadorSinFuente(KeyError):
     pass
+
+
+class FuenteIlegible(ValueError):
+    """La fuente de una cifra existe pero no dice lo que el generador espera
+    leer. Se revienta nombrando el archivo y lo que faltó: publicar un valor
+    adivinado es peor que no publicar."""
 
 
 def _url(valor: str) -> str:
@@ -66,31 +98,63 @@ def _miles(n: int) -> str:
     return f"{n:,}".replace(",", ".")
 
 
-def contador_e0(ruta_csv: str = RUTA_CSV_DINERO) -> dict:
-    """Sesiones selladas del riel de dinero según la copia versionada."""
-    if not os.path.exists(ruta_csv):
-        return {"sesiones_selladas": 0, "cuentan_para_N": 0, "no_cuentan": [], "ultima_fecha_insumo": None}
-    fechas, cuentan = set(), set()
-    with open(ruta_csv, encoding="utf-8") as f:
-        for fila in csv.DictReader(f):
-            fechas.add(fila["fecha_insumo"])
-            if fila.get("cuenta_para_N") == "1":
-                cuentan.add(fila["fecha_insumo"])
-    return {"sesiones_selladas": len(fechas), "cuentan_para_N": len(cuentan),
-            "no_cuentan": sorted(fechas - cuentan),
-            "ultima_fecha_insumo": max(fechas) if fechas else None}
-
-
 def n_objetivo_e0(ruta: str = RUTA_SELLADOR) -> int:
     with open(ruta, encoding="utf-8") as f:
         m = re.search(r"^N_OBJETIVO_E0\s*=\s*(\d+)", f.read(), re.M)
     return int(m.group(1))
 
 
+def n_intentos_dsr(ruta: str = RUTA_VEREDICTO) -> dict:
+    """N de intentos del DSR, leído como texto de `backtest/veredicto_51.py`
+    (acta §88.5 i). No se importa el módulo: arrastra el backtest entero y el
+    generador tiene que poder correr en cualquier checkout.
+
+    Se exigen TRES líneas: los dos literales y la definición de
+    `N_INTENTOS_51` como su suma. Si alguien redefine `N_INTENTOS_51` de otra
+    manera, la suma que publicaría el README dejaría de ser el N que usa la
+    máquina; en ese caso se revienta en vez de publicar."""
+    with open(ruta, encoding="utf-8") as f:
+        texto = f.read()
+    leido = {}
+    for nombre in ("N_INTENTOS_PREVIO", "N_INTENTOS_NUEVOS"):
+        m = re.search(rf"^{nombre}[ \t]*=[ \t]*(\d+)[ \t]*(?:#.*)?$", texto, re.M)
+        if m is None:
+            raise FuenteIlegible(f"{ruta}: no se encontró el literal entero `{nombre} = <n>` a comienzo de línea")
+        leido[nombre] = int(m.group(1))
+    if re.search(r"^N_INTENTOS_51[ \t]*=[ \t]*N_INTENTOS_PREVIO[ \t]*\+[ \t]*N_INTENTOS_NUEVOS[ \t]*(?:#.*)?$", texto, re.M) is None:
+        raise FuenteIlegible(f"{ruta}: `N_INTENTOS_51` ya no está definido como "
+                             "`N_INTENTOS_PREVIO + N_INTENTOS_NUEVOS`; el generador no adivina la suma")
+    return {"previo": leido["N_INTENTOS_PREVIO"],
+            "con_los_del_51": leido["N_INTENTOS_PREVIO"] + leido["N_INTENTOS_NUEVOS"]}
+
+
+def badges_congelados(ruta: str = RUTA_BADGES) -> dict:
+    """Los dos badges congelados (acta §90.4): cuántos tests recolecta la
+    suite y qué versión de plataforma había, EL DÍA en que se leyeron. No se
+    regeneran solos; los actualiza quien relea la máquina, junto con la fecha.
+    Se valida la forma porque un badge mal formado no rompe nada a la vista:
+    shields.io dibuja igual lo que le llegue."""
+    with open(ruta, encoding="utf-8") as f:
+        b = json.load(f)
+    n, version, leido_el = b.get("tests_recolectados"), b.get("plataforma_version"), b.get("leido_el")
+    if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
+        raise FuenteIlegible(f"{ruta}: `tests_recolectados` tiene que ser un entero positivo, vino {n!r}")
+    if not isinstance(version, str) or re.fullmatch(r"\d+\.\d+\.\d+", version) is None:
+        raise FuenteIlegible(f"{ruta}: `plataforma_version` tiene que ser texto X.Y.Z, vino {version!r}")
+    if not isinstance(leido_el, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}", leido_el) is None:
+        raise FuenteIlegible(f"{ruta}: `leido_el` tiene que ser una fecha ISO AAAA-MM-DD, vino {leido_el!r}")
+    try:
+        datetime.date.fromisoformat(leido_el)
+    except ValueError as e:
+        raise FuenteIlegible(f"{ruta}: `leido_el` no es una fecha del calendario: {leido_el!r}") from e
+    return {"tests_recolectados": n, "plataforma_version": version, "leido_el": leido_el}
+
+
 def valores() -> dict:
     c = cifras.sellada()
     L = cifras.larga()
-    e0 = contador_e0()
+    intentos = n_intentos_dsr()
+    badges = badges_congelados()
     v = {
         # --- ventana sellada (cifras.sellada) ---
         "n": str(c["n"]),
@@ -129,12 +193,19 @@ def valores() -> dict:
         "larga_ventaja_pp": f"{L.ventaja_pp:+.2f}",
         "larga_ventaja_pp_url": _url(f"{L.ventaja_pp:+.2f}"),
         "larga_p_francfort": f"{L.p_francfort:.3f}",
-        # --- riel de dinero (copia versionada de la base + texto del sellador) ---
-        "e0_sesiones_selladas": str(e0["sesiones_selladas"]),
-        "e0_cuentan_para_N": str(e0["cuentan_para_N"]),
-        "e0_ultima_fecha_insumo": str(e0["ultima_fecha_insumo"]),
-        "e0_no_cuentan": (", ".join(e0["no_cuentan"]) if e0["no_cuentan"] else "none so far"),
+        # cuántas veces la muestra sellada cabe en la larga: cociente de los dos n
+        # del árbitro, entero como el literal que reemplaza (acta §88.5 iii)
+        "larga_veces": f"{L.n / c['n']:.0f}",
+        # --- riel de dinero: sólo la constante firmada, ningún contador (acta §90.3) ---
         "e0_N_objetivo": str(n_objetivo_e0()),
+        # --- N de intentos del DSR, texto de backtest/veredicto_51.py (acta §88.5 i) ---
+        "n_intentos_previo": str(intentos["previo"]),
+        "n_intentos_51": str(intentos["con_los_del_51"]),
+        # --- badges congelados con fecha a la vista (acta §90.4) ---
+        "badge_tests_n": str(badges["tests_recolectados"]),
+        "badge_plataforma": badges["plataforma_version"],
+        # shields.io: en un badge estático el guion simple separa campos
+        "badge_leido_el_url": badges["leido_el"].replace("-", "--"),
     }
     for nombre, exchange, n, ventaja, margen in L.por_bolsa:
         clave = {"XTKS": "tokio", "XTAI": "taipei", "XKRX": "seul", "XETR": "francfort"}[exchange]

@@ -89,7 +89,9 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
     UTC de la última sesión del SOX usada — cuándo era conocible el insumo).
     Con `reintentos_parciales` > 0 (solo el camino launchd; el fallback del
     dashboard jamás espera), una descarga incompleta se reintenta antes de
-    sellar. Devuelve un dict con lo que hizo."""
+    sellar. Si la sesión del SOX usada no ha cerrado al instante de emisión
+    (available_at > timestamp_utc), NO sella y lo dice en `motivo` (acta
+    §90.1 b). Devuelve un dict con lo que hizo."""
     if senales.ya_existe_snapshot_hoy():
         return {"snapshot": False, "motivo": "ya existe snapshot de hoy"}
 
@@ -144,6 +146,34 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
         else:
             print("  AVISO ancla temporal: available_at cayó al reloj de pared "
                   "— la predicción no trae sox_fecha", flush=True)
+        # Guarda de conocibilidad (acta §90.1 b, 29-sep-2026): si la sesión
+        # de `sox_fecha` no ha cerrado al instante de emisión, NO se sella.
+        # El 28-sep-2026 el PC despertó de una suspensión y este job selló a
+        # las 13:42 de Nueva York, con NYSE abierto: la fuente etiqueta la
+        # barra intradía con la fecha del día, y 24 filas quedaron con
+        # `available_at` (20:00 UTC) posterior a su `timestamp_utc` (17:42
+        # UTC). La condición es EXACTAMENTE `available_at > emisión`, con
+        # margen CERO: el margen de 2 h de `calendarios.sesion_ya_cerro` es
+        # criterio de VERIFICACIÓN, no de insumo (lo declara `datos.py` del
+        # retador, líneas 57-59; el nombre de esa carpeta no se escribe acá
+        # porque un test exige que el camino de sellado no la mencione), y
+        # acá apagaría el sello de más de la mitad de las sesiones del año
+        # (a las 18:15 de Chile el cierre de NYSE lleva 15 min, 1 h 15 o
+        # 2 h 15 según el cruce de husos; tests/test_conocibilidad.py lo
+        # barre). La rama del `except` de arriba deja `available_at ==
+        # ts_emision` y sigue sellando como antes: la igualdad la alerta el
+        # vigía. El motivo NO es "sin datos de mercado", que es el que
+        # dispara los reintentos de 20/40 min de main(): reintentar no
+        # cierra una sesión.
+        if datetime.fromisoformat(available_at) > ahora_utc:
+            return {"snapshot": False,
+                    "motivo": (f"la sesión del SOX usada no ha cerrado: "
+                               f"sox_fecha {sox_fecha} cierra a las "
+                               f"{available_at} y la emisión es de las "
+                               f"{ts_emision} — no se sella (acta §90.1 b)"),
+                    "sox_fecha": str(sox_fecha), "cierre_utc": available_at,
+                    "emision_utc": ts_emision,
+                    "descarga": f"{salud['ok_n']}/{salud['total']}"}
         for _, fila in pred.iterrows():
             t = fila["Ticker"]
             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")

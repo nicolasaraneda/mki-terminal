@@ -35,9 +35,9 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-650%20passing-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-1025%20recolectados%20al%202026--09--29-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
-![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
+![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--09--29-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
@@ -175,7 +175,7 @@ pares que apuntaban a una sesión que su insumo no podía predecir; de las
 Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 `senales.db` en modo solo lectura.
 
-### Larga — reconstruida, 59× la muestra
+### Larga — reconstruida, 61× la muestra sellada (14.618 / 238)
 
 **n = 14.618 · +15.66 pp · McNemar p ≈ 0** (χ² con corrección de continuidad, `GEMELO/control_lineal._mcnemar`; la binomial exacta no se computó a este n), sobre ocho años y cuatro
 bolsas, con el modelo de producción reconstruido (misma función, misma
@@ -287,8 +287,8 @@ experimento** alrededor de ella:
   ([`GEMELO/DISEÑO.md`](GEMELO/DISEÑO.md)). Cuando el harness contradijo
   una cifra del documento, **mandó el harness** y la corrección se publicó
   aparte, con fecha posterior.
-- **El N del DSR se declara antes de cada corrida y solo sube.** Va en 352
-  (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 358 con los seis del 5.1):
+- **El N del DSR se declara antes de cada corrida y solo sube.** Va en 354
+  (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 360 con los seis del 5.1):
   re-evaluar la misma configuración sobre otra ventana produce otro
   resultado publicable entre los cuales se puede elegir, y **elegir entre
   resultados es exactamente lo que el Deflated Sharpe deflacta**. Contar

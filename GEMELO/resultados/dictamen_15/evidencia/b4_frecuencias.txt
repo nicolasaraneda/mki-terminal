@@ -1,0 +1,40 @@
+journal_mode de la base: delete
+snapshots: 60, de 2026-07-04 a 2026-09-29
+
+días de semana en el rango: 62
+  con sello emitido a las 18:40 o antes: 52
+  con sello emitido DESPUÉS de las 18:40 (el backup de las 18:40 no lo habría visto): 6
+      ('2026-07-29', '21:23:34', 'programado', [])
+      ('2026-07-31', '19:40:37', 'programado', [])
+      ('2026-08-03', '22:57:44', 'programado', ['Backup diario 2026-08-03'])
+      ('2026-08-05', '21:38:52', 'programado', ['Backup diario 2026-08-05'])
+      ('2026-08-10', '19:45:34', 'programado', [])
+      ('2026-08-21', '19:41:26', 'programado', [])
+  SIN sello en todo el día: 4
+      ('2026-07-06', 'Mon', [])
+      ('2026-07-07', 'Tue', [])
+      ('2026-07-10', 'Fri', [])
+      ('2026-09-25', 'Fri', [])
+  con sello emitido ANTES de las 18:15 (manual, dashboard o despertar): 1
+      ('2026-09-28', '14:42:58', 'programado')
+
+sábados y domingos con sello: 2
+      2026-07-04 Sat 15:27:21 origen=None
+      2026-07-05 Sun 06:06:05 origen=manual
+
+commits de data/backups en sábado o domingo:
+      2026-07-05 ['Etapa 4.7 F6: cierre — guardia responsive, capturas, README-DEV', 'Etapa 4.6 núcleo: integridad de medición']
+      2026-07-25 ['Backup diario 2026-07-25: CSV de senales.db al día (sellos 13–24 jul pendientes desde el 5-jul)']
+      2026-08-29 ['Backup diario 2026-08-29']
+      2026-08-30 ['Backup diario 2026-08-30']
+      2026-09-19 ['Corrida 13: fuga E4-bis del sellador corregida, sonda del cierre propuesta, README en inglés generado desde el árbitro']
+
+últimos commits de data/backups:
+      2026-09-18 (Fri) x1 'Backup diario 2026-09-18'
+      2026-09-19 (Sat) x1 'Corrida 13: fuga E4-bis del sellador corregida, sonda del cierre propuesta, README en inglés generado desde el árbitro'
+      2026-09-21 (Mon) x1 'Backup diario 2026-09-21'
+      2026-09-22 (Tue) x1 'Backup diario 2026-09-22'
+      2026-09-23 (Wed) x1 'Backup diario 2026-09-23'
+      2026-09-24 (Thu) x1 'Backup diario 2026-09-24'
+      2026-09-28 (Mon) x2 'Backup diario 2026-09-28'
+      2026-09-29 (Tue) x1 'Backup diario 2026-09-29'

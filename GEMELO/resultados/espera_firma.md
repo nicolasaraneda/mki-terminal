@@ -1628,6 +1628,24 @@ se confirma con una línea o se cambia (y cambiarla reinicia el contador).
 
 ## 58. A qué hora dispara el sellador de dinero, y qué es «insumo completo» (corrida 13, 19-sep-2026) — **FIRMADA EN PARTE el 19-sep-2026 (acta §88.1)**
 
+> **Regla de decisión PROPUESTA en `GEMELO/propuestas/regla_58.md`, sellada el 29-sep-2026 a las
+> 23:08:17 de Chile con sha256 `ca2ccd536f9d956c2b4a8404ec800341f29e4a0e1f1cd20720c08eca15b9a436`,
+> antes del primer dato de madrugada** (primer disparo de la franja: 01:05 del 30-sep) y antes de las
+> 00:35, así que la noche del 29-sep es la primera candidata y el plazo es la sesión del 26-oct-2026
+> (acta §91.3; dictamen y re-dictamen del `estadistico-adversario` en
+> `dictamen_15/adversario_regla58.md`; anexo 1 fechado en `regla_58_anexo_1.md`, sha256
+> `2c9eec1de7ae5f98b4a2908312e19f9d42f7ef335520c1739abb6347118f5fc6`). **Firmarla es de Nicolás.**
+> Lo que la regla dejó escrito y esta tarjeta no decía: (1) **toda hora candidata de (b) es posterior
+> a la medianoche de Nueva York, y con el código vigente una emisión así en día sin sesión da
+> `dia_sin_sesion` y no cuenta (MEDIDO con funciones puras): (b) perdería viernes y vísperas de
+> feriado, 4 de cada 20 sesiones, salvo que el acta que la aplique lo resuelva; la frase de abajo
+> «(b) no reinicia el contador, la definición de "cuenta" no cambia» vale sólo para una hora anterior
+> a la medianoche**; (2) por eso la rama (b) lleva umbral 5 de 10 (el punto de empate) y las demás 3
+> de 10, con la convención de límite inferior de Wilson fijada; (3) con la tasa del antecedente
+> (3 de 11 sesiones incompletas a las 23:30 NY, [9,7 · 56,6] %) la regla indica (b) con probabilidad
+> 0,11: es conservadora a propósito y lo dice; (4) K = 10 noches válidas, una sola lectura, y el
+> procedimiento para mover el timer sin que dispare al activar (sección 6).
+>
 > **FIRMADA EN PARTE (§88.1):** «opción (a) por ahora» — el timer sigue en
 > `Mon..Fri 23:30 America/New_York` y **§57 no cambia**. La elección entre **(b)** (mover el sellador
 > más tarde) y **(c)** sigue **ABIERTA** y espera 5 a 10 noches de dato de la sonda.
@@ -1775,7 +1793,16 @@ noche) y aceptar dos copias. Sin firma escrita acá o en acta, no se ejecuta nin
 
 ---
 
-## 61. El riel de medición sella sin el término de conocibilidad, y el 28-sep-2026 lo demostró (corrida 14)
+## 61. El riel de medición sella sin el término de conocibilidad, y el 28-sep-2026 lo demostró (corrida 14) — **FIRMADA el 29-sep-2026 (acta §90.1): opciones (a), (b) y (d), sin efecto retroactivo**
+
+> **FIRMADA (§90.1) y APLICADA por la corrida 15** (bitácora 15, sección 2): (a) la guarda
+> `available_at <= timestamp_utc` en `senales.py::verificar_apertura_pendientes()`, (b) `snapshot.py`
+> se niega a sellar si `available_at > emisión` (margen cero, por dictamen del director: el margen de
+> 2 h de `sesion_ya_cerro` es de verificación y apagaría el sello diario), (d) la exclusión por regla
+> en `backtest/linea_base.py::cargar()`. Las 24 filas del 28-sep conservan su estado; ninguna cifra
+> publicada cambió. El corte de método es la hora de aplicación al árbol real que declara el acta
+> §92. Lo que la aplicación dejó abierto está en las tarjetas §71 (el ancla de §90.2, detenida), §72
+> (la guarda es necesaria y no suficiente) y §73 (las métricas vivas que no pasan por la exclusión).
 
 **El hecho, MEDIDO y dictaminado — con una inferencia marcada.** El 28-sep-2026 los ocho timers
 dispararon juntos a las **14:42:52** (medido, journal). **Que la máquina volviera de suspensión, y a las
@@ -1944,7 +1971,16 @@ final, así que no dice cuánto se desvía una barra parcial en general.
 
 ---
 
-## 62. Qué debe hacer el sellador de dinero con un disparo fuera de hora que deja una fecha «sellada» en estado no verificable (corrida 14)
+## 62. Qué debe hacer el sellador de dinero con un disparo fuera de hora que deja una fecha «sellada» en estado no verificable (corrida 14) — **FIRMADA EN PARTE el 29-sep-2026 (acta §90.6): (a) y (d), con la política de retención escrita antes; aplicación pendiente de acta posterior**
+
+> **FIRMADA EN PARTE (§90.6).** La corrida 15 escribió la política de retención
+> (`GEMELO/propuestas/parches/politica_evidencia_no_verificable.md`) y el parche NO APLICADO
+> (`sello_no_verificable.diff` con sus tests y su `.md`). **Hallazgo de la política, leído del
+> código: la opción (a) tal como está firmada no se puede implementar**, porque `sellos_dinero` tiene
+> `UNIQUE (fecha_insumo, ticker, juego)` y las filas no verificables y las buenas de una fecha no
+> pueden convivir; el parche toma el camino T (tabla aparte `intentos_no_verificables`, aditiva) y
+> deja el camino M (migrar el esquema, que reescribe la tabla) sin implementar. Ver la tarjeta §75.
+> `dinero/sello_dinero.py` del árbol real no cambió.
 
 **El hecho.** El 28-sep a las 14:42:52 el sellador disparó con la bolsa abierta y escribió 33 filas
 con `fecha_insumo` 2026-09-28, `estado='no_verificable_timing'`, `estado_timing='roto'`,
@@ -1979,8 +2015,12 @@ Sin (d) la tarjeta se firma resolviendo el problema chico y deja el grande.
 
 ---
 
-## 63. La supresión de un disparo atrasado no es configurable en systemd: la guarda va en el job (corrida 14)
+## 63. La supresión de un disparo atrasado no es configurable en systemd: la guarda va en el job (corrida 14) — **FUNDIDA en la tarjeta 66 por el acta §91.5 (29-sep-2026)**
 
+> **FUNDIDA (§91.5):** su premisa, sus tres opciones para la sonda y su errata de `Description=`
+> viven ahora en la tarjeta §66 (inventario de los ocho jobs), sección F. El texto de abajo se
+> conserva tal cual.
+>
 > **Nota del `director-programa` al cierre de la corrida 14: esto es más una PREMISA que una tarjeta.**
 > Su contenido —no hay knob de systemd, la guarda va en el job— es lo que sostiene la opción (b) de §61
 > y la (a) de §62, y su única decisión propia (si el job de la sonda debe marcar la fila al escribir) es
@@ -2017,7 +2057,12 @@ repo se corrigió en la corrida 14; la unidad instalada la edita Nicolás.
 
 ---
 
-## 64. Entre los ocho jobs no hay ninguna dependencia: el orden lo da sólo el reloj (corrida 14)
+## 64. Entre los ocho jobs no hay ninguna dependencia: el orden lo da sólo el reloj (corrida 14) — **FIRMADA el 29-sep-2026 (acta §90.8): opción (c)**
+
+> **FIRMADA (§90.8) y APLICADA por la corrida 15:** `mki_backup.py` se niega a commitear si el
+> snapshot del día no está sellado o si `snapshot.py` está vivo, y lo registra en su log (bitácora 15,
+> sección 4; `tests/test_backup_orden.py`). Lo que el acta no definía (día de semana sin sello que ya
+> no puede llegar; fin de semana) quedó como elección de agente en la tarjeta §70.
 
 **Medido**, del journal del 28-sep:
 
@@ -2045,7 +2090,14 @@ commit mal nombrado. Toca unidades instaladas: no se aplicó nada.
 
 ---
 
-## 65. El README lleva un contador vivo que nada regenera (corrida 14)
+## 65. El README lleva un contador vivo que nada regenera (corrida 14) — **FIRMADA el 29-sep-2026 (acta §90.3 opción b, §90.4 opción b)**
+
+> **FIRMADA (§90.3, §90.4) y APLICADA por la corrida 15** (bitácora 15, sección 3): el README no
+> lleva contador; la viñeta de E0 remite al CSV versionado; los badges `tests` y `plataforma` son
+> valores congelados con la fecha de lectura dentro del badge (`docs/readme/badges_congelados.json`);
+> los dos rojos de `tests/test_readme.py` desaparecen. **Errata del acta §90.3:** pide remitir a
+> `/salud`, y `/salud` no muestra el riel de dinero; lo muestra `/sellos`. La mención se quitó;
+> apuntar a `/sellos` es decisión de Nicolás (tarjeta §76).
 
 **Medido.** La suite abrió y cerró la corrida 14 con **dos rojos**:
 `tests/test_readme.py::test_los_dos_readme_son_lo_que_el_generador_produce` y
@@ -2079,3 +2131,752 @@ decidir quién produce ese artefacto y cuándo —la única fuente del número d
 suite—; (b) congelados con su fecha a la vista; (c) retirados. El acta firmó reemplazarlos, **no**
 quitarlos, así que (c) necesita firma nueva. La corrida 14 no escribió código de badges a propósito
 (el director lo marcó como rama lateral: máquina nueva para un badge).
+
+---
+
+## 66. Inventario de los ocho jobs ante un disparo fuera de hora, con una novena fila para el cambio de calendario de un timer (corrida 15) — funde §63
+
+> Bloque 5 de la corrida 15, redactado por un agente de sólo lectura e integrado por el orquestador con las
+> correcciones que siguen entre corchetes; §63 queda marcada «FUNDIDA en la tarjeta 66 por el acta §91.5» sin
+> borrar su texto.
+>
+> **Recomendación del `director-programa` al cierre (`dictamen_15/director_cierre.md`), para la firma:** de las
+> once tarjetas de la corrida 15, fundir **§72** en la fila 2 de esta tabla y **§70** en la fila 4 (son la
+> misma decisión, qué hace cada job fuera de hora, partida en tres documentos); sacar **§74** de la cola de
+> firmas porque es un acto de cinco minutos y no una decisión (queda en el «Primero» de `ESTADO.md`); y no dar
+> tarjeta propia a **§69**. Quedarían siete: §66 (con §70 y §72 adentro), §71, §73, §75, §76, §67, §68. El
+> orquestador no las fundió al cierre porque el acta §92, la bitácora y `ESTADO.md` ya las citan por número. Sólo lectura: ningún archivo del repo se tocó, ninguna
+> unidad de systemd se operó, ningún job ni test se corrió. Lecturas hechas el **29-sep-2026 entre las 22:11 y
+> las 22:43 de Chile** (hora leída de `date` antes de cada consulta; la ejecución se cortó ~22:40 por cuota de
+> la API y se retomó a las 23:01), sobre el árbol real en `HEAD = 2f73eb2` (`main`): **las guardas que la
+> corrida 15 planifica NO estaban en ese árbol al leer**; donde se dice qué hará un job con ellas va marcado
+> **PLANIFICADO en la corrida 15** y es deducción, no observación. Bases abiertas sólo con
+> `sqlite3.connect('file:...?mode=ro', uri=True)`, fuera del tramo 00:15–00:50. `data/sonda_cierre.csv` y
+> `data/sonda_cierre.log` se leyeron filtrados por `timestamp_utc < 2026-09-30T04:00:00Z` (acta §91.3):
+> ninguna fila de madrugada existía ni se leyó (última lectura 22:27). Cada cifra lleva su fuente.
+
+**Qué hay que decidir, en una frase.** Para cada uno de los ocho jobs, si ante un disparo fuera de su hora
+**se niega**, **marca** o **sigue igual**; y qué procedimiento rige un **cambio de calendario** de un timer
+instalado, que el 29-sep disparó la sonda a las 18:38:57 sin que nadie lo pidiera.
+
+**Qué desbloquea.** Cierra §63 (fundida acá). Pone en contexto las tres guardas que la corrida 15 planifica
+(§90.1 b, §90.8, y la (a) del verificador) y las dos que no toca (vigía, sonda). Da el procedimiento sin el
+cual mover la hora del sellador (§58 b/c) puede quemar una sesión de N en el acto (§91.7, tercer punto).
+
+**Cuánto cuesta decidirlo.** ~25 minutos de lectura. Nueve decisiones chicas; tres ya están firmadas
+(§90.1 b, §90.6, §90.8) y acá sólo se las sitúa. **Las dos filas con más en juego son la 2 (snapshot) y la 9.**
+
+---
+
+### A. Los dos eventos, MEDIDOS
+
+**A.1 El 28-sep-2026, 14:42:52 Chile (13:42 de Nueva York, NYSE abierta).** `journalctl --user`, `-o short-precise`,
+las ocho unidades. Arrancaron en 59 ms, **en el orden alfabético de sus nombres de unidad** (n = 1; no se verificó
+que sea regla): backup .702, noticias .704, reporte .706, sello-dinero .708, snapshot .709, sonda .710,
+vigia-rechequeo .734, vigia .761.
+
+| job | arranque → fin (journal) | qué hizo, con su fuente |
+|---|---|---|
+| `mki-vigia-rechequeo` | 14:42:52.734 → 14:42:53.303 | «sin alerta pendiente de hoy — nada que re-chequear» (`data/vigia.log:216-217`). Corrió **antes** de que el vigía escribiera el marcador (17:42:55.339Z). |
+| `mki-backup` | 14:42:52.702 → 14:42:53.790 | commit `5321f6b` «Backup diario 2026-09-28», AuthorDate `2026-09-28T14:42:53-03:00`: **3 archivos, +340** — `sello_dinero.csv` (+33 filas del insumo 2026-09-24, timestamp 2026-09-25T03:30:04Z) y `ext_2026-09-24.{csv,meta.json}`; **ningún** `senales_*` (`git show --stat`). Es el material que el backup del viernes 25, que nunca corrió, habría commiteado. `data/backup.log:67-69`. |
+| `mki-vigia` | 14:42:52.761 → 14:42:56.648 | `data/vigia.log:218-226`: **4 FALLA** (snapshot NO se selló; descarga sin snapshot; noticias NO corrió — «proceso 39845 vivo desde Mon Sep 28 14:42:51»; reporte NO hay envío) y **2 OK** («backup: commit de hoy presente» — sostenido por `5321f6b`, de 2 s antes —; «ancla temporal: sin predicciones selladas hoy que revisar»); marcador escrito; **alerta Telegram enviada 17:42:56.18Z**. |
+| `mki-reporte` | 14:42:52.706 → 14:42:56.985 | `data/reporte.log:45-46`: compuesto 17:42:55.500Z, **400 caracteres**, «Reporte enviado 14:42» (17:42:56.46Z): **3,4 s antes de que el sello existiera**. |
+| `mki-sonda-cierre` | 14:42:52.710 → 14:42:58.587 | **36 filas**, `timestamp_utc 2026-09-28T17:42:55.212430Z`, `hora_ny 13:42`, `sesion_ny 2026-09-28`, 35 con `es_sesion_de_hoy = 1` (CSV filtrado); `data/sonda_cierre.log:33` «13:42 NY · sesión 2026-09-28 · 35/36 · faltan: ['TOELY']». |
+| `mki-sello-dinero` | 14:42:52.708 → 14:43:01.401 | `data/sello_dinero.log:441-469`: `sellada`, `fecha_insumo 2026-09-28`, `timestamp_utc 17:43:01.001Z`, `available_at 20:00Z`, **`no_verificable_timing` / `roto` / `cuenta_para_N 0`**, `insumo_completo false` (TOELY), **33 filas**, `ext_2026-09-28.csv` (sha `2e984469…`) escrito y respaldado. Base (ro): 33 filas en ese estado. |
+| `mki-snapshot` | 14:42:52.709 → 14:43:30.755 (43 s, sin reintentos) | `data/snapshot.log:133-140`: **selló** `{'snapshot': True, 'predicciones': 8, 'regimen': 'Alcista · vol baja', 'roca_chip': 44, 'descarga': '28/28'}`; **envió la retractación del vigía 17:43:07.30Z** (:135-136, `_epilogo_vigia`); verificador apertura 9, puntaje 44; 8 CSV; **salud de datos OK (27 tickers)** (:140). Base (ro): `snapshots` 2026-09-28 `timestamp_utc 17:42:58.943983Z`, `sox_usado_pct −1,63`, `sox_fecha 2026-09-28`; `senales_ticker`: **24 filas con `available_at > timestamp_utc`, única fecha así en la tabla**. |
+| `mki-noticias` | 14:42:52.704 → 14:45:21.298 | `data/noticias.log:120-125`: dedup (9 duplicados), **286 titulares nuevos** (17:45:19Z), «análisis falló en el lote 1: Error code: 400 … credit balance is too low», **analizados 0 de 3361, costo 0,0000 USD**; ledger `data/costos_ia.log:39` `resultado 'ok'`, `costo_usd 0.0`. |
+
+Telegram ese día: **cuatro mensajes, tres fuera de hora en 11 s** (alerta 17:42:56.18Z, reporte 17:42:56.46Z,
+retractación 17:43:07.30Z) y el reporte de las 18:25. La bitácora 14 §0-bis.9 titula «dos mensajes»: la
+retractación es el tercero. **Orden de fin:** la bitácora 14 (§0-bis.8, §64, acta §89.6) dice que backup
+«terminó primero»; el journal dice que **`mki-vigia-rechequeo` terminó primero (14:42:53.303) y backup segundo
+(14:42:53.790)**: backup fue el primero **de los que escriben**. Errata menor, candidata.
+
+**A.2 A la hora normal, el mismo día (todo medido).** noticias 17:50:00 → 17:52:40: 96 nuevos, la misma falla
+400, 0 USD (`noticias.log:126-131`). **snapshot 18:15:00 → 18:15:14: `{'snapshot': False, 'motivo': 'ya existe
+snapshot de hoy'}`**, verificador apertura 0, puntaje 4, salud: «Tokyo Electron (8035.T): salto de −80 % el
+2026-09-28 — revisar split/dato corrupto» (`snapshot.log:141-147`). reporte 18:25:00 → 18:25:02: **831
+caracteres**, «Reporte enviado 18:25» (`reporte.log:47-48`). backup 18:40:00: **`f7b65e0`**, 9 archivos, +813 −22,
+con `ext_2026-09-28.{csv,meta.json}` y la fila de `snapshots` del 28 (`git show --stat`). vigía 19:00:00: **todo OK**,
+incluido «ancla temporal: 8/8 filas con cierre del SOX» sobre las 8 filas invertidas (`vigia.log:227-234`;
+`mki_vigia.py:97` prueba `av == ts`). rechequeo 20:30:00: sin marcador (`vigia.log:235-236`). sonda 21:05 → 00:35
+Chile, ocho pases: 1/36 a las 20:05–21:05 NY, 35/36 de 21:35 a 23:35 NY (`sonda_cierre.log:34-41`). **sellador
+00:30:00 → 00:30:04 del 29: `divergencia_registrada`, 0 filas, `decisiones_distintas 0`** (`sello_dinero.log:473-482`);
+base (ro): `divergencias_sello` id 2, `fecha_insumo 2026-09-28`, `timestamp 2026-09-29T03:30:04.346Z`;
+`sellos_dinero` 462 filas, 14 fechas, **9 cuentan**. La predicción de la bitácora 14 §0-bis.2 se cumplió.
+
+**A.3 El 29-sep-2026, 18:38:57 Chile (17:38 NY, 98 min después de la campana), cambio de calendario.** Journal
+(`systemd[317]`, mismo proceso, así que el orden de las marcas es el orden de emisión): `.165914` «Reload
+requested from client PID 91601 ('systemctl')» · `.274150` «Reloading finished in 106 ms» · **`.327292` «Starting
+mki-sonda-cierre.service»** · `.330093` «Stopped mki-sonda-cierre.timer» · `.330127` «Stopping…» · `.330264`
+«Started mki-sonda-cierre.timer» · `18:38:59.973` Finished. `systemctl show`: `Persistent=no`,
+`ActiveEnterTimestamp 18:38:57`. Último disparo antes del cambio: **29-sep 00:35:00** Chile (journal). Escribió
+**36 filas**, `timestamp_utc 2026-09-29T21:38:57.684Z`, `hora_ny 17:38`, `sesion_ny 2026-09-29`, **35/36 con la
+barra de hoy** (`sonda_cierre.log:42`); a las 20:05, 20:35 y 21:05 NY, **1/36** (`:43-45`).
+
+**A.4 Censo, todo el journal retenido (desde 2026-08-24T23:14).** 212 arranques de `mki-*.service`; **10 fuera
+del calendario instalado**: los 8 del 28-sep, el de la sonda del 29-sep, y **uno el 25-ago 19:34:41**
+(`mki-vigia-rechequeo`, 2 min después de instalar los timers; compatible con un arranque manual de prueba; no
+investigado). Tres activaciones de timers **sin** disparo inmediato: 25-ago 19:32:41 (instalación, sin stamp),
+19-sep 22:26:43 (la sonda, primera vez), 20-sep 02:05:59 (arranque del manager, los ocho). Ninguna cambió un
+calendario con historia. **n = 1 despertar, n = 1 cambio de calendario.**
+
+**A.5 La suspensión, acotada por dos relojes (INFERENCIA con dos medidas que coinciden).** El kernel invitado
+arrancó el 20-sep 02:05:59 (journal, primer mensaje de `systemd[317]`). A las 22:27:49 del 29-sep,
+`CLOCK_MONOTONIC = CLOCK_BOOTTIME = 551.798,7 s` (6 d 9 h 16 min) contra **850.910 s de reloj de pared** desde ese
+arranque: **3 d 11 h 05 min que ningún reloj del invitado contó** — y `BOOTTIME = MONOTONIC` dice que el invitado
+no vio suspensión propia: la VM fue pausada desde afuera. Si fue una sola pausa terminada a las 14:42:52 del 28,
+empezó **≈ 25-sep 03:37**. El journal del SISTEMA lo confirma por otra vía: `systemd-resolved: Clock change
+detected` cada 30 s, con un único hueco mayor a 2 min entre el 20-sep y hoy, **del 2026-09-25 03:37:10 al
+2026-09-28 14:42:52** (medido por el orquestador, bitácora 15 §0.10; ±30 s). La ventana «[vie 02:16, vie 17:50]»
+de la corrida 14 queda superada: la pausa empezó a las **03:37 del viernes 25**. Lo que sigue sin registro es la
+causa: que fue una suspensión del host es testimonio de Nicolás (acta §91.5), no un evento del journal.
+
+---
+
+### B. Tabla principal
+
+| # | job (OnCalendar, `Persistent`) | 1. qué hizo el 28-sep a las 14:42 | a su hora normal | 2. guarda al cerrar la corrida 15 | 3. costo MEDIDO (n = 1) | 4. recomendación del agente |
+|---|---|---|---|---|---|---|
+| 1 | `mki-noticias` (`Mon..Fri 17:50 America/Santiago`, true) | RSS: 286 titulares; 1 llamada IA rechazada (400 crédito); 0 USD | 96 titulares; misma falla; 0 USD | **ninguna de ventana**; tope diario 0,50 USD con freno entre lotes + timeout de red | 0 USD, nada publicado, nada perdido | (iii) nada para la ventana; el problema del job es otro (E.1) |
+| 2 | `mki-snapshot` (`Mon..Fri 18:15`, true) | **selló** 24 filas con barra intradía; `roca_chip` 44; `available_at` 2 h 17 min posterior a la emisión | «ya existe snapshot de hoy»; no re-sella | **PLANIFICADO**: (b) se niega si `available_at > emisión`; (a) verificador marca; (d) medición excluye; [el ancla de §90.2 quedó DETENIDA: las dos anclas difieren en 33 filas, tarjeta §71] | 24 filas selladas con insumo no reproducible; sesión del 28 sin sello con cierre; publicadas por reporte y API | (i) exactamente como está firmada: sin margen, sin reloj de pared; frescura y fin de semana como decisión aparte (D) |
+| 3 | `mki-reporte` (`Mon..Fri 18:25`, true) | reporte de 400 caracteres con huecos declarados, 3,4 s antes del sello | 831 caracteres desde el sello de las 13:42 NY: «sellado 14:42 Chile», SOX −1,63, Roca→Chip 44 | **ninguna**; sin anti-duplicados por diseño | 2 mensajes en Telegram: 1 de ruido, 1 con cifras de barra parcial; nada perdido | (ii) marcar: el mismo mensaje con la línea «disparo fuera de hora» |
+| 4 | `mki-backup` (`Mon..Fri 18:40`, true) | commit `5321f6b` «Backup diario 2026-09-28» **sin nada del 28** | `f7b65e0`, 9 archivos, con la matriz de media sesión | **APLICADO** §90.8: se niega si el snapshot del día no está sellado o si `snapshot.py` está vivo; [fin de semana y día sin sello final: commitea, elección de agente, tarjeta §70] | 1 commit con nombre que no describe su contenido; nada perdido | (i) como está firmada; en fin de semana la misma regla (posterga, no pierde) [la corrida implementó lo contrario: §70] |
+| 5 | `mki-vigia` (`Mon..Fri 19:00`, true) | 4 FALLA + 2 OK (uno sostenido por el commit prematuro); alerta enviada; retractada por snapshot.py 11 s después | todo OK, incluida el ancla temporal sobre las 8 filas invertidas | sólo exención de fin de semana; **no se toca en esta corrida** (tarjeta: `av == ts` Y `av > ts`) | 1 alerta falsa + 1 retractación; nada perdido | (ii) marcar «pase fuera de hora», en la misma tanda que `av == ts`; **no** (i): un vigía que calla por una guarda mal escrita es el peor falso negativo de la tabla |
+| 6 | `mki-vigia-rechequeo` (`Mon..Fri 20:30`, true) | nada: corrió 2 s antes del marcador | nada: el marcador ya estaba consumido | por construcción sólo actúa con marcador de HOY | 0 | (ii) que el texto use la hora real y no el literal `20:30`, al tocar el vigía |
+| 7 | `mki-sonda-cierre` (`Mon..Fri 20..23:05,35` + `Tue..Sat 00..03:05,35 America/New_York`, **false**) | 36 filas a las 13:42 NY, bolsa abierta; el lector las descarta y declara | 8 pases normales | job: ninguna; lector: descarta sólo «antes del cierre»; **no se toca en esta corrida** | 36 filas pre-cierre (28) descartadas + **36 post-cierre fuera de grilla (29) que el lector NO descarta** | (ii) el lector rotula y excluye «fuera de grilla», corrida 16; `regla_58.md` lo dice desde esta noche |
+| 8 | `mki-sello-dinero` (`Mon..Fri 23:30 America/New_York`, true) | 33 filas `no_verificable_timing` + `ext_2026-09-28.*` de media sesión | divergencia, 0 filas, 0 decisiones distintas | E4 marca (en producción); §90.6 (a)+(d) **firmado, NO aplicado** | sesión del 28 fuera de N (9 cuentan); cupo de evidencia ocupado y versionado | (ii) tal como está firmada en §90.6; hasta aplicarla la exposición es la del 28-sep |
+| 9 | cambio de calendario (`daemon-reload` + `restart`) | — | — | ninguna: **`Persistent=false` no lo impidió** (medido) | 36 filas fuera de grilla el 29-sep, que contaminan la noche del 29 en el dato de §58 | procedimiento (P1)+(P2) escrito en `systemd/INSTALACION.md`; (P0) antes de mover la hora del sellador |
+
+---
+
+### C. Fichas por job
+
+**C.1 `mki-noticias`.** *Hizo:* lo de A.1/A.2. Interacción medida por horas: el snapshot selló a las 17:42:58Z, **antes**
+de que noticias escribiera (dedup 17:43:33Z, titulares 17:45:19Z): el sello del 28 usó el caché de noticias anterior
+a esa corrida. *Guarda:* ninguna de ventana; tiene el tope diario con freno entre lotes (`mki_noticias.py:91-100,
+118-121`) y `socket.setdefaulttimeout(30)` (:36-37). *Costo:* 0 USD, 0 llamadas cobradas (1 intentada y rechazada);
+si hubiera crédito el techo es el tope de `.env` (código, no medido). *Opciones:* (i) negarse antes de las 17:50
+Chile — un despertar de la mañana no corre y el pase normal de las 17:50 sí, así que no pierde nada; una guarda mal
+escrita (huso) lo apaga todos los días y lo detecta el vigía («noticias: el job NO corrió hoy»). Con la no elegida se
+pierde: nada medible. (ii) marcar `fuera_de_hora` en el ledger. (iii) nada: un pase extra bajo tope. **Recomendación
+del agente: (iii).** Lo que este job necesita no es una ventana: ver E.1.
+
+**C.2 `mki-snapshot`.** *Hizo:* A.1/A.2. Hoy las 8 filas con predicción están `verificada` (verificador del 29-sep
+18:15, `snapshot.log:150` `'verificadas': 9`) y hay **8 filas en `verificacion_apertura` con `fecha_senal 2026-09-28`**
+(consulta ro), que es lo que la (d) planificada excluirá por regla. *Guarda hoy:* ninguna de conocibilidad ni de
+ventana; sólo la idempotencia por fecha (`senales.py:181-187`, `snapshot.py:93-94`) y la regla maestra del verificador,
+que compara sólo `emitida >= apertura` (`senales.py:334`). **PLANIFICADO en la corrida 15:** (b), (a), (d) y el ancla
+en la emisión, tal como firmó §90.1/§90.2.
+*Medido sobre la historia, para dimensionar el falso negativo de la (b):* 45 snapshots con `sox_fecha` sellado
+(27-jul → 29-sep). Margen emisión − cierre de la sesión de `sox_fecha`: **negativo en 1 solo (28-sep, −137 min)**;
+mínimo positivo 75,1 min (14-sep); **15 de 45 por debajo de 120 min** (todos desde el 8-sep, con Chile en UTC−3).
+Calculado con `exchange_calendars`: **del 2-nov-2026 al 12-mar-2027 el margen es de 15 minutos** (18:15 Chile =
+21:15 UTC contra cierre 21:00 UTC en EST); vuelve a 75 min el 15-mar y a 135 min el 5-abr-2027. Consecuencia: la (b)
+**sin margen** habría rechazado exactamente 1 de 45 (el 28-sep) y cero sellos buenos; una (b) que reusara el margen
+de publicación de 2 h de `calendarios.sesion_ya_cerro` (`calendarios.py:94`, default `margen_horas=2.0`) habría
+rechazado 16 de 45 y **rechazaría todos los días de noviembre a marzo**: una sesión irrecuperable por día. Ese es el
+costo de una guarda mal escrita en este job, y por eso la ventana de este job no puede ser de reloj de pared.
+*Costo medido:* 24 filas selladas con un insumo que la fuente ya no sirve (bitácora 14 §11.3), 8 ya verificadas,
+1 fila de `snapshots` con `roca_chip` 44 y régimen desde barra parcial, publicadas por el reporte de las 18:25 y por
+`/` y `/cadena`; y la sesión del 28 sin sello con cierre. n = 1.
+*Sobre el 44 contra 17 (PROVISIONAL, y hay un dato nuevo):* `snapshot.log:140` — el bloque de las 17:42Z, el que
+selló el 44 — dice **«salud de datos: OK (27 tickers)»**; el de las 21:15Z marca 8035.T con −80 % (:146-147); el del
+29-sep 21:15Z vuelve a **OK y sella `roca_chip` 50** (:149, :153). O sea que el salto **no estaba en la descarga con
+la que se selló el 44** y ya no estaba el 29; el 17 se recomputó a las 20:31Z, entre esas dos lecturas. INFERENCIA:
+el 17 es compatible con haberse calculado con el salto presente. Sigue PROVISIONAL: nadie releyó `roca_chip_al` del
+28 con la fuente ya corregida, y este bloque no descarga.
+*Opciones:* (i) negarse **[PLANIFICADO (b)]**. Con la no elegida se pierde: (ii) marcar al sellar (estado no
+verificable en el sello, como E4) **sin** tocar la idempotencia deja la fecha quemada igual — el mismo problema que §62
+en el otro riel —, así que (ii) sólo vale si `ya_existe_snapshot_hoy()` distingue estados; (iii) nada: cada despertar
+con bolsa abierta sella 24 filas inválidas y quema la sesión. **Recomendación del agente: (i) exactamente como está
+firmada — sin margen de publicación y sin ventana de reloj de pared —, y los dos huecos de D.1 y D.2 (frescura, fin
+de semana) como decisión aparte con sus cuentas a la vista.**
+
+**C.3 `mki-reporte`.** *Hizo:* A.1/A.2. El texto no queda en ningún log en modo titular (sólo el largo), así que
+el contenido se deduce del código: a las 14:42, «⚠ sin snapshot sellado hoy», «Régimen / SOX / Roca→Chip: sin sello
+hoy», «Aperturas: sin predicciones selladas hoy», track record 30 d y cobertura (`alertas.py:230-231, 250, 273,
+278-290`); a las 18:25, cabecera **«sellado 14:42 Chile»**, «SOX: −1.63 % (sesión del 2026-09-28)», «Roca→Chip: 44/100»,
+8 predicciones «emitidas 14:42 Chile, antes de la apertura objetivo» (`:226-228, 238-239, 242, 269-271`; valores de
+`snapshots`). **El mensaje publicó su propia hora de emisión.** *Guarda:* ninguna; sin anti-duplicados por diseño
+(`alertas.py:305-310`). Al cerrar la corrida 15, igual; la (b) del snapshot le quita la fuente del segundo daño.
+*Costo medido:* dos mensajes, uno de ruido (verdadero en ese segundo) y uno con cifras de barra parcial. Nada perdido.
+*Recuperabilidad, leída del código:* `./mki reporte` reenvía el mismo día; `componer_reporte_sellado()` usa
+`date.today()` y el CLI no acepta fecha (`alertas.py:220, 345-373`): pasado el día no hay reenvío de esa fecha. Un
+falso negativo acá cuesta la publicación del día si nadie lo ve antes de la medianoche; el vigía lo grita a las 19:00
+(`mki_vigia.py:199-213`). *Opciones:* (i) negarse antes de las 18:25 Chile — un despertar de mañana no manda nada;
+uno de la tarde, después de las 18:25, manda (tardío, legítimo); mal escrita, apaga el reporte y lo detecta el vigía.
+Con la no elegida se pierde: la anotación en el propio mensaje. (ii) marcar: el mismo mensaje con «disparo fuera de
+hora (14:42; programado 18:25)» — **nunca pierde un envío; un error en la marca sólo etiqueta mal**. (iii) nada.
+**Recomendación del agente: (ii).**
+
+**C.4 `mki-backup`.** *Hizo:* A.1/A.2. Efecto colateral medido: el commit de las 14:42:53 hizo que el vigía de las
+14:42:55 diera «OK backup: commit de hoy presente» (`vigia.log:223`; `mki_vigia.py:224-229` mira `git log -1
+--format=%cs -- data/backups`): **un OK sostenido por un commit que no contenía el sello del día.** *Guarda hoy:*
+ninguna (`mki_backup.py:41-49`, pathspec). **PLANIFICADO** §90.8. Un feriado de NYSE en día hábil **sí** tiene snapshot
+(7-sep se selló con `sox_fecha` 4-sep: consulta ro), así que lo que §90.8 deja por definir es el fin de semana, que
+hoy sólo llega por catch-up o por cambio de calendario. *Costo medido:* un commit en el historial con un nombre que
+no describe su contenido; nada perdido (todo entró en `f7b65e0`). *Opciones:* (i) negarse **[PLANIFICADO]** — mal
+escrita, en un día sin sello real posterga el export del sellador de esa noche al día siguiente: **posterga, no
+pierde**. (ii) marcar: commitear con «Backup parcial <fecha> (antes del sello)» — artefacto mal formado pero bien
+nombrado. (iii) nada. **Recomendación del agente: (i) como está firmada, con la misma regla en fin de semana (sin
+snapshot ese día, no commitea; el lunes lo hace).**
+
+**C.5 `mki-vigia`.** *Hizo:* A.1/A.2. La retractación la envió `snapshot.py` (`snapshot.py:219-231`), no el
+rechequeo; su texto (deducido, `mki_vigia.py:338-344`): «recuperado: snapshot sellado (emisión 14:42, confirmada a las
+14:43), descarga 28/28, predicciones 8» — retracta el conjunto consumiendo el marcador; las FALLAs de noticias y
+reporte no se nombran. La alerta vivió **11,1 s**. *Guarda:* sólo la exención de fin de semana (`mki_vigia.py:405-407`).
+No se toca en esta corrida. *Interacción con la (b) planificada [DEDUCIDO]:* en un próximo despertar con la bolsa
+abierta el snapshot se niega, el vigía alerta «NO se selló» y deja el marcador, y la retractación recién sale cuando
+el snapshot de las 18:15 sella (`_epilogo_vigia`): **la alerta falsa pasa de 11 s a ~3,5 h abierta**. Si el despertar es
+después de las 18:15 con bolsa cerrada, el snapshot sella tarde y la secuencia es la del 28-sep. *Costo medido:* una
+alerta falsa y una retractación; nada perdido. *Opciones:* (i) negarse a pasar lista antes de las 19:00 Chile — con la
+no elegida se pierde nada medible, pero **si la guarda está mal el vigía calla, y el vigía es la alarma**; sólo
+`/salud` lo cubriría. (ii) marcar: pasar lista igual y decir en la alerta «pase fuera de hora (14:42; programado
+19:00): los jobs de hoy pueden no haber corrido todavía»; o evaluar cada chequeo sólo si su hora programada ya pasó
+(exige duplicar seis horas en el código: dos fuentes de verdad). (iii) nada. **Recomendación del agente: (ii), en
+la misma tanda que arregle `av == ts` (un solo toque al vigía); no (i).**
+
+**C.6 `mki-vigia-rechequeo`.** *Hizo:* nada, las dos veces. *Guarda:* sólo actúa con marcador de HOY
+(`mki_vigia.py:289-299, 352-374`). *Costo medido:* 0. *Lo que no pasó por 27 ms [DEDUCIDO, n = 0]:* con el orden
+inverso habría encontrado el marcador y, con el snapshot todavía corriendo, enviado «sigue sin sellar a las 20:30:
+reintentos aún activos» a las 14:42 — la hora es el literal `HORA_RECHEQUEO` (`mki_vigia.py:46, 368-370`).
+*Opciones:* (i) negarse antes de las 20:30 del día del marcador; (ii) que el texto lleve la hora real; (iii) nada.
+**Recomendación del agente: (ii) al tocar el vigía; nada aparte.**
+
+**C.7 `mki-sonda-cierre`.** *Hizo:* A.1/A.2/A.3. *Lo que el lector hace con eso, calculado en memoria con
+`GEMELO.sonda_cierre_resumen.resumen()` sobre el CSV filtrado, sin escribir:* noche del 28 — descarta las 36 de las
+13:42 (anteriores al cierre) y las declara; aparición 21:35 para 34 tickers, 20:05 para 1, ninguna para TOELY.
+**Noche del 29 — NO descarta las 36 de las 17:38** (posteriores al cierre de las 16:00) **y les atribuye la aparición:
+«17:38» para 35 tickers**, cuando a las 20:05, 20:35 y 21:05 esos mismos tickers no tenían la barra. El filtro de la
+corrida 14 (`sonda_cierre_resumen.py:104-120`) cubre «antes del cierre», no «fuera de grilla»; la aparición se toma
+como mínimo (`:128-130`). **Esto contamina la noche del 29 en el dato de §58 si no se filtra.** *Guarda:* ninguna en
+el job (`sonda_cierre.py:180-198`). No se toca en esta corrida (primera noche de madrugada; deudas (3) y (4) a la 16).
+*Costo medido:* 36 filas pre-cierre (28-sep) descartadas y declaradas; 36 post-cierre fuera de grilla (29-sep) que
+entran como aparición. Nada perdido; algo agregado que hay que filtrar. n = 2 disparos. *Y un dato que nadie
+buscaba (DESCRIPTIVO, n = 1):* a las 17:38 NY, 98 min después de la campana, **la barra fechada hoy existía para
+35/36 y a las 20:05 no (1/36)**: la retirada de la barra intradía ocurre **después** de las 17:38 NY, no «al cerrar la
+sesión» como escribe la bitácora 14 §11.3 (errata candidata). *Opciones (las de §63, actualizadas):* (i) el job se
+niega fuera de grilla (minuto fuera de {05, 35} u hora fuera de las franjas) — con la no elegida se pierde la fila y
+con ella la evidencia: el dato de las 17:38 no existiría. (ii) el lector rotula y excluye «fuera de grilla» además de
+«antes del cierre», declarándolas — **la única que arregla lo que ya está en disco (72 filas)**. (iii) nada: cada
+disparo fuera de grilla posterior al cierre entra como aparición. **Recomendación del agente: (ii), en la corrida 16
+junto con las deudas (3) y (4); y que `regla_58.md` diga desde esta noche que la noche del 29 lleva una observación
+fuera de grilla.**
+
+**C.8 `mki-sello-dinero`.** *Hizo:* A.1/A.2. *Guarda:* E4 marca (`sello_dinero.py:557-564`); `sello_previo()` no
+distingue estados (`:287-304`), así que la fecha queda ocupada (`:346-363, 580-602`). §62/§90.6 (a)+(d) **firmado, no
+aplicado**; al cerrar la corrida 15, PROPUESTA de política y parche en worktree, aplicación por acta posterior.
+*Costo medido:* sesión del 28 fuera de N (contador 9), con **0 de 33 decisiones distintas** entre la barra intradía y el
+cierre (la base lo dice); cupo de evidencia `ext_2026-09-28.*` ocupado por una matriz de media sesión, versionado en
+`f7b65e0`. n = 1. *Opciones:* (i) negarse antes de escribir (sin fila y sin `ext_` cuando `ahora < cierre de la sesión
+de hasta`) — deja la fecha libre para las 23:30 NY; con la no elegida se pierde el rastro en la base (queda en journal
+y log) y es un camino nuevo en el sellador («un cambio por noche», §87). (ii) marcar **[E4, en producción]** + §62
+(a)+(d) **[firmado]** — la fecha no queda quemada y el evento queda registrado. (iii) nada: cada despertar quema una
+sesión de N y un cupo de evidencia. **Recomendación del agente: (ii) tal como está firmada en §90.6; hasta que se
+aplique, la exposición es exactamente la del 28-sep.**
+
+---
+
+### C.9 Novena fila: cambio de calendario de un timer instalado
+
+**Hechos, MEDIDOS (A.3).** El service arrancó **53 ms después** del fin de la recarga y **2,8 ms ANTES** del
+`Stopped`/`Started` del timer. **`Persistent=false` no lo impidió** (`systemctl show`: `Persistent=no`).
+
+**Cálculo (`systemd-analyze calendar`, systemd 259.5-0ubuntu3.4, sin tocar unidades).** Base = último disparo
+(2026-09-29 00:35:00 Chile) + expresión nueva `Tue..Sat 00..03:05,35 America/New_York` → próximo **2026-09-29
+01:05:00 −03, «21h ago»** (pasado a las 18:38:57). Misma base + expresión vieja `Mon..Fri 20..23:05,35` → 21:05:00
+(futuro). Base = 18:38:57 + expresión nueva → 30-sep 01:05:00 (futuro). **Computado desde el último disparo, el
+próximo caía en el pasado; computado desde el reinicio, en el futuro. La máquina hizo lo primero.**
+
+**Lo que el manual documenta y lo que no (`man systemd.timer`, esta máquina).** `Persistent=` (p. 190-193): «When
+the timer is activated, the service unit is triggered immediately if it would have been triggered at least once
+during the time when the timer was inactive» — sólo para `true`. `OnCalendar=` (p. 106-108): un timer que venció
+mientras el sistema dormía «will catch up and process all timers that triggered while the system was sleeping», y
+si venció varias veces «will only result in a single service activation» — **es la premisa de §63, ahora con cita:
+documentado y sin directiva que lo apague.** `DeferReactivation=` (p. 168-175): por defecto «the timer schedules
+the next elapse based on the previous trigger time» y un elapse en el pasado «causing it to immediately trigger».
+**No documenta** qué hace `daemon-reload` ni `restart` con un timer `Persistent=false` que cambió de calendario.
+
+**INFERENCIA desde el orden del journal, no probada:** el disparo lo produjo la **recarga** (`daemon-reload`), que
+releyó la unidad con el calendario nuevo y rearmó el timer desde el último disparo recordado; el `restart` llegó
+cuando el service ya había arrancado. La hipótesis del acta §91.7/§91.8 (fue el `restart`) es compatible con el
+segundo, no con el orden de las líneas. Distinguirlo exige una prueba en una unidad, prohibida en este bloque. Si
+la inferencia es correcta, **evitar el `restart` no protege**: la recarga es obligatoria para cargar la unidad
+editada.
+
+**Opciones de procedimiento.** (P0) Medir la semántica —reload solo, restart, stop → editar → reload → start, con
+`Persistent=` true y false— en una unidad desechable que ejecute `/bin/true`, un sábado: 15 minutos, acto de Nicolás,
+fuera de esta corrida. (P1) Antes de cambiar un calendario: `systemctl --user list-timers` → columna `LAST` de esa
+unidad; `systemd-analyze calendar --base-time='<LAST>' '<expresión nueva>'`; **si «From now» dice «ago», el cambio
+dispara en el acto**: elegir otro momento u otra expresión, o aceptar el disparo sabiendo qué hace ese job (tabla de
+abajo). (P2) Elegir el momento por job. (P3) Parar el timer antes de editar y recargar, y arrancarlo después: **no
+probado**; para `true` el manual dice que al activar se dispara si hubo elapse durante la inactividad y no dice desde
+qué base se computa; para `false` no dice nada. (P4) La guarda en el job (filas 1-8) es la única defensa que no
+depende del procedimiento.
+
+**Momentos en que un disparo inmediato es inocuo, por job [DEDUCIDO del código y de lo medido; n = 0 salvo donde se dice]:**
+noticias: cualquiera (cuesta a lo sumo el tope). snapshot: día hábil después del sello (→ «ya existe snapshot de
+hoy», **medido** 28-sep 18:15); **nunca sábado ni domingo**: sin exención de fin de semana en el código (`grep
+weekday|is_session` vacío en `snapshot.py`) sellaría un snapshot con fecha sábado, `sox_fecha` viernes y objetivo
+lunes, duplicando el del viernes; la (b) planificada lo deja pasar (historial: 2 de 60 snapshots en fin de semana,
+4 y 5-jul, pre-4.6). reporte: después de las 18:25 (duplica el mismo texto). backup: después de las 18:40 (sin
+cambios, no commitea). vigía y rechequeo: sábado o domingo (exentos) o después de su hora con el día en OK. sonda: no
+hay momento inocuo hasta que el lector filtre fuera de grilla; el menos malo, un sábado de día (la fila va a la
+sesión del viernes, post-cierre, y contamina esa noche). sellador: **entre las 00:35 y las 10:00 de Chile, de martes a
+sábado** (fecha ya sellada → `ya_sellada` o divergencia sin pérdida); **nunca con la bolsa abierta** (E4 la marca y
+quema la fecha) **ni entre el cierre y las 23:30 NY** (sellaría temprano con timing ok y lo que selle queda).
+
+**Recomendación del agente:** (P1)+(P2) como procedimiento escrito en `systemd/INSTALACION.md`, y (P0) **antes** de
+mover la hora del sellador por §58 (b)/(c), porque ahí un disparo inmediato quema una sesión de N.
+
+---
+
+### D. Huecos que quedan DESPUÉS de la corrida 15 [DEDUCIDOS del código; n = 0 eventos]
+
+**D.1 Frescura.** Despertar de mañana en día hábil (antes de la apertura de NYSE, p. ej. 09:00 Chile): el snapshot se
+dispara (catch-up de ayer), `date.today()` es hoy, `sox_fecha` es ayer (sesión cerrada) → la (b) pasa → sella el
+snapshot de HOY con el cierre de AYER; a las 18:15 «ya existe» → **la sesión de hoy queda sellada con insumo viejo y el
+verificador la acepta** (emisión antes de la apertura objetivo, `available_at < emisión`). El riel de dinero tiene
+`insumo_fresco` para exactamente esto (`sello_dinero.py:559-571`); el de medición no. Cuenta histórica: **0 de 45**
+snapshots con `sox_fecha ≠ fecha` en día de sesión XNYS (el único distinto, 7-sep, es feriado de NYSE). Opción posible:
+negarse si hoy es sesión XNYS y `sox_fecha ≠ hoy` — cero falsos negativos históricos; un día con Yahoo atrasado dejaría
+de sellar, el mismo trato que la (b).
+
+**D.2 Fin de semana.** snapshot, reporte, backup y noticias no tienen exención de fin de semana en el código; sólo el
+`Mon..Fri` del timer los frena. Un disparo inmediato en sábado (cambio de calendario, restart, o catch-up si la
+máquina despierta el sábado después de perder el viernes) sella un snapshot con fecha sábado. Si el sello del viernes
+existe, duplica su predicción (mismo insumo, mismo objetivo lunes); si el viernes se perdió, lo recupera con fecha
+sábado (timing válido). Ningún exchange del universo abre sábado o domingo.
+
+**D.3** La alerta del vigía con la (b): ~3,5 h abierta en vez de 11 s (C.5). **D.4** El rechequeo con el orden
+inverso (C.6). **D.5** La sonda fuera de grilla post-cierre (C.7). **D.6** El sellador hasta aplicar §90.6 (C.8).
+**D.7** El margen de 15 min desde el 2-nov para cualquier guarda que agregue margen (C.2).
+
+---
+
+### E. Hallazgos de paso, fuera del alcance, no corregidos
+
+**E.1 `mki-noticias` no analiza nada desde el 7-sep, y todo dice «ok».** `data/noticias.log` tiene **17** líneas «análisis
+falló en el lote 1: Error code: 400 … Your credit balance is too low to access the Anthropic API» (la primera en la
+línea 39, `2026-09-07T20:52:21Z`); `data/costos_ia.log` líneas 25-41: **17 corridas seguidas con `analizados 0`, `costo_usd
+0.0` y `resultado 'ok'`**, `pendientes_restantes` de 260 a **3.672**; la última con análisis fue el 4-sep (línea 24: 214
+analizados, 0,116103 USD). El ledger dice «ok» porque `mki_noticias.py:123-128` corta el bucle en la excepción y
+`:149-152` registra «ok» igual; el vigía repite «noticias: ok · 0 analizados · 0.0000 USD» (`vigia.log:230, 240`).
+Consecuencia deducida, NO medida: `sentimiento_promedio_por_ticker()` alimenta el sello (`snapshot.py:180`) con análisis
+de hasta el 4-sep bajo decaimiento 0,7^días y piso 0,1: los `sentimiento_ia`/`puntaje_ia` sellados desde el 7-sep se
+apoyan en titulares viejos. No está en `DECISIONES.md` (grep: sólo el §79 sobre los créditos de la corrida 09). Va a
+tarjeta o acta; este inventario no lo decide.
+
+**E.2** `data/sombra_telegram.log` tiene mtime `2026-08-28 18:25:01 −04:00` (`ls --time-style=full-iso`): es del 28 de
+**agosto**, el último reporte en sombra antes del switch del 30-ago (`reporte.log:5-6`). Cierra el ítem de diagnóstico
+que el curador dejó en la corrida 14 («mtime de las 18:25 en una máquina titular»): mismo día, otro mes.
+
+**E.3** El dictamen del auditor cita `mki_vigia.py:99` para `av == ts`; en el árbol actual es la línea **97**.
+
+**E.4** Las dos unidades instaladas siguen con su `Description=` errada (`systemctl cat`): la sonda dice «la franja
+de madrugada no está instalada» y el sellador «PROPUESTA no instalada». Edición manual de Nicolás (§90.9, §91.7).
+
+---
+
+### F. Lo que de §63 queda absorbido acá
+
+1. Su premisa —**no hay directiva de `[Timer]` que suprima un disparo vencido durante una suspensión, y
+   `Persistent=` gobierna otra cosa**— pasa a ser la premisa de las nueve filas, ahora **con cita del manual**
+   (`OnCalendar=`, catch-up al reanudar con una sola activación) además de la medición del 28-sep.
+2. Sus tres opciones para la sonda (guarda en el script / guarda en el lector / nada) son las (i)/(ii)/(iii) de la
+   fila 7, con el dato nuevo de que el lector hoy no cubre «fuera de grilla post-cierre» (29-sep, 17:38 NY).
+3. Lo que remitía a §61 y §62 quedó firmado en §90.1 y §90.6; acá sólo se sitúa.
+4. Su errata de `Description=` sigue vigente (E.4).
+5. Su hallazgo de que «el evento se reconstruye del hueco más el PID sobreviviente» se afina en A.5: dos relojes
+   independientes acotan la pausa al viernes 25 a las 03:37, ±30 s.
+Nada de §63 se pierde; el orquestador la marca FUNDIDA.
+
+---
+
+### G. Lo que este inventario NO midió
+
+- **Hay un solo despertar y un solo cambio de calendario.** Ninguna tasa, ninguna extrapolación.
+- **La suspensión es inferencia.** WSL2 no anota suspend/resume; lo medido son dos relojes que coinciden (A.5) y el
+  hueco del journal del sistema (medido por el orquestador, bitácora 15 §0.10). La causa (suspensión del host) es
+  testimonio. Los logs del lado Windows no se leyeron. El cómputo de A.5 supone una sola pausa.
+- **Los textos de Telegram no existen en ningún log en modo titular**: sólo largos (`reporte.log`) y «enviada»
+  (`vigia.log`, `snapshot.log`). Qué decían se deduce del código y del sello.
+- **Cuál de `daemon-reload`/`restart` disparó la sonda el 29-sep**: inferido del orden de las líneas, no probado.
+- **Cómo se comportan los jobs con las guardas planificadas**: deducido; el árbol leído era `2f73eb2`, sin ellas.
+- **Los escenarios de la mañana y del sábado (D.1, D.2)**: deducidos, cero eventos.
+- **Cuánto habría gastado noticias con crédito**: no medido.
+- `puntaje_v0`, `puntaje_ia` y `divergencias` del 28-sep: siguen sin medir (bitácora 14 §9.5-bis); el 44 contra 17 de
+  `roca_chip` sigue PROVISIONAL, con el dato nuevo de C.2.
+- No se abrieron `noticias.db` ni `alertas.db`; no se corrió ningún job, ningún test ni ninguna función del motor;
+  no se leyó `.env`; el journal del sistema no lo leyó este bloque (sólo cita el dato del orquestador).
+- El arranque fuera de calendario del 25-ago (A.4) no se investigó.
+
+**No se eligió nada.**
+
+---
+
+## 67. El vigía prueba igualdad (`av == ts`) y no orden: las dos guardas, no una (corrida 15)
+
+**El hecho.** `mki_vigia.py::chequear_ancla_temporal()` (líneas ~79-101) alerta cuando alguna
+predicción sellada hoy tiene `available_at` igual a `timestamp_utc`: es la guardia del acta §82.2 (c)
+para la rama del `except` de `snapshot.py`, donde `available_at` cae al reloj de pared. El 28-sep
+las 24 filas tenían `available_at` 2 h 17 min POSTERIOR a `timestamp_utc` y el vigía dijo
+«OK ancla temporal: 8/8 filas con cierre del SOX». Probaba igualdad; la inversión no es igualdad.
+
+**Por qué no se tocó en la corrida 15.** El encargo lo delegó al `director-programa`, que dictaminó
+VA A TARJETA por dos razones (`dictamen_15/director_premortem.md`, §2): (a) es el único módulo del
+bloque 1 que habla por Telegram, y no se toca la alarma la misma noche en que se cambia lo vigilado
+(`snapshot.py` y `senales.py`); (b) la instrucción del encargo («pasa a probar orden, `av <= ts`»)
+era una REGRESIÓN escondida: reemplazar la igualdad por el orden apaga la detección de la rama del
+`except`, que es un defecto distinto y real. Con las guardas (a) y (b) de §90.1 aplicadas, una fila
+con `available_at > timestamp_utc` ya no puede sellarse, así que la urgencia es baja.
+
+**Opciones.**
+- **(a) Los dos chequeos**: `av == ts` (rama del `except`, alerta como hoy) Y `av > ts` (inversión,
+  alerta nueva con su propio texto). Cambia un mensaje de Telegram; test para cada rama. Es la
+  recomendación del director, etiquetada como tal.
+- **(b) Sólo orden (`av <= ts`)**, como decía el encargo. Coste: pierde la detección de la rama del
+  `except`, que hoy es la única marca de que `available_at` es reloj de pared.
+- **(c) Nada**: las guardas del bloque 1 ya impiden que la inversión se selle; el vigía sigue ciego
+  al caso, pero el caso ya no puede nacer. Coste: si el bloque 1 se revirtiera, nadie avisaría.
+
+**De paso, sólo si se toca el vigía:** la errata cosmética de su mensaje, que dice «launchd» en una
+máquina con systemd (bitácora 14, 0-bis.9).
+
+**No se eligió nada.**
+
+---
+
+## 68. 8035.T: la fuente sirvió un split 5:1 a medias, el sistema no ajusta splits por su cuenta y el aviso de salud no frena el sello (corrida 15)
+
+**MEDIDO, 29-sep 22:26 Chile, sólo lectura contra yfinance.** La fuente sirve para 8035.T (Tokyo
+Electron) un `Stock Splits = 5.0` con fecha 2026-09-29 (hora de Tokio). Con eso, la serie que sirve
+HOY es consistente: cierre del 25-sep 11.304, del 28-sep 11.264, variación **−0,35 %**. El aviso
+«salto de −80 % el 2026-09-28» que `salud_datos_al` escribió en `data/snapshot.log:147` a las 18:15
+del 28-sep era la fuente sirviendo, en ese momento, el 28 ya dividido por 5 y el 25 todavía sin
+dividir (o al revés): un artefacto transitorio de la fuente aplicando el ajuste a medias. El 29-sep a
+las 18:15 la salud volvió a «OK (27 tickers)» y el aviso no se repitió.
+
+**`roca_chip` del 28-sep releído con la serie de hoy** (`motor.roca_chip_al(date(2026,9,28))`,
+función pura, sin base ni escritura): **39**, crudo +2,6 %. DESCRIPTIVO. Contra: 44 sellado a las
+13:42 NY con la barra intradía; 17 recomputado por la corrida 14 a las 17:31 del 28 con el artefacto
+del split (bitácora 14, 9.4, PROVISIONAL desde entonces). Los otros días reproducen lo sellado: 24-sep
+42 = 42 sellado; 29-sep 50 = 50 sellado. **El 17 era el artefacto; la brecha real entre lo sellado y
+lo recomputado es 44 contra 39.** La fila sellada no se toca (Constitución 5.0, punto 3).
+
+**Hallazgo, no corrección.** `motor.py` confía en `auto_adjust=True` de la fuente y no ajusta splits
+por su cuenta; `salud_datos_al` detecta un salto > 40 % y lo escribe en el log, pero **no frena el
+sello ni lo marca**: si el 28-sep el snapshot se hubiera sellado a las 18:15 (no lo hizo: ya estaba
+sellado a las 13:42), `roca_chip` habría quedado sellado con el artefacto. `motor.py` es intocable
+(regla cero).
+
+**Opciones.**
+- **(a) Nada.** Frecuencia medida: 1 artefacto de split en 60 snapshots (n = 1; Wilson 95 % para
+  1/60: [0,3 · 8,9] %). Coste: un sello con `roca_chip` (y `puntaje_v0`) contaminado el día que una
+  fuente aplique un split a medias en la ventana de las 18:15.
+- **(b) `snapshot.py` se niega a sellar si `salud_datos_al` reporta un salto > 40 %** en un ticker de la
+  cadena. Coste: un día de sello perdido por cada artefacto (o por cada salto real de 40 %, que en
+  esta cadena no se ha visto); toca camino de sellado, exige acta y método de worktree.
+- **(c) `snapshot.py` sella igual y persiste el aviso en la fila** (columna aditiva), para que el
+  reporte y `/salud` lo muestren al lado del número. Coste: columna nueva; no evita la contaminación,
+  la declara.
+
+**No se eligió nada.** Cierra lo que §90.9 y §91.9 dejaron abierto sobre 8035.T y el 17 PROVISIONAL.
+
+---
+
+## 69. La skill `gate` sigue importando `scipy` y `sklearn`: la edición la denegó el clasificador de permisos (corrida 15)
+
+**El hecho.** El acta §91.4 firmó la deuda (5) de la corrida 14. El 29-sep a las 22:26 el orquestador
+intentó la edición de una línea en `.claude/skills/gate/SKILL.md` y la herramienta `Edit` fue
+denegada por el clasificador de permisos de la sesión («Self-Modification»). La deuda (6), en
+`.claude/skills/cierre-sesion/SKILL.md`, sí se aplicó en la misma tanda: la misma herramienta la
+aceptó. Una barrera puesta a propósito no se rodea con otra herramienta.
+
+**Lo que hay.** `GEMELO/propuestas/skills/gate_gate_de_entorno.md`: la línea vieja, la línea nueva
+(`import pandas,numpy,yfinance,exchange_calendars,fastapi`), y la medición de que la nueva corre en
+esta máquina. Aplicarla es un `Edit` de una línea que hace Nicolás.
+
+**Opciones.** (a) Aplicar la línea propuesta. (b) Dejar la skill como está y aceptar un gate que falla
+por diseño. **No se eligió nada.**
+
+---
+
+## 70. `mki_backup.py`: qué hace un día de semana sin sello cuando ya no puede llegar, y en fin de semana (corrida 15)
+
+**Lo firmado (§90.8).** El backup se niega a commitear si el snapshot del día no está sellado, y lo
+registra en su log. Aplicado en la corrida 15 con una función pura de cinco ramas y 83 casos de test
+(`tests/test_backup_orden.py`), más una regla 0 que el implementador encontró necesaria: **con
+`snapshot.py` vivo nunca se commitea**, porque el sello se escribe antes de que ese proceso exporte los
+CSV (el 28-sep, 32 s entre la emisión y el fin del proceso).
+
+**Lo que el acta no da, y esta corrida eligió provisionalmente (elección de agente, a confirmar).**
+
+1. **Día de semana, sin sello, pasadas las 18:15, sin `snapshot.py` vivo.** Implementado: **commitea
+   igual** y el log dice «DÍA SIN SELLO: … este commit NO contiene el sello de hoy»
+   (`COMMITEAR_DIA_SIN_SELLO = True`, constante con test en las dos posiciones). Razón: §90.8 pide
+   ORDEN, no abstención; negarse ahí no ordena nada y deja 24 h o más sin copia versionada en una
+   máquina sin réplica (dictamen del director, pre-mortem 15). Se pierde con B: el mensaje del commit
+   no distingue ese día (la marca vive sólo en `data/backup.log`, no versionado), y un sello que
+   llegue después por mano (`--origen manual`, fallback del dashboard) queda detrás del commit.
+   **Opción A, negarse siempre:** se gana que ningún «Backup diario D» exista sin el sello de D; se
+   pierde la copia versionada de los CSV que sí cambiaron ese día hasta el próximo día sellado.
+   Dato (base del worktree, 4-jul a 29-sep, 62 días de semana): 4 días sin fila en `snapshots`; 6 con
+   sello después de las 18:40, todos de la era del Mac. No hay dato para decir cuál costo pesa más.
+2. **Fin de semana.** Implementado: **commitea** (no hay snapshot que esperar; lo que cambió es el
+   export del sellador de dinero de la noche del viernes). El inventario (§66) recomendaba lo
+   contrario: la misma regla que en semana, negarse sin snapshot de ese día (posterga, no pierde).
+   Sólo llega un backup en fin de semana por catch-up de `Persistent=` o por un cambio de calendario.
+3. **La regla 0, «con `snapshot.py` vivo nunca se commitea», que el orquestador agregó después del
+   informe del implementador y que el director marcó al cierre como más ancha que lo firmado.**
+   §90.8 firma ORDEN (no adelantarse al sello); la regla 0 además se niega cuando el sello YA existe
+   pero el proceso sigue vivo exportando los CSV (los 32 s del 28-sep), y cuando el snapshot está
+   reintentando tarde. **Costo medido (`dictamen_15/informe_bloque4.md`, base del worktree, 4-jul a
+   29-sep):** 6 días con sello emitido después de las 18:40 (29 y 31-jul, 3, 5, 10 y 21-ago, todos de
+   la era del Mac) en que la regla 0 se habría negado a las 18:40 y, como el backup no reintenta,
+   esos días habrían quedado sin commit hasta el día siguiente, en una máquina sin réplica; bajo el
+   código anterior recibían un commit con los CSV viejos (el defecto de §64). **Opciones:** (a) la
+   regla 0 como está (orden estricto; un día de sello tardío queda sin copia versionada 24 h y el
+   vigía lo dice); (b) regla 0 sólo cuando NO hay sello (la rama 4 original), y con sello commitear
+   aunque el proceso siga vivo (acepta la carrera de 32 s: un commit con los CSV de antes del export,
+   que el commit del día siguiente completa); (c) que el backup reintente una vez a los 5 minutos si
+   el proceso está vivo (cambia la unidad o el job: toca el timer o suma un `sleep` en un job de un
+   segundo). **Recomendación del orquestador, etiquetada:** (a), porque el costo es un día sin copia
+   que el vigía grita, y el de (b) es un commit que miente en silencio.
+
+**No se eligió nada:** las tres elecciones son de una línea o una constante y tienen test.
+
+---
+
+## 71. §90.2, el ancla de `snapshot.py:163`: DETENIDA, las dos anclas difieren en 33 filas de 5 fechas (corrida 15)
+
+**Lo firmado (§90.2, opción a).** La sesión objetivo se ancla en el instante de emisión y no en
+`available_at`. El encargo 15 mandaba probar primero sobre toda la historia sellada que las dos anclas
+dan la misma `sesion_objetivo`, y **parar y reportar si alguna difiere**. Difieren.
+
+**MEDIDO** (base real en `mode=ro`, 439 filas con `sesion_objetivo`, no legacy, hasta el 29-sep; tabla
+completa en `dictamen_15/informe_bloque1.md`): **33 filas, 5 fechas.** El ancla de emisión reproduce la
+`sesion_objetivo` sellada en 439 de 439 (es la que regía antes de §84.1 en esas fechas); el ancla de
+`available_at` difiere en esas 33. Tres familias: (A) sellos tardíos que cruzaron la apertura asiática
+(29-jul 01:23Z, 3-ago 02:57Z, 5-ago 01:38Z: 17 filas), justo el defecto que §84.1 corrigió y la
+deduplicación arbitra; (B) el sello manual del domingo 5-jul con el SOX del jueves 2 (8 filas); (C) el
+feriado de NYSE del 7-sep con `sox_fecha` 4-sep (8 filas). Las 24 filas del 28-sep coinciden bajo las
+dos anclas. Test permanente pinchado al corte: `test_historia_las_dos_anclas_difieren_y_por_eso_la_linea_no_se_toco`.
+
+**Lo que pierde cada camino, para decidir.** Con la guarda (b) aplicada, `available_at <= emisión`
+siempre, así que anclar en `available_at` ya no puede anclar en el futuro; las dos anclas sólo
+difieren cuando la emisión es posterior a la apertura de la sesión que sigue a `available_at`
+(sello tardío o feriado de NYSE). Ahí: **ancla `available_at` (la vigente)** = la fila queda
+`no_verificable_timing` (se pierde; nunca cuenta un insumo viejo); **ancla emisión (§90.2)** = la
+fila es verificable con insumo viejo y forma par con la del día siguiente (lo que §84.1 desarmó).
+
+**Dictamen del `auditor-lookahead` (`dictamen_15/auditor_bloque1.md`, secciones 2 y 4), que corrige la
+premisa del encargo.** El encargo justificaba §90.2 con «ahora que la guarda (b) garantiza
+`available_at <= emisión`». Eso no garantiza que la sesión siguiente a `available_at` abra después de
+la emisión: contraejemplo real, `005930.KS` del 29-jul, `available_at` 29-jul 20:00Z, emisión 30-jul
+01:23Z (la guarda (b) pasa) y la sesión de XKRX siguiente abre el 30-jul 00:00Z, antes de la emisión.
+**La «puerta entreabierta» que §90.2 quiso cerrar sigue abierta con (b) puesta, y §90.2 tampoco la
+cierra: la mueve.** Aplicar §90.2 tal como está firmada volvería a producir, en cada sello tardío que
+cruce la medianoche UTC, 7 u 8 filas verificables con la sesión objetivo dos días después del insumo,
+y pares duplicados (22 pares (ticker, sesión) repetidos sobre 7 sesiones en la historia) que hoy
+arbitra la deduplicación. Dejarlo como está pierde la honestidad del campo `sesion_objetivo` en el
+sello tardío hasta que el verificador lo degrada. Lectura del auditor, etiquetada como tal: para un
+track record que se defiende de sí mismo, producir filas visiblemente inválidas es el error barato; y
+la única puerta que cierra el caso completo es la que ninguna ancla toca: **negarse a sellar cuando la
+emisión cae fuera de una ventana declarada respecto del cierre del SOX** (la regla de abstención por
+sello tardío, PROPUESTA en `DECISIONES.md` desde la 5.0.2, sin implementar).
+
+**Opciones.** (a) Mantener el ancla en `available_at` y dejar §90.2 sin aplicar (errata fechada al acta).
+(b) Aplicar §90.2 por su propio mérito, con la consecuencia medida arriba, y decidir qué hace la
+deduplicación con los pares. (c) La regla de abstención por sello tardío (ventana declarada respecto
+del cierre del SOX), que vuelve cosmética la discusión del ancla; toca camino de sellado y es
+candidata del retador. **No se eligió nada; la línea 163 no se tocó.**
+
+---
+
+## 72. La guarda (b) es necesaria y no suficiente: fuente atrasada, `^SOX` sin barra, fin de semana (corrida 15)
+
+**Lo firmado y aplicado (§90.1 b):** `snapshot.py` se niega a sellar si `available_at > emisión`
+(la sesión de `sox_fecha` no cerró). Rechaza exactamente el caso del 28-sep y ninguno de los 45
+snapshots históricos con `sox_fecha` (inventario §66, C.2). Tres huecos que quedan, medidos o
+deducidos, ninguno firmado:
+
+1. **H0, fuente atrasada (MEDIDO con test).** Con `sox_fecha` de la sesión ANTERIOR, ya cerrada, la
+   guarda pasa y se sella con insumo viejo. El acta §90.1 (b) dice que «un día con la fuente atrasada
+   deja de sellar»: esta guarda no lo produce. Un despertar de mañana en día hábil (D.1 del
+   inventario) sellaría el snapshot de HOY con el cierre de AYER y a las 18:15 diría «ya existe».
+   Cuenta histórica: 0 de 45 snapshots con `sox_fecha` distinta de la fecha en día de sesión. El riel
+   de dinero tiene `insumo_fresco` para esto; el de medición no.
+2. **H2, `^SOX` sin barra y las acciones con barra (DEDUCIDO, n = 0).** La guarda mira sólo
+   `sox_fecha`; si en un despertar con la bolsa abierta `^SOX` aún no tiene barra del día pero las
+   acciones sí, se sellan `puntaje_v0`, `regimen`, `roca_chip` y divergencias sobre barras intradía con
+   `available_at < emisión`.
+3. **D.2, fin de semana (DEDUCIDO).** `snapshot.py` no tiene exención de fin de semana; sólo el
+   `Mon..Fri` del timer lo frena. Un disparo en sábado sella un snapshot con fecha sábado, `sox_fecha`
+   viernes y objetivo lunes.
+
+**Tres consecuencias más de la guarda aplicada, dichas por el auditor para que nadie las descubra en
+vivo.** (i) El día que la guarda se niegue, `main()` de `snapshot.py` devuelve 0 (systemd ve éxito) y
+el vigía de las 19:00 alerta dos fallas («snapshot: NO se selló hoy» y «descarga: sin snapshot que
+revisar») cuya retractación de las 20:30 **nunca llega**, porque sólo se envía cuando hay sello: una
+alerta sin epílogo, lo que la 5.0.1 prometió que no volvería a pasar. (ii) El fallback del dashboard
+(`app.py:832`) ya no puede sellar mientras NYSE esté abierta (correcto: antes sellaba una barra
+intradía) y recomputa el motor entero en cada rerun mientras la guarda se niegue. (iii) **Desde el
+lunes 2-nov-2026 la holgura entre las 18:15 de Chile y el cierre de XNYS es de 15 minutos** (Chile
+UTC−3, Nueva York UTC−5): cualquier guarda que agregue margen la rompe, y la (b) con margen cero no.
+**Precisión al acta §90.1 (b), fechada:** la condición implementada protege contra sellar con la sesión
+del SOX ABIERTA; no protege contra sellar con el SOX de una sesión ANTERIOR ya cerrada (H0).
+
+**Opciones.** (a) Nada: los tres casos exigen un despertar o un cambio de calendario, y el inventario
+mide n = 1 despertar. (b) Guarda de frescura: negarse si hoy es sesión de XNYS y `sox_fecha` no es
+hoy (cero falsos negativos históricos; un día con Yahoo atrasado deja de sellar, el mismo trato que
+la (b)). (c) Guarda de ventana en el job, como el riel de dinero: negarse fuera de una franja horaria
+declarada; toca camino de sellado y hereda el problema del margen de 15 min desde el 2-nov (C.2).
+(d) Que la alerta del vigía distinga «NO sellado por falla» de «NO sellado por negativa declarada»
+leyendo el motivo de `snapshot.log` (junto con la tarjeta §67, un solo toque al vigía).
+**No se eligió nada.**
+
+---
+
+## 73. Lo que la regla de conocibilidad (§90.1 d) NO alcanza: las métricas vivas de `senales.py`, y `verificacion_puntaje` (corrida 15)
+
+**Aplicado:** la exclusión de toda fila con `available_at > timestamp_utc` vive en
+`backtest/linea_base.py::cargar()` y alcanza al árbitro, al informe de la línea base y a todo lo que
+carga por `cargar()`. Ninguna cifra publicada cambió (corte 28-ago).
+
+**Lo que no pasa por ahí, censado (`dictamen_15/informe_bloque1.md`):** `senales.py::metricas_apertura`,
+`calibracion_intervalos`, `evolucion_aciertos_apertura`, `ultimas_predicciones_apertura`,
+`verificaciones_detalle` y `analisis_puntaje_ia`, que alimentan el reporte de Telegram (track record
+de 30 días), la API (`/historial`, `/`) y `app.py`. **Hoy las 8 filas del 28-sep cuentan en esas
+cifras vivas.** Y `verificar_puntaje_pendientes` no tiene guarda de conocibilidad: las 24 filas del
+28-sep con `puntaje_ia` entrarán a `verificacion_puntaje` alrededor del 5-oct. El acta §90.1 (a)
+nombra sólo `verificar_apertura_pendientes`, y se aplicó literal; `senales.py` es camino de sellado y
+se toca sólo en lo firmado.
+
+**MEDIDO por el auditor (`dictamen_15/auditor_bloque1.md`, B1 y B2 y H3):** `metricas_apertura(30)`
+tiene hoy n = 160 y **8** de esas filas son las invertidas del 28-sep; las muestran `alertas.py:278`
+(Telegram), `app.py:914` y `:1583`, `api/main.py:536` y `:823`. Y `verificar_puntaje_pendientes` no
+aplica **ni la regla de conocibilidad ni la regla maestra** (su único filtro es
+`estado != 'legacy_pre_4.6'`): `verificacion_puntaje` viene acumulando desde siempre filas que el
+verificador de apertura habría descartado por timing. Texto del auditor para el acta: «La exclusión
+(d) rige en la capa de medición del retador. El camino de producción NO la aplica: al 29-sep-2026, 8
+de las 160 filas de su ventana de 30 días son filas con `available_at > timestamp_utc`. La cifra que
+muestran hoy el dashboard, la API y el reporte de Telegram las incluye. Extender la exclusión a ese
+camino es una decisión separada y no está firmada.»
+
+**Opciones.** (a) Extender la guarda (a) a `verificar_puntaje_pendientes` (misma comparación de
+instantes, antes del 5-oct) y filtrar `available_at <= timestamp_utc` en las seis consultas de
+métricas de `senales.py`: un cambio pequeño en camino de sellado, con acta y método de worktree.
+(b) Que la API y el reporte lean sus métricas de `linea_base.cargar()` en vez de `senales.py`: toca
+más y cambia la fuente de una cifra publicada por Telegram. (c) Nada: declarar que las cifras vivas
+de 30 días incluyen esas 8 filas hasta que salgan de la ventana (28-oct) y que `verificacion_puntaje`
+las tendrá para siempre, fuera de toda cifra publicada. **No se eligió nada.** Vence el ~5-oct para la
+parte de `verificacion_puntaje`.
+
+---
+
+## 74. `mki-noticias` no analiza nada desde el 7-sep-2026: la API de Anthropic rechaza cada llamada por falta de crédito, y todo dice «ok» (corrida 15)
+
+**MEDIDO** (inventario del bloque 5 y verificado por el orquestador): `data/noticias.log` tiene **17**
+líneas «análisis falló en el lote 1: Error code: 400 … Your credit balance is too low to access the
+Anthropic API», la primera el `2026-09-07T20:52:21Z` y la última el `2026-09-29T20:52:10Z`;
+`data/costos_ia.log` muestra 17 corridas seguidas con `analizados 0`, `costo_usd 0.0` y `resultado
+'ok'`, con `pendientes` de 260 a 3.672. La última corrida con análisis fue el 4-sep (214 analizados,
+0,116 USD). El ledger dice «ok» porque `mki_noticias.py` corta el bucle en la excepción y registra
+«ok» igual; el vigía repite «noticias: ok · 0 analizados · 0.0000 USD». **No está en `DECISIONES.md`.**
+
+**Consecuencia DEDUCIDA, no medida:** `sentimiento_promedio_por_ticker()` alimenta el sello con
+análisis de hasta el 4-sep bajo decaimiento 0,7^días con piso 0,1: los `sentimiento_ia` y
+`puntaje_ia` sellados desde el 7-sep se apoyan en titulares viejos, y `verificacion_puntaje` los
+verifica igual. Los titulares RSS sí se guardan (286 el 28-sep).
+
+**Opciones.** (a) Reponer crédito en la cuenta de la API (acto de Nicolás) y dejar que el job retome;
+los 3.672 pendientes se analizan bajo el tope diario de 0,50 USD en varios días. (b) Además, que el
+ledger y el vigía distingan «0 analizados con error» de «0 analizados sin pendientes» (un cambio en
+`mki_noticias.py` y en `chequear_noticias`, con test): hoy un fallo de crédito es invisible por
+Telegram. (c) Nada. **No se eligió nada.** Este es el hallazgo con más días acumulados de la corrida:
+22 días sin análisis sin que ninguna alarma lo dijera.
+
+---
+
+---
+
+## 75. §62 después del código: la política de retención y el parche E0.3 NO APLICADO, con una bifurcación que el acta §90.6 no vio (corrida 15)
+
+**Lo firmado (§90.6).** Opciones (a) y (d) de §62, con la política de retención escrita antes de cualquier
+código; aplicarlo exige un acta posterior con la política a la vista, un cambio por noche al sellador.
+
+**Lo entregado.** `GEMELO/propuestas/parches/politica_evidencia_no_verificable.md` (la política, escrita a
+las 22:32 antes del parche) y `sello_no_verificable.diff` + `sello_no_verificable.md` (el parche, 1.250
+líneas de diff sobre `dinero/sello_dinero.py` y `tests/test_sello_dinero.py`, 50 tests del sellador en
+verde en el worktree, test de reproducción del 28-sep rojo en HEAD por su propia aserción). Dictamen del
+`auditor-lookahead` en `dictamen_15/auditor_parche_sello.md`. **`dinero/sello_dinero.py` del árbol real no
+cambió** (sha256 `480fbdc9…`, el de HEAD).
+
+**La bifurcación, HALLAZGO leído del código.** La opción (a) tal como está firmada («`sello_previo()`
+distingue estados; una fecha cuyas únicas filas son `no_verificable_timing` cuenta como no sellada; las
+filas viejas se conservan») **no se puede implementar**: `sellos_dinero` declara
+`UNIQUE (fecha_insumo, ticker, juego)`, y las 33 filas no verificables y las 33 buenas de una misma fecha
+no pueden convivir en esa tabla. Dos caminos:
+- **M, migrar el esquema**: cambiar la restricción exige crear la tabla de nuevo, copiar las filas y borrar la
+  vieja, con los disparadores de inmutabilidad levantados mientras dura. Reescribe físicamente todas las filas
+  selladas. No se implementó.
+- **T, tabla aparte** (lo que hace el parche): un disparo con timing roto no escribe en `sellos_dinero`; sus
+  filas van a `intentos_no_verificables` (mismas 35 columnas, misma `UNIQUE`, mismos disparadores, creada con
+  `IF NOT EXISTS`, aditiva) y su evidencia a `ext_<fecha>.no_verificable.csv` + meta con `cupo_canonico:
+  false`; el nombre canónico queda libre y el disparo de las 23:30 sella como cualquier otro. Con T, la (a)
+  firmada se cumple por otro mecanismo y `sello_previo()` no necesita distinguir estados para ninguna fecha
+  nueva; para el 28-sep no serviría igual (la `UNIQUE`), y esa sesión sigue perdida.
+
+**Cuatro decisiones del implementador dentro de T, declaradas para el acta que lo aplique:** (1) evidencia
+congelada con nombre canónico y timing roto al sellar (apertura cruzada entre las dos lecturas del reloj, o
+`--sin-red` sobre un canónico nunca sellado): **rechazo** sin escribir filas (`rechazado_evidencia_canonica`),
+porque una fila de intentos citando un canónico rompe el invariante 5.2 de la política; alternativa: que
+`sellar` copie el contenido al par `.no_verificable` (escritura nueva desde `sellar`). (2) Un segundo intento
+no verificable con el MISMO sha deja fila en `divergencias_sello` (el sello con el mismo sha sigue siendo
+`ya_sellada` sin fila): asimetría declarada. (3) Dos relojes siguen existiendo en `main()`. (4)
+`VERSION_SELLO` pasa a `E0.3` y `sellador_sha256` cambia en las filas nuevas (no es reescritura).
+
+**Dictamen del `auditor-lookahead` (`dictamen_15/auditor_parche_sello.md`): APLICABLE CON EXIGENCIAS.**
+Ninguna fuga temporal; dos fugas de auditabilidad: (F1, BLOQUEANTE) la rama de rechazo de la decisión (1)
+no dejaba rastro en ninguna tabla, y con los dos relojes de `main()` es alcanzable (ya se midió una brecha
+de 44 min el 6-ago); (F2) un `.no_verificable.csv` congelado por un proceso que murió antes de sellar queda
+citado por nadie. **Plegadas al parche por el implementador antes del cierre de la corrida** (B1: el rechazo
+deja fila en `divergencias_sello`; R2, R3, R5; y R4: un segundo intento con el mismo sha devuelve
+`ya_intentada` sin fila, con la política §2.4 enmendada). **Quedan para el acta que lo aplique:** B2 (un
+intento no verificable tiene que ser visible fuera del log: `estado()` con `ultimo_intento`, la API sirviendo
+`intentos_no_verificables` y `ultimo_intento` dentro de `E0`, y `api/CONTRATO.md` enmendado antes; no consume
+el presupuesto de un cambio por noche al sellador) y B3 (el acta escribe que **sustituye** el mecanismo de
+§90.6 (a), no que lo implementa: «`sello_previo()` NO distingue estados y no hace falta que lo haga; el efecto
+firmado se cumple; el mecanismo es otro; el corte de método es `VERSION_SELLO = E0.3`»). Zona ciega
+declarada por el auditor y no probada: dos instancias concurrentes del sellador entre `congelar` y `sellar`.
+
+**Qué falta para aplicarlo.** Un acta que elija T o M (o ninguno), fije el corte de método (fecha y hora de
+aplicación), resuelva B2 y escriba B3; la aplicación con `git apply` sobre HEAD limpio, fuera de las 23:30
+NY, y la suite del sellador después. La primera noche: la tabla nueva con 0 filas y `sellos_dinero` +33;
+nace `data/backups/sello_dinero_no_verificables.csv` vacío con cabecera. **No se eligió nada.**
+
+---
+
+## 76. El README después de §90.3: tres frases que la máquina no sostiene hoy, y a qué vista remitir (corrida 15)
+
+**Lo aplicado** (§90.3, §90.4, §88.5) está en la bitácora 15, sección 3, y en `dictamen_15/informe_bloque2.md`.
+Al aplicarlo, el implementador verificó frase por frase la sección «Execution rail (paper only)» y dejó
+tres cosas sin tocar porque no las firmó ningún acta:
+
+1. **`/salud` no muestra el riel de dinero.** El acta §90.3 pide que la página remita «al CSV versionado y a
+   `/salud`»; `/salud` (`api/main.py:348-420`, `Salud.tsx`) muestra los cinco jobs, la descarga sellada, las
+   verificaciones, el presupuesto de IA y los tamaños de las bases. El estado de E0 lo sirve
+   `/api/dinero/sellos` y lo muestra la vista **`/sellos`**. La mención a `/salud` se quitó (manda la máquina).
+   **Opciones:** (a) remitir a `/sellos`; (b) dejar sólo el CSV. Errata del acta §90.3 en cualquiera de las dos.
+2. **E1: «No practice account and no gateway exist yet».** El acta §91.9 dice «E1 (licencia del `ibapi` por
+   leer y usuario de práctica por activar)» y §90.9 «cuenta de IBKR aprobada». La frase puede estar vencida a
+   medias; sólo Nicolás sabe el estado de la cuenta. **Opciones:** (a) dejarla hasta que E1 arranque; (b)
+   reescribirla con el estado real, firmado.
+3. **E0: «every trading night the machine emits and seals»**: la sesión del 25-sep no tiene filas (suspensión)
+   y la del 28 quedó `no_verificable_timing`. «Every» dice más que el registro. **Opciones:** (a) «on trading
+   nights the machine is awake»; (b) dejarla y aceptar la imprecisión. El texto viene del encargo 15 literal.
+
+También: `GEMELO/resultados/tesis.md:161` sigue diciendo «59× la muestra» (fuera de los archivos del bloque).
+**No se eligió nada.**

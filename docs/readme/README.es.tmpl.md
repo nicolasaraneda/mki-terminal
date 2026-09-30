@@ -35,9 +35,9 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-650%20passing-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-{{badge_tests_n}}%20recolectados%20al%20{{badge_leido_el_url}}-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
-![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
+![plataforma](https://img.shields.io/badge/plataforma-{{badge_plataforma}}%20al%20{{badge_leido_el_url}}-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-{{ventaja_pp_url}}%20pp%20·%20IC%20d%C3%ADa%20{{ventaja_ic_dia_url}}%20·%20n%3D{{n}}-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-{{larga_ventaja_pp_url}}%20pp%20·%20n%3D{{larga_n}}-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
@@ -175,7 +175,7 @@ pares que apuntaban a una sesión que su insumo no podía predecir; de las
 Todo esto se recomputa con `python -m backtest.linea_base`, que lee
 `senales.db` en modo solo lectura.
 
-### Larga — reconstruida, 59× la muestra
+### Larga — reconstruida, {{larga_veces}}× la muestra sellada ({{larga_n}} / {{n}})
 
 **n = {{larga_n}} · {{larga_ventaja_pp}} pp · McNemar p ≈ 0** (χ² con corrección de continuidad, `GEMELO/control_lineal._mcnemar`; la binomial exacta no se computó a este n), sobre ocho años y cuatro
 bolsas, con el modelo de producción reconstruido (misma función, misma
@@ -287,8 +287,8 @@ experimento** alrededor de ella:
   ([`GEMELO/DISEÑO.md`](GEMELO/DISEÑO.md)). Cuando el harness contradijo
   una cifra del documento, **mandó el harness** y la corrección se publicó
   aparte, con fecha posterior.
-- **El N del DSR se declara antes de cada corrida y solo sube.** Va en 352
-  (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 358 con los seis del 5.1):
+- **El N del DSR se declara antes de cada corrida y solo sube.** Va en {{n_intentos_previo}}
+  (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; {{n_intentos_51}} con los seis del 5.1):
   re-evaluar la misma configuración sobre otra ventana produce otro
   resultado publicable entre los cuales se puede elegir, y **elegir entre
   resultados es exactamente lo que el Deflated Sharpe deflacta**. Contar

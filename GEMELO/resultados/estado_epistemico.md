@@ -1,4 +1,4 @@
-# Qué puede afirmar MKI Terminal hoy — estado epistémico (28-sep-2026, actualizado al cierre de la corrida 14)
+# Qué puede afirmar MKI Terminal hoy — estado epistémico (30-sep-2026, actualizado al cierre de la corrida 15)
 
 **Para quien pregunta «¿y esto qué demuestra?».** MKI es un experimento de
 pronóstico: cada tarde, al cierre de Nueva York, un modelo congelado emite
@@ -209,6 +209,47 @@ viven en `README.md` (inglés) y `README.es.md` (español), generados desde el �
     sostiene.)*
 
 ## PROPUESTAS de esta semana (no son afirmaciones del proyecto)
+
+- **Corrida 15 (noche del 29 al 30-sep), sólo lo dictaminado; el resto está en `bitacora_15.md` y en las tarjetas
+  §66 a §76.** Dictámenes: `estadistico-adversario` (la regla de §58, dos veces), `auditor-lookahead` (el bloque 1
+  aplicado; el parche del sellador), `director-programa` (pre-mortem), `guardian-constitucion` y
+  `curador-epistemico` (cierre); `dictamen_15/`.
+
+  (i) **PROPUESTA sellada antes del dato: la regla de decisión de §58** (`GEMELO/propuestas/regla_58.md`,
+  23:08:17 del 29-sep, sha256 `ca2ccd53…`, antes del primer disparo de madrugada de la sonda). Dictamen: APTA CON
+  EXIGENCIAS, incorporadas; el adversario retiró dos exigencias propias como errores (E8 y el hecho de E6). Lo que
+  la regla afirma con etiqueta: MEDIDO con funciones puras del sellador que toda hora candidata de (b) es posterior
+  a la medianoche de Nueva York y con el código vigente pierde viernes y vísperas de feriado como
+  `dia_sin_sesion`; MEDIDO que el antecedente de noche incompleta a la hora actual es 3 de 11 sesiones (Wilson 95 %
+  [9,7 · 56,6]); y que con esa tasa la regla indica (b) con probabilidad 0,11 (binomial, forma cerrada). Nada de
+  esto es una afirmación sobre ventaja; intentos consumidos: 0 en los dos registros.
+
+  (ii) **MEDIDO y APLICADO (test de reproducción rojo en HEAD y verde después; dictamen del `auditor-lookahead`:
+  APLICABLE CON EXIGENCIAS): las tres guardas de conocibilidad de §90.1 están aplicadas al árbol real desde las
+  23:22:17 del 29-sep** (a: el
+  verificador; b: `snapshot.py` se niega a sellar con la sesión del SOX abierta, margen cero; d: la capa de medición
+  excluye por regla). Alcance MEDIDO: 24 filas, una fecha, 8 con verificación; ninguna cifra publicada se movió
+  (árbitro idéntico antes y después, verificado clave por clave por el auditor). **Lo que las guardas NO cierran,
+  MEDIDO por el auditor:** las métricas vivas de 30 días de `senales.py` (Telegram, dashboard, API) cuentan hoy 8
+  de 160 filas invertidas, y `verificar_puntaje_pendientes` no aplica ni la regla maestra ni la de conocibilidad
+  (tarjeta §73). **Y una precisión al acta §90.1 (b), MEDIDA con test:** la guarda no protege contra sellar con el
+  SOX de una sesión anterior ya cerrada (tarjeta §72).
+
+  (iii) **MEDIDO por censo de la base sellada: las dos anclas de `sesion_objetivo` difieren en 33 filas de 5 fechas**,
+  y la premisa con que el encargo justificaba el §90.2 tiene contraejemplo en la base (`005930.KS`, 29-jul). §90.2 no
+  se aplicó; DECISIÓN PENDIENTE (tarjeta §71).
+
+  (iv) **CONTESTADO el «17» de `roca_chip` del 28-sep** que la corrida 14 dejó PROVISIONAL: era el artefacto de un
+  split 5:1 de 8035.T que la fuente aplicó a medias el 28-sep (la fuente sirve `Stock Splits = 5.0` con fecha 29-sep
+  y hoy la serie es consistente). El valor releído por el orquestador con la serie de hoy (39, contra 44 sellado con
+  la barra intradía) es DESCRIPTIVO y sin dictamen adversario: no se asienta acá como cifra; tarjeta §68.
+
+  (v) **PROPUESTA y parche NO APLICADO de §62** (política de retención y camino T): el hallazgo dictaminado es que la
+  opción (a) firmada en §90.6 no se puede implementar por la `UNIQUE (fecha_insumo, ticker, juego)` de la tabla;
+  tarjeta §75. `dinero/sello_dinero.py` del árbol real no cambió.
+
+  (vi) Lo que la corrida 14 dejó en (i) como «PENDIENTE de Nicolás (§61)» quedó FIRMADO en el acta §90.1 y aplicado
+  en (ii); las 24 filas conservan su estado y su errata fechada está en el acta §92.
 
 - **Corrida 14 (28-sep), con dictámenes del `auditor-lookahead` (el sello del 28-sep, más su complementario sobre la
   medición), del `director-programa` (pre-mortem y alcance del cierre), del `estadistico-adversario` (la

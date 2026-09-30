@@ -1,0 +1,19 @@
+base: /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/de320909-2c4c-4d19-9942-e7dc8900b9a2/scratchpad/wt15/senales.db  (enlaces: 1, bytes: 589824)
+  _snapshot_sellado(2026-09-07, Mon) = True
+  _snapshot_sellado(2026-09-25, Fri) = False
+  _snapshot_sellado(2026-09-26, Sat) = False
+  _snapshot_sellado(2026-09-27, Sun) = False
+  _snapshot_sellado(2026-09-28, Mon) = True
+  _snapshot_sellado(2026-09-29, Tue) = True
+  _snapshot_sellado(2026-09-30, Wed) = False
+  _snapshot_vivo() de verdad = False
+
+--- main() con el reloj de verdad ---
+[2026-09-30T01:38:27.926896+00:00] mki_backup.py
+  modo: TITULAR — Telegram y commits activos
+  fecha local 2026-09-29 (martes) 22:38:27 · snapshot de hoy sellado: sí · snapshot.py vivo: no
+  snapshot de hoy sellado: se commitea
+  commit creado: Backup diario 2026-09-29
+--- salida 0; git (espiado): [('add', '--', 'data/backups'), ('diff', '--cached', '--quiet', '--', 'data/backups'), ('commit', '-m', 'Backup diario 2026-09-29', '--', 'data/backups')]
+
+base intacta: mtime igual = True, tamaño igual = True, vecinos = ['senales.db']

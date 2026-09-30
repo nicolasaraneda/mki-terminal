@@ -9,7 +9,7 @@ corridas autónomas. Ninguna se resuelve acá.
 la sostiene.** Una decisión de una frase puede costar más cara de demorar
 que un documento de treinta páginas que no bloquea nada.
 
-**Actualizada:** 28-sep-2026, corrida 14. Las firmas del §88 (§43, §54, §58 en parte, §59 por remisión, §60) están marcadas en `espera_firma.md`.
+**Actualizada:** 29-sep-2026, corrida 15 (nocturna). Las firmas del §88 (§43, §54, §58 en parte, §59 por remisión, §60) están marcadas en `espera_firma.md`.
 
 **El orden, escrito, porque el documento tenía dos «primeros».** El `director-programa` lo marcó al
 cerrar la corrida 14: esta página dice que se ordena por costo de postergar, pero decía además «la cola
@@ -32,6 +32,46 @@ razón:
 
 Donde el §1 diga «primero de la cola», hay que leerlo contra esta lista: sigue siendo lo más caro de lo
 que **no** abrió el despertar del 28-sep.
+
+## Qué movió la decimoquinta corrida (29 y 30-sep, nocturna)
+
+**Las firmas del §90 se ejecutaron, y al ejecutarlas aparecieron cuatro decisiones nuevas que las actas
+no daban.** El orden de la cola cambia así:
+
+1. **`espera_firma.md` §73**, con vencimiento: `verificar_puntaje_pendientes` no aplica ni la regla maestra ni la
+   de conocibilidad y va a escribir las 24 filas del 28-sep en `verificacion_puntaje` alrededor del **5-oct**; y
+   las métricas vivas de 30 días (Telegram, dashboard, API) cuentan hoy 8 filas invertidas de 160. Una de dos frases
+   de Nicolás cierra lo primero; lo segundo se resuelve solo el 28-oct o con un cambio en `senales.py`.
+2. **§74**, el crédito de la API: `mki-noticias` no analiza nada desde el 7-sep (17 corridas «credit balance is too
+   low», todas «ok» en el ledger). Los pendientes pasaron de 260 a **3.672** en 22 días (MEDIDO, `data/costos_ia.log`, tarjeta §74)
+   y los sentimientos sellados se apoyan en análisis de hasta el 4-sep. Es un acto de Nicolás de cinco minutos, y ninguna alarma lo decía.
+3. **§58**, la regla de decisión, PROPUESTA sellada antes del primer dato de madrugada (23:08:17, sha256
+   `ca2ccd53…`): firmarla no cuesta nada y sin firma la sonda acumula noches para una regla que nadie adoptó. Y lo
+   que la regla dejó escrito cambia el tamaño de (b): pasada la medianoche el sellador marca `dia_sin_sesion` y
+   pierde los viernes con el código vigente.
+4. **§71**, el ancla de §90.2, DETENIDA: 33 filas de la historia difieren entre las dos anclas y la premisa del
+   encargo era falsa. Firmada y no aplicable tal cual; hay que elegir de nuevo con la tabla a la vista.
+5. **§75**, el parche de §62: la (a) firmada no se puede implementar (la `UNIQUE` de la tabla); el parche toma el
+   camino T y espera un acta que elija T o M.
+6. **§70** (backup: dos elecciones de agente), **§72** (la guarda (b) es necesaria y no suficiente; desde el 2-nov la
+   holgura del sello es de 15 minutos), **§76** (README: `/sellos`, E1, «every»), **§67** (vigía: los dos chequeos),
+   **§68** (8035.T y los splits), **§69** (la skill `gate`, edición denegada), **§66** (el inventario, que funde §63).
+7. **§1 de esta cola, la réplica**, y las firmas de §2a-ter y el MDE antes del 19-nov-2026: siguen sin moverse, y el
+   director volvió a pedirlas en paralelo (pre-mortem 15).
+
+**Lo que la corrida aplicó al árbol real** (bitácora 15): las guardas (a), (b) y (d) de §90.1 (corte de método
+23:22:17 del 29-sep), el README sin contador con badges congelados y las erratas de §88.5, `mki_backup.py` con la
+regla de orden de §90.8, y la deuda (6) de §91.4. **Lo que NO aplicó:** §90.2 (detenida), el parche de §62, el
+vigía (a tarjeta por dictamen del director), la deuda (5) (denegada por el clasificador de permisos; propuesta
+instalable en `GEMELO/propuestas/skills/`).
+
+**Errata fechada 30-sep-2026 (corrida 15, acta §91.4 deuda 1):** más abajo, en la sección de la corrida 13, dice
+«hoy 897 recolectados»: era el conteo de `pytest tests/ --collect-only -q` del 19-sep. Al cierre de la corrida 15 el
+mismo comando da **1025** (con `test_conocibilidad.py`, `test_backup_orden.py` y los tests nuevos de `test_readme.py`).
+La línea de la corrida 13 se conserva con esta marca al lado.
+
+**Intentos:** ninguno de los dos registros se movió (gap asiático 354, veredicto 5.1 360; riel largo 4). La regla de
+§58 consume 0; el adversario juzgó tres hipótesis sobre instrumentación, ninguna sobre retornos.
 
 ## Qué movió la decimocuarta corrida (28-sep)
 
@@ -105,7 +145,7 @@ eligió la corrida: lo puso el despertar del PC.
   IDÉNTICAS entre idiomas y con el árbitro (adversario). **Erratas pendientes de Nicolás, en las DOS páginas, no
   movidas esta noche:** el N de intentos publica 352/358 y el registro dice 354/360 (`backtest/veredicto_51.py`);
   el «59×» de la ventana larga es 14.618/248 (n de la rama derogada; con n = 238 es 61,4×); los badges `tests-650` y
-  `plataforma-5.0.3` (hoy 897 recolectados y 5.1.0); `ventana_larga.md:42` y `:176` siguen publicando dos cifras
+  `plataforma-5.0.3` (hoy 1025 recolectados y 5.1.0; **errata fechada 29-sep-2026, corrida 15, deuda (1) del acta §91.4:** acá decía «897», el conteo de `pytest tests/ --collect-only -q` del 19-sep; el 29-sep a las 23:30 el mismo comando da 1025); `ventana_larga.md:42` y `:176` siguen publicando dos cifras
   retiradas porque ese archivo no está en `DOCUMENTOS_PUBLICADOS`; el n del encabezado de la tabla del holdout
   (393 / 2.548) no gobierna las celdas E1 (399 / 2.574). El CSV `data/backups/sello_dinero.csv` va sin commitear:
   el contador de E0 del README (9 / 7 / 2026-09-18) sólo es regenerable desde HEAD cuando se commitee con él.

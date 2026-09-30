@@ -1,0 +1,38 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea __________
+
+titular = None
+git_espia = [('add', '--', 'data/backups'), ('diff', '--cached', '--quiet', '--', 'data/backups'), ('commit', '-m', 'Backup diario 2026-09-29', '--', 'data/backups')]
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bf06edffbb0>
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-18/test_reproduccion_28_sep_despe0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7bf06e55cc20>
+
+    def test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea(
+            titular, git_espia, monkeypatch, tmp_path, capsys):
+        """Titular, lunes 28-sep-2026 14:42 local, sin snapshot de hoy (la
+        base tiene sellado hasta el viernes anterior). El backup NO debe tocar
+        git. Contra el `mki_backup.py` de HEAD 2f73eb2 este test FALLA porque
+        HEAD hace add + diff + commit: es el commit 5321f6b."""
+        _montar(monkeypatch, tmp_path, _a_las(LUNES_28_SEP, 14, 42),
+                selladas=("2026-09-24", "2026-09-25"), estricto=False)
+    
+        codigo = mki_backup.main()
+    
+>       assert git_espia == [], (
+            "el backup tocó git antes de que el día se sellara (el defecto del "
+            f"28-sep-2026, acta §90.8): {git_espia}")
+E       AssertionError: el backup tocó git antes de que el día se sellara (el defecto del 28-sep-2026, acta §90.8): [('add', '--', 'data/backups'), ('diff', '--cached', '--quiet', '--', 'data/backups'), ('commit', '-m', 'Backup diario 2026-09-29', '--', 'data/backups')]
+E       assert [('add', '--'...ata/backups')] == []
+E         
+E         Left contains 3 more items, first extra item: ('add', '--', 'data/backups')
+E         Use -v to get more diff
+
+tests/test_backup_orden.py:143: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2026-09-30T01:32:50.212913+00:00] mki_backup.py
+  modo: TITULAR — Telegram y commits activos
+  commit creado: Backup diario 2026-09-29
+=========================== short test summary info ============================
+FAILED tests/test_backup_orden.py::test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea
+1 failed in 0.09s

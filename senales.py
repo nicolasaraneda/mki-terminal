@@ -296,14 +296,17 @@ def verificar_apertura_pendientes() -> dict:
     """Verifica las predicciones de apertura pendientes aplicando la REGLA
     MAESTRA: solo se evalúan las emitidas (timestamp_utc) ANTES de la apertura
     UTC de su sesión objetivo. Las emitidas tarde quedan como
-    'no_verificable_timing' (auditables, fuera de métricas). Para las válidas
-    cuya sesión ya cerró, calcula el DOBLE objetivo: gap de apertura y retorno
-    de sesión (ambos vs el cierre de la sesión local anterior)."""
+    'no_verificable_timing' (auditables, fuera de métricas). Tampoco se
+    evalúan las que declaran su insumo conocible (available_at) DESPUÉS de
+    haber sido emitidas: mismo estado, misma exclusión (acta §90.1 a). Para
+    las válidas cuya sesión ya cerró, calcula el DOBLE objetivo: gap de
+    apertura y retorno de sesión (ambos vs el cierre de la sesión local
+    anterior)."""
     init_db()
     conn = get_connection()
     pendientes = conn.execute(f"""
         SELECT id, fecha, ticker, apertura_estimada_pct, timestamp_utc,
-               exchange, sesion_objetivo, modelo_version
+               exchange, sesion_objetivo, modelo_version, available_at
         FROM senales_ticker
         WHERE estado = '{ESTADO_PENDIENTE}' AND apertura_estimada_pct IS NOT NULL
           AND timestamp_utc IS NOT NULL AND sesion_objetivo IS NOT NULL
@@ -312,7 +315,7 @@ def verificar_apertura_pendientes() -> dict:
 
     verificadas, descartadas, atascadas, sin_calendario = 0, 0, 0, 0
     for (id_, fecha_senal, ticker, est_pct, ts_utc, exchange,
-         sesion_obj, modelo_ver) in pendientes:
+         sesion_obj, modelo_ver, disponible_en) in pendientes:
         try:
             apertura = calendarios.apertura_utc(exchange, sesion_obj)
         except Exception as e:
@@ -336,6 +339,33 @@ def verificar_apertura_pendientes() -> dict:
                          (ESTADO_NO_VERIFICABLE, id_))
             descartadas += 1
             continue
+
+        # GUARDA DE CONOCIBILIDAD (acta §90.1 a, 29-sep-2026): el orden
+        # completo es available_at <= timestamp_utc < apertura, y hasta acá
+        # sólo se exigía el segundo término. El 28-sep-2026 el PC despertó
+        # de una suspensión y se selló a las 13:42 de Nueva York, con NYSE
+        # abierto: 24 filas declaran su insumo conocible a las 20:00 UTC
+        # habiendo sido emitidas a las 17:42 UTC, y nada lo vio. Una fila
+        # así no es verificable: mismo estado que la emitida tarde, fuera de
+        # métricas. Se comparan INSTANTES con zona, no texto. NULL no
+        # dispara; la IGUALDAD tampoco (es la rama del `except` de
+        # snapshot.py, que tiene su alerta en el vigía, acta §84.2).
+        # CORTE DE MÉTODO: rige para las filas `pendiente` al correr; el
+        # estado de una fila ya procesada no se cambia (la opción
+        # retroactiva NO se firmó).
+        if disponible_en:
+            conocible = datetime.fromisoformat(disponible_en)
+            if conocible.tzinfo is None:
+                conocible = conocible.replace(tzinfo=timezone.utc)
+            if conocible > emitida:
+                conn.execute("UPDATE senales_ticker SET estado = ? WHERE id = ?",
+                             (ESTADO_NO_VERIFICABLE, id_))
+                descartadas += 1
+                print(f"  AVISO verificador: {ticker} {fecha_senal} (fila {id_}) "
+                      f"declara su insumo conocible a las {disponible_en}, "
+                      f"después de su emisión ({ts_utc}): "
+                      f"{ESTADO_NO_VERIFICABLE}", flush=True)
+                continue
 
         if not calendarios.sesion_ya_cerro(exchange, sesion_obj):
             continue  # la sesión objetivo aún no cierra: se reintenta después

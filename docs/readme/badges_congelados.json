@@ -1,0 +1,8 @@
+{
+  "tests_recolectados": 1025,
+  "plataforma_version": "5.1.0",
+  "leido_el": "2026-09-29",
+  "comando_tests": "pytest tests/ --collect-only -q",
+  "fuente_plataforma": "version.py: PLATAFORMA_VERSION",
+  "nota": "Valores CONGELADOS por el acta §90.4 (opción b: congelados con fecha a la vista). NO se regeneran solos: ni el generador de los README ni ningún job corre la suite o lee version.py para llenarlos. `leido_el` dice el día (hora de Chile) en que se leyeron de la máquina, y es la fecha que los dos badges muestran. `tests_recolectados` es un conteo de RECOLECCIÓN (incluye los tests saltados y los xfail), no un conteo de tests en verde. Para actualizarlos se relee la máquina, se cambian los TRES valores juntos (los dos leídos y la fecha) y se corre scripts/generar_readme.py."
+}

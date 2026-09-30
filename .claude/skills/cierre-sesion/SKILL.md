@@ -55,10 +55,13 @@ Claude: eso es lo que sobrevive a una pérdida de disco.
 
 ## Recordatorio de estado
 
-La reactivación está completa y la composición canónica ejecutada. Lo que sigue
-abierto es el **segundo movimiento del switch**: apagar los timers del Mac
-primero, quitar `MKI_MODO` en el PC después. Es de Nicolás y no se prepara "por
-si acaso" dentro de otra tanda. Ver `/switch-titular`.
+**El switch ya se ejecutó (30-ago-2026).** Este PC (WSL) es el titular, trabaja
+en `main` y emite; el Mac quedó fuera. Al modo se le pregunta a `modo.py`, no
+se deduce de ningún documento, y donde un texto y la máquina no coincidan manda
+la máquina. Mover el modo o tocar un timer es de Nicolás y no se prepara "por si
+acaso" dentro de otra tanda. Ver `/modo-emision` (la skill `switch-titular` no
+existe). Corregido por el acta §91.4: este párrafo describía el estado anterior
+al switch.
 
 Si la sesión movió alguna cifra publicada, verificá que se movieron **los doce
 bloques** y que corriste el barrido. Ver `/cifras-canonicas`.

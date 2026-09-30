@@ -13,7 +13,7 @@
 
 import os
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -41,12 +41,28 @@ def _frame_sintetico(tickers: tuple, sin_datos: set = frozenset()) -> pd.DataFra
     return pd.DataFrame(datos, index=idx)
 
 
+class _RelojTrasElCierre(datetime):
+    """Corrida 15 (acta §90.1 b): desde la guarda de conocibilidad,
+    `ejecutar_snapshot` se niega a sellar si la sesión de `sox_fecha` no ha
+    cerrado. El frame sintético de este archivo termina HOY, así que con el
+    reloj real los tests que sellan pasaban o no según la hora en que
+    corriera la suite: rojos desde la medianoche de Chile hasta el cierre
+    de NYSE de cada día hábil. El reloj de snapshot.py queda fijo a las
+    23:59 UTC de hoy, después de cualquier cierre de XNYS."""
+
+    @classmethod
+    def now(cls, tz=None):
+        fin = datetime.combine(date.today(), time(23, 59), tzinfo=timezone.utc)
+        return fin if tz else fin.replace(tzinfo=None)
+
+
 @pytest.fixture
 def entorno(monkeypatch, tmp_path):
     """DB temporal de señales, sentimientos vacíos y caché del motor limpia.
     Devuelve un helper para parchear _datos_crudos con caídos configurables."""
     monkeypatch.setattr(senales, "DB_PATH", str(tmp_path / "senales_test.db"))
     monkeypatch.setattr(noticias, "sentimiento_promedio_por_ticker", lambda: {})
+    monkeypatch.setattr(snapshot, "datetime", _RelojTrasElCierre)
     motor._cache.clear()
 
     def instalar_fake(caidos_por_llamada):

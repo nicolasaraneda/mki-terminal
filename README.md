@@ -37,9 +37,9 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-650%20passing-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-1025%20recolectados%20al%202026--09--29-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
-![plataforma](https://img.shields.io/badge/plataforma-5.0.3-22d3ee?style=flat-square)
+![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--09--29-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
@@ -180,7 +180,7 @@ and it is published with its cause.
 All of this is recomputed with `python -m backtest.linea_base`, which reads
 `senales.db` in read-only mode.
 
-### Long — reconstructed, 59× the sample
+### Long — reconstructed, 61× the sealed sample (14.618 / 238)
 
 **n = 14.618 · +15.66 pp · McNemar p ≈ 0** (χ² with continuity correction, `GEMELO/control_lineal._mcnemar`; the exact binomial was not computed at this n), over eight years and four
 exchanges, with the production model reconstructed (same function, same
@@ -293,7 +293,7 @@ the experiment** around it:
   a figure in the document, **the harness won** and the correction was
   published separately, with a later date.
 - **The DSR's N is declared before every run and only goes up.** It stands
-  at 352 (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 358 with the six
+  at 354 (`backtest/veredicto_51.py: N_INTENTOS_PREVIO`; 360 with the six
   from 5.1): re-evaluating the same configuration on another window
   produces another publishable result to choose between, and **choosing
   between results is exactly what the Deflated Sharpe deflates**.
@@ -388,16 +388,19 @@ awaits the trigger (N ≥ 150 live verifications and a regime change, or
 
 ## Execution rail (paper only)
 
-- **E0 in progress** — every trading night the machine emits and seals a decision
-  for the next NYSE open with nominal size zero, driven by a
-  no-information random draw (labelled “machinery test, not a track
-  record”). Sealed prospective sessions so far:
-  **9**, of which **7** count
-  towards N = 40; the ones that do not (2026-09-09, 2026-09-18) had
-  incomplete or late input (last sealed input session: 2026-09-18). The count is read from `data/backups/sello_dinero.csv`, the exported copy of the sealing database that the daily backup job versions (it moves one session per night), not typed by hand.
+- **E0 in progress** (since 2026-09-08) — on NYSE trading nights the machine
+  emits and seals a decision for the next open with nominal size zero,
+  driven by a no-information random draw (labelled “machinery test, not a
+  track record”). A sealed session counts towards N = 40 only
+  if it was sealed on time, on a trading day, with complete and fresh
+  input; nights get missed (a paused machine, an incomplete input) and a
+  missed night is never recovered. This page carries no running count: the sealed rows live in
+  [`data/backups/sello_dinero.csv`](data/backups/sello_dinero.csv), the
+  exported copy of the sealing database that the daily backup job versions.
 - **E1 not executed** — broker paper account. Exit condition: the machine
   sends an order and reads back its own execution through the official
-  API in the same cycle. No practice account and no gateway exist yet;
+  API in the same cycle. No gateway exists yet and no order has ever been
+  sent; the practice user is pending activation (minutes §91.9, 2026-09-29);
   the adapter refuses in code to connect to anything that is not a paper
   account, and a test proves it.
 - **E2 not started** — real capital, minimum size, only after E0 and E1

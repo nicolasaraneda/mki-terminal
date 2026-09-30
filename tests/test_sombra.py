@@ -9,7 +9,7 @@
 import json
 import os
 import sys
-from datetime import date
+from datetime import date, datetime
 
 import pandas as pd
 import pytest
@@ -135,6 +135,13 @@ def test_backup_de_titular_si_intenta_commitear(titular, monkeypatch, tmp_path):
 
     monkeypatch.setattr(mki_backup, "_git", lambda *a: llamadas.append(a) or R())
     monkeypatch.setattr(mki_backup, "DIRECTORIO", str(tmp_path))
+    # 5.1.0 / acta §90.8 (corrida 15): el backup ya decide con el reloj, la
+    # base y el proceso del snapshot. Se fija el caso normal de las 18:40
+    # (día de semana, sellado, sin snapshot.py vivo) para que este test no
+    # dependa de la hora a la que corra la suite.
+    monkeypatch.setattr(mki_backup, "_ahora_local", lambda: datetime(2026, 9, 29, 18, 40))
+    monkeypatch.setattr(mki_backup, "_snapshot_sellado", lambda fecha, ruta: True)
+    monkeypatch.setattr(mki_backup, "_snapshot_vivo", lambda: False)
     os.makedirs(tmp_path / "data", exist_ok=True)
     mki_backup.main()
     assert llamadas and llamadas[0][0] == "add"

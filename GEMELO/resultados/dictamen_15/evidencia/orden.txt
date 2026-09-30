@@ -1,0 +1,17 @@
+exclusion->dedup: 411 | dedup->exclusion: 411 | iguales: True
+solo en el primero: []
+solo en el segundo: []
+filas alcanzadas por la regla que ADEMAS forman par:
+     fecha  ticker exchange sesion_objetivo              available_at sesion_recomputada  sesion_calza  gap_pct  acierto_gap
+2026-09-24 2330.TW     XTAI      2026-09-29 2026-09-24T20:00:00+00:00         2026-09-29          True      0.0            0
+2026-09-28 2330.TW     XTAI      2026-09-29 2026-09-28T20:00:00+00:00         2026-09-29          True      0.0            0
+las alcanzadas que tienen verificacion:
+     fecha    ticker  apertura_estimada_pct  gap_pct  acierto_gap sesion_objetivo
+2026-09-28 000660.KS                  -1.32  -0.7353            1      2026-09-29
+2026-09-28 005930.KS                  -0.97  -1.4815            1      2026-09-29
+2026-09-28   2330.TW                  -0.53   0.0000            0      2026-09-29
+2026-09-28    3436.T                  -1.08   2.3179            0      2026-09-29
+2026-09-28    4063.T                  -0.50  -1.0701            1      2026-09-29
+2026-09-28    6857.T                  -0.92   0.2668            0      2026-09-29
+2026-09-28    8035.T                  -0.91   4.3658            0      2026-09-29
+2026-09-28    IFX.DE                  -0.05   2.3511            0      2026-09-29

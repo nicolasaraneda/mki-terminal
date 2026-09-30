@@ -72,6 +72,43 @@
 # La exclusión vive AQUÍ, en la capa de medición, por la misma razón que
 # `excluir_cero`: `senales.py` no se toca y ninguna fila sellada se
 # reescribe.
+#
+# ------------------------------------------------------------
+# LA REGLA DE CONOCIBILIDAD — firmada el 29-sep-2026
+# ------------------------------------------------------------
+# Toda fila sellada declara dos instantes: `timestamp_utc` (cuándo se
+# emitió) y `available_at` (cuándo era conocible el insumo que usó: el
+# cierre UTC de la sesión del SOX). Una fila con
+#
+#     available_at > timestamp_utc
+#
+# declara que su insumo fue conocible DESPUÉS de que la fila ya existía.
+# No usó un cierre sino una barra de sesión abierta, y un tercero no puede
+# reproducirla desde el registro sellado. Queda FUERA de toda métrica
+# (DECISIONES.md, acta §90.1 d).
+#
+# El criterio es POR REGLA y no por fecha: este módulo no nombra ningún
+# día. Las filas que alcanza salen de comparar los dos instantes —como
+# instantes con zona, no como texto—, se cuentan en
+# `auditar_conocibilidad()` y el informe las declara. El orden es
+# ESTRICTO: la igualdad (la rama del `except` de snapshot.py, que deja
+# `available_at` en el reloj de pared) no queda alcanzada; ésa tiene su
+# propia alerta en el vigía.
+#
+# ORDEN DE APLICACIÓN: la exclusión corre ANTES que la deduplicación. Una
+# fila fuera de toda métrica tampoco arbitra un par: deduplicando primero,
+# una fila inválida que «calza» podría retirar a su pareja válida y caer
+# después ella, y se perderían las dos.
+#
+# Vive AQUÍ por la misma razón que las otras dos: las filas alcanzadas
+# conservan su `estado` y su fila en `verificacion_apertura` como registro
+# histórico, y ninguna fila sellada se reescribe.
+#
+# ALCANCE, declarado porque importa: la regla se define sobre
+# `senales_ticker`, que es la tabla que sella `available_at`. La tabla
+# `snapshots` no lo sella, así que el `regimen` de un snapshot emitido con
+# la sesión abierta NO queda alcanzado (conteo de regímenes de
+# `salud_r2_regimen_beta`). Retirarlo sería otra regla, y no está firmada.
 # ============================================================
 
 import argparse
@@ -110,6 +147,13 @@ CONVENCION_OFICIAL = "excluir_cero"
 # —la §2 y la línea base de la §2.8— pasa `dedup=False` explícitamente y
 # dice por qué.
 DEDUP_OFICIAL = True
+
+# FIRMADA el 29-sep-2026 (DECISIONES.md, acta §90.1 d). `cargar()` la
+# aplica por defecto, por la misma razón que la deduplicación: una fila
+# retirada que el código sigue ofreciendo vuelve a circular.
+# `conocibilidad=False` existe sólo para poder CONTAR lo que la regla
+# retira y para probar que no mueve ninguna ventana congelada.
+CONOCIBILIDAD_OFICIAL = True
 
 # ------------------------------------------------------------
 # EL INSTANTE «A LA FECHA» DE LA §2 — hallazgo del 30-ago (WS5)
@@ -331,11 +375,86 @@ def auditar_dedup(df: pd.DataFrame) -> dict:
 
 
 # ------------------------------------------------------------
+# La regla de conocibilidad, firmada — ver la cabecera
+# ------------------------------------------------------------
+def _instante_utc(texto) -> datetime | None:
+    """Un instante sellado (ISO 8601) como datetime con zona. Sin zona se
+    lee como UTC, igual que hace el verificador con `timestamp_utc`."""
+    if texto is None or pd.isna(texto) or not str(texto):
+        return None
+    t = datetime.fromisoformat(str(texto))
+    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+
+def sin_conocibilidad(timestamp_utc, available_at) -> bool:
+    """LA REGLA FIRMADA (acta §90.1 d): True si la fila declara su insumo
+    conocible DESPUÉS de haber sido emitida. Orden estricto; un instante
+    ausente no dispara (no hay nada que comparar, y callarse es más barato
+    que inventar un criterio)."""
+    emitida, conocible = _instante_utc(timestamp_utc), _instante_utc(available_at)
+    if emitida is None or conocible is None:
+        return False
+    return conocible > emitida
+
+
+def excluir_sin_conocibilidad(df: pd.DataFrame) -> pd.DataFrame:
+    """Retira las filas que la regla alcanza. Necesita las columnas
+    `timestamp_utc` y `available_at`. Sin efectos sobre la base."""
+    if df.empty:
+        return df
+    fuera = [sin_conocibilidad(t, a)
+             for t, a in zip(df["timestamp_utc"], df["available_at"])]
+    if not any(fuera):
+        return df
+    return df[[not f for f in fuera]].reset_index(drop=True)
+
+
+def filas_sin_conocibilidad() -> pd.DataFrame:
+    """Las filas de `senales_ticker` que la regla alcanza, TODAS: con
+    predicción o sin ella, verificadas o no. `con_verificacion` dice cuáles
+    tienen fila en `verificacion_apertura`, que son las que `cargar()`
+    dejaría entrar a las métricas si la regla no existiera."""
+    columnas = ["fecha", "ticker", "timestamp_utc", "available_at", "estado",
+                "con_verificacion"]
+    if not os.path.exists(RUTA_SENALES):
+        return pd.DataFrame(columns=columnas).astype({"con_verificacion": bool})
+    conn = _conexion_ro(RUTA_SENALES)
+    try:
+        df = pd.read_sql_query("""
+            SELECT s.fecha, s.ticker, s.timestamp_utc, s.available_at,
+                   s.estado, v.id IS NOT NULL AS con_verificacion
+            FROM senales_ticker s
+            LEFT JOIN verificacion_apertura v
+                   ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
+            WHERE s.timestamp_utc IS NOT NULL AND s.available_at IS NOT NULL
+            ORDER BY s.fecha, s.ticker
+        """, conn)
+    finally:
+        conn.close()
+    df["con_verificacion"] = df["con_verificacion"].astype(bool)
+    alcanzadas = [sin_conocibilidad(t, a)
+                  for t, a in zip(df["timestamp_utc"], df["available_at"])]
+    return df[alcanzadas].reset_index(drop=True)[columnas]
+
+
+def auditar_conocibilidad() -> dict:
+    """Lo que la regla retira, en enteros, para que el informe lo declare.
+    Las fechas salen de los datos: el código no nombra ninguna."""
+    alcanzadas = filas_sin_conocibilidad()
+    return {
+        "filas_alcanzadas": len(alcanzadas),
+        "con_verificacion_apertura": int(alcanzadas["con_verificacion"].sum()),
+        "fechas": sorted(alcanzadas["fecha"].unique().tolist()),
+    }
+
+
+# ------------------------------------------------------------
 # Carga — solo lectura
 # ------------------------------------------------------------
 def cargar(modelo_version: str = MODELO_VERSION,
            hasta_sello: str | None = None,
-           dedup: bool = DEDUP_OFICIAL) -> pd.DataFrame:
+           dedup: bool = DEDUP_OFICIAL,
+           conocibilidad: bool = CONOCIBILIDAD_OFICIAL) -> pd.DataFrame:
     """Une verificacion_apertura con senales_ticker por (fecha, ticker) y
     con snapshots por fecha. Solo 4.6.0, nunca legacy, solo con gap.
 
@@ -348,6 +467,11 @@ def cargar(modelo_version: str = MODELO_VERSION,
     defecto. `dedup=False` es la RAMA HISTÓRICA y sólo se justifica para
     reproducir una afirmación congelada ANTES de la firma; quien la pase
     tiene que decir cuál.
+
+    `conocibilidad`: aplica la regla de conocibilidad (acta §90.1 d, ver
+    cabecera) ANTES de deduplicar. Va en `True` por defecto. No alcanza a
+    ninguna fila de las ventanas congeladas, así que reproducirlas no
+    exige apagarla.
     """
     if not os.path.exists(RUTA_SENALES):
         return pd.DataFrame()
@@ -362,7 +486,8 @@ def cargar(modelo_version: str = MODELO_VERSION,
                    v.error_gap_pp, v.retorno_real_pct,
                    s.confianza_r2, s.intervalo80_pp, s.n_muestra, s.beta,
                    s.exchange, s.sesion_objetivo, s.available_at,
-                   snap.regimen, snap.sox_usado_pct, snap.sox_fecha
+                   snap.regimen, snap.sox_usado_pct, snap.sox_fecha,
+                   s.timestamp_utc
             FROM verificacion_apertura v
             LEFT JOIN senales_ticker s
                    ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
@@ -373,6 +498,11 @@ def cargar(modelo_version: str = MODELO_VERSION,
         """, conn, params=params)
     finally:
         conn.close()
+    if conocibilidad:
+        df = excluir_sin_conocibilidad(df)
+    # `timestamp_utc` se lee sólo para aplicar la regla: el frame que sale
+    # tiene las mismas columnas que antes de ella.
+    df = df.drop(columns=["timestamp_utc"])
     return deduplicar_por_sesion(df) if dedup else df
 
 
@@ -529,11 +659,17 @@ def salud_r2_regimen_beta(df: pd.DataFrame,
             "SELECT fecha, regimen, modelo_version FROM snapshots ORDER BY fecha", conn)
         snaps = snaps_todos[snaps_todos["modelo_version"] == modelo_version]
         betas = pd.read_sql_query(
-            "SELECT fecha, ticker, beta FROM senales_ticker"
+            "SELECT fecha, ticker, beta, timestamp_utc, available_at"
+            " FROM senales_ticker"
             " WHERE beta IS NOT NULL AND modelo_version = ?"
             " ORDER BY ticker, fecha", conn, params=(modelo_version,))
     finally:
         conn.close()
+
+    # La regla de conocibilidad (acta §90.1 d) rige también acá: la beta de
+    # una fila emitida con la sesión abierta salió de la misma barra.
+    if CONOCIBILIDAD_OFICIAL:
+        betas = excluir_sin_conocibilidad(betas)
 
     # El mismo instante «a la fecha» que `cargar`: sin él, el conteo de
     # snapshots y el salto de β se miden sobre una base que sigue creciendo
@@ -721,6 +857,7 @@ def componer_informe(base_df: pd.DataFrame, convencion: str) -> str:
     # cara.
     historico = cargar(hasta_sello=CORTE_SECCION_2, dedup=False)
     aud = auditar_dedup(cargar(dedup=False))
+    aud_con = auditar_conocibilidad()
 
     L = [f"# Línea base del campeón {MODELO_VERSION} — reproducción de la §2",
          "",
@@ -728,8 +865,31 @@ def componer_informe(base_df: pd.DataFrame, convencion: str) -> str:
          f"- Fuente: `senales.db` en `mode=ro` (autoridad), NO los CSV de respaldo",
          f"- Convención de empate: **{convencion}**",
          f"- Regla de deduplicación: **aplicada** (firmada el 1-sep-2026)",
+         f"- Regla de conocibilidad: **aplicada** (firmada el 29-sep-2026, "
+         f"acta §90.1 d) — {aud_con['filas_alcanzadas']} filas alcanzadas",
          f"- Filas: **n = {d['n']}** · {df['fecha'].min()} → {df['fecha'].max()}",
          "",]
+    L += ["## La regla de conocibilidad, aplicada", "",
+          "Queda fuera de toda métrica la fila que declara su insumo "
+          "conocible DESPUÉS de haber sido emitida: "
+          "`available_at > timestamp_utc`, comparados como instantes. **El "
+          "criterio es por regla, no por fecha**: no hay ninguna lista de "
+          "días cableada, y las fechas de abajo salen de los datos. Se "
+          "aplica ANTES de deduplicar: una fila fuera de toda métrica "
+          "tampoco arbitra un par.", "",
+          "| | |", "|---|---|",
+          f"| Filas de `senales_ticker` alcanzadas | "
+          f"**{aud_con['filas_alcanzadas']}** |",
+          f"| De ellas, con fila en `verificacion_apertura` | "
+          f"**{aud_con['con_verificacion_apertura']}** |",
+          f"| Fechas de sello alcanzadas | "
+          f"{', '.join(aud_con['fechas']) or '(ninguna)'} |", "",
+          "> Las filas alcanzadas conservan su `estado` y su verificación en "
+          "la base, como registro histórico: ninguna fila sellada se "
+          "reescribe. **Lo que la regla NO alcanza, declarado:** la tabla "
+          "`snapshots` no sella `available_at`, así que el `regimen` de un "
+          "snapshot emitido con la sesión abierta sigue contando en la "
+          "§2.7.", ""]
     if aud:
         L += ["## La regla de deduplicación, aplicada", "",
               "Se conserva la fila cuya `sesion_objetivo` coincide con "

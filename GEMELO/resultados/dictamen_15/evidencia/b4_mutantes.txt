@@ -1,0 +1,73 @@
+MUERTO  M1 abre la base en escritura (sin mode=ro): 1 rojos
+           - test_la_base_se_abre_en_mode_ro_y_la_conexion_no_puede_escribir
+MUERTO  M2 la constante dice 18:40: 7 rojos
+           - test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea
+           - test_rama3_las_14_42_sin_sello_se_niega
+           - test_rama4_las_18_15_00_sin_sello_con_proceso_vivo_se_niega
+           - test_rama5_borde_18_15_00_sin_sello_sin_proceso_commitea
+           - test_la_hora_del_snapshot_es_la_de_la_plantilla_del_timer
+           - test_el_backup_dispara_despues_de_la_hora_del_snapshot
+           … y 1 más
+MUERTO  M3 borde: <= en vez de <: 2 rojos
+           - test_rama4_las_18_15_00_sin_sello_con_proceso_vivo_se_niega
+           - test_rama5_borde_18_15_00_sin_sello_sin_proceso_commitea
+MUERTO  M4 el fin de semana no commitea: 14 rojos
+           - test_rama1_fin_de_semana_commitea[hora0-fecha0]
+           - test_rama1_fin_de_semana_commitea[hora0-fecha1]
+           - test_rama1_fin_de_semana_commitea[hora1-fecha0]
+           - test_rama1_fin_de_semana_commitea[hora1-fecha1]
+           - test_rama1_fin_de_semana_commitea[hora2-fecha0]
+           - test_rama1_fin_de_semana_commitea[hora2-fecha1]
+           … y 8 más
+MUERTO  M5 git add ANTES de decidir: 14 rojos
+           - test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora0-False-rama 3]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora1-True-rama 3 con proceso vivo]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora2-False-rama 3, borde]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora3-True-rama 4, borde]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora4-True-rama 4]
+           … y 8 más
+MUERTO  M6 la sombra ya no gana: 4 rojos
+           - test_sombra_devuelve_antes_de_decidir_nada[ahora0]
+           - test_sombra_devuelve_antes_de_decidir_nada[ahora1]
+           - test_sombra_devuelve_antes_de_decidir_nada[ahora2]
+           - test_mki_modo_ilegible_tampoco_commitea
+MUERTO  M7 el mensaje sale de otro reloj: 2 rojos
+           - test_fin_de_semana_main_commitea_sin_snapshot[fecha0]
+           - test_fin_de_semana_main_commitea_sin_snapshot[fecha1]
+MUERTO  M8 la ruta va sin escapar a la URI: 1 rojos
+           - test_una_ruta_con_caracteres_de_uri_se_lee_igual
+MUERTO  M9 la rama 4 ignora el proceso vivo: 3 rojos
+           - test_rama4_las_18_15_00_sin_sello_con_proceso_vivo_se_niega
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora3-True-rama 4, borde]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora4-True-rama 4]
+MUERTO  M10 el sello de hoy no se mira (siempre sellado): 13 rojos
+           - test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea
+           - test_sellado_sin_la_fila_de_hoy
+           - test_sellado_con_la_tabla_vacia
+           - test_la_lectura_no_deja_huella_en_disco
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora0-False-rama 3]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora1-True-rama 3 con proceso vivo]
+           … y 7 más
+MUERTO  M11 pgrep que falla cuenta como vivo: 4 rojos
+           - test_vivo_ante_cualquier_excepcion_es_false[excepcion0]
+           - test_vivo_ante_cualquier_excepcion_es_false[excepcion1]
+           - test_vivo_ante_cualquier_excepcion_es_false[excepcion2]
+           - test_vivo_ante_cualquier_excepcion_es_false[excepcion3]
+MUERTO  M12 la rama 5 no avisa (sin prefijo): 4 rojos
+           - test_rama5_las_18_40_sin_sello_sin_proceso_commitea_y_lo_dice
+           - test_rama5_borde_18_15_00_sin_sello_sin_proceso_commitea
+           - test_feriado_de_nyse_con_y_sin_sello
+           - test_rama5_dia_sin_sello_commitea_y_el_log_lo_dice_con_prefijo
+MUERTO  M13 se niega con salida 1: 9 rojos
+           - test_reproduccion_28_sep_despertar_a_las_14_42_no_commitea
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora0-False-rama 3]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora1-True-rama 3 con proceso vivo]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora2-False-rama 3, borde]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora3-True-rama 4, borde]
+           - test_negarse_no_llama_a_git_NI_UNA_VEZ[ahora4-True-rama 4]
+           … y 3 más
+MUERTO  M14 importa senales para preguntar por el sello: 1 rojos
+           - test_el_backup_no_importa_senales_ni_el_vigia
+
+mutantes: 14 · arnés roto: 0

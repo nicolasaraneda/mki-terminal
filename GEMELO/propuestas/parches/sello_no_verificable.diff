@@ -1,0 +1,1323 @@
+diff --git a/dinero/sello_dinero.py b/dinero/sello_dinero.py
+index f4682c9..177dd07 100644
+--- a/dinero/sello_dinero.py
++++ b/dinero/sello_dinero.py
+@@ -61,6 +61,21 @@
+ # backup versiona. La corrección de una fila sellada es una fila nueva o una
+ # errata fechada, nunca una modificación.
+ #
++# E0.3 (corrida 15, acta §90.6, política de retención de la evidencia no
++# verificable en GEMELO/propuestas/parches/): el 28-sep-2026 el PC despertó
++# de la suspensión y el timer disparó a las 13:42 NY con la bolsa abierta. E4
++# marcó las 33 filas `no_verificable_timing` —correcto— pero las escribió en
++# `sellos_dinero` y `congelar_extension()` ya había escrito `ext_2026-09-28.csv`
++# con la matriz de media sesión: el disparo bueno de las 23:30 encontró la
++# fecha ocupada, entró por divergencia y la sesión se perdió. Como
++# `UNIQUE (fecha_insumo, ticker, juego)` impide que las filas rechazadas y
++# las buenas convivan en la tabla, un disparo con timing roto va ahora a
++# `intentos_no_verificables` (mismas columnas, misma inmutabilidad) y su
++# evidencia a `ext_<fecha>.no_verificable.csv`: ni la fecha ni el cupo
++# canónico quedan ocupados. El timing se decide en `evaluar_timing()`, UNA
++# función que usan congelar y sellar, ANTES de escribir nada. Las filas que
++# E0.2 dejó en la tabla principal con ese estado se quedan donde están.
++#
+ # AISLAMIENTO: nada de acá importa el camino de sellado del riel de medición
+ # (tests/test_dinero.py, sección 1). El calendario es `exchange_calendars`
+ # directo, como en `precios.py`; `version.py` se lee como texto.
+@@ -111,7 +126,11 @@ ESTADO_PENDIENTE = "pendiente"
+ ESTADO_NO_VERIFICABLE = "no_verificable_timing"
+ ESTADO_SIN_SESION = "dia_sin_sesion"
+ ESTADO_INSUMO_INCOMPLETO = "insumo_incompleto"
+-VERSION_SELLO = "E0.2"       # E0.1 nunca selló una fila real; E0.2 = tras las exigencias E1–E8 del auditor
++VERSION_SELLO = "E0.3"       # E0.1 nunca selló una fila real; E0.2 = tras las exigencias E1–E8 del auditor;
++                             # E0.3 = un disparo con timing roto ya no escribe en la tabla principal ni en el
++                             # cupo canónico (corrida 15, §90.6): la versión es el corte de método sellado en la fila
++TABLA_SELLOS = "sellos_dinero"
++TABLA_INTENTOS = "intentos_no_verificables"
+ MINIMO_CORTES_GATE = 2
+ # N que cierra E0: fijado por Nicolás el 8-sep-2026 (acta §84.4.7) ANTES de la
+ # primera fila. No se mueve. Sólo cuentan las sesiones con `cuenta_para_N = 1`.
+@@ -134,9 +153,14 @@ _ABORTA_MODIFICAR = "SELECT RAISE(ABORT, 'las filas selladas del riel de dinero
+ _ABORTA_BORRAR = "SELECT RAISE(ABORT, 'las filas selladas del riel de dinero no se borran')"
+ 
+ 
+-def init_db(con: sqlite3.Connection) -> None:
+-    con.executescript(f"""
+-        CREATE TABLE IF NOT EXISTS sellos_dinero (
++def _ddl_filas(tabla: str) -> str:
++    """Las columnas de una fila sellada y sus dos disparadores de
++    inmutabilidad. E0.3: `intentos_no_verificables` se crea con ESTE mismo
++    texto (una definición, no dos que puedan divergir); la `UNIQUE` vale
++    dentro de cada tabla, así que un intento y el sello bueno de la misma
++    fecha conviven, cada uno en la suya."""
++    return f"""
++        CREATE TABLE IF NOT EXISTS {tabla} (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             fecha_sello TEXT NOT NULL,          -- día de la EMISIÓN en el calendario de Nueva York (E2)
+             fecha_insumo TEXT NOT NULL,         -- última sesión con dato en el insumo
+@@ -175,12 +199,17 @@ def init_db(con: sqlite3.Connection) -> None:
+             creado_en TEXT NOT NULL,
+             UNIQUE (fecha_insumo, ticker, juego)
+         );
+-        CREATE TRIGGER IF NOT EXISTS sellos_dinero_inmutable_1 BEFORE UPDATE ON sellos_dinero
++        CREATE TRIGGER IF NOT EXISTS {tabla}_inmutable_1 BEFORE UPDATE ON {tabla}
+             BEGIN {_ABORTA_MODIFICAR}; END;
+-        CREATE TRIGGER IF NOT EXISTS sellos_dinero_inmutable_2 BEFORE DELETE ON sellos_dinero
++        CREATE TRIGGER IF NOT EXISTS {tabla}_inmutable_2 BEFORE DELETE ON {tabla}
+             BEGIN {_ABORTA_BORRAR}; END;
++    """
++
++
++_DDL_DIVERGENCIAS = f"""
+         -- E4: un segundo sello del MISMO fecha_insumo con OTRO insumo no se ignora en
+-        -- silencio: queda registrado acá, y las filas originales no se tocan.
++        -- silencio: queda registrado acá, y las filas originales no se tocan. E0.3: un
++        -- segundo INTENTO no verificable de la misma fecha también (política §2.4).
+         CREATE TABLE IF NOT EXISTS divergencias_sello (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             fecha_insumo TEXT NOT NULL,
+@@ -195,7 +224,13 @@ def init_db(con: sqlite3.Connection) -> None:
+             BEGIN {_ABORTA_MODIFICAR}; END;
+         CREATE TRIGGER IF NOT EXISTS divergencias_sello_inmutable_2 BEFORE DELETE ON divergencias_sello
+             BEGIN {_ABORTA_BORRAR}; END;
+-    """)
++"""
++
++
++def init_db(con: sqlite3.Connection) -> None:
++    # Todo es CREATE ... IF NOT EXISTS: sobre la base real, E0.3 sólo AGREGA la
++    # tabla de intentos y sus disparadores; ninguna fila ni tabla existente se toca.
++    con.executescript(_ddl_filas(TABLA_SELLOS) + _ddl_filas(TABLA_INTENTOS) + _DDL_DIVERGENCIAS)
+     con.commit()
+ 
+ 
+@@ -235,6 +270,31 @@ def dia_en_calendario_del_exchange(instante_utc: datetime) -> str:
+     return str(ts.tz_convert(_cal().tz).normalize().date())
+ 
+ 
++def evaluar_timing(disponibilidad_por_ticker: dict, fecha_insumo: str, ahora_utc: datetime) -> dict:
++    """La regla maestra en UNA función pura: available_at < emisión < apertura
++    objetivo. `available_at` es el máximo `available_at_utc` de la
++    disponibilidad por ticker (cierre UTC por calendario de la última sesión
++    con dato), NUNCA el reloj de pared; sin disponibilidad, el cierre por
++    calendario de `fecha_insumo`. La sesión objetivo es la primera cuya
++    apertura es posterior a available_at.
++
++    E0.3: la usan `congelar_extension` (antes de escribir la evidencia, para
++    elegir el nombre) y `sellar` (para elegir la tabla), con el instante que
++    cada una recibe. Hasta E0.2 el cálculo vivía sólo dentro de `sellar`, y
++    por eso el 28-sep-2026 la extensión intradía ya ocupaba el nombre
++    canónico cuando el timing se decidió."""
++    if ahora_utc.tzinfo is None:
++        raise ValueError("ahora_utc tiene que traer zona horaria")
++    ahora = ahora_utc.astimezone(timezone.utc)
++    avail = max((v["available_at_utc"] for v in (disponibilidad_por_ticker or {}).values()
++                 if v.get("available_at_utc")), default=None)
++    if avail is None:
++        avail = cierre_utc(fecha_insumo).isoformat()
++    sesion_obj, apertura_obj = proxima_sesion_despues_de(datetime.fromisoformat(avail))
++    return {"avail": avail, "sesion_obj": sesion_obj, "apertura_obj": apertura_obj,
++            "timing_ok": datetime.fromisoformat(avail) < ahora < apertura_obj}
++
++
+ # ------------------------------------------------------------
+ # Insumo: congelado grande + extensión chica, los dos con sha256
+ # ------------------------------------------------------------
+@@ -289,26 +349,62 @@ def sello_previo(fecha_insumo: str, ruta_db: str | None = None) -> dict | None:
+     el nombre del archivo de extensión que esas filas citan, o None. Sólo
+     lectura (`mode=ro`); una base inexistente o sin tabla es «no hay sello».
+     No filtra por `juego` (R4 del auditor, corrida 13): la fecha sellada es
+-    una sola, la lleve el juego que la lleve."""
++    una sola, la lleve el juego que la lleve. E0.3: mira SÓLO `sellos_dinero`;
++    un intento no verificable de la fecha no es un sello (`intento_previo`)."""
++    return _cita_previa(TABLA_SELLOS, fecha_insumo, ruta_db)
++
++
++def intento_previo(fecha_insumo: str, ruta_db: str | None = None) -> dict | None:
++    """E0.3: ¿esta `fecha_insumo` ya tiene un intento no verificable? Mismo
++    contrato que `sello_previo` sobre `intentos_no_verificables`. Una base
++    anterior a E0.3 no tiene la tabla: cero intentos, no un error."""
++    return _cita_previa(TABLA_INTENTOS, fecha_insumo, ruta_db)
++
++
++def _cita_previa(tabla: str, fecha_insumo: str, ruta_db: str | None) -> dict | None:
+     ruta_db = ruta_db or RUTA_DB
+     if not os.path.exists(ruta_db):
+         return None
+     con = conectar(ruta_db, solo_lectura=True)
+     try:
+-        fila = con.execute("SELECT insumo_ext_sha256, insumo_ext_archivo FROM sellos_dinero "
+-                           "WHERE fecha_insumo = ? ORDER BY id LIMIT 1", (fecha_insumo,)).fetchone()
++        return _cita_en(con, tabla, fecha_insumo)
+     except sqlite3.OperationalError:      # base sin la tabla todavía
+         return None
+     finally:
+         con.close()
++
++
++def _cita_en(con: sqlite3.Connection, tabla: str, fecha_insumo: str) -> dict | None:
++    """El sha y el archivo que citan las filas de esa fecha en esa tabla (la
++    primera, por id), o None."""
++    fila = con.execute(f"SELECT insumo_ext_sha256, insumo_ext_archivo FROM {tabla} "
++                       "WHERE fecha_insumo = ? ORDER BY id LIMIT 1", (fecha_insumo,)).fetchone()
+     return {"sha256": fila[0], "archivo": fila[1]} if fila else None
+ 
+ 
+-def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str | None = None) -> tuple:
++def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str | None = None,
++                       ahora_utc: datetime | None = None) -> tuple:
+     """Escribe la extensión recortada a las sesiones POSTERIORES a `base_hasta`
+     y su metadato con disponibilidad por ticker (G8) y solape (E7).
+     Devuelve (ruta_csv, meta).
+ 
++    E0.3 (corrida 15, acta §90.6, política de retención de la evidencia no
++    verificable): el timing se decide ACÁ, antes de escribir, con la misma
++    función que usa `sellar()` (`evaluar_timing`) y el instante `ahora_utc`
++    (default: el reloj; los tests lo inyectan). El 28-sep-2026 el timer
++    disparó a las 13:42 NY con la bolsa abierta: E4 marcó las filas, pero
++    esta función ya había escrito `ext_2026-09-28.csv` con la matriz de media
++    sesión y el disparo bueno de las 23:30 encontró la fecha ocupada. Ahora:
++      · timing ok → como siempre (las tres ramas de E4-bis de abajo);
++      · timing roto, fecha sin sello y sin intento previo →
++        `ext_<fecha>.no_verificable.csv` + `.meta.json`, con
++        `cupo_canonico: false` y el bloque `timing` (los tres instantes que
++        prueban por qué no es verificable); el nombre canónico queda LIBRE
++        para el sello bueno;
++      · timing roto y la fecha ya con intento (o ya sellada: rama E4-bis) →
++        temporal fuera de DIR_EXT, `persistido: False`, igual que el
++        divergente: un solo intento persistido por fecha (política §2.4).
++
+     E4-bis (corrida 13, dictamen del `auditor-lookahead`, opción A):
+     `ext_<fecha>.csv` y su meta son la EVIDENCIA que citan las filas selladas
+     de esa fecha (`insumo_ext_sha256`), y una vez que hay sello NO SE VUELVEN
+@@ -332,6 +428,7 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str
+         política de retención, otra forma de que `--sin-red` levante mañana
+         un insumo que E4 rechazó."""
+     ruta_db = ruta_db or RUTA_DB
++    ahora = ahora_utc or datetime.now(timezone.utc)
+     os.makedirs(DIR_EXT, exist_ok=True)
+     idx = pd.to_datetime(cierres_ext.index)
+     if getattr(idx, "tz", None) is not None:
+@@ -346,6 +443,8 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str
+     hasta = str(ext.index.max().date())
+     contenido = ext.to_csv().encode("utf-8")
+     sha_nuevo = hashlib.sha256(contenido).hexdigest()
++    disponibilidad = precios.disponibilidad_por_ticker(ext)
++    timing = evaluar_timing(disponibilidad, hasta, ahora)
+     ruta = os.path.join(DIR_EXT, f"ext_{hasta}.csv")
+     ruta_meta = os.path.splitext(ruta)[0] + ".meta.json"
+     divergente_de = None
+@@ -361,6 +460,21 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str
+         divergente_de = {"archivo": previo["archivo"] or f"ext_{hasta}.csv", "sha256_sellado": previo["sha256"],
+                          "nota": ("la sesión ya estaba sellada con otro insumo; el archivo sellado no se toca y este "
+                                   "insumo NO se conserva (temporal fuera de la carpeta de evidencia, borrado por main)")}
++    elif not timing["timing_ok"]:
++        # E0.3: un insumo que E4 va a rechazar no ocupa el cupo canónico
++        ruta = os.path.join(DIR_EXT, f"ext_{hasta}{SUFIJO_NO_VERIFICABLE}.csv")
++        ruta_meta = os.path.splitext(ruta)[0] + ".meta.json"
++        intento = intento_previo(hasta, ruta_db)
++        if intento is not None:
++            import tempfile
++            fd, ruta = tempfile.mkstemp(prefix=f"ext_{hasta}{SUFIJO_DIVERGENTE}", suffix=".csv")
++            os.close(fd)
++            ruta_meta = None
++            divergente_de = {"archivo": intento["archivo"] or f"ext_{hasta}{SUFIJO_NO_VERIFICABLE}.csv",
++                             "sha256_intento": intento["sha256"],
++                             "nota": ("la fecha ya tiene un intento no verificable; un solo intento persistido por "
++                                      "fecha (política §2.4): este insumo NO se conserva (temporal fuera de la "
++                                      "carpeta de evidencia, borrado por main)")}
+     with open(ruta, "wb") as f:
+         f.write(contenido)
+     sha_archivo = _sha256(ruta)
+@@ -374,10 +488,17 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str
+         "tickers": list(ext.columns), "filas": int(len(ext)),
+         "desde": str(ext.index.min().date()), "hasta": hasta,
+         "sha256": sha_archivo,
+-        "disponibilidad": {"exchange": EXCHANGE, "por_ticker": precios.disponibilidad_por_ticker(ext)},
++        "disponibilidad": {"exchange": EXCHANGE, "por_ticker": disponibilidad},
+         "solape_con_congelado": solape,
+         "advertencia": "cierres ajustados retroactivamente por yfinance: no point-in-time (declarado, no corregido)",
+     }
++    if not timing["timing_ok"]:
++        # E0.3: el meta declara que NO ocupa el cupo canónico y los tres instantes que lo prueban
++        meta["cupo_canonico"] = False
++        meta["timing"] = {"available_at": timing["avail"], "emision_utc": ahora.astimezone(timezone.utc).isoformat(),
++                          "apertura_objetivo_utc": timing["apertura_obj"].isoformat(),
++                          "sesion_objetivo": timing["sesion_obj"], "timing_ok": False,
++                          "regla": "available_at < emision_utc < apertura_objetivo_utc, y no se cumple"}
+     if divergente_de is not None:
+         meta["divergente_de"] = divergente_de
+         meta["persistido"] = False
+@@ -389,15 +510,23 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str
+ 
+ 
+ SUFIJO_DIVERGENTE = "_divergente_"
++SUFIJO_NO_VERIFICABLE = ".no_verificable"
+ _NOMBRE_EXTENSION_SELLABLE = re.compile(r"^ext_\d{4}-\d{2}-\d{2}\.csv$")
++_NOMBRE_EXTENSION_NO_VERIFICABLE = re.compile(r"^ext_\d{4}-\d{2}-\d{2}\.no_verificable\.csv$")
+ 
+ 
+ def es_extension_sellable(nombre: str) -> bool:
+     """Sólo `ext_YYYY-MM-DD.csv` es insumo de un sello (`--sin-red` no levanta
+-    ninguna otra cosa que haya en la carpeta)."""
++    ninguna otra cosa que haya en la carpeta: ni un divergente ni, desde E0.3,
++    un `.no_verificable.csv`)."""
+     return bool(_NOMBRE_EXTENSION_SELLABLE.match(os.path.basename(nombre)))
+ 
+ 
++def es_extension_no_verificable(nombre: str) -> bool:
++    """E0.3: la evidencia de un intento no verificable, `ext_YYYY-MM-DD.no_verificable.csv`."""
++    return bool(_NOMBRE_EXTENSION_NO_VERIFICABLE.match(os.path.basename(nombre)))
++
++
+ def ultima_extension() -> tuple | None:
+     if not os.path.isdir(DIR_EXT):
+         return None
+@@ -535,6 +664,22 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+     OTRO insumo queda en `divergencias_sello` y no inserta nada (E4). El
+     resumen dice lo que PASÓ, no lo que habría pasado.
+ 
++    E0.3 (corrida 15, §90.6): con timing roto NO inserta en `sellos_dinero`.
++    Las filas van a `intentos_no_verificables` (resultado
++    `intento_no_verificable`), salvo que la fecha ya tenga un intento o un
++    sello: entonces divergencia y cero inserciones. Con timing ok se comporta
++    como en E0.2, y un intento previo de la fecha NO cuenta como sello previo
++    (es lo que deja entrar al sello bueno de las 23:30 después de un disparo
++    con la bolsa abierta). Las filas de un intento citan la evidencia
++    `.no_verificable.csv` que `congelar_extension` escribió; si la evidencia
++    que llega tiene nombre canónico y el timing está roto (la apertura se
++    cruzó en los segundos entre congelar y sellar, o `--sin-red` levantó un
++    canónico que nunca se selló), no se escribe ninguna fila de sello ni de
++    intento: una fila de intentos citando un canónico rompería la política
++    (§5.2) y una fila rota en la principal es lo que E0.3 cierra. Se rechaza,
++    y el rastro queda en `divergencias_sello` (B1 del auditor). Un segundo
++    intento con el MISMO insumo es `ya_intentada`, sin fila (R4).
++
+     No exporta nada: el export a data/backups/ lo hace `main()` sobre la base
+     real, explícitamente (E5/H8)."""
+     cfg = cfg or U.reglas()
+@@ -546,15 +691,17 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+     ahora = ahora.astimezone(timezone.utc)
+     ts_emision = ahora.isoformat()
+     disp = ((meta_ext.get("disponibilidad") or {}).get("por_ticker") or {})
+-    avail = max((v["available_at_utc"] for v in disp.values() if v.get("available_at_utc")), default=None)
+-    if avail is None:
+-        avail = cierre_utc(fecha_insumo).isoformat()
+-    sesion_obj, apertura_obj = proxima_sesion_despues_de(datetime.fromisoformat(avail))
++    timing = evaluar_timing(disp, fecha_insumo, ahora)
++    avail, sesion_obj, apertura_obj = timing["avail"], timing["sesion_obj"], timing["apertura_obj"]
+     # E2: el «día» del sello en el calendario del exchange, nunca el huso del host
+     fecha_sello = dia_en_calendario_del_exchange(ahora)
+     estado_dia = "sesion" if es_sesion(fecha_sello) else "sin_sesion"
+-    # regla maestra: available_at < timestamp_utc < apertura objetivo
+-    timing_ok = datetime.fromisoformat(avail) < ahora < apertura_obj
++    # regla maestra: available_at < timestamp_utc < apertura objetivo. E0.3: además
++    # manda la clase de la evidencia: un insumo que `congelar_extension` congeló como
++    # no verificable (con SU instante, segundos antes) no sella aunque el reloj de acá
++    # diga ok; el reloj del sello sólo puede endurecer el veredicto, nunca ablandarlo.
++    evidencia_no_verificable = (meta_ext.get("cupo_canonico") is False) or es_extension_no_verificable(ruta_ext)
++    timing_ok = timing["timing_ok"] and not evidencia_no_verificable
+     estado_timing = "ok" if timing_ok else "roto"
+     sesion_previa_a_obj = str(_cal().previous_session(pd.Timestamp(sesion_obj)).date())
+     insumo_fresco = (fecha_insumo == sesion_previa_a_obj)
+@@ -575,35 +722,83 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+     creado = datetime.now(timezone.utc).isoformat()
+     con = conectar(ruta_db)
+     try:
+-        previas = con.execute("SELECT DISTINCT insumo_ext_sha256, timestamp_utc FROM sellos_dinero "
+-                              "WHERE fecha_insumo = ? AND juego = ?", (fecha_insumo, dec["juego"])).fetchall()
+-        if previas:
+-            shas = {p[0] for p in previas}
+-            if meta_ext["sha256"] in shas:
+-                return {"resultado": "ya_sellada", "fecha_insumo": fecha_insumo,
+-                        "timestamp_utc_original": previas[0][1], "filas_insertadas": 0,
+-                        "insumo_ext_sha256": meta_ext["sha256"]}
+-            filas_prev = con.execute("SELECT ticker, decision, acciones_regla FROM sellos_dinero WHERE fecha_insumo = ? "
++        def _divergencia(tabla_previa: str, sha_previo: str, contra: str) -> dict:
++            """E4: la fila de `divergencias_sello` y cero inserciones. `contra` dice
++            qué ocupaba la fecha: un sello, o (E0.3) un intento no verificable."""
++            filas_prev = con.execute(f"SELECT ticker, decision, acciones_regla FROM {tabla_previa} WHERE fecha_insumo = ? "
+                                      "AND juego = ? ORDER BY ticker", (fecha_insumo, dec["juego"])).fetchall()
+             ahora_por_t = {f["ticker"]: (f["decision"], f["acciones_regla"]) for f in dec["filas"]}
+             distintas = sum(1 for (t, d, n) in filas_prev if ahora_por_t.get(t) != (d, n))
+             conservado = bool(meta_ext.get("persistido", True))
+-            detalle = (f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
+-                       f"las filas selladas no se tocan; ")
++            if contra == "sello":
++                detalle = (f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
++                           f"las filas selladas no se tocan; ")
++            else:
++                detalle = (f"segundo intento no verificable del {fecha_insumo} (E0.3, un solo intento persistido por "
++                           f"fecha); {distintas} decisión(es) distinta(s); sha_sellado es el del intento previo, no el "
++                           f"de un sello; las filas previas no se tocan; ")
+             detalle += (f"insumo divergente en {os.path.basename(ruta_ext)}" if conservado else
+                         "contenido divergente NO conservado (E4-bis, corrida 13): el archivo sellado no se reescribe "
+                         "y el insumo divergente no se persiste; sha_nuevo es el de un contenido que ya no existe")
+             con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
+                         "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
+-                        (fecha_insumo, ts_emision, sorted(shas)[0], meta_ext["sha256"], distintas, detalle, creado))
++                        (fecha_insumo, ts_emision, sha_previo, meta_ext["sha256"], distintas, detalle, creado))
+             con.commit()
+-            return {"resultado": "divergencia_registrada", "fecha_insumo": fecha_insumo, "filas_insertadas": 0,
+-                    "sha_sellado": sorted(shas)[0], "sha_nuevo": meta_ext["sha256"], "decisiones_distintas": distintas,
+-                    "insumo_divergente_conservado": conservado}
++            return {"resultado": "divergencia_registrada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
++                    "filas_insertadas": 0, "sha_sellado": sha_previo, "sha_nuevo": meta_ext["sha256"],
++                    "decisiones_distintas": distintas, "insumo_divergente_conservado": conservado, "divergente_de": contra}
++
++        previas = con.execute("SELECT DISTINCT insumo_ext_sha256, timestamp_utc FROM sellos_dinero "
++                              "WHERE fecha_insumo = ? AND juego = ?", (fecha_insumo, dec["juego"])).fetchall()
++        if previas:
++            shas = {p[0] for p in previas}
++            if meta_ext["sha256"] in shas:
++                return {"resultado": "ya_sellada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
++                        "timestamp_utc_original": previas[0][1], "filas_insertadas": 0,
++                        "insumo_ext_sha256": meta_ext["sha256"]}
++            return _divergencia(TABLA_SELLOS, sorted(shas)[0], "sello")
++        tabla = TABLA_SELLOS
++        if not timing_ok:
++            # E0.3: un disparo con timing roto no escribe en la tabla principal ni
++            # ocupa la fecha; y una fecha con intento o sello no admite otro intento
++            tabla = TABLA_INTENTOS
++            ocupada = _cita_en(con, TABLA_INTENTOS, fecha_insumo)
++            if ocupada is not None:
++                if ocupada["sha256"] == meta_ext["sha256"]:
++                    # R4 del auditor (corrida 15): un re-disparo con el MISMO insumo no
++                    # infla `divergencias_sello`; simétrico con `ya_sellada`
++                    return {"resultado": "ya_intentada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
++                            "filas_insertadas": 0, "insumo_ext_sha256": meta_ext["sha256"]}
++                return _divergencia(TABLA_INTENTOS, ocupada["sha256"], "intento_no_verificable")
++            ocupada = _cita_en(con, TABLA_SELLOS, fecha_insumo)          # sellada con otro juego (R4)
++            if ocupada is not None:
++                return _divergencia(TABLA_SELLOS, ocupada["sha256"], "sello")
++            if not evidencia_no_verificable:
++                # B1 del auditor (corrida 15): el rechazo deja rastro en la base, en la
++                # única tabla que no cita evidencia; sha_sellado = sha_nuevo = el insumo
++                # rechazado, y el detalle dice qué es cada cosa
++                detalle = (f"disparo con timing roto sobre una evidencia de nombre canónico del {fecha_insumo} (E0.3): "
++                           "la apertura se cruzó entre congelar y sellar, o --sin-red levantó un canónico nunca sellado; "
++                           "NINGUNA fila escrita en sellos_dinero ni en intentos_no_verificables (sólo esta, en "
++                           "divergencias_sello) y el archivo no se toca; sha_sellado es el del propio insumo rechazado, "
++                           f"no el de un sello; available_at={avail}, emision={ts_emision}, "
++                           f"apertura_objetivo={apertura_obj.isoformat()}")
++                con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
++                            "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
++                            (fecha_insumo, ts_emision, meta_ext["sha256"], meta_ext["sha256"], 0, detalle, creado))
++                con.commit()
++                return {"resultado": "rechazado_evidencia_canonica", "fecha_insumo": fecha_insumo,
++                        "timestamp_utc": ts_emision, "available_at": avail, "sesion_objetivo": sesion_obj,
++                        "apertura_objetivo_utc": apertura_obj.isoformat(), "timing_ok": False, "filas_insertadas": 0,
++                        "insumo_ext_sha256": meta_ext["sha256"], "insumo_ext_archivo": os.path.basename(ruta_ext),
++                        "motivo": ("timing roto sobre una evidencia con nombre canónico (la apertura se cruzó entre "
++                                   "congelar y sellar, o --sin-red levantó un canónico nunca sellado): no se escribe "
++                                   "ninguna fila; un intento no cita un canónico y una fila rota no entra en la "
++                                   "tabla principal (E0.3). El archivo no se toca.")}
+         insertadas = 0
+         for f in dec["filas"]:
+-            cur = con.execute("""
+-                INSERT INTO sellos_dinero
++            cur = con.execute(f"""
++                INSERT INTO {tabla}
+                 (fecha_sello, fecha_insumo, timestamp_utc, available_at, exchange, sesion_objetivo,
+                  apertura_objetivo_utc, ticker, decision, acciones_regla, tamano_nominal, precio_ref_usd,
+                  senal_magnitud_pp, senal_banda_baja_pp, senal_banda_alta_pp, senal_fuente, juego,
+@@ -624,7 +819,8 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+         con.commit()
+     finally:
+         con.close()
+-    return {"resultado": "sellada", "fecha_sello_ny": fecha_sello, "fecha_insumo": fecha_insumo,
++    return {"resultado": "sellada" if timing_ok else "intento_no_verificable", "tabla": tabla,
++            "fecha_sello_ny": fecha_sello, "fecha_insumo": fecha_insumo,
+             "timestamp_utc": ts_emision, "available_at": avail, "sesion_objetivo": sesion_obj,
+             "apertura_objetivo_utc": apertura_obj.isoformat(),
+             "estado": estado, "estado_timing": estado_timing, "estado_dia": estado_dia, "timing_ok": timing_ok,
+@@ -638,18 +834,25 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+ 
+ 
+ def exportar_csv(ruta_db: str = RUTA_DB, ruta_csv: str | None = None) -> str:
+-    """Toda la tabla (y las divergencias) a CSV en data/backups/, que el job de
+-    backup versiona. H8: exportar desde una base que NO es la real exige decir
+-    a dónde, para que un test jamás pise el CSV versionado."""
++    """Toda la tabla (y las divergencias, y desde E0.3 los intentos no
++    verificables, a `<ruta>_no_verificables.csv`) a CSV en data/backups/, que
++    el job de backup versiona. H8: exportar desde una base que NO es la real
++    exige decir a dónde, para que un test jamás pise el CSV versionado."""
+     if ruta_csv is None:
+         if os.path.abspath(ruta_db) != os.path.abspath(RUTA_DB):
+             raise ValueError("exportar desde una base que no es la real exige ruta_csv explícita")
+         ruta_csv = RUTA_BACKUP_CSV
+     con = conectar(ruta_db, solo_lectura=True)
+     try:
+-        for tabla, ruta in (("sellos_dinero", ruta_csv),
+-                            ("divergencias_sello", os.path.splitext(ruta_csv)[0] + "_divergencias.csv")):
+-            cur = con.execute(f"SELECT * FROM {tabla} ORDER BY id")
++        for tabla, ruta in ((TABLA_SELLOS, ruta_csv),
++                            ("divergencias_sello", os.path.splitext(ruta_csv)[0] + "_divergencias.csv"),
++                            (TABLA_INTENTOS, os.path.splitext(ruta_csv)[0] + "_no_verificables.csv")):
++            try:
++                cur = con.execute(f"SELECT * FROM {tabla} ORDER BY id")
++            except sqlite3.OperationalError:
++                if tabla != TABLA_INTENTOS:
++                    raise
++                continue          # base anterior a E0.3 sin la tabla de intentos: cero intentos, sin archivo
+             cols = [d[0] for d in cur.description]
+             filas = cur.fetchall()
+             os.makedirs(os.path.dirname(ruta), exist_ok=True)
+@@ -691,11 +894,17 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
+              "N_objetivo": N_OBJETIVO_E0, "N_objetivo_fuente": N_OBJETIVO_FUENTE,
+              "fuente_conteos": ("dinero/sello_dinero.db" if os.path.exists(ruta_db) else "aún sin base: 0 filas"),
+              "ultimo": None, "filas_ultimo_sello": [],
+-             "divergencias_registradas": 0, "senal_fuente": SENAL_FUENTE, "estatus": "PROPUESTA"}
++             "divergencias_registradas": 0, "senal_fuente": SENAL_FUENTE, "estatus": "PROPUESTA",
++             # E0.3: fechas con un intento no verificable (tabla aparte); no cambia ninguna clave anterior
++             "intentos_no_verificables": 0}
+     if not os.path.exists(ruta_db):
+         return vacio
+     con = conectar(ruta_db, solo_lectura=True)
+     try:
++        try:
++            intentos = con.execute(f"SELECT COUNT(DISTINCT fecha_insumo) FROM {TABLA_INTENTOS}").fetchone()[0]
++        except sqlite3.OperationalError:      # base anterior a E0.3: cero intentos
++            intentos = 0
+         filas = con.execute("SELECT COUNT(*) FROM sellos_dinero").fetchone()[0]
+         sesiones = con.execute("SELECT COUNT(DISTINCT fecha_insumo) FROM sellos_dinero").fetchone()[0]
+         cuentan = con.execute("SELECT COUNT(DISTINCT fecha_insumo) FROM sellos_dinero WHERE cuenta_para_N = 1").fetchone()[0]
+@@ -712,7 +921,8 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
+     finally:
+         con.close()
+     return {**vacio, "filas": filas, "sesiones_selladas": sesiones, "sesiones_que_cuentan_para_N": cuentan,
+-            "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias}
++            "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias,
++            "intentos_no_verificables": intentos}
+ 
+ 
+ def main(argv=None) -> int:
+@@ -748,13 +958,32 @@ def main(argv=None) -> int:
+         if not meta.get("persistido", True) and os.path.exists(ruta):
+             os.remove(ruta)
+     print(json.dumps(r, indent=1, ensure_ascii=False, default=str))
++    # R5 del auditor (corrida 15): congelar y sellar leen el reloj por separado; el
++    # cruce entre los dos queda MEDIDO en el log, en toda rama, no inferido
++    congelado_en, emision = meta.get("congelado_en_utc"), r.get("timestamp_utc")
++    delta = ((datetime.fromisoformat(emision) - datetime.fromisoformat(congelado_en)).total_seconds()
++             if congelado_en and emision else None)
++    print(f"relojes: congelado_en_utc={congelado_en} timestamp_utc={emision} delta_s={delta}")
+     if r.get("resultado") == "sellada":
+         exportar_csv(RUTA_DB)
+         respaldar_extension(ruta)
+         print("export:", RUTA_BACKUP_CSV, "| extensión respaldada en", DIR_BACKUP_EXT)
++    elif r.get("resultado") == "intento_no_verificable":
++        # E0.3: la tabla de intentos se versiona igual que la principal, y el par
++        # `.no_verificable` se respalda igual que el canónico (E5: el sha citado
++        # tiene que existir mañana; política §3-4)
++        exportar_csv(RUTA_DB)
++        respaldar_extension(ruta)
++        print(f"INTENTO NO VERIFICABLE (timing roto): {r['filas_insertadas']} filas en {TABLA_INTENTOS}, ninguna en "
++              f"{TABLA_SELLOS}; evidencia en {os.path.basename(ruta)}, respaldada en {DIR_BACKUP_EXT}; el cupo "
++              f"ext_{r['fecha_insumo']}.csv queda libre para el sello bueno")
+     elif r.get("resultado") == "divergencia_registrada":
+         exportar_csv(RUTA_DB)          # la tabla de divergencias también se versiona; la extensión sellada no se toca
+         print("export:", RUTA_BACKUP_CSV, "| divergencia registrada, ninguna extensión escrita ni respaldada")
++    elif r.get("resultado") == "rechazado_evidencia_canonica":
++        exportar_csv(RUTA_DB)          # B1: el rechazo dejó su fila en divergencias_sello y también se versiona
++        print("RECHAZADO (E0.3): timing roto sobre una evidencia con nombre canónico; fila en divergencias_sello, "
++              "ninguna en las tablas de filas, ningún archivo tocado:", r.get("motivo"))
+     return 0
+ 
+ 
+diff --git a/tests/test_sello_dinero.py b/tests/test_sello_dinero.py
+index 624ac6b..9818867 100644
+--- a/tests/test_sello_dinero.py
++++ b/tests/test_sello_dinero.py
+@@ -10,7 +10,12 @@ sello salga del calendario de Nueva York y no del huso del host; que la
+ disponibilidad se selle por ticker y un insumo incompleto no cuente para N;
+ que un segundo sello con otro insumo deje rastro; que exportar desde una base
+ temporal no pueda pisar el CSV real; y que el tamaño nominal sea cero
+-siempre. Base temporal en cada test: `sello_dinero.db` real no se toca."""
++siempre. Base temporal en cada test: `sello_dinero.db` real no se toca.
++
++Corrida 15 (sección 5, acta §90.6): un disparo con timing roto ya no escribe
++en `sellos_dinero` ni ocupa `ext_<fecha>.csv`; va a `intentos_no_verificables`
++y a `ext_<fecha>.no_verificable.csv`. Los tests de E4 que fijaban lo viejo
++se adaptaron y lo dicen en su docstring."""
+ import json
+ import os
+ import sqlite3
+@@ -31,21 +36,26 @@ def base():
+     return precios.cargar_congelado()
+ 
+ 
+-def _extension_sintetica(tmp_path, base, sesiones=("2026-09-08",), factor=1.01, sin_dato=()):
++def _extension_sintetica(tmp_path, base, sesiones=("2026-09-08",), factor=1.01, sin_dato=(), no_verificable=False):
+     """Una extensión con las sesiones dadas, precios = último cierre × factor,
+     con su meta (disponibilidad G8) y sha256, escrita como la real. `sin_dato`
+-    deja NaN esos tickers en la última sesión (publicación asincrónica)."""
++    deja NaN esos tickers en la última sesión (publicación asincrónica).
++    `no_verificable` la escribe como la escribe `congelar_extension` desde
++    E0.3 cuando el timing está roto: `ext_<fecha>.no_verificable.csv` y
++    `cupo_canonico: false` en el meta."""
+     ult = base.iloc[-1]
+     filas = {pd.Timestamp(s): ult * factor for s in sesiones}
+     ext = pd.DataFrame(filas).T
+     for t in sin_dato:
+         ext.loc[pd.Timestamp(sesiones[-1]), t] = float("nan")
+     ext.index.name = "Date"
+-    ruta = str(tmp_path / f"ext_{sesiones[-1]}.csv")
++    ruta = str(tmp_path / f"ext_{sesiones[-1]}{'.no_verificable' if no_verificable else ''}.csv")
+     ext.to_csv(ruta)
+     meta = {"sha256": S._sha256(ruta), "hasta": sesiones[-1], "tickers": list(ext.columns),
+             "desde": sesiones[0], "extiende_a": {"hasta": "2026-09-04"},
+             "disponibilidad": {"exchange": "XNYS", "por_ticker": precios.disponibilidad_por_ticker(ext)}}
++    if no_verificable:
++        meta["cupo_canonico"] = False
+     with open(ruta.replace(".csv", ".meta.json"), "w", encoding="utf-8") as f:
+         json.dump(meta, f)
+     return ruta, meta
+@@ -140,11 +150,25 @@ def test_sellar_pone_available_at_por_calendario_y_exige_el_orden(tmp_path, base
+ 
+ 
+ def test_sellar_despues_de_la_apertura_queda_no_verificable(tmp_path, base):
+-    ruta, meta = _extension_sintetica(tmp_path, base, ("2026-09-08",))
++    """ADAPTADO en la corrida 15 (acta §90.6, política de retención): hasta
++    E0.2 la fila no verificable se insertaba en `sellos_dinero` (resultado
++    `sellada`) y ocupaba la fecha; desde E0.3 va a `intentos_no_verificables`
++    (resultado `intento_no_verificable`) citando la evidencia
++    `.no_verificable.csv`, y `sellos_dinero` queda vacía. Lo que E4 exigía
++    —timing roto, estado y cuenta_para_N = 0— se exige igual."""
++    ruta, meta = _extension_sintetica(tmp_path, base, ("2026-09-08",), no_verificable=True)
+     tarde = datetime(2026, 9, 9, 14, 0, tzinfo=UTC)          # media hora después de abrir
+-    r = S.sellar(ruta, meta, ahora_utc=tarde, ruta_db=str(tmp_path / "s.db"))
++    db = str(tmp_path / "s.db")
++    r = S.sellar(ruta, meta, ahora_utc=tarde, ruta_db=db)
+     assert r["timing_ok"] is False and r["estado"] == "no_verificable_timing" and r["cuenta_para_N"] == 0
+     assert r["estado_timing"] == "roto"
++    assert r["resultado"] == "intento_no_verificable" and r["tabla"] == "intentos_no_verificables"
++    assert r["filas_insertadas"] == 33
++    con = sqlite3.connect(db)
++    assert con.execute("SELECT COUNT(*) FROM sellos_dinero").fetchone()[0] == 0
++    assert con.execute("SELECT COUNT(*), MIN(estado), MAX(estado), MIN(insumo_ext_archivo) FROM intentos_no_verificables"
++                       ).fetchone() == (33, "no_verificable_timing", "no_verificable_timing", "ext_2026-09-08.no_verificable.csv")
++    con.close()
+ 
+ 
+ def test_E2_el_dia_del_sello_sale_del_calendario_de_nueva_york_no_del_host(tmp_path, base):
+@@ -170,10 +194,17 @@ def test_un_dia_sin_sesion_se_sella_con_su_marca_y_no_cuenta_para_N(tmp_path, ba
+ 
+ 
+ def test_un_insumo_desactualizado_no_cuenta_para_N(tmp_path, base):
+-    ruta, meta = _extension_sintetica(tmp_path, base, ("2026-09-04",), factor=1.0)
+-    r = S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=str(tmp_path / "s.db"))
++    """ADAPTADO en la corrida 15: un insumo desactualizado tiene la apertura
++    objetivo en el pasado, o sea timing roto, y desde E0.3 eso es un intento
++    no verificable (tabla aparte, evidencia `.no_verificable.csv`), no una
++    fila en `sellos_dinero`. Sigue sin contar para N."""
++    ruta, meta = _extension_sintetica(tmp_path, base, ("2026-09-04",), factor=1.0, no_verificable=True)
++    db = str(tmp_path / "s.db")
++    r = S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
+     assert r["sesion_objetivo"] == "2026-09-08"     # lo siguiente a available_at (4-sep 20:00Z)
+     assert r["timing_ok"] is False and r["cuenta_para_N"] == 0
++    assert r["resultado"] == "intento_no_verificable" and r["estado"] == "no_verificable_timing"
++    assert S.estado(db)["filas"] == 0 and S.estado(db)["intentos_no_verificables"] == 1
+ 
+ 
+ def test_E3_un_insumo_incompleto_lo_dice_por_ticker_y_no_cuenta_para_N(tmp_path, base):
+@@ -332,7 +363,7 @@ def _camino_main(cierres_ext, db, ahora, base_hasta=BASE_HASTA):
+         assert destino.startswith(raiz_tmp + os.sep), (
+             f"el fixture dejó de parchear S.{nombre}: apunta a {destino}, "
+             f"fuera del tmp_path {raiz_tmp}")
+-    ruta, meta = S.congelar_extension(cierres_ext, base_hasta)
++    ruta, meta = _congelar(cierres_ext, base_hasta, ahora)
+     try:
+         return ruta, meta, S.sellar(ruta, meta, ahora_utc=ahora, ruta_db=db)
+     finally:
+@@ -340,25 +371,34 @@ def _camino_main(cierres_ext, db, ahora, base_hasta=BASE_HASTA):
+             os.remove(ruta)
+ 
+ 
+-def _huella_ext(fecha=FECHA) -> dict:
+-    """(sha256, mtime_ns) de los archivos CANÓNICOS de esa fecha en S.DIR_EXT.
+-    El mtime va incluido a propósito: la exigencia es que el archivo sellado
+-    NO SE TOQUE, no que se reescriba con bytes parecidos."""
++def _huella_archivos(nombres) -> dict:
++    """(sha256, mtime_ns) de esos archivos en S.DIR_EXT. El mtime va incluido
++    a propósito: la exigencia es que el archivo sellado NO SE TOQUE, no que se
++    reescriba con bytes parecidos."""
+     huella = {}
+-    for nombre in (f"ext_{fecha}.csv", f"ext_{fecha}.meta.json"):
++    for nombre in nombres:
+         r = os.path.join(S.DIR_EXT, nombre)
+         huella[nombre] = (S._sha256(r), os.stat(r).st_mtime_ns) if os.path.exists(r) else None
+     return huella
+ 
+ 
+-def _volcado_sellos(db) -> list:
++def _huella_ext(fecha=FECHA) -> dict:
++    """Los archivos CANÓNICOS de esa fecha."""
++    return _huella_archivos((f"ext_{fecha}.csv", f"ext_{fecha}.meta.json"))
++
++
++def _volcado(db, tabla) -> list:
+     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+     try:
+-        return con.execute("SELECT * FROM sellos_dinero ORDER BY id").fetchall()
++        return con.execute(f"SELECT * FROM {tabla} ORDER BY id").fetchall()
+     finally:
+         con.close()
+ 
+ 
++def _volcado_sellos(db) -> list:
++    return _volcado(db, "sellos_dinero")
++
++
+ def _cuenta(db, tabla) -> int:
+     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+     try:
+@@ -377,6 +417,9 @@ def entorno_temporal(tmp_path, monkeypatch):
+     monkeypatch.setattr(S, "DIR_EXT", str(dir_ext))
+     monkeypatch.setattr(S, "RUTA_DB", db)
+     monkeypatch.setattr(S, "DIR_BACKUP_EXT", str(tmp_path / "backups_ext"))
++    # R3 del auditor (corrida 15): con RUTA_DB parcheada, la guarda H8 de
++    # `exportar_csv` dejaría escribir en el CSV versionado real; que caiga en tmp
++    monkeypatch.setattr(S, "RUTA_BACKUP_CSV", str(tmp_path / "sello_dinero.csv"))
+     return db
+ 
+ 
+@@ -495,17 +538,23 @@ def test_E4bis_el_insumo_divergente_no_se_conserva_y_la_divergencia_lo_declara(e
+ 
+ def test_E4bis_sin_sello_previo_la_extension_se_escribe_como_siempre(entorno_temporal, base):
+     """Sin base (primera noche) o con base sin esa fecha, nada cambia respecto
+-    de E0.2: `ext_<fecha>.csv` con su sha en el meta, igual al del archivo."""
++    de E0.2: `ext_<fecha>.csv` con su sha en el meta, igual al del archivo.
++    ADAPTADO en la corrida 15: desde E0.3 `congelar_extension` decide el
++    timing con `ahora_utc`, así que se le pasa un instante dentro de la
++    ventana (antes se llamaba sin reloj)."""
+     db = entorno_temporal
++    t_08 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
+     assert S.sello_previo(FECHA, db) is None                              # la base no existe todavía
+-    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA)
++    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA, ahora_utc=t_08)
+     assert os.path.basename(ruta) == f"ext_{FECHA}.csv" and "divergente_de" not in meta and "persistido" not in meta
++    assert "cupo_canonico" not in meta and "timing" not in meta           # el canónico se escribe como en E0.2
+     assert S._sha256(ruta) == meta["sha256"]
+-    S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
++    S.sellar(ruta, meta, ahora_utc=t_08, ruta_db=db)
+     assert S.sello_previo(FECHA, db) == {"sha256": meta["sha256"], "archivo": f"ext_{FECHA}.csv"}
+     # con base pero otra fecha: tampoco es divergencia, y el archivo del 08 sigue intacto
+     huella_08 = _huella_ext()
+-    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, (FECHA, "2026-09-09")), BASE_HASTA)
++    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, (FECHA, "2026-09-09")), BASE_HASTA,
++                                        ahora_utc=datetime(2026, 9, 10, 3, 0, tzinfo=UTC))
+     assert os.path.basename(ruta2) == "ext_2026-09-09.csv" and "divergente_de" not in meta2
+     assert _huella_ext() == huella_08
+ 
+@@ -513,10 +562,12 @@ def test_E4bis_sin_sello_previo_la_extension_se_escribe_como_siempre(entorno_tem
+ def test_E4bis_sello_previo_no_filtra_por_juego(entorno_temporal, base):
+     """R4 del auditor: E4 dentro de `sellar` filtra por juego, así que un
+     cambio de `juego_activo` habría vuelto a escribir la extensión de una
+-    fecha sellada. `sello_previo` mira la fecha y nada más."""
++    fecha sellada. `sello_previo` mira la fecha y nada más. (Corrida 15: se
++    pasa `ahora_utc` dentro de la ventana; nada más cambió.)"""
+     db = entorno_temporal
+-    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA)
+-    S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
++    t_08 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
++    ruta, meta = S.congelar_extension(_cierres_ext_sinteticos(base), BASE_HASTA, ahora_utc=t_08)
++    S.sellar(ruta, meta, ahora_utc=t_08, ruta_db=db)
+     con = sqlite3.connect(db)
+     juego = con.execute("SELECT DISTINCT juego FROM sellos_dinero").fetchone()[0]
+     con.close()
+@@ -525,7 +576,7 @@ def test_E4bis_sello_previo_no_filtra_por_juego(entorno_temporal, base):
+     # `sello_previo` no recibe juego y encuentra la fecha igual; el guardia de
+     # `congelar_extension` no tiene por dónde dejar pasar un juego distinto
+     assert S.sello_previo(FECHA, db) is not None
+-    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, factor=1.05), BASE_HASTA)
++    ruta2, meta2 = S.congelar_extension(_cierres_ext_sinteticos(base, factor=1.05), BASE_HASTA, ahora_utc=t_08)
+     assert meta2.get("persistido") is False and _huella_ext() == sellado
+     if os.path.exists(ruta2):
+         os.remove(ruta2)
+@@ -535,6 +586,7 @@ def test_solo_ext_fecha_csv_es_insumo_sellable():
+     assert S.es_extension_sellable("ext_2026-09-09.csv")
+     assert S.es_extension_sellable("/x/y/ext_2026-09-09.csv")
+     assert not S.es_extension_sellable("ext_2026-09-09_divergente_20260910T033004Z.csv")
++    assert not S.es_extension_sellable("ext_2026-09-09.no_verificable.csv")          # E0.3
+     assert not S.es_extension_sellable("ext_2026-09-09.meta.json")
+     assert not S.es_extension_sellable("cierres_congelados.csv")
+ 
+@@ -547,20 +599,85 @@ def test_solo_ext_fecha_csv_es_insumo_sellable():
+ # reporta; el archivo no se «arregla» (la fila sellada tampoco). En un
+ # checkout sin base (`*.db` está en .gitignore) se salta con razón declarada:
+ # saltar no es pasar. Itera por `fecha_insumo` SIN filtrar por juego (R4).
+-def _citas_selladas(ruta_db):
++#
++# Corrida 15 (política §5): se verifica CADA tabla contra sus propios
++# archivos —`sellos_dinero` cita canónicos, `intentos_no_verificables` cita
++# `.no_verificable.csv`— y «un solo insumo por fecha» vale por tabla (una
++# fecha puede tener un intento y un sello: dos insumos, cada uno en la suya).
++# Invariante nuevo: ninguna tabla cita la evidencia de la otra. Y las filas
++# `no_verificable_timing` que E0.2 dejó en la tabla principal se toleran POR
++# REGLA (version_sello anterior al corte de método), sin nombrar la fecha.
++# Una base sin la tabla de intentos (la real, hasta que el sellador parcheado
++# la cree) se lee como cero intentos: no es un error.
++TABLAS_CON_EVIDENCIA = ("sellos_dinero", "intentos_no_verificables")
++VERSION_CORTE_DE_METODO = "E0.3"     # desde esta VERSION_SELLO un timing roto no escribe en la tabla principal
++
++
++def _version(v: str) -> tuple:
++    return tuple(int(x) for x in v.lstrip("E").split("."))
++
++
++def _citas_selladas(ruta_db, tabla="sellos_dinero"):
+     if not os.path.exists(ruta_db):
+         pytest.skip(f"sin base real en {ruta_db}: nada que verificar en este checkout")
+     con = S.conectar(ruta_db, solo_lectura=True)
+     try:
+-        filas = con.execute("SELECT DISTINCT fecha_insumo, insumo_ext_archivo, insumo_ext_sha256 "
+-                            "FROM sellos_dinero ORDER BY fecha_insumo").fetchall()
++        filas = con.execute(f"SELECT DISTINCT fecha_insumo, insumo_ext_archivo, insumo_ext_sha256 "
++                            f"FROM {tabla} ORDER BY fecha_insumo").fetchall()
++    except sqlite3.OperationalError:
++        if tabla == "sellos_dinero":
++            raise
++        # R2 del auditor (corrida 15): saltar con razón, no pasar en falso con []
++        pytest.skip(f"la base real todavía no tiene {tabla}: cero intentos, nada que verificar")
+     finally:
+         con.close()
+-    if not filas:
++    if not filas and tabla == "sellos_dinero":
+         pytest.skip("la base real no tiene filas selladas todavía")
+     return filas
+ 
+ 
++def _tabla_existe(ruta_db, tabla) -> bool:
++    con = S.conectar(ruta_db, solo_lectura=True)
++    try:
++        return con.execute("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", (tabla,)).fetchone()[0] == 1
++    finally:
++        con.close()
++
++
++def _filas_rotas_en_principal(ruta_db) -> list:
++    """(fecha, estado, estado_timing, version_sello) distintos de las filas de
++    `sellos_dinero` con timing roto."""
++    if not os.path.exists(ruta_db):
++        pytest.skip(f"sin base real en {ruta_db}: nada que verificar en este checkout")
++    con = S.conectar(ruta_db, solo_lectura=True)
++    try:
++        return con.execute("SELECT DISTINCT fecha_insumo, estado, estado_timing, version_sello FROM sellos_dinero "
++                           "WHERE estado = 'no_verificable_timing' OR estado_timing = 'roto' ORDER BY fecha_insumo").fetchall()
++    finally:
++        con.close()
++
++
++def _verificar_clase_de_evidencia(filas_sellos, filas_intentos):
++    """Política §5.2: `sellos_dinero` nunca cita un `.no_verificable.csv`;
++    `intentos_no_verificables` nunca cita un canónico."""
++    fallas = [f"{f}: sellos_dinero cita {a}" for f, a, _ in filas_sellos
++              if S.es_extension_no_verificable(a or f"ext_{f}.csv")]
++    fallas += [f"{f}: intentos_no_verificables cita {a}" for f, a, _ in filas_intentos
++               if not S.es_extension_no_verificable(a or f"ext_{f}.csv")]
++    assert not fallas, "PARAR Y REPORTAR (cada tabla cita su clase de evidencia, política §5.2):\n" + "\n".join(fallas)
++
++
++def _verificar_regla_del_corte(filas_rotas):
++    """Una fila con timing roto en la tabla principal sólo puede venir de un
++    sellador anterior al corte (E0.2: el 28-sep-2026). Desde E0.3 va a la
++    tabla de intentos; si aparece una con esa versión, el parche no hizo lo
++    que dice. La versión se compara como números, no como texto."""
++    fallas = [f"{f}: {e} / {t} con version_sello {v}" for f, e, t, v in filas_rotas
++              if _version(v) >= _version(VERSION_CORTE_DE_METODO)]
++    assert not fallas, ("PARAR Y REPORTAR: desde E0.3 un timing roto no escribe en sellos_dinero; "
++                        "estas filas dicen lo contrario:\n" + "\n".join(fallas))
++
++
+ def _verificar_citas_en(directorio, filas):
+     fallas = []
+     por_fecha = {}
+@@ -576,17 +693,35 @@ def _verificar_citas_en(directorio, filas):
+     assert not fallas, "PARAR Y REPORTAR (no arreglar el archivo):\n" + "\n".join(fallas)
+ 
+ 
+-def test_integridad_cada_extension_sellada_en_disco_es_la_que_la_base_cita():
+-    """Para cada `fecha_insumo` sellada, sha256(dinero/datos/sello/<insumo_ext_archivo>)
++@pytest.mark.parametrize("tabla", TABLAS_CON_EVIDENCIA)
++def test_integridad_cada_extension_sellada_en_disco_es_la_que_la_base_cita(tabla):
++    """Para cada `fecha_insumo` de la tabla, sha256(dinero/datos/sello/<insumo_ext_archivo>)
+     == `insumo_ext_sha256` de sus filas. Es el test que habría estado rojo del
+-    10-sep al 19-sep-2026."""
+-    _verificar_citas_en(S.DIR_EXT, _citas_selladas(S.RUTA_DB))
++    10-sep al 19-sep-2026. Corrida 15: una vez por tabla."""
++    _verificar_citas_en(S.DIR_EXT, _citas_selladas(S.RUTA_DB, tabla))
+ 
+ 
+-def test_integridad_la_copia_versionada_en_backups_es_la_que_la_base_cita():
++@pytest.mark.parametrize("tabla", TABLAS_CON_EVIDENCIA)
++def test_integridad_la_copia_versionada_en_backups_es_la_que_la_base_cita(tabla):
+     """`respaldar_extension` copia byte a byte a data/backups/sello_dinero_ext/
+-    (E5); el sha citado tiene que existir también ahí."""
+-    _verificar_citas_en(S.DIR_BACKUP_EXT, _citas_selladas(S.RUTA_DB))
++    (E5); el sha citado tiene que existir también ahí. Una vez por tabla."""
++    _verificar_citas_en(S.DIR_BACKUP_EXT, _citas_selladas(S.RUTA_DB, tabla))
++
++
++def test_integridad_ninguna_tabla_cita_la_evidencia_de_la_otra():
++    """Política §5.2, sobre la base real. La mitad de `sellos_dinero` se
++    verifica siempre; la de intentos sólo si la tabla ya existe (R2)."""
++    sellos = _citas_selladas(S.RUTA_DB, "sellos_dinero")
++    intentos = _citas_selladas(S.RUTA_DB, "intentos_no_verificables") if _tabla_existe(S.RUTA_DB, "intentos_no_verificables") else []
++    _verificar_clase_de_evidencia(sellos, intentos)
++
++
++def test_integridad_las_filas_rotas_de_la_tabla_principal_son_anteriores_al_corte():
++    """Política §6.1: las filas `no_verificable_timing` que hay en la tabla
++    principal son de un sellador anterior al corte (E0.2) y se quedan; con la
++    versión del corte o posterior no puede haber ninguna. La regla no nombra
++    la fecha."""
++    _verificar_regla_del_corte(_filas_rotas_en_principal(S.RUTA_DB))
+ 
+ 
+ def test_integridad_el_congelado_grande_es_el_que_la_base_cita():
+@@ -619,3 +754,444 @@ def test_contraprueba_la_integridad_ve_un_archivo_pisado(tmp_path):
+     with pytest.raises(AssertionError, match="shas distintos"):                              # R4: dos insumos una fecha
+         _verificar_citas_en(str(d), [("2026-09-09", "ext_2026-09-09.csv", sha_real),
+                                      ("2026-09-09", "ext_2026-09-09.csv", sha_real.replace(sha_real[0], "f", 1))])
++
++
++# ------------------------------------------------------------
++# 5. Corrida 15 (acta §90.6; política GEMELO/propuestas/parches/
++#    politica_evidencia_no_verificable.md, camino T): un disparo con timing
++#    roto no ocupa ni la fecha en `sellos_dinero` ni el cupo `ext_<fecha>.csv`
++# ------------------------------------------------------------
++# El 28-sep-2026 el PC despertó de la suspensión y el timer disparó a las
++# 13:42 de Nueva York con la bolsa abierta. E4 marcó las 33 filas
++# `no_verificable_timing` —correcto— pero las escribió en `sellos_dinero`, y
++# `congelar_extension()` ya había escrito `ext_2026-09-28.csv` con la matriz
++# de media sesión. A las 23:30 NY el disparo bueno encontró la fecha sellada,
++# entró por divergencia y escribió cero filas: la sesión se perdió y el cupo
++# de evidencia quedó ocupado para siempre por un insumo que E4 había
++# rechazado (tarjeta §62; dictamen_14/auditor_sello_28sep.md). Como
++# `UNIQUE (fecha_insumo, ticker, juego)` impide que las filas rechazadas y
++# las buenas convivan en la tabla, las rechazadas van a una tabla aparte,
++# `intentos_no_verificables`, con las mismas columnas y la misma
++# inmutabilidad; y el timing se decide ANTES de congelar la extensión, así
++# que un insumo rechazado se escribe como `ext_<fecha>.no_verificable.csv`
++# y el nombre canónico queda libre. El primer test REPRODUCE el 28-sep y
++# falla sobre E0.2 por su propia aserción (salida guardada en
++# GEMELO/propuestas/parches/sello_no_verificable.md).
++LUNES = "2026-09-14"
++SESIONES_HASTA_LUNES = ("2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", LUNES)
++T_INTRADIA = datetime(2026, 9, 14, 17, 42, tzinfo=UTC)     # 13:42 NY del lunes: bolsa abierta (el 28-sep)
++T_NOCHE = datetime(2026, 9, 15, 3, 30, tzinfo=UTC)         # 23:30 NY del mismo lunes: el timer
++T_TARDE = datetime(2026, 9, 15, 14, 0, tzinfo=UTC)         # 10:00 NY del martes: después de la apertura objetivo
++CANON_CSV, CANON_META = f"ext_{LUNES}.csv", f"ext_{LUNES}.meta.json"
++NV_CSV, NV_META = f"ext_{LUNES}.no_verificable.csv", f"ext_{LUNES}.no_verificable.meta.json"
++TABLA_INTENTOS = "intentos_no_verificables"
++
++
++def _congelar(cierres_ext, base_hasta, ahora):
++    """`congelar_extension` con el reloj inyectado. Sobre E0.2 la función no
++    recibía el instante (no miraba el reloj: por eso el 28-sep ocupó el cupo
++    canónico) y se la llama sin él, para que la reproducción falle sobre HEAD
++    por su propia aserción y no por un TypeError. Con el parche aplicado la
++    rama sin `ahora_utc` es código muerto y se queda como constancia."""
++    import inspect
++    if "ahora_utc" in inspect.signature(S.congelar_extension).parameters:
++        return S.congelar_extension(cierres_ext, base_hasta, ahora_utc=ahora)
++    return S.congelar_extension(cierres_ext, base_hasta)
++
++
++def _ext_con_ultima_fila(base, factor_ultima, sesiones=SESIONES_HASTA_LUNES) -> pd.DataFrame:
++    """Historia idéntica (× 1.01) y SÓLO la última sesión distinta: la barra
++    intradía de las 13:42 y el cierre de las 23:30 difieren en la última fila
++    y en nada más, como el 28-sep."""
++    ext = _cierres_ext_sinteticos(base, sesiones, 1.01)
++    ext.iloc[-1] = base.iloc[-1].values * factor_ultima
++    return ext
++
++
++def test_reproduccion_28sep_un_disparo_intradia_no_quema_la_sesion_ni_el_cupo_canonico(entorno_temporal, base):
++    """Disparo 1 a las 13:42 NY de un lunes con la barra intradía de ese lunes
++    como última fila; disparo 2 a las 23:30 NY del mismo lunes con el cierre
++    (otra última fila, misma fecha). Exige que el 2 SELLE, que las filas del
++    1 sigan intactas en su tabla, que `ext_<fecha>.csv` tenga el insumo BUENO
++    y que el par `.no_verificable` tenga el del disparo 1.
++    Sobre E0.2 falla en la aserción del resultado del disparo 2: da
++    `divergencia_registrada` y el canónico queda con la matriz intradía."""
++    db = entorno_temporal
++    ruta1, meta1, r1 = _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    assert r1["timing_ok"] is False and r1["estado"] == "no_verificable_timing" and r1["cuenta_para_N"] == 0
++    assert r1["estado_timing"] == "roto" and r1["filas_insertadas"] == 33
++
++    ruta2, meta2, r2 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    assert meta2["sha256"] != meta1["sha256"], "los dos insumos tienen que ser distintos o el test no prueba nada"
++    assert r2["resultado"] == "sellada", (
++        "EL 28-SEP: el disparo bueno de las 23:30 NY no selló porque la fecha quedó ocupada por el "
++        f"intento intradía (resultado={r2['resultado']!r}, filas_insertadas={r2.get('filas_insertadas')})")
++    assert r2["estado"] == "pendiente" and r2["cuenta_para_N"] == 1 and r2["filas_insertadas"] == 33
++    assert r2["insumo_fresco"] is True and r2["insumo_completo"] is True
++    assert r2["insumo_ext_sha256"] == meta2["sha256"] and r2["sesion_objetivo"] == "2026-09-15"
++
++    # la base: el intento en su tabla, intacto; el sello en la principal; ninguna divergencia
++    assert r1["resultado"] == "intento_no_verificable"
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    intentos = con.execute(f"SELECT DISTINCT estado, estado_timing, cuenta_para_N, insumo_ext_sha256, insumo_ext_archivo, "
++                           f"version_sello FROM {TABLA_INTENTOS}").fetchall()
++    sellos = con.execute("SELECT DISTINCT estado, estado_timing, cuenta_para_N, insumo_ext_sha256, insumo_ext_archivo, "
++                         "version_sello FROM sellos_dinero").fetchall()
++    con.close()
++    assert intentos == [("no_verificable_timing", "roto", 0, meta1["sha256"], NV_CSV, S.VERSION_SELLO)]
++    assert sellos == [("pendiente", "ok", 1, meta2["sha256"], CANON_CSV, S.VERSION_SELLO)]
++    assert _cuenta(db, TABLA_INTENTOS) == 33 and _cuenta(db, "sellos_dinero") == 33 and _cuenta(db, "divergencias_sello") == 0
++    assert S.sello_previo(LUNES, db) == {"sha256": meta2["sha256"], "archivo": CANON_CSV}
++    assert S.intento_previo(LUNES, db) == {"sha256": meta1["sha256"], "archivo": NV_CSV}
++
++    # el disco: el canónico es el insumo BUENO; el par no verificable es el del disparo 1, byte a byte
++    assert os.path.basename(ruta1) == NV_CSV and os.path.basename(ruta2) == CANON_CSV
++    assert sorted(os.listdir(S.DIR_EXT)) == [CANON_CSV, CANON_META, NV_CSV, NV_META]
++    assert S._sha256(os.path.join(S.DIR_EXT, CANON_CSV)) == meta2["sha256"]
++    assert S._sha256(os.path.join(S.DIR_EXT, NV_CSV)) == meta1["sha256"]
++    with open(os.path.join(S.DIR_EXT, NV_META), encoding="utf-8") as f:
++        meta_nv = json.load(f)
++    assert meta_nv["sha256"] == meta1["sha256"] and meta_nv["cupo_canonico"] is False
++    assert meta_nv["timing"]["available_at"] == "2026-09-14T20:00:00+00:00"
++    assert meta_nv["timing"]["emision_utc"] == T_INTRADIA.isoformat()
++    assert meta_nv["timing"]["apertura_objetivo_utc"].startswith("2026-09-15T13:30") and meta_nv["timing"]["timing_ok"] is False
++    assert "cupo_canonico" not in meta2 and "timing" not in meta2          # el canónico se escribe como siempre
++
++    # el estado que lee la API y el insumo que --sin-red levantaría mañana
++    e = S.estado(db)
++    assert e["filas"] == 33 and e["sesiones_selladas"] == 1 and e["sesiones_que_cuentan_para_N"] == 1
++    assert e["intentos_no_verificables"] == 1 and e["ultimo"]["timestamp_utc"] == r2["timestamp_utc"]
++    ruta_u, meta_u = S.ultima_extension()
++    assert os.path.basename(ruta_u) == CANON_CSV and meta_u["sha256"] == meta2["sha256"]
++
++
++def test_las_filas_del_intento_no_cambian_cuando_llega_el_sello_bueno(entorno_temporal, base):
++    """Volcado byte a byte de la tabla de intentos y huella (sha + mtime) del
++    par `.no_verificable` antes y después del sello de las 23:30."""
++    db = entorno_temporal
++    _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    volcado = _volcado(db, TABLA_INTENTOS)
++    huella = _huella_archivos((NV_CSV, NV_META))
++    assert len(volcado) == 33 and None not in huella.values()
++    _, _, r2 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    assert r2["resultado"] == "sellada"
++    assert _volcado(db, TABLA_INTENTOS) == volcado
++    assert _huella_archivos((NV_CSV, NV_META)) == huella
++
++
++def test_un_segundo_intento_no_verificable_deja_divergencia_y_ningun_archivo_nuevo(entorno_temporal, base):
++    """Política §2.4: un solo intento persistido por fecha. El segundo deja una
++    fila en `divergencias_sello` con los dos sha (el «sellado» es el del
++    intento previo y el detalle lo dice), cero filas nuevas y ningún archivo
++    nuevo en la carpeta; el temporal vive fuera y `main()` lo borra."""
++    db = entorno_temporal
++    ruta1, meta1, r1 = _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    assert r1["resultado"] == "intento_no_verificable"
++    antes = sorted(os.listdir(S.DIR_EXT))
++    huella = _huella_archivos((NV_CSV, NV_META))
++    volcado = _volcado(db, TABLA_INTENTOS)
++
++    ruta2, meta2, r2 = _camino_main(_ext_con_ultima_fila(base, 0.97), db, T_INTRADIA + timedelta(minutes=20))
++    assert meta2["sha256"] != meta1["sha256"]
++    assert r2["resultado"] == "divergencia_registrada" and r2["filas_insertadas"] == 0
++    assert r2["sha_sellado"] == meta1["sha256"] and r2["sha_nuevo"] == meta2["sha256"]
++    assert r2["insumo_divergente_conservado"] is False and r2["divergente_de"] == "intento_no_verificable"
++    assert meta2["persistido"] is False and meta2["cupo_canonico"] is False and not os.path.exists(ruta2)
++    assert os.path.dirname(os.path.abspath(ruta2)) != os.path.abspath(S.DIR_EXT)
++    assert meta2["divergente_de"] == {"archivo": NV_CSV, "sha256_intento": meta1["sha256"], "nota": meta2["divergente_de"]["nota"]}
++
++    assert sorted(os.listdir(S.DIR_EXT)) == antes == [NV_CSV, NV_META]
++    assert _huella_archivos((NV_CSV, NV_META)) == huella
++    assert _volcado(db, TABLA_INTENTOS) == volcado and _cuenta(db, "sellos_dinero") == 0
++    assert _cuenta(db, "divergencias_sello") == 1
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    detalle, sha_s, sha_n = con.execute("SELECT detalle, sha_sellado, sha_nuevo FROM divergencias_sello").fetchone()
++    con.close()
++    assert "intento no verificable" in detalle and "NO conservado" in detalle and (sha_s, sha_n) == (meta1["sha256"], meta2["sha256"])
++
++    # y después de los dos intentos el sello bueno entra igual (§2.5)
++    _, meta3, r3 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    assert r3["resultado"] == "sellada" and r3["filas_insertadas"] == 33
++    assert sorted(os.listdir(S.DIR_EXT)) == [CANON_CSV, CANON_META, NV_CSV, NV_META]
++
++
++def test_un_disparo_fuera_de_hora_sobre_una_fecha_ya_sellada_no_toca_nada(entorno_temporal, base):
++    """Política §2.5: un sello nunca se deshace por un intento posterior. Con
++    otro insumo → divergencia, con el mismo → `ya_sellada`, como hoy; cero
++    filas, el canónico intacto (sha y mtime) y ningún archivo nuevo."""
++    db = entorno_temporal
++    _, meta1, r1 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    assert r1["resultado"] == "sellada"
++    sellado = _huella_ext(LUNES)
++    volcado = _volcado_sellos(db)
++    archivos = sorted(os.listdir(S.DIR_EXT))
++
++    ruta2, meta2, r2 = _camino_main(_ext_con_ultima_fila(base, 1.03), db, T_TARDE)
++    assert r2["resultado"] == "divergencia_registrada" and r2["filas_insertadas"] == 0
++    assert meta2.get("persistido") is False and not os.path.exists(ruta2)
++    ruta3, meta3, r3 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_TARDE + timedelta(minutes=1))
++    assert meta3["sha256"] == meta1["sha256"]
++    assert r3["resultado"] == "ya_sellada" and r3["filas_insertadas"] == 0
++
++    assert _huella_ext(LUNES) == sellado and _volcado_sellos(db) == volcado
++    assert sorted(os.listdir(S.DIR_EXT)) == archivos == [CANON_CSV, CANON_META]
++    assert _cuenta(db, TABLA_INTENTOS) == 0 and _cuenta(db, "divergencias_sello") == 1
++
++
++def test_un_sello_tardio_va_a_intentos_y_un_disparo_posterior_tampoco_sella(entorno_temporal, base):
++    """Emisión después de la apertura objetivo (martes 10:00 NY con el insumo
++    del lunes): va a la tabla de intentos. Un disparo posterior, también
++    tardío, no sella. ADAPTADO por la R4 del auditor (corrida 15): con el
++    MISMO insumo el segundo es `ya_intentada`, cero filas y SIN fila en
++    `divergencias_sello` (simétrico con `ya_sellada`: un re-disparo en el
++    mismo minuto roto no infla el contador); antes se fijaba una divergencia
++    con sha_sellado == sha_nuevo. Con OTRO insumo sigue siendo divergencia."""
++    db = entorno_temporal
++    ruta1, meta1, r1 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_TARDE)
++    assert r1["resultado"] == "intento_no_verificable" and r1["timing_ok"] is False
++    assert r1["estado"] == "no_verificable_timing" and r1["cuenta_para_N"] == 0 and r1["filas_insertadas"] == 33
++    assert os.path.basename(ruta1) == NV_CSV and S.sello_previo(LUNES, db) is None
++    assert S.intento_previo(LUNES, db) == {"sha256": meta1["sha256"], "archivo": NV_CSV}
++    huella = _huella_archivos((NV_CSV, NV_META))
++
++    _, meta2, r2 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_TARDE + timedelta(hours=1))
++    assert meta2["sha256"] == meta1["sha256"]
++    assert r2["resultado"] == "ya_intentada" and r2["filas_insertadas"] == 0
++    assert "estado" not in r2 and "cuenta_para_N" not in r2               # no describe un intento que no ocurrió
++    assert _cuenta(db, "sellos_dinero") == 0 and _cuenta(db, TABLA_INTENTOS) == 33 and _cuenta(db, "divergencias_sello") == 0
++    assert sorted(os.listdir(S.DIR_EXT)) == [NV_CSV, NV_META] and _huella_archivos((NV_CSV, NV_META)) == huella
++    _, meta3, r3 = _camino_main(_ext_con_ultima_fila(base, 1.03), db, T_TARDE + timedelta(hours=2))
++    assert meta3["sha256"] != meta1["sha256"] and r3["resultado"] == "divergencia_registrada"
++    assert _cuenta(db, "divergencias_sello") == 1 and _cuenta(db, TABLA_INTENTOS) == 33
++    e = S.estado(db)
++    assert e["filas"] == 0 and e["sesiones_selladas"] == 0 and e["ultimo"] is None and e["intentos_no_verificables"] == 1
++
++
++def test_los_intentos_no_verificables_no_se_reescriben_ni_se_borran(entorno_temporal, base):
++    """Misma inmutabilidad que `sellos_dinero`: los disparadores abortan."""
++    db = entorno_temporal
++    _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    con = sqlite3.connect(db)
++    with pytest.raises(sqlite3.IntegrityError, match="no se reescriben"):
++        con.execute(f"UPDATE {TABLA_INTENTOS} SET decision = 'compra'")
++    with pytest.raises(sqlite3.IntegrityError, match="no se borran"):
++        con.execute(f"DELETE FROM {TABLA_INTENTOS}")
++    con.close()
++    assert _cuenta(db, TABLA_INTENTOS) == 33
++
++
++def test_la_tabla_de_intentos_tiene_las_mismas_columnas_que_la_principal(entorno_temporal):
++    con = S.conectar(entorno_temporal)
++    principal = con.execute("PRAGMA table_info(sellos_dinero)").fetchall()
++    intentos = con.execute(f"PRAGMA table_info({TABLA_INTENTOS})").fetchall()
++    con.close()
++    assert principal == intentos and len(principal) == 36          # id + las 35 columnas que INSERT escribe
++
++
++def test_sin_red_jamas_levanta_un_archivo_no_verificable(entorno_temporal, base):
++    """Política §5.4: `es_extension_sellable` sólo acepta `ext_YYYY-MM-DD.csv`.
++    Con sólo el par no verificable en la carpeta no hay insumo; con un
++    canónico más viejo al lado, `--sin-red` levanta ese y no el no
++    verificable más nuevo (que ordena después)."""
++    db = entorno_temporal
++    assert not S.es_extension_sellable(NV_CSV) and not S.es_extension_sellable(NV_META)
++    assert S.es_extension_no_verificable(NV_CSV) and S.es_extension_no_verificable("/x/" + NV_CSV)
++    assert not S.es_extension_no_verificable(CANON_CSV) and not S.es_extension_no_verificable(NV_META)
++    _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    assert sorted(os.listdir(S.DIR_EXT)) == [NV_CSV, NV_META] and S.ultima_extension() is None
++    _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, datetime(2026, 9, 9, 3, 0, tzinfo=UTC))
++    ruta_u, meta_u = S.ultima_extension()
++    assert os.path.basename(ruta_u) == f"ext_{FECHA}.csv" and "cupo_canonico" not in meta_u
++    assert sorted(os.listdir(S.DIR_EXT))[-1] == NV_META          # el no verificable ordena después y no se levanta
++
++
++def test_evaluar_timing_es_una_sola_formula_para_congelar_y_sellar(base):
++    """El timing se calcula en una función pura que usan `congelar_extension`
++    y `sellar`, para que no haya dos fórmulas: available_at < emisión <
++    apertura objetivo, con available_at por calendario y nunca el reloj."""
++    import inspect
++    disp = precios.disponibilidad_por_ticker(_ext_con_ultima_fila(base, 1.0))
++    t = S.evaluar_timing(disp, LUNES, T_INTRADIA)
++    assert t["avail"] == "2026-09-14T20:00:00+00:00" and t["sesion_obj"] == "2026-09-15"
++    assert t["apertura_obj"].isoformat().startswith("2026-09-15T13:30") and t["timing_ok"] is False
++    assert S.evaluar_timing(disp, LUNES, T_NOCHE)["timing_ok"] is True
++    assert S.evaluar_timing(disp, LUNES, T_TARDE)["timing_ok"] is False
++    assert S.evaluar_timing(disp, LUNES, datetime(2026, 9, 15, 13, 30, tzinfo=UTC))["timing_ok"] is False   # la apertura misma no es antes
++    assert S.evaluar_timing(disp, LUNES, datetime(2026, 9, 14, 20, 0, tzinfo=UTC))["timing_ok"] is False    # el cierre mismo tampoco
++    assert S.evaluar_timing({}, LUNES, T_NOCHE)["avail"] == "2026-09-14T20:00:00+00:00"                  # sin meta: cierre por calendario
++    with pytest.raises(ValueError, match="zona horaria"):
++        S.evaluar_timing(disp, LUNES, datetime(2026, 9, 15, 3, 30))
++    for fn in (S.sellar, S.congelar_extension):
++        assert "evaluar_timing(" in inspect.getsource(fn) and "proxima_sesion_despues_de(" not in inspect.getsource(fn)
++
++
++def test_una_evidencia_congelada_como_no_verificable_no_sella_aunque_el_reloj_del_sello_diga_ok(entorno_temporal, base):
++    """Entre congelar y sellar pasan segundos. Si el cierre cae en el medio,
++    `congelar_extension` vio timing roto (la barra se congeló ANTES de ser
++    conocible) y `sellar` lo vería ok. Manda la clase de la evidencia: el
++    reloj del sello sólo puede endurecer el veredicto, nunca ablandarlo."""
++    db = entorno_temporal
++    ruta, meta = S.congelar_extension(_ext_con_ultima_fila(base, 0.98), BASE_HASTA,
++                                      ahora_utc=datetime(2026, 9, 14, 19, 59, 58, tzinfo=UTC))
++    assert os.path.basename(ruta) == NV_CSV and meta["cupo_canonico"] is False
++    r = S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 14, 20, 0, 2, tzinfo=UTC), ruta_db=db)
++    assert r["resultado"] == "intento_no_verificable" and r["timing_ok"] is False and r["estado_timing"] == "roto"
++    assert _cuenta(db, "sellos_dinero") == 0 and _cuenta(db, TABLA_INTENTOS) == 33
++
++
++def test_un_rechazo_por_evidencia_canonica_deja_fila_en_divergencias_y_cero_en_las_dos_tablas(entorno_temporal, base):
++    """El caso inverso: la evidencia se congeló con timing ok (nombre canónico)
++    y la apertura se cruzó antes de sellar; o `--sin-red` levanta un canónico
++    que nunca se selló. Una fila de intentos citando un canónico rompería el
++    invariante de la política (§5.2), y una fila en la principal con timing
++    roto es lo que este parche cierra. Se rechaza: cero filas en las dos
++    tablas de filas, el archivo no se toca, y (B1 del auditor, corrida 15) el
++    rastro queda en `divergencias_sello` con sha_sellado = sha_nuevo = el
++    propio insumo rechazado y un detalle que dice qué es cada cosa."""
++    db = entorno_temporal
++    ruta, meta = S.congelar_extension(_ext_con_ultima_fila(base, 1.02), BASE_HASTA,
++                                      ahora_utc=datetime(2026, 9, 15, 13, 29, 58, tzinfo=UTC))
++    assert os.path.basename(ruta) == CANON_CSV and "cupo_canonico" not in meta
++    huella = _huella_ext(LUNES)
++    t_sello = datetime(2026, 9, 15, 13, 30, 2, tzinfo=UTC)
++    r = S.sellar(ruta, meta, ahora_utc=t_sello, ruta_db=db)
++    assert r["resultado"] == "rechazado_evidencia_canonica" and r["filas_insertadas"] == 0 and r["timing_ok"] is False
++    assert "estado" not in r and "cuenta_para_N" not in r                  # no describe un sello que no ocurrió
++    assert _cuenta(db, "sellos_dinero") == 0 and _cuenta(db, TABLA_INTENTOS) == 0
++    assert _cuenta(db, "divergencias_sello") == 1
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    fecha, ts, sha_s, sha_n, distintas, detalle = con.execute(
++        "SELECT fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, decisiones_distintas, detalle FROM divergencias_sello").fetchone()
++    con.close()
++    assert (fecha, ts, sha_s, sha_n, distintas) == (LUNES, t_sello.isoformat(), meta["sha256"], meta["sha256"], 0)
++    assert "nombre canónico" in detalle and "propio insumo rechazado" in detalle and "no el de un sello" in detalle
++    assert "available_at=2026-09-14T20:00:00+00:00" in detalle and f"emision={t_sello.isoformat()}" in detalle
++    assert "apertura_objetivo=2026-09-15T13:30:00+00:00" in detalle
++    assert _huella_ext(LUNES) == huella and sorted(os.listdir(S.DIR_EXT)) == [CANON_CSV, CANON_META]
++    assert S.estado(db)["divergencias_registradas"] == 1 and S.estado(db)["intentos_no_verificables"] == 0
++
++
++def test_exportar_y_respaldar_cubren_el_par_no_verificable(entorno_temporal, base):
++    """Política §4: `exportar_csv` exporta la tabla nueva a
++    `<ruta>_no_verificables.csv` y `respaldar_extension` copia el par
++    `.no_verificable` con el mismo nombre (deriva el meta con splitext, y
++    `ext_F.no_verificable` + `.meta.json` es el nombre que congelar escribió)."""
++    db = entorno_temporal
++    raiz = os.path.dirname(db)
++    ruta1, meta1, _ = _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    ruta2, meta2, _ = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    csvp = S.exportar_csv(db, os.path.join(raiz, "sello_dinero.csv"))
++    principal = pd.read_csv(csvp)
++    nv = pd.read_csv(os.path.join(raiz, "sello_dinero_no_verificables.csv"))
++    assert list(nv.columns) == list(principal.columns) and len(nv) == len(principal) == 33
++    assert set(nv["estado"]) == {"no_verificable_timing"} and set(principal["estado"]) == {"pendiente"}
++    assert set(nv["insumo_ext_archivo"]) == {NV_CSV} and set(principal["insumo_ext_archivo"]) == {CANON_CSV}
++    assert os.path.exists(os.path.join(raiz, "sello_dinero_divergencias.csv"))
++    copias = S.respaldar_extension(ruta1, S.DIR_BACKUP_EXT) + S.respaldar_extension(ruta2, S.DIR_BACKUP_EXT)
++    assert sorted(os.path.basename(c) for c in copias) == [CANON_CSV, CANON_META, NV_CSV, NV_META]
++    assert S._sha256(os.path.join(S.DIR_BACKUP_EXT, NV_CSV)) == meta1["sha256"]
++    assert S._sha256(os.path.join(S.DIR_BACKUP_EXT, CANON_CSV)) == meta2["sha256"]
++
++
++def test_estado_agrega_los_intentos_sin_cambiar_las_claves_que_lee_la_api(entorno_temporal, base):
++    claves_api = {"filas", "sesiones_selladas", "sesiones_que_cuentan_para_N", "N_objetivo", "N_objetivo_fuente",
++                  "fuente_conteos", "ultimo", "filas_ultimo_sello", "divergencias_registradas", "senal_fuente", "estatus"}
++    db = entorno_temporal
++    vacio = S.estado(db)                                       # la base no existe todavía
++    assert claves_api <= set(vacio) and vacio["intentos_no_verificables"] == 0
++    _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    e = S.estado(db)
++    assert claves_api <= set(e) and e["intentos_no_verificables"] == 1
++    assert e["filas"] == 0 and e["sesiones_selladas"] == 0 and e["ultimo"] is None and e["filas_ultimo_sello"] == []
++
++
++def test_una_base_sin_la_tabla_de_intentos_se_lee_como_cero_intentos(tmp_path, base):
++    """La base real no tiene la tabla hasta que el sellador parcheado la cree
++    (`CREATE TABLE IF NOT EXISTS`, aditivo). Leerla antes no es un error: cero
++    intentos. Y crearla no toca nada de lo que ya hay."""
++    db = str(tmp_path / "vieja.db")
++    con = sqlite3.connect(db)
++    con.executescript(S._ddl_filas("sellos_dinero") + S._DDL_DIVERGENCIAS)       # el esquema de E0.2
++    con.commit(); con.close()
++    assert S.intento_previo(LUNES, db) is None and S.sello_previo(LUNES, db) is None
++    assert S.estado(db)["intentos_no_verificables"] == 0 and S.estado(db)["filas"] == 0
++    S.exportar_csv(db, str(tmp_path / "v.csv"))
++    assert os.path.exists(str(tmp_path / "v.csv")) and not os.path.exists(str(tmp_path / "v_no_verificables.csv"))
++    ruta, meta = _extension_sintetica(tmp_path, base, ("2026-09-08",))
++    r = S.sellar(ruta, meta, ahora_utc=datetime(2026, 9, 9, 3, 0, tzinfo=UTC), ruta_db=db)
++    assert r["resultado"] == "sellada"
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    tablas = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
++    con.close()
++    assert {"sellos_dinero", TABLA_INTENTOS, "divergencias_sello"} <= tablas
++    assert _cuenta(db, "sellos_dinero") == 33 and _cuenta(db, TABLA_INTENTOS) == 0
++
++
++def _insertar_fila_vieja(db, fecha, ticker, sha, archivo, estado, estado_timing, version_sello):
++    """Una fila como las que E0.2 dejó en `sellos_dinero` el 28-sep: se
++    fabrica con INSERT (los disparadores prohíben UPDATE y DELETE, no INSERT)
++    con las columnas NOT NULL y las que el test mira. No nombra esa fecha."""
++    con = S.conectar(db)
++    con.execute("INSERT INTO sellos_dinero (fecha_sello, fecha_insumo, timestamp_utc, exchange, ticker, decision, "
++                "tamano_nominal, senal_fuente, juego, presupuesto_usd, reglas_version, insumo_ext_sha256, "
++                "insumo_ext_archivo, insumo_base_sha256, plataforma_version, version_sello, estado, estado_timing, "
++                "cuenta_para_N, creado_en) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
++                (fecha, fecha, f"{fecha}T17:43:01+00:00", "XNYS", ticker, "nada", 0, S.SENAL_FUENTE, "conservador",
++                 500.0, "?", sha, archivo, "0" * 64, S.PLATAFORMA_VERSION, version_sello, estado, estado_timing, 0,
++                 f"{fecha}T17:43:01+00:00"))
++    con.commit(); con.close()
++
++
++def test_las_filas_no_verificables_viejas_de_la_tabla_principal_siguen_ocupando_su_fecha(entorno_temporal, base):
++    """Punto 5 del diseño: las filas `no_verificable_timing` que E0.2 dejó en
++    `sellos_dinero` se quedan donde están. `sello_previo()` sigue devolviendo
++    esa fecha (UNIQUE impediría igual insertar las buenas, y la sesión ya
++    pasó) y un disparo posterior entra por divergencia, como hoy. El código
++    no nombra ninguna fecha; acá se fabrica una."""
++    db = entorno_temporal
++    _insertar_fila_vieja(db, FECHA, "NVDA", "a" * 64, f"ext_{FECHA}.csv", "no_verificable_timing", "roto", "E0.2")
++    assert S.sello_previo(FECHA, db) == {"sha256": "a" * 64, "archivo": f"ext_{FECHA}.csv"}
++    assert S.intento_previo(FECHA, db) is None
++    ruta, meta, r = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, datetime(2026, 9, 9, 3, 0, tzinfo=UTC))
++    assert r["resultado"] == "divergencia_registrada" and r["filas_insertadas"] == 0
++    assert meta.get("persistido") is False and os.listdir(S.DIR_EXT) == []
++    assert _cuenta(db, "sellos_dinero") == 1 and _cuenta(db, TABLA_INTENTOS) == 0
++
++
++def test_integridad_de_punta_a_punta_con_intento_y_sello_de_la_misma_fecha(entorno_temporal, base):
++    """Política §5: cada tabla contra sus archivos, en las dos carpetas; «un
++    solo insumo por fecha» vale por tabla (una fecha puede tener un intento y
++    un sello: dos insumos, cada uno en su tabla); ninguna tabla cita la
++    evidencia de la otra; y ninguna fila con timing roto en la principal
++    lleva la versión del corte."""
++    db = entorno_temporal
++    ruta1, _, _ = _camino_main(_ext_con_ultima_fila(base, 0.98), db, T_INTRADIA)
++    ruta2, _, _ = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
++    S.respaldar_extension(ruta1, S.DIR_BACKUP_EXT); S.respaldar_extension(ruta2, S.DIR_BACKUP_EXT)
++    citas = {t: _citas_selladas(db, t) for t in TABLAS_CON_EVIDENCIA}
++    assert len(citas["sellos_dinero"]) == len(citas[TABLA_INTENTOS]) == 1
++    for t in TABLAS_CON_EVIDENCIA:
++        _verificar_citas_en(S.DIR_EXT, citas[t])
++        _verificar_citas_en(S.DIR_BACKUP_EXT, citas[t])
++    _verificar_clase_de_evidencia(citas["sellos_dinero"], citas[TABLA_INTENTOS])
++    _verificar_regla_del_corte(_filas_rotas_en_principal(db))
++    # y con las dos citas juntas el chequeo viejo (una sola tabla) diría «dos insumos»: por eso es por tabla
++    with pytest.raises(AssertionError, match="shas distintos"):
++        _verificar_citas_en(S.DIR_EXT, citas["sellos_dinero"] + citas[TABLA_INTENTOS])
++
++
++def test_contraprueba_la_integridad_ve_la_clase_equivocada_y_la_fila_rota_posterior_al_corte():
++    """Un verificador que no puede fallar no verifica."""
++    sha = "0" * 64
++    _verificar_clase_de_evidencia([(LUNES, CANON_CSV, sha)], [(LUNES, NV_CSV, sha)])                  # cada una la suya: pasa
++    with pytest.raises(AssertionError, match="PARAR Y REPORTAR"):
++        _verificar_clase_de_evidencia([(LUNES, NV_CSV, sha)], [])                                    # la principal cita un .no_verificable
++    with pytest.raises(AssertionError, match="PARAR Y REPORTAR"):
++        _verificar_clase_de_evidencia([], [(LUNES, CANON_CSV, sha)])                                 # los intentos citan un canónico
++    _verificar_regla_del_corte([(FECHA, "no_verificable_timing", "roto", "E0.2")])                  # anterior al corte: tolerada
++    _verificar_regla_del_corte([])
++    with pytest.raises(AssertionError, match="PARAR Y REPORTAR"):
++        _verificar_regla_del_corte([(FECHA, "no_verificable_timing", "roto", VERSION_CORTE_DE_METODO)])
++    with pytest.raises(AssertionError, match="PARAR Y REPORTAR"):
++        _verificar_regla_del_corte([(FECHA, "pendiente", "roto", "E0.10")])                          # E0.10 > E0.3: no es orden de texto
++    assert S.VERSION_SELLO == VERSION_CORTE_DE_METODO

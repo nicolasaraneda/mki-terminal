@@ -1,0 +1,95 @@
+.F...F..F........F.FFFFFFFF.                                             [100%]
+=================================== FAILURES ===================================
+____ test_reproduccion_el_verificador_no_verifica_una_fila_con_la_inversion ____
+tests/test_conocibilidad.py:160: in test_reproduccion_el_verificador_no_verifica_una_fila_con_la_inversion
+    assert estados["005930.KS"] == senales.ESTADO_NO_VERIFICABLE, (
+E   AssertionError: la fila con available_at (2026-09-28T20:00:00+00:00) posterior a su timestamp_utc (2026-09-28T17:42:58.943983+00:00) quedó en estado 'verificada': el verificador la procesó como válida
+E   assert 'verificada' == 'no_verificable_timing'
+E     
+E     - no_verificable_timing
+E     + verificada
+_________________ test_la_guarda_compara_instantes_y_no_texto __________________
+tests/test_conocibilidad.py:214: in test_la_guarda_compara_instantes_y_no_texto
+    assert estados["005930.KS"] == senales.ESTADO_NO_VERIFICABLE
+E   AssertionError: assert 'verificada' == 'no_verificable_timing'
+E     
+E     - no_verificable_timing
+E     + verificada
+___________ test_reproduccion_no_sella_con_la_sesion_del_sox_abierta ___________
+tests/test_conocibilidad.py:377: in test_reproduccion_no_sella_con_la_sesion_del_sox_abierta
+    assert resultado["snapshot"] is False, (
+E   AssertionError: snapshot.py selló a las 2026-09-28T17:42:58.943983+00:00 con sox_fecha=2026-09-28, cuya sesión cierra a las 2026-09-28T20:00:00+00:00: {'snapshot': True, 'predicciones': 5, 'regimen': 'test', 'roca_chip': 50.0, 'divergencias_activas': 0, 'descarga': '28/28', 'caidos': []}
+E   assert True is False
+_____________ test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos _____________
+tests/test_conocibilidad.py:505: in test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos
+    assert "no ha cerrado" in salida, salida
+E   AssertionError: [2026-09-28T17:42:58.943983+00:00] snapshot.py (origen=programado, modelo=4.6.0, plataforma=5.1.0)
+E       snapshot: {'snapshot': True, 'predicciones': 5, 'regimen': 'test', 'roca_chip': 50.0, 'divergencias_activas': 0, 'descarga': '28/28', 'caidos': []}
+E       verificador apertura: {'verificadas': 0}
+E       verificador puntaje: 0 verificadas
+E       respaldos CSV: 0 tablas → data/backups/
+E       salud de datos: OK (0 tickers)
+E     
+E   assert 'no ha cerrado' in "[2026-09-28T17:42:58.943983+00:00] snapshot.py (origen=programado, modelo=4.6.0, plataforma=5.1.0)\n  snapshot: {'sna...}\n  verificador puntaje: 0 verificadas\n  respaldos CSV: 0 tablas → data/backups/\n  salud de datos: OK (0 tickers)\n"
+______ test_reproduccion_la_medicion_deja_fuera_la_fila_con_la_inversion _______
+tests/test_conocibilidad.py:599: in test_reproduccion_la_medicion_deja_fuera_la_fila_con_la_inversion
+    assert fechas == ["2026-09-24"], (
+E   AssertionError: la capa de medición cargó ['2026-09-24', '2026-09-28']: la fila del 2026-09-28 declara su insumo conocible (2026-09-28T20:00:00+00:00) después de emitida (2026-09-28T17:42:58.943983+00:00) y entra a las métricas
+E   assert ['2026-09-24', '2026-09-28'] == ['2026-09-24']
+E     
+E     Left contains one more item: '2026-09-28'
+E     Use -v to get more diff
+____ test_reproduccion_la_medicion_no_trae_filas_invertidas_de_la_base_real ____
+tests/test_conocibilidad.py:616: in test_reproduccion_la_medicion_no_trae_filas_invertidas_de_la_base_real
+    assert dentro == [], (
+E   AssertionError: cargar(dedup=False) entrega 8 filas con available_at > timestamp_utc: [('2026-09-28', '000660.KS'), ('2026-09-28', '005930.KS'), ('2026-09-28', '2330.TW'), ('2026-09-28', '3436.T'), ('2026-09-28', '4063.T'), ('2026-09-28', '6857.T'), ('2026-09-28', '8035.T'), ('2026-09-28', 'IFX.DE')]
+E   assert [('2026-09-28...6857.T'), ...] == []
+E     
+E     Left contains 8 more items, first extra item: ('2026-09-28', '000660.KS')
+E     Use -v to get more diff
+_______ test_A_la_exclusion_alcanza_exactamente_las_filas_de_la_consulta _______
+tests/test_conocibilidad.py:638: in test_A_la_exclusion_alcanza_exactamente_las_filas_de_la_consulta
+    alcanzadas = lb.filas_sin_conocibilidad()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'backtest.linea_base' has no attribute 'filas_sin_conocibilidad'
+_______________ test_B_sin_inversiones_la_exclusion_alcanza_cero _______________
+tests/test_conocibilidad.py:669: in test_B_sin_inversiones_la_exclusion_alcanza_cero
+    assert len(lb.filas_sin_conocibilidad()) == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'backtest.linea_base' has no attribute 'filas_sin_conocibilidad'
+______________ test_la_exclusion_corre_antes_que_la_deduplicacion ______________
+tests/test_conocibilidad.py:690: in test_la_exclusion_corre_antes_que_la_deduplicacion
+    assert df["fecha"].tolist() == ["2026-09-25"]
+E   AssertionError: assert ['2026-09-28'] == ['2026-09-25']
+E     
+E     At index 0 diff: '2026-09-28' != '2026-09-25'
+E     Use -v to get more diff
+_________ test_la_exclusion_esta_activa_por_defecto_y_no_nombra_fechas _________
+tests/test_conocibilidad.py:696: in test_la_exclusion_esta_activa_por_defecto_y_no_nombra_fechas
+    assert lb.CONOCIBILIDAD_OFICIAL is True
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'backtest.linea_base' has no attribute 'CONOCIBILIDAD_OFICIAL'
+_____________ test_la_exclusion_no_mueve_ninguna_ventana_congelada _____________
+tests/test_conocibilidad.py:713: in test_la_exclusion_no_mueve_ninguna_ventana_congelada
+    sin = lb.cargar(hasta_sello=corte, dedup=dedup, conocibilidad=False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: cargar() got an unexpected keyword argument 'conocibilidad'
+_____________ test_el_informe_declara_la_exclusion_con_su_contador _____________
+tests/test_conocibilidad.py:723: in test_el_informe_declara_la_exclusion_con_su_contador
+    aud = lb.auditar_conocibilidad()
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'backtest.linea_base' has no attribute 'auditar_conocibilidad'
+=========================== short test summary info ============================
+FAILED tests/test_conocibilidad.py::test_reproduccion_el_verificador_no_verifica_una_fila_con_la_inversion
+FAILED tests/test_conocibilidad.py::test_la_guarda_compara_instantes_y_no_texto
+FAILED tests/test_conocibilidad.py::test_reproduccion_no_sella_con_la_sesion_del_sox_abierta
+FAILED tests/test_conocibilidad.py::test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos
+FAILED tests/test_conocibilidad.py::test_reproduccion_la_medicion_deja_fuera_la_fila_con_la_inversion
+FAILED tests/test_conocibilidad.py::test_reproduccion_la_medicion_no_trae_filas_invertidas_de_la_base_real
+FAILED tests/test_conocibilidad.py::test_A_la_exclusion_alcanza_exactamente_las_filas_de_la_consulta
+FAILED tests/test_conocibilidad.py::test_B_sin_inversiones_la_exclusion_alcanza_cero
+FAILED tests/test_conocibilidad.py::test_la_exclusion_corre_antes_que_la_deduplicacion
+FAILED tests/test_conocibilidad.py::test_la_exclusion_esta_activa_por_defecto_y_no_nombra_fechas
+FAILED tests/test_conocibilidad.py::test_la_exclusion_no_mueve_ninguna_ventana_congelada
+FAILED tests/test_conocibilidad.py::test_el_informe_declara_la_exclusion_con_su_contador
+12 failed, 16 passed in 3.73s

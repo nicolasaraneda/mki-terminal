@@ -1,50 +1,50 @@
 # ESTADO
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es historia
-(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 28-sep-2026 (corrida 14).
+(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 30-sep-2026 (corrida 15, nocturna).
 
-## Primero: `espera_firma.md` §61
-**El reporte de las 18:25 ya salió** compuesto desde el sello del 28-sep, o sea desde las filas que
-`snapshot.py` construyó **a las 13:42 de Nueva York, con la bolsa abierta**, y publicó `roca_chip` **44**.
-El recomputado tras el cierre es **17**, pero **PROVISIONAL**: el job de las 18:15 marcó `8035.T` con un
-salto de **−80 %** (`data/snapshot.log:147`, «revisar split/dato corrupto») y ese solo ticker explica
-~83 % del movimiento del crudo. **Contrastar 8035.T antes de citar el 17.**
-Esas 24 filas son la **única fecha de toda la historia sellada** con `available_at > timestamp_utc`: el sello
-declara su insumo conocible 2 h 17 min después de existir (la suspensión es **inferencia**: WSL2 no registra
-suspend/resume). Veredicto del `auditor-lookahead`: `FILAS INVÁLIDAS ENTRARON COMO VÁLIDAS`; no hay
-look-ahead, pero las 8 predicciones son
-`beta × (−1,63)` sobre una lectura intradía etiquetada como cierre, **no reproducible por un tercero, y de
-forma irreversible**: la sonda de las 20:05 NY midió que la barra del 28 que estaba a las 13:42 **ya no la sirve la fuente** para 35 de 36 tickers.
-`senales.py` no compara `available_at` con `timestamp_utc`; `dinero/sello_dinero.py` sí, y descartó sus
-33 filas del mismo evento. **Nada publicado está contaminado** (corte del README: 28-ago). **Daño medido a las 17:31:**
-insumo −1,63 → −1,61 (0,02 pp, mismo signo), **0 de 8 direcciones invertidas**, régimen **idéntico**; peor
-predicción entre los siete tickers sin dato marcado **0,03 pp** (el 0,11 es de 8035.T, de su beta
-reestimada). El auditor **ratificó el veredicto con fuerza neta MAYOR**: la medición **confirma** la
-no-reproducibilidad que antes sólo deducía. **No decide la regla** en ninguna dirección. **Sigue SIN
-MEDIR** `puntaje_ia` y `divergencias` del 28: **24 filas** rumbo a `verificacion_puntaje` el ~5-oct, y esa
-diferencia ya no se puede medir.
-**Por eso los bloques 2 (erratas de los README) y 3 (`bifurcaciones`) NO se ejecutaron:** publican
-cifras, y §88.5 sigue sin aplicar.
+## Primero: hoy 30-sep a las 18:15 es la primera prueba viva de la guarda (b), y dos actos con fecha
+0. **Mirar el sello de hoy entre las 18:15 y las 19:05** (PREDICCIÓN falsable: `snapshot.log` con `'snapshot': True, 'predicciones': 8`;
+   vigía en silencio). **No lanzar la corrida 16 esta noche** (dictamen del director): se diseña hoy, se corre después.
+1. **`mki-noticias` no analiza nada desde el 7-sep**: 17 corridas con «credit balance is too low», `analizados 0`,
+   `resultado 'ok'` en el ledger; el vigía dice OK. Reponer crédito es un acto de cinco minutos (**§74**). Los
+   sentimientos sellados desde el 7-sep se apoyan en análisis de hasta el 4-sep (deducido).
+2. **`verificacion_puntaje` absorbe las 24 filas del 28-sep alrededor del 5-oct**: su verificador no aplica ni la regla
+   maestra ni la de conocibilidad (**§73**); una de dos frases de Nicolás lo cierra antes de esa fecha.
+
+## Lo que la corrida 15 dejó aplicado en el árbol real (acta §92)
+- **Guardas de conocibilidad de §90.1, corte de método 29-sep 23:22:17:** el verificador marca `no_verificable_timing`
+  toda fila `pendiente` con `available_at > timestamp_utc`; `snapshot.py` se niega a sellar si la sesión del SOX no
+  cerró (`available_at > emisión`, margen cero); la capa de medición excluye por regla. Si hoy el sello se niega, el
+  vigía alerta dos fallas a las 19:00 y **no se retracta** (§72).
+  Alcance hoy: 24 filas del 28-sep, 8 con verificación; **ninguna cifra publicada cambió**. Lo que NO cubre: las
+  métricas vivas de 30 días de `senales.py` (Telegram, dashboard, API) cuentan hoy 8 de 160 filas invertidas.
+- **README sin contador** (§90.3), badges congelados «1025 recolectados al 2026-09-29» (§90.4), 354/360 y 61× como
+  marcadores (§88.5). Suite del árbol real, 23:29:33 del 29-sep: **1019 en verde, 5 saltados, 1 xfail, 0 rojos**.
+- **`mki_backup.py` no se adelanta al sello** (§90.8): con `snapshot.py` vivo nunca commitea; en día de semana sin
+  sello antes de las 18:15 se niega; elecciones de agente en **§70**.
+- **§90.2 (el ancla) DETENIDA:** las dos anclas difieren en 33 filas de 5 fechas; la premisa del encargo tiene contraejemplo (**§71**).
+
+## Regla de §58, sellada antes del primer dato de madrugada
+`GEMELO/propuestas/regla_58.md`, 23:08:17 del 29-sep, sha256 `ca2ccd53…` (anexo 1 `2c9eec1d…`); dictamen y re-dictamen
+incorporados. K = 10 noches válidas, primera candidata la sesión del 29-sep, plazo la del 26-oct. **Hallazgo:** toda hora
+candidata de (b) es posterior a la medianoche NY y con el código vigente pierde los viernes (`dia_sin_sesion`); la rama
+(b) lleva umbral 5 de 10 y con la tasa del antecedente (3/11) se indica con probabilidad 0,11. **Firmarla es de Nicolás.**
 
 ## Producción
-- **Titular: este PC (WSL), en `main`**, 6 timers del riel + `mki-sonda-cierre` + `mki-sello-dinero`,
-  emite; el modo se le pregunta a `modo.py`. Modelo 4.6.0; `PLATAFORMA_VERSION` 5.1.0.
-- **La corrida 14 no tocó el camino de sellado** (`motor.py`, `senales.py`, `snapshot.py`, `universo.py`, `dinero/sello_dinero.py`). Todo cambio de base es de un timer: `noticias.db` 17:52:39, `senales.db` 18:15:12 (4 filas a `verificacion_puntaje`), `sello_dinero.db` intacta. **HEAD lo movió el backup de las 18:40 a `f7b65e0`**, con sólo `data/backups/`.
-- **Sesión del 25-sep perdida en los TRES rieles**; §57 no la recupera, y la del 28 también se pierde en el riel de dinero (§62).
-- **Medición** (`VISION.md` §80): cifras en el README; **el IC95 de día contiene el cero**, §46 NO cableada, ventaja **no capturable** (§10).
-- **Dinero:** todo SIMULADO. **E0: 14 sesiones selladas, 9 cuentan de 40** (no cuentan 09, 18, 22, 23 por `insumo_incompleto` ni el 28 por `no_verificable_timing`; señal = sorteo sin información: maquinaria, no track record). **E1 NO EJECUTADO**, cuenta IBKR **en revisión al 19-sep**. E2: 500 USD, no iniciado.
-
-## Corrida 14 (acta §89)
-- **Sonda:** `sesion_atribuida()` — lo anterior a la apertura pertenece a la sesión hábil previa, y reproduce el `sesion_ny` de las **1.188 filas ya escritas** (0 diferencias): sin columna nueva ni reescrituras. Reloj de la noche monótono; el resumen **descarta y declara** lo previo al cierre. Franja `Tue..Sat 00..03:05,35` **propuesta**.
-- **§58, DESCRIPTIVO, 4 noches:** coincide **ticker por ticker** con el meta del sello por dos vías independientes; el 22-sep **34 de 36 sin cierre a las 23:35 NY**, y eso no lo arregla ninguna noche más de la grilla actual. **No se recomendó nada.** El 28 no cuenta como quinta porque **no va a tener segunda vía**; cuesta **un día**, no una semana.
-- **M2: §9 de `dinero/preregistro_dinero.md`**, PROPUESTA y **NO APLICABLE: le faltan seis definiciones**
-  (la urgente, qué es «el primer aporte»). El umbral firmado es **3× más duro** a 52 semanas: `medio` dispara en **19/20** semillas simuladas, conservador (3,9 %/año) en 0/20.
-- Intentos sin cambio: gap asiático **354**, veredicto 5.1 **360**, riel largo **4**.
+- **Titular: este PC (WSL), en `main`**, 6 timers del riel + `mki-sonda-cierre` + `mki-sello-dinero`; el modo se le
+  pregunta a `modo.py`. Modelo 4.6.0; `PLATAFORMA_VERSION` 5.1.0. Del 2-nov-2026 al 12-mar-2027 la holgura entre las
+  18:15 de Chile y el cierre de XNYS es de 15 min (MEDIDO, `exchange_calendars`, §66 C.2). La máquina no corrió del
+  **25-sep 03:37:10 al 28-sep 14:42:52** (latido del journal del sistema, ±30 s); que fuera suspensión es INFERENCIA.
+- **Dinero:** todo SIMULADO. E0: 15 sesiones selladas, **9 cuentan de 40**; las del 28 y del 29 perdidas. `dinero/sello_dinero.py`
+  intacto; el parche de §62 (camino T) espera acta (**§75**): la (a) firmada choca con la `UNIQUE` de la tabla. **8035.T:**
+  split 5:1 con fecha 29-sep; el «17» de `roca_chip` del 28 era artefacto; releído 39 (DESCRIPTIVO, **§68**).
 
 ## Deuda
-- **Suite con 2 rojos permanentes** (`tests/test_readme.py`): contador vivo de E0 que nada regenera y badges vencidos (904 tests bajo `tests/`, 5.1.0); la sección de E0 **no existe en español**, de ahí el test (§65).
-- `tests/test_motor.py` trunca con `<= fecha`, **inclusive**: ciego a una barra no liquidada EN `t`.
-- «Lecturas de criterio» (§43) sin sitio. `bifurcaciones` sin tocar (§88.6). **Dos skills contradicen a la máquina** (bitácora 8.5-bis): el gate de `gate` importa `scipy`/`sklearn`, que el proyecto **no** tiene a propósito, y el recordatorio de `cierre-sesion` es pre-switch.
+- `tests/test_motor.py` trunca inclusive (ciego a una barra no liquidada EN `t`); el vigía prueba `av == ts` y no orden
+  (**§67**); la skill `gate` importa `scipy`/`sklearn` (**§69**); `tesis.md:161` dice «59×» (**§76**). Corrida 16 (se
+  diseña el 30-sep, §91.2): deudas (3) y (4) de la sonda; el lector no filtra «fuera de grilla».
 
 ## Lo más urgente, que sigue siendo de Nicolás
-**§61** (antes de las 18:15 del 29: a esa hora el verificador escribe las 8 filas); **§65** junto con él; **§58**; **§62** a **§64**; **§43**; y las dos firmas con fecha del pre-registro secuencial (§2a-ter y el MDE) **antes del 19-nov-2026**, que ninguna corrida puede hacer por él. **No hay push.**
+**§74** (crédito) y **§73** (antes del 5-oct); **§58** (firmar la regla); **§71**, **§75**, **§70**, **§72**, **§76**;
+las dos firmas del pre-registro secuencial (§2a-ter y el MDE) **antes del 19-nov-2026**. **No hay push.**
