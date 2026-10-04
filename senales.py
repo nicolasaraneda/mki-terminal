@@ -424,11 +424,18 @@ def verificar_apertura_pendientes() -> dict:
 def verificar_puntaje_pendientes() -> int:
     """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_PUNTAJE
     días hábiles siguientes. Solo evalúa filas de la Etapa 4.6 en adelante
-    (con timestamp); las legacy quedan fuera."""
+    (con timestamp); las legacy quedan fuera. Tampoco evalúa las que declaran
+    su insumo conocible (available_at) DESPUÉS de haber sido emitidas
+    (timestamp_utc): la misma guarda de conocibilidad del verificador de
+    apertura (acta §90.1 a), traída acá por el acta §93.4-bis (i). Como
+    `verificacion_puntaje` no tiene columna de estado, la fila excluida no se
+    escribe y la exclusión se declara por el log con su cuenta; el `estado`
+    de `senales_ticker` no se toca. La regla maestra de timing NO se aplica
+    acá (el acta §93.4 la deja abierta)."""
     init_db()
     conn = get_connection()
     pendientes = conn.execute(f"""
-        SELECT s.fecha, s.ticker, s.puntaje_ia
+        SELECT s.fecha, s.ticker, s.puntaje_ia, s.timestamp_utc, s.available_at
         FROM senales_ticker s
         LEFT JOIN verificacion_puntaje v
           ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
@@ -440,7 +447,30 @@ def verificar_puntaje_pendientes() -> int:
     """).fetchall()
 
     verificados = 0
-    for fecha_senal, ticker, puntaje_ia in pendientes:
+    excluidas = []   # (fecha, ticker) con available_at > timestamp_utc
+    for fecha_senal, ticker, puntaje_ia, ts_utc, disponible_en in pendientes:
+        # GUARDA DE CONOCIBILIDAD (acta §93.4-bis i, 4-oct-2026): el orden
+        # exigible es available_at <= timestamp_utc, y hasta acá este
+        # verificador no lo miraba (auditor de la corrida 15, B2). Se
+        # comparan INSTANTES con zona, no texto. NULL no dispara; la
+        # IGUALDAD tampoco (rama del `except` de snapshot.py, con su alerta
+        # en el vigía, acta §84.2). Va ANTES de la descarga: una fila
+        # excluida no gasta red. No se escribe nada: ni en
+        # `verificacion_puntaje` (sin columna de estado, sin cambio de
+        # esquema) ni en `senales_ticker` (su `estado` es del verificador
+        # de apertura). La fila queda candidata en cada corrida y se declara
+        # en cada corrida: la cuenta de abajo es el registro.
+        if disponible_en:
+            emitida = datetime.fromisoformat(ts_utc)
+            if emitida.tzinfo is None:
+                emitida = emitida.replace(tzinfo=timezone.utc)
+            conocible = datetime.fromisoformat(disponible_en)
+            if conocible.tzinfo is None:
+                conocible = conocible.replace(tzinfo=timezone.utc)
+            if conocible > emitida:
+                excluidas.append((fecha_senal, ticker))
+                continue
+
         datos = _ohlc_local(ticker, fecha_senal)
         if datos.empty:
             continue
@@ -456,6 +486,12 @@ def verificar_puntaje_pendientes() -> int:
             (fecha_senal, ticker, puntaje_ia, round(float(retorno_5d), 4),
              datetime.now(timezone.utc).isoformat()))
         verificados += 1
+    if excluidas:
+        fechas = sorted({f for f, _ in excluidas})
+        print(f"  AVISO verificador puntaje: {len(excluidas)} fila(s) con insumo "
+              f"conocible después de su emisión (available_at > timestamp_utc) "
+              f"excluidas de verificacion_puntaje, sin escribir ni cambiar estado; "
+              f"fechas: {', '.join(fechas)}", flush=True)
     conn.commit()
     conn.close()
     return verificados

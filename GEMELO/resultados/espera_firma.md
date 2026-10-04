@@ -1,5 +1,11 @@
 # Lo que espera tu firma
 
+> **Actualizado el 4-oct-2026 (corrida 16a).** El acta §93 (30-sep y 4-oct) firmó §73 en parte (la guarda de
+> `verificacion_puntaje`, aplicada por la 16a; la fuente única va a la 16), §74, §70, §71, §72 (b y d), §75 (T),
+> §76 y §67; este archivo no refleja aún esas marcas en los encabezados: las pone la corrida 16 junto con la fusión
+> de §93.12. La 16a abrió **§77** (TOELY sin cierre desde el 24-sep, E0 sin sumar) y **§78** (la elección del
+> trato a la fila excluida, a ratificar). Lo anterior queda como estaba.
+>
 > **Actualizado el 28-sep-2026 (corrida 14).** El acta §88 (19-sep) firmó §43, §54, §58 (en
 > parte), §59 (por remisión) y §60, y hasta la corrida 14 este archivo no lo reflejaba: los cinco
 > encabezados llevan ahora su marca, **sin borrar el texto de la tarjeta**. La corrida 14 abrió
@@ -2879,4 +2885,89 @@ tres cosas sin tocar porque no las firmó ningún acta:
    nights the machine is awake»; (b) dejarla y aceptar la imprecisión. El texto viene del encargo 15 literal.
 
 También: `GEMELO/resultados/tesis.md:161` sigue diciendo «59× la muestra» (fuera de los archivos del bloque).
+**No se eligió nada.**
+
+---
+
+## 77. E0 no cuenta ninguna sesión desde el 24-sep: TOELY no tiene cierre en el insumo desde esa fecha, y las noches de la regla de §58 llegan incompletas por él (corrida 16a)
+
+**MEDIDO, 4-oct-2026 13:36, `dinero/sello_dinero.db` en `mode=ro`, lectura del bloque 0 del encargo 16a.** Las
+sesiones del 29-sep, 30-sep, 1-oct y 2-oct están selladas `insumo_incompleto`, `insumo_completo = 0`,
+`cuenta_para_N = 0`, 33 filas cada una; la del 28-sep es `no_verificable_timing` (§62). En las cinco, la ÚNICA fila
+con motivo «sin dato en el insumo para la sesión …» es **TOELY**, con `ultimo_cierre_ticker = 2026-09-24` y
+`available_at_ticker = 2026-09-24T20:00:00+00:00` las cinco noches. `SELECT COUNT(DISTINCT fecha_insumo) … WHERE
+cuenta_para_N = 1` → **9**: E0 lleva 9 sesiones que cuentan de 40 y **no suma ninguna desde la del 24-sep**. En toda la
+historia del sellador, las noches incompletas por TOELY solo son el 18-sep, el 23-sep y las cinco desde el 28-sep; las
+del 9-sep y el 22-sep faltaron 31 tickers (otra causa). El sellador disparó a su hora las cuatro noches (journal:
+00:30:00 del 1, 2 y 3-oct; la del 30-sep consta en la bitácora 15).
+
+**Lo que esto toca, declarado, sin tocar nada.**
+1. **La lectura de la regla sellada de §58** (`GEMELO/propuestas/regla_58.md`, firmada en §93.5): K = 10 noches válidas
+   desde la sesión del 29-sep; «una noche es inválida sólo cuando la máquina no miró», así que estas cuatro son válidas
+   e incompletas. Si TOELY sigue sin cierre, las 10 noches saldrán incompletas **a cualquier hora candidata**, y la regla
+   indicará cambiar la hora por una causa que la hora no corrige. La regla no se edita (es un sello); esto se anota con
+   fecha posterior, como manda el método. La sonda (§87.3, §58) ya había medido que TOELY no aparece a ninguna hora de
+   la noche en algunas sesiones; lo nuevo es que desde el 25-sep no aparece ninguna noche (n = 5 noches operables + el
+   28). Que la causa sea el split 5:1 del subyacente 8035.T con fecha 29-sep (§68) es **PROPUESTA**: el hueco de TOELY
+   empieza el 25-sep, antes del split; correlación de fechas, no causa demostrada.
+2. **E0**: con la definición firmada en §86.1 (§57: «la definición queda tal como está en código; las sesiones perdidas
+   no se recuperan»), cada noche sin TOELY es una sesión perdida para N = 40. A este ritmo, el plazo de E0 se corre un
+   día hábil por cada día que TOELY falte.
+
+**Opciones.**
+- **(a) Nada hasta la lectura de §58 (sesión del 26-oct).** Coste: hasta 15 sesiones hábiles más sin contar para N; la
+  lectura de la regla puede salir confundida por TOELY y hay que decirlo al leerla.
+- **(b) Verificar primero la fuente, sólo lectura (un acto de cinco minutos de Nicolás o de la corrida 16):** si yfinance
+  sirve hoy cierres de TOELY posteriores al 24-sep por la misma ruta que usa el sellador (`dinero/` duplica la descarga a
+  propósito). Si la fuente los sirve y el sellador no los ve, el problema es del congelado/extensión y es un bug con
+  tarjeta propia; si la fuente no los sirve, es (c) o (d). **Sin coste; no decide nada.**
+- **(c) Sacar TOELY del insumo de E0 (o sustituirlo por 8035.T en JPY→USD)**, con acta: cambia la definición de «insumo
+  completo» que §86.1 dejó tal como está en el código, toca el sellador (un cambio por noche, fuera de las 23:30 NY,
+  método de worktree) y las reglas selladas por `reglas_sha256`. Coste: un universo de E0 distinto del de las primeras
+  9 sesiones; hay que declararlo en el CSV versionado y en el README.
+- **(d) Tolerar k tickers faltantes en «insumo completo»** (por ejemplo k = 1): mismo costo de acta y sellador que (c),
+  y cambia la regla para todas las noches futuras, no sólo para TOELY.
+
+**Recomendación etiquetada (PROPUESTA del orquestador):** (b) ahora, porque no cuesta nada y separa dos hipótesis; después
+(c) o (d) con acta. **No se eligió nada.** No corregido en la 16a: el encargo prohíbe tocar `dinero/`.
+
+---
+
+## 78. La guarda de `verificacion_puntaje`: la elección del agente sobre el trato a la fila excluida, a ratificar, y lo que el auditor dejó para la 16 (corrida 16a)
+
+**Lo firmado (§93.4-bis i) y aplicado el 4-oct-2026 a las 13:51:31 (acta §94):** `verificar_puntaje_pendientes` no
+verifica ninguna fila con `available_at > timestamp_utc`. El encargo dejó al agente la elección del trato a la fila
+excluida, con la obligación de declararla y de que el auditor la dictamine.
+
+**Elegido (bitácora 16a §2; dictamen del auditor: CORRECTA, «la única compatible con las reglas firmadas»):** la fila no se
+escribe en `verificacion_puntaje` (la tabla no tiene columna de estado y el esquema no se cambia), no se toca
+`senales_ticker.estado` (de las 24 filas del evento, 16 no tienen predicción ni `sesion_objetivo` y nunca pertenecieron a
+la máquina de estados del verificador de apertura; las otras 8 están `verificada` y reescribirlas viola §90.1 y la
+Constitución punto 3), la guarda corre antes de la descarga, y el verificador declara la cuenta y las fechas en una línea
+de `snapshot.log` por corrida. **Qué se pierde, nombrado por el auditor:** no hay registro por fila en la base; la
+declaración vive en un log que rota (2 MB × 2) y, si el verificador lo corre el fallback del dashboard, va a la consola de
+Streamlit; la cuenta de excluidas no viaja en el valor de retorno (`-> int`); la fila queda candidata y se re-declara cada
+día. Mitigación estructural: la exclusión es un predicado sobre dos columnas selladas, recomputable para siempre en
+`mode=ro`. **Opciones:** (a) ratificar la elección tal cual; (b) ratificarla y encargar a la corrida 16 las recomendadas
+R2 y R3 del auditor (la cuenta en el retorno; el vigía o `/salud` recomputan el predicado en `mode=ro`, sin columna nueva);
+(c) pedir una columna aditiva en `verificacion_puntaje` para registrar la exclusión (cambio de esquema, acta propia).
+**Recomendación etiquetada:** (b).
+
+**Lo que el auditor midió y queda abierto, para la 16 (no bloquea):**
+1. **`analisis_puntaje_ia(dias=90)` (n = 1.254 hoy; `api/main.py:831`, `app.py:1661`) no entra a la fuente única de
+   §93.4**: `backtest/linea_base.py` no contiene la palabra `puntaje`. Esta guarda es hoy su única protección.
+2. **La regla maestra sigue ausente de este verificador** (§93.4 la deja abierta): hueco real en el código y vacío en el
+   dato al 4-oct (0 filas emitidas tarde en 1.272; 0 entre las 27 candidatas del 5-oct). El PIN que lo documenta
+   (`test_pin_la_regla_maestra_no_esta_en_este_verificador`) debería ser `xfail(strict=True)` sobre la conducta deseada,
+   con entrada en `tests/test_razones_xfail.py` (R4): toca un archivo fuera del alcance de la 16a.
+3. **Residuo que la guarda deja pasar, por diseño (igual que §90.1 a):** 32 filas con `puntaje_ia` y `available_at ==
+   timestamp_utc` (reloj de pared; el vigía alerta la igualdad) y 18 con `available_at` NULL (sin alerta).
+4. La comparación de instantes está duplicada en los dos verificadores (R1: un helper de módulo); el test de historia
+   real sólo es discriminante desde el 5-oct (R5); `available_at` es calculado por convención, no observado (R6 = §72).
+5. **Herencia hecha explícita:** hay 2 filas en `verificacion_puntaje` cuyo `senales_ticker.estado` es
+   `sin_datos_mercado` (estado terminal, fuera de las métricas de apertura); el verificador de puntaje nunca miró esa
+   máquina de estados.
+6. **Dirección esperada del efecto sobre `analisis_puntaje_ia` desde el 5-oct:** igual o peor, nunca mejor (las 24 se
+   sellaron con NYSE abierto; su `puntaje_ia` incorpora información del mismo día). Si mejorara, hay que explicarlo.
+
 **No se eligió nada.**

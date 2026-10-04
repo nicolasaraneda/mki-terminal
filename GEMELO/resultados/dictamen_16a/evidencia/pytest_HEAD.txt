@@ -1,0 +1,113 @@
+.F....FFF.F.s                                                            [100%]
+=================================== FAILURES ===================================
+_ test_reproduccion_una_fila_con_la_inversion_no_entra_a_verificacion_puntaje __
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7cad2f34cb40>, 'leer': <function base_puntaje.<locals>.leer at 0x7cad2f34cd50>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7cad2f34cbf0>}
+
+    def test_reproduccion_una_fila_con_la_inversion_no_entra_a_verificacion_puntaje(base_puntaje):
+        """REPRODUCCIÓN (falla sobre HEAD, que la verifica). Una fila con
+        `puntaje_ia`, de hace más de 7 días, que declara su insumo conocible
+        DESPUÉS de su emisión, no se escribe en `verificacion_puntaje`, no se
+        cuenta como verificada y no gasta una llamada a la red."""
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+        verificados = senales.verificar_puntaje_pendientes()
+        estados, verificadas = base_puntaje["leer"]()
+>       assert "005930.KS" not in verificadas, (
+            f"la fila con available_at ({INSUMO_POSTERIOR}) posterior a su "
+            f"timestamp_utc ({EMISION}) entró a verificacion_puntaje con "
+            f"retorno {verificadas.get('005930.KS')!r}: el verificador la procesó como válida")
+E       AssertionError: la fila con available_at (2026-09-20T23:00:00+00:00) posterior a su timestamp_utc (2026-09-20T21:15:00+00:00) entró a verificacion_puntaje con retorno 5.0: el verificador la procesó como válida
+E       assert '005930.KS' not in {'005930.KS': 5.0}
+
+tests/test_guarda_puntaje.py:149: AssertionError
+_________________ test_la_guarda_compara_instantes_y_no_texto __________________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7cad2f3371c0>, 'leer': <function base_puntaje.<locals>.leer at 0x7cad2f337480>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7cad2f337110>}
+
+    def test_la_guarda_compara_instantes_y_no_texto(base_puntaje):
+        """El mismo instante escrito en otro huso ordena ANTES como texto y
+        DESPUÉS como instante. La guarda compara datetimes con zona, como la de
+        apertura; una comparación SQL de cadenas la dejaría pasar muda."""
+        posterior_en_otro_huso = _instante(INSUMO_POSTERIOR).astimezone(
+            timezone(timedelta(hours=-4))).isoformat()
+        assert posterior_en_otro_huso < EMISION                       # como texto
+        assert _instante(posterior_en_otro_huso) > _instante(EMISION)  # como instante
+        base_puntaje["sembrar"]("005930.KS", EMISION, posterior_en_otro_huso)
+        verificados = senales.verificar_puntaje_pendientes()
+        _, verificadas = base_puntaje["leer"]()
+>       assert verificadas == {} and verificados == 0
+E       AssertionError: assert ({'005930.KS': 5.0} == {}
+E         
+E         Left contains 1 more item:
+E         {'005930.KS': 5.0}
+E         Use -v to get more diff)
+
+tests/test_guarda_puntaje.py:206: AssertionError
+_____________ test_la_guarda_no_depende_del_estado_y_no_lo_cambia ______________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7cad2f3368d0>, 'leer': <function base_puntaje.<locals>.leer at 0x7cad2f336770>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7cad2f336a30>}
+
+    def test_la_guarda_no_depende_del_estado_y_no_lo_cambia(base_puntaje):
+        """A diferencia de la guarda de apertura, que opera sobre filas
+        `pendiente` de SU máquina de estados, ésta mira sólo los dos instantes:
+        la inversión excluye igual con estado `verificada`, sin estado o
+        `no_verificable_timing`. Y el verificador de puntaje no escribe
+        `estado`: los tres quedan como estaban. (Las 24 filas del evento son 8
+        `verificada` y 16 sin estado; ninguna está en `verificacion_puntaje`.)"""
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR,
+                                estado=senales.ESTADO_VERIFICADA)
+        base_puntaje["sembrar"]("000660.KS", EMISION, INSUMO_POSTERIOR, estado=None)
+        base_puntaje["sembrar"]("2330.TW", EMISION, INSUMO_POSTERIOR,
+                                estado=senales.ESTADO_NO_VERIFICABLE)
+        base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR,
+                                estado=senales.ESTADO_VERIFICADA)
+        verificados = senales.verificar_puntaje_pendientes()
+        estados, verificadas = base_puntaje["leer"]()
+>       assert verificadas == {"NVDA": RETORNO_5D_ESPERADO}
+E       AssertionError: assert {'000660.KS':..., 'NVDA': 5.0} == {'NVDA': 5.0}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 3 more items:
+E         {'000660.KS': 5.0, '005930.KS': 5.0, '2330.TW': 5.0}
+E         Use -v to get more diff
+
+tests/test_guarda_puntaje.py:225: AssertionError
+___________ test_el_verificador_declara_la_cuenta_de_filas_excluidas ___________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7cad2f336350>, 'leer': <function base_puntaje.<locals>.leer at 0x7cad2f336090>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7cad2f335f30>}
+capsys = <_pytest.capture.CaptureFixture object at 0x7cad2f321a90>
+
+    def test_el_verificador_declara_la_cuenta_de_filas_excluidas(base_puntaje, capsys):
+        """`verificacion_puntaje` no admite un estado sin cambiar el esquema, así
+        que la exclusión se declara por el log del job (snapshot.log): una línea
+        con la cuenta y las fechas. Sin fila excluida, ninguna línea."""
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+        base_puntaje["sembrar"]("000660.KS", EMISION, INSUMO_POSTERIOR)
+        base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
+        senales.verificar_puntaje_pendientes()
+        salida = capsys.readouterr().out
+        lineas = [l for l in salida.splitlines() if "AVISO verificador puntaje" in l]
+>       assert len(lineas) == 1, salida
+E       AssertionError: 
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_guarda_puntaje.py:242: AssertionError
+__________________ test_la_guarda_es_por_regla_y_no_por_fecha __________________
+
+    def test_la_guarda_es_por_regla_y_no_por_fecha():
+        """El código del verificador no nombra el evento: ninguna fecha
+        literal (acta §90.1 d, mismo criterio)."""
+        fuente = inspect.getsource(senales.verificar_puntaje_pendientes)
+        assert "2026-" not in fuente and "28-sep" not in fuente
+>       assert "available_at" in fuente and "timestamp_utc" in fuente
+E       assert ('available_at' in 'def verificar_puntaje_pendientes() -> int:\n    """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_P...w(timezone.utc).isoformat()))\n        verificados += 1\n    conn.commit()\n    conn.close()\n    return verificados\n')
+
+tests/test_guarda_puntaje.py:271: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_guarda_puntaje.py::test_reproduccion_una_fila_con_la_inversion_no_entra_a_verificacion_puntaje
+FAILED tests/test_guarda_puntaje.py::test_la_guarda_compara_instantes_y_no_texto
+FAILED tests/test_guarda_puntaje.py::test_la_guarda_no_depende_del_estado_y_no_lo_cambia
+FAILED tests/test_guarda_puntaje.py::test_el_verificador_declara_la_cuenta_de_filas_excluidas
+FAILED tests/test_guarda_puntaje.py::test_la_guarda_es_por_regla_y_no_por_fecha
+5 failed, 7 passed, 1 skipped in 2.74s

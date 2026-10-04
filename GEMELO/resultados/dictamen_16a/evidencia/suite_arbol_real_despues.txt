@@ -1,0 +1,35 @@
+Sun Oct  4 13:52:29 -03 2026
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 34%]
+.................x..s................................................... [ 41%]
+........................................................................ [ 48%]
+........................................................................ [ 55%]
+..................s...s...........s..s.................................. [ 62%]
+........................................................................ [ 69%]
+........................................................................ [ 76%]
+........................................................................ [ 83%]
+........................................................................ [ 90%]
+........................................................................ [ 97%]
+..............................                                           [100%]
+=============================== warnings summary ===============================
+venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_api.py: 12 warnings
+  /home/nicolasaraneda/dev/mki-terminal/motor.py:215: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+    df = pd.concat([ret_accion.rename("y")] + regresores, axis=1).dropna()
+
+tests/test_transversal.py: 16 warnings
+  /home/nicolasaraneda/dev/mki-terminal/GEMELO/transversal.py:260: RuntimeWarning: invalid value encountered in divide
+    beta_hasta_i = np.where(var > 0, cov / var, np.nan)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+XFAIL tests/test_epistemico.py::test_ninguna_prediccion_sellada_comparte_sesion_objetivo_con_otra - Razón VIGENTE (corregida el 8-sep-2026, corrida 11, bloque 9): la regla de deduplicación SÍ está firmada y aplicada desde el 1-sep (acta §78 cerró el §56 punto 1 el 3-sep), pero actúa AL CARGAR — `backtest.linea_base.cargar(dedup=True)` — y no borra las filas físicas. Este test lee la base por SQL directo (`_filas_selladas_excluir_cero`, sin pasar por `cargar()`), así que sigue viendo los duplicados físicos por (ticker, sesion_objetivo). Queda ROJO a propósito porque documenta que senales.db conserva las filas duplicadas: reescribirlas o borrarlas está prohibido (filas selladas jamás se reescriben). Si pasa a XPASS, alguien tocó filas selladas o cambió la consulta, y hay que averiguar cuál. La razón anterior citaba el §56 punto 1 como pendiente: estaba podrida desde el 3-sep. tests/test_razones_xfail.py verifica que esta razón siga cierta.
+1032 passed, 5 skipped, 1 xfailed, 29 warnings in 414.42s (0:06:54)
+EXIT 0
+Sun Oct  4 13:59:24 -03 2026
