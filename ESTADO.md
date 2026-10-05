@@ -1,18 +1,17 @@
 # ESTADO
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es historia
-(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 4-oct-2026 (corrida 16a, diurna).
+(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 4-oct-2026 (corrida 16b, nocturna; acta §96).
 
-## Primero: el lunes 5-oct a las 18:15 es la primera prueba viva de la guarda de `verificacion_puntaje`
-0. **Commit de la 16a antes de las 17:50 del 4-oct** (lista de archivos al final de `GEMELO/resultados/bitacora_16a.md`);
-   si no entra, las 24 filas del 28-sep entran el lunes y se declara (§93.4-bis i). **Martes 6-oct en la mañana:**
-   correr la consulta de la bitácora §6 (PREDICCIÓN falsable: 0 filas del 28-sep en `verificacion_puntaje`, una línea
-   `AVISO verificador puntaje: 24 fila(s) …` en `snapshot.log`, las 3 del 24-sep entran como siempre).
+## Primero: el parche de TOELY (§95.4) NO está aplicado; aplicarlo es acto de Nicolás antes del lunes 23:30 NY
+0. **La 16b venció su reloj** (sesión pausada 3 h entre dos llamadas: aplicación exigida a las 16:45, trabajo real desde
+   las 19:18). Por la letra del encargo el parche quedó en `GEMELO/propuestas/parches/toely_fuera_insumo_e0_16b.diff` con
+   tests y dictamen, **sin aplicar**. La salva el `git apply` (el sellador lee el árbol), antes del sello del 6-oct 00:30 Chile; el
+   commit es registro y el hook lo rechaza el lunes entre 17:50 y 20:30 (receta: `bitacora_16b.md` §5). **Martes 6-oct:** consultas §6 de las dos bitácoras.
 1. **Lunes ~17:52: primera lectura del crédito repuesto** (§93.2, 10 USD el 4-oct): `data/costos_ia.log` con
    `analizados > 0`. Pendientes acumulados al 2-oct: 4289 (20 corridas con «credit balance is too low» desde el 7-sep).
-2. **E0 no suma ninguna sesión desde la del 24-sep**: TOELY sin cierre en el insumo desde esa fecha, 5 noches seguidas
-   `insumo_incompleto` (**§77**, hallazgo de la 16a). La lectura de la regla de §58 (K = 10 desde el 29-sep) llega
-   confundida por él si sigue así. Verificar la fuente es un acto de cinco minutos (opción b).
+2. **E0 no suma desde la sesión del 24-sep** (9 de 40): TOELY sin cierre en la fuente desde el 25-sep (§95.4). La sonda sigue
+   con 36 tickers, TOELY incluido: su «noche completa» (§58) y el `insumo_completo` del sellador divergen cuando el parche entre (**§79**).
 
 ## Lo que la corrida 16a dejó aplicado en el árbol real (acta §94, 4-oct 13:51:31, corte de método)
 - **Guarda de conocibilidad en `verificar_puntaje_pendientes`** (§93.4-bis i): ninguna fila con `available_at >
@@ -37,14 +36,15 @@ Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es h
 - **Titular: este PC (WSL), en `main`**, 6 timers del riel + `mki-sonda-cierre` + `mki-sello-dinero`; el modo se le
   pregunta a `modo.py`. Modelo 4.6.0; `PLATAFORMA_VERSION` 5.1.0. Del 2-nov-2026 al 12-mar-2027 la holgura entre las
   18:15 de Chile y el cierre de XNYS es de 15 min (MEDIDO, §66 C.2). Sin suspensión del 30-sep al 4-oct (latido del journal).
-- **Dinero:** todo SIMULADO. E0: 18 sesiones selladas, **9 cuentan de 40**; las del 28-sep al 2-oct no cuentan (TOELY,
-  **§77**). `dinero/sello_dinero.py` intacto. **8035.T:** split 5:1 con fecha 29-sep; el «17» del 28 era artefacto (**§68**).
+- **Dinero:** todo SIMULADO. E0: 18 sesiones selladas, **9 cuentan de 40**; 29-sep a 2-oct no cuentan por TOELY (§95.4), el
+  28-sep por timing. `dinero/sello_dinero.py` y `reglas.json` intactos en el árbol real: el parche 16b (clave `exclusiones_insumo_e0`
+  en `reglas.json`, filtro en `decidir`, 33 → 32 operables, `reglas_sha256` distingue las filas) espera la mano de Nicolás.
 
 ## Deuda
 `tests/test_motor.py` trunca inclusive; la skill `gate` importa `scipy`/`sklearn` (**§69**); `tesis.md:161` dice «59×»
 (**§76**); del auditor 16a (§78): comparación de instantes duplicada, PIN a `xfail` estricto, cuenta de excluidas sólo en el log.
 
 ## Lo más urgente, que sigue siendo de Nicolás
-**Commit de la 16a** (hoy, antes de las 17:50); **§77** (TOELY, verificar la fuente) y **§78** (ratificar); la corrida 16
-(se diseña con §93 y la bitácora 16a a la vista); las dos firmas del pre-registro secuencial (§2a-ter y el MDE) **antes
-del 19-nov-2026**. **No hay push.**
+**Aplicar a mano el parche 16b y commitear** (actas §95 y §96; lista al final de `bitacora_16b.md`) antes del lunes
+23:30 NY; **§79** (versión de reglas, sorteo y sonda tras TOELY); la corrida 16 (se diseña con §93, §95 y las bitácoras
+16a/16b a la vista); las dos firmas del pre-registro secuencial (§2a-ter y el MDE) **antes del 19-nov-2026**. **No hay push.**

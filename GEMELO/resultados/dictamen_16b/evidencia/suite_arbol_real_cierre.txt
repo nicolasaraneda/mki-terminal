@@ -1,0 +1,4 @@
+Sun Oct  4 19:50:10 -03 2026
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1032 passed, 5 skipped, 1 xfailed, 29 warnings in 423.89s (0:07:03)
+Sun Oct  4 19:57:14 -03 2026

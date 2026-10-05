@@ -440,6 +440,16 @@ def decidir(cierres: pd.DataFrame, dia, cfg: dict | None = None,
     if hasta.empty or hasta.index.max().date() != dia_ts.date():
         raise ValueError(f"el insumo no tiene la sesión {dia_ts.date()}: no se decide sobre un día sin dato")
     operables = CP.universo_operable(hasta, cfg, hasta=CP.DESDE)
+    # Acta §95.4 (corrida 16b, 4-oct-2026): exclusiones del universo del insumo
+    # de E0 declaradas en reglas.json (hoy: TOELY, sin sustituto y sin retorno).
+    # Se aplican DESPUÉS de `universo_operable` para que el censo no cambie:
+    # sólo el sellador las lee. «Insumo completo» sigue exigiendo todos los
+    # tickers que quedan. El sorteo de abajo recorre `operables` con un solo
+    # generador por sesión: la lista más corta corre la REALIZACIÓN del sorteo
+    # de los demás desde la primera sesión que la use (distribución y semilla,
+    # intactas); `reglas_sha256` distingue las filas en cada población.
+    excluidos = sorted(set((cfg.get("exclusiones_insumo_e0") or {}).get("tickers") or ()) & set(operables))
+    operables = [t for t in operables if t not in excluidos]
     senales = C.senales_sin_informacion(hasta, operables, CP.HORIZONTE_SENAL_HABILES,
                                         C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
     fila = hasta.iloc[-1]
@@ -473,6 +483,7 @@ def decidir(cierres: pd.DataFrame, dia, cfg: dict | None = None,
     completo = all(f["ultimo_cierre_ticker"] == str(dia_ts.date()) for f in filas)
     return {"dia": str(dia_ts.date()), "juego": juego, "presupuesto_usd": float(presupuesto),
             "reglas_version": cfg.get("version_reglas", "?"), "operables": operables,
+            "excluidos_universo": excluidos,
             "riel_apagado": bool(dec.riel_apagado), "insumo_completo": completo,
             "sin_dato": [f["ticker"] for f in filas if f["ultimo_cierre_ticker"] != str(dia_ts.date())],
             "filas": filas}
@@ -629,6 +640,9 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
             "apertura_objetivo_utc": apertura_obj.isoformat(),
             "estado": estado, "estado_timing": estado_timing, "estado_dia": estado_dia, "timing_ok": timing_ok,
             "insumo_fresco": insumo_fresco, "insumo_completo": insumo_completo, "sin_dato": dec["sin_dato"],
+            # B3 del auditor 16b: la exclusión aplicada viaja al log de cada noche
+            # («32 porque así se firmó», no «32 porque algo falló»)
+            "excluidos_universo": dec.get("excluidos_universo", []),
             "cuenta_para_N": cuenta_para_N, "riel_apagado": dec["riel_apagado"],
             "filas_insertadas": insertadas, "filas_decididas": len(dec["filas"]),
             "compras": sum(1 for f in dec["filas"] if f["decision"] == "compra"),

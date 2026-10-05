@@ -2,6 +2,12 @@
  "_": "Reglas del riel de dinero. VERSIONADO A PROPÓSITO: los números no viven en el código. Ninguno de estos valores está FIRMADO todavía; ver GEMELO/resultados/espera_firma.md.",
  "version_reglas": "0.2.0-PROPUESTA",
  "juego_activo": "conservador",
+ "exclusiones_insumo_e0": {
+  "_": "Acta §95.4 (4-oct-2026, firma de Nicolás, tarjeta §77): TOELY sale del universo del insumo de E0 desde la sesión del 5-oct-2026, SIN sustituto y SIN retorno aunque la fuente lo retome (yfinance dejó de servir el ADR el 25-sep; 8035.T cotiza; causa no demostrada). Lo lee SÓLO dinero/sello_dinero.py::decidir, después de cuenta_papel.universo_operable, así que el censo (universo_operable.json), m2_periodo y universo_por_presupuesto no cambian. «Insumo completo» sigue exigiendo todos los tickers del universo restante: cero faltantes tolerados. Sin efecto retroactivo: las filas selladas hasta el 2-oct llevan TOELY y la huella anterior de este archivo; reglas_sha256 distingue las dos poblaciones en cada fila. Declarado: el sorteo sin información recorre la lista de operables con un solo generador por sesión, así que la lista más corta corre la REALIZACIÓN del sorteo de los demás desde la primera sesión que la use; distribución por ticker y semilla, intactas.",
+  "tickers": [
+   "TOELY"
+  ]
+ },
  "costos": {
   "_": "Arancel PUBLICADO del insumo del §40 (GEMELO/propuestas/insumo_40_aranceles_ibkr.md, IBKR Pro Tiered, tabla 'United States', consultado el 7-sep-2026), columna de acciones ENTERAS: 0,0035 USD por accion, minimo 0,35 USD por orden, tope 1 % del valor operado (la fila de EE.UU.; la vineta de 0,5 % de la misma pagina se declara como contradiccion de la fuente y se adopta el conservador). Hasta el 7-sep-2026 esto era un supuesto sin verificar (0,005 / 1,00 / 1 %); lo cambio la corrida 11 (acta §83) por orden del encargo. El §40 sigue ESPERANDO FIRMA: lo que esta firmado es reconstruir la cuenta con este insumo, no el insumo. Tarifas de terceros (SEC, FINRA, compensacion, bolsa por venue) NO estan en el modelo: a estos tamanos suman centavos y el insumo lo declara. El ruteo tiene que ser SmartRouting (una orden dirigida por API cae a Fixed, minimo 1,00 USD).",
   "comision_por_accion_usd": 0.0035,

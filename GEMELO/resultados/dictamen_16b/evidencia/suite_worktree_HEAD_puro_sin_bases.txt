@@ -1,0 +1,67 @@
+Sun Oct  4 19:31:35 -03 2026
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   AssertionError: la corrida sellada 20260901-061708-5.1-invalidada-por-fuga no está en el repo
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   assert 0 == 228
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+E   KeyError: 'mcnemar_b01'
+tests/test_api.py: 12 warnings
+tests/test_api.py: 6 warnings
+tests/test_cifras_arbitro.py: 1 warning
+tests/test_dinero.py: 2 warnings
+tests/test_frontend_estatus.py: 1 warning
+tests/test_readme.py: 9 warnings
+tests/test_api.py: 6 warnings
+tests/test_cifras_arbitro.py: 1 warning
+tests/test_dinero.py: 2 warnings
+tests/test_frontend_estatus.py: 1 warning
+tests/test_readme.py: 9 warnings
+tests/test_transversal.py: 16 warnings
+FAILED tests/test_api.py::test_D1_la_friccion_del_juego_activo_viaja_como_objeto_con_banda
+FAILED tests/test_api.py::test_D3_la_sigma_servida_y_el_MDE80_no_comparten_oracion
+FAILED tests/test_api.py::test_D9_el_mapa_no_se_sirve_sin_presupuesto_ni_modo
+FAILED tests/test_api.py::test_D11_que_lo_mata_no_dice_que_R2_no_esta_recomputado
+FAILED tests/test_api.py::test_D12_D13_cobertura_con_wilson_y_etiqueta_de_regimen
+FAILED tests/test_api.py::test_D15_los_dos_denominadores_de_la_senal_larga_van_separados
+FAILED tests/test_backtest.py::test_los_N_historicos_de_la_banda_reproducen_los_resumenes_sellados
+FAILED tests/test_dinero.py::test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice
+FAILED tests/test_dinero.py::test_las_cifras_del_riel_de_medicion_salen_del_arbitro
+FAILED tests/test_frontend_estatus.py::test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado
+FAILED tests/test_linea_base.py::test_el_corte_congelado_recupera_exactamente_las_228_filas
+FAILED tests/test_readme.py::test_los_dos_readme_son_lo_que_el_generador_produce
+FAILED tests/test_readme.py::test_un_marcador_sin_clave_en_el_arbitro_rompe_la_generacion
+FAILED tests/test_readme.py::test_toda_clave_del_arbitro_rinde_texto_no_vacio
+FAILED tests/test_readme.py::test_los_doce_bloques_y_los_nueve_en_ingles_vienen_de_marcadores
+FAILED tests/test_readme.py::test_el_readme_no_lleva_contador_vivo_de_e0_y_remite_a_la_copia_versionada
+FAILED tests/test_readme.py::test_el_generador_no_abre_el_csv_del_riel_de_dinero
+FAILED tests/test_readme.py::test_los_dos_readme_llevan_en_los_badges_los_valores_congelados_y_su_fecha
+FAILED tests/test_readme.py::test_el_n_de_intentos_del_readme_es_el_de_veredicto_51
+FAILED tests/test_readme.py::test_las_veces_de_la_ventana_larga_son_el_cociente_de_los_dos_n_del_arbitro
+ERROR tests/test_cifras_arbitro.py::test_el_arbitro_computa_la_ventana_sellada_publicada
+ERROR tests/test_cifras_arbitro.py::test_todo_estimador_del_arbitro_lleva_intervalo
+ERROR tests/test_cifras_arbitro.py::test_los_doce_bloques_estan_en_sus_archivos
+ERROR tests/test_cifras_arbitro.py::test_los_nueve_bloques_del_readme_en_ingles_estan_en_su_archivo
+ERROR tests/test_cifras_arbitro.py::test_si_n_cambia_cambian_los_doce_bloques
+ERROR tests/test_cifras_arbitro.py::test_si_la_convencion_cambia_cambian_los_doce_bloques_y_la_derogada_no_esta
+20 failed, 929 passed, 82 skipped, 1 xpassed, 67 warnings, 6 errors in 415.34s (0:06:55)
+Sun Oct  4 19:38:31 -03 2026

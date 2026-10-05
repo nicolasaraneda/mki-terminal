@@ -24,6 +24,7 @@ from dinero import sello_dinero as S
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UTC = timezone.utc
+N_OPERABLES = 32   # operables con el techo de 500 USD: 33 hasta la corrida 16b; TOELY fuera del insumo de E0 desde el 5-oct-2026 (acta §95.4)
 
 
 @pytest.fixture(scope="module")
@@ -102,7 +103,7 @@ def test_decidir_exige_que_el_dia_tenga_dato(base):
 def test_la_decision_declara_su_fuente_su_presupuesto_y_la_disponibilidad_por_ticker(base):
     d = S.decidir(base, "2026-09-04")
     assert d["juego"] == "conservador" and d["presupuesto_usd"] == 500.0
-    assert len(d["filas"]) == len(d["operables"]) == 33
+    assert len(d["filas"]) == len(d["operables"]) == N_OPERABLES
     assert d["insumo_completo"] is True and d["sin_dato"] == []
     assert all(f["decision"] in ("compra", "venta", "nada") for f in d["filas"])
     assert all(f["motivo"] for f in d["filas"] if f["decision"] == "nada")
@@ -127,7 +128,7 @@ def test_sellar_pone_available_at_por_calendario_y_exige_el_orden(tmp_path, base
     assert r["estado"] == "pendiente" and r["cuenta_para_N"] == 1
     assert r["insumo_fresco"] is True and r["insumo_completo"] is True
     assert r["fecha_sello_ny"] == "2026-09-08" and r["estado_dia"] == "sesion" and r["estado_timing"] == "ok"
-    assert r["filas_insertadas"] == r["filas_decididas"] == 33
+    assert r["filas_insertadas"] == r["filas_decididas"] == N_OPERABLES
     con = sqlite3.connect(db)
     assert con.execute("SELECT DISTINCT tamano_nominal FROM sellos_dinero").fetchall() == [(0,)]
     assert con.execute("SELECT DISTINCT insumo_ext_sha256 FROM sellos_dinero").fetchone()[0] == meta["sha256"]
@@ -166,7 +167,7 @@ def test_un_dia_sin_sesion_se_sella_con_su_marca_y_no_cuenta_para_N(tmp_path, ba
     r = S.sellar(ruta, meta, ahora_utc=sabado_ny, ruta_db=str(tmp_path / "s.db"))
     assert r["estado_dia"] == "sin_sesion" and r["estado"] == "dia_sin_sesion" and r["cuenta_para_N"] == 0
     assert r["timing_ok"] is True and r["sesion_objetivo"] == "2026-09-14"
-    assert r["filas_insertadas"] == 33                                  # se sella igual
+    assert r["filas_insertadas"] == N_OPERABLES                                  # se sella igual
 
 
 def test_un_insumo_desactualizado_no_cuenta_para_N(tmp_path, base):
@@ -210,11 +211,11 @@ def test_sellar_es_idempotente_con_el_mismo_insumo(tmp_path, base):
     t = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
     r1 = S.sellar(ruta, meta, ahora_utc=t, ruta_db=db)
     r2 = S.sellar(ruta, meta, ahora_utc=t + timedelta(minutes=5), ruta_db=db)
-    assert r1["filas_insertadas"] == 33
+    assert r1["filas_insertadas"] == N_OPERABLES
     assert r2["resultado"] == "ya_sellada" and r2["filas_insertadas"] == 0
     assert "estado" not in r2 and "cuenta_para_N" not in r2     # no describe un sello que no ocurrió
     e = S.estado(db)
-    assert e["filas"] == 33 and e["sesiones_selladas"] == 1 and e["sesiones_que_cuentan_para_N"] == 1
+    assert e["filas"] == N_OPERABLES and e["sesiones_selladas"] == 1 and e["sesiones_que_cuentan_para_N"] == 1
     assert e["N_objetivo"] == 40 and "acta §84.4.7" in e["N_objetivo_fuente"]
     assert e["ultimo"]["timestamp_utc"] == r1["timestamp_utc"] and e["divergencias_registradas"] == 0
 
@@ -232,7 +233,7 @@ def test_E4_un_segundo_sello_con_otro_insumo_deja_rastro_y_no_inserta(tmp_path, 
     assert r["resultado"] == "divergencia_registrada" and r["filas_insertadas"] == 0
     assert r["sha_sellado"] == meta_a["sha256"] and r["sha_nuevo"] == meta_b["sha256"]
     con = sqlite3.connect(db)
-    assert con.execute("SELECT COUNT(*) FROM sellos_dinero").fetchone()[0] == 33
+    assert con.execute("SELECT COUNT(*) FROM sellos_dinero").fetchone()[0] == N_OPERABLES
     assert con.execute("SELECT COUNT(*) FROM divergencias_sello").fetchone()[0] == 1
     assert con.execute("SELECT DISTINCT insumo_ext_sha256 FROM sellos_dinero").fetchone()[0] == meta_a["sha256"]
     with pytest.raises(sqlite3.IntegrityError):
@@ -249,7 +250,7 @@ def test_E5_exportar_desde_una_base_temporal_exige_ruta_y_reproduce_la_tabla(tmp
         S.exportar_csv(db)                                   # H8: jamás pisa el CSV versionado
     csvp = S.exportar_csv(db, str(tmp_path / "b.csv"))
     df = pd.read_csv(csvp)
-    assert len(df) == 33 and set(df["tamano_nominal"]) == {0} and "insumo_ext_sha256" in df.columns
+    assert len(df) == N_OPERABLES and set(df["tamano_nominal"]) == {0} and "insumo_ext_sha256" in df.columns
     assert os.path.exists(str(tmp_path / "b_divergencias.csv"))
     copias = S.respaldar_extension(ruta, str(tmp_path / "bk"))
     assert len(copias) == 2 and S._sha256(copias[0]) == meta["sha256"]
@@ -391,7 +392,7 @@ def test_E4_archivo_un_segundo_sello_con_otro_insumo_no_toca_la_extension_sellad
     t0 = datetime(2026, 9, 9, 3, 0, tzinfo=UTC)
 
     _, meta_a, r1 = _camino_main(_cierres_ext_sinteticos(base, (FECHA,), 1.01), db, t0)
-    assert r1["resultado"] == "sellada" and r1["filas_insertadas"] == 33
+    assert r1["resultado"] == "sellada" and r1["filas_insertadas"] == N_OPERABLES
     assert r1["insumo_ext_sha256"] == meta_a["sha256"]
     sellado = _huella_ext()
     volcado = _volcado_sellos(db)

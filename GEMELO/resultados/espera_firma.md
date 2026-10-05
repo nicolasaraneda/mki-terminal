@@ -2971,3 +2971,53 @@ R2 y R3 del auditor (la cuenta en el retorno; el vigía o `/salud` recomputan el
    sellaron con NYSE abierto; su `puntaje_ia` incorpora información del mismo día). Si mejorara, hay que explicarlo.
 
 **No se eligió nada.**
+
+---
+
+## 79. Tras sacar TOELY del insumo de E0 (§95.4, corrida 16b): la mano que aplica el parche, el marcador de versión, la realización del sorteo y la sonda
+
+**Contexto (bitácora 16b):** el parche `GEMELO/propuestas/parches/toely_fuera_insumo_e0_16b.diff` hace exactamente lo
+firmado en §95.4 (clave `exclusiones_insumo_e0` en `dinero/reglas.json`, filtro en `sello_dinero.decidir` después de
+`universo_operable`, 33 → 32 operables, cero faltantes tolerados, sin retorno, sin efecto retroactivo) y tiene dictamen del
+auditor (`dictamen_16b/auditor_toely.md`). **No está aplicado al árbol real:** el reloj del encargo (16:45) venció porque
+la sesión estuvo pausada 3 h entre dos llamadas (la máquina no: latido del journal continuo), y la letra del encargo
+manda. Cuatro decisiones, ninguna tomada:
+
+1. **Quién aplica y cuándo.** (a) Nicolás aplica a mano antes del sello del lunes (6-oct 00:30 Chile): `git apply`, suite
+   completa del árbol real, commit (receta exacta en la bitácora 16b §5); (b) esperar a la corrida 16. **Consecuencia de
+   (b):** la sesión del 5-oct sale `insumo_incompleto` por TOELY y no cuenta (una noche más de las que §95.5 quiso salvar).
+   **Recomendación etiquetada:** (a). Lo que se pierde con (a): la aplicación la hace una mano sin orquestador; la
+   mitigación es que el parche es reversible con `git apply -R` y que la suite real decide.
+2. **Marcador de versión por fila.** Hoy la distinción es SÓLO `reglas_sha256` (125a8602… antes, b6080eee… después);
+   `reglas_version` sigue «0.2.0-PROPUESTA» en las dos poblaciones y `VERSION_SELLO` sigue E0.2. (a) Dejarlo así: la
+   huella basta y es lo que §95.4 nombra; (b) en la corrida 16, subir `version_reglas` a «0.3.0-PROPUESTA» (legible en el
+   CSV sin cotejar hashes; cambia el hash otra vez, tercera población); (c) subir `VERSION_SELLO`: choca con el `E0.3` del
+   parche T de §62 (tendría que ser E0.4 o renumerar T). **Recomendación etiquetada:** (a) ahora, (b) junto con la
+   declaración del README en la 16, para no cambiar el universo dos veces en dos días.
+3. **Realización del sorteo sin información.** `senales_sin_informacion` recorre los operables con un solo generador por
+   sesión: con la lista más corta, la REALIZACIÓN del sorteo de todos los demás cambia desde la primera sesión que la use
+   (distribución por ticker y semilla, intactas: no hay información nueva ni elección posible). (a) Aceptarlo tal cual,
+   declarado (lo que el parche hace); (b) sortear con TOELY y descartarlo, para que los otros 32 conserven la secuencia
+   que habrían tenido: mantiene a TOELY dentro del generador, o sea «sale del insumo pero no del sorteo», y exige más
+   código en el sellador. **Recomendación etiquetada:** (a); lo que se pierde: la continuidad de la secuencia por ticker
+   entre las primeras 9 sesiones y las siguientes, que de todos modos ya se rompe cada vez que la fuente omite o repone una
+   sesión (docstring de `decidir`, H2 del auditor de la 12).
+4. **La sonda.** `GEMELO/sonda_cierre.py` lee su lista del meta del congelado (36 tickers, TOELY incluido), no de
+   `reglas.json`: el cambio NO le llega. Desde que el parche entre, su «noche completa» (regla de §58) seguirá marcando
+   TOELY como faltante mientras el sellador declare `insumo_completo`. (a) No tocarla (lo que la 16b hizo: límite duro);
+   que la lectura de §58 trate las noches con TOELY como único faltante con la anotación fechada de §95.4 a la vista;
+   (b) en la corrida 16, que la sonda reste las `exclusiones_insumo_e0` al leer su lista, con acta propia (toca la
+   sonda; la regla de §58 no se edita). **Recomendación etiquetada:** (b) en la 16, con la serie de la sonda marcada
+   desde la fecha del cambio.
+
+**No se eligió nada.**
+
+**Addendum del auditor 16b (`dictamen_16b/auditor_toely.md`, 19:39), posterior a la redacción de las cuatro opciones:**
+sobre el punto 3 midió las dos realizaciones en 40 sesiones del congelado (HEAD 30 compras; parche 25; sortear con 33 y
+descartar TOELY 30, igual a HEAD ticker por ticker; TOELY nunca compró) y **recomienda (b)** declarando el costo: elegir
+hoy entre ellas es hacerlo con los dos resultados a la vista, inocuo porque E0 no puntúa nada. Sobre el punto 2 confirma
+que mover `version_reglas` no choca con el `E0.3` del parche T y que ningún test fija el literal. Sobre el punto 4
+agrega lo que ninguna opción previó: **V4 de la regla sellada de §58 se dispara con el universo permanente de 32** (la
+regla se cierra «NO DECIDIBLE» con 4 noches válidas; reiniciar con el universo nuevo es acto de Nicolás con acta) y
+`A(D)` sobre 32 contra `C(D,g)` sobre 33 hace clase C a toda noche con sólo TOELY faltante. Las dos cosas están
+declaradas en el acta §96; la regla no se edita. **Sigue sin elegirse nada.**
