@@ -595,6 +595,33 @@ export interface FilaSelloDinero {
   motivo: string | null
 }
 
+export interface UltimoSelloDinero {
+  // las 21 claves de `_CLAVES_ULTIMO` de dinero/sello_dinero.py (R6 del auditor, corrida 16-2):
+  // `ultimo_sello` y `ultimo_intento` comparten la forma; para un intento, `estado_timing` e
+  // `insumo_ext_archivo` (.no_verificable.csv) son lo que lo distingue de un sello
+  fecha_sello: string
+  fecha_insumo: string
+  timestamp_utc: string
+  available_at: string
+  sesion_objetivo: string
+  apertura_objetivo_utc: string
+  estado: string
+  estado_timing: string
+  estado_dia: string
+  insumo_completo: number
+  cuenta_para_N: number
+  juego: string
+  presupuesto_usd: number
+  insumo_ext_sha256: string
+  insumo_ext_archivo: string
+  insumo_base_sha256: string
+  reglas_sha256: string
+  sellador_sha256: string
+  plataforma_version: string
+  version_sello: string
+  creado_en: string
+}
+
 export interface DatosSellosDinero {
   estatus: EstatusEvidencial
   que_es: string
@@ -608,6 +635,10 @@ export interface DatosSellosDinero {
     fuente_conteos: string
     filas: number
     divergencias_registradas: number
+    // enmienda 16-2 del contrato (E0.3): un disparo con timing roto no es un sello
+    intentos_no_verificables: number
+    ultimo_intento: UltimoSelloDinero | null
+    nota_intentos: string
     nota: string
     estatus: EstatusEvidencial
   }
@@ -623,20 +654,7 @@ export interface DatosSellosDinero {
     marca_retraso: { retraso_min: number | null; descripcion: string } | null
     estatus: EstatusEvidencial
   }
-  ultimo_sello: {
-    fecha_insumo: string
-    timestamp_utc: string
-    available_at: string
-    sesion_objetivo: string
-    apertura_objetivo_utc: string
-    estado: string
-    cuenta_para_N: number
-    juego: string
-    presupuesto_usd: number
-    insumo_ext_sha256: string
-    insumo_base_sha256: string
-    plataforma_version: string
-  } | null
+  ultimo_sello: UltimoSelloDinero | null
   decisiones_proxima_apertura: FilaSelloDinero[]
   gate_invariancia_ultima_corrida: {
     resultado: string | null

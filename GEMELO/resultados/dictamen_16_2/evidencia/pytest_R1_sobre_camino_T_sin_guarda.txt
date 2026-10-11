@@ -1,0 +1,44 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_un_cambio_de_juego_entre_dos_disparos_no_inserta_filas_que_citen_un_archivo_que_main_borra _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-37/test_un_cambio_de_juego_entre_0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_un_cambio_de_juego_entre_dos_disparos_no_inserta_filas_que_citen_un_archivo_que_main_borra(entorno_temporal, base):
+        """F3 del auditor (corrida 16-2), reproducida: con la fecha ya sellada por
+        el juego A y OTRO insumo, `congelar_extension` manda el insumo al temporal
+        (E4-bis, correcto), pero `previas` filtra por juego, así que un disparo
+        con `juego_activo` = B llegaba al INSERT y dejaba filas citando
+        `ext_<fecha>_divergente_….csv`, que `main()` borra: integridad rota para
+        siempre, idéntica en E0.2 y en E0.3 sin la guarda R1. Ahora: cero filas en
+        las dos tablas, una fila en `divergencias_sello` que lo declara, y la
+        integridad en pie. Rojo sobre el camino T sin R1 por su propia aserción."""
+        db = entorno_temporal
+        cfg_a = U.reglas()
+        assert cfg_a["juego_activo"] == "conservador" and "agresivo" in cfg_a["juegos"]
+        ruta1, meta1, r1 = _camino_main(_ext_con_ultima_fila(base, 1.02), db, T_NOCHE)
+        assert r1["resultado"] == "sellada" and r1["juego"] == "conservador"
+        cfg_b = dict(cfg_a, juego_activo="agresivo")
+        t2 = T_NOCHE + timedelta(minutes=1)
+        ruta2, meta2 = _congelar(_ext_con_ultima_fila(base, 1.03), BASE_HASTA, t2)
+        assert meta2["persistido"] is False and meta2["sha256"] != meta1["sha256"]
+        try:
+            r2 = S.sellar(ruta2, meta2, ahora_utc=t2, ruta_db=db, cfg=cfg_b)
+        finally:
+            if os.path.exists(ruta2):
+                os.remove(ruta2)                                    # lo que hace main()
+>       assert r2["filas_insertadas"] == 0, (
+            "F3: sellar insertó filas con juego 'agresivo' que citan un archivo que main() borra "
+            f"(resultado={r2['resultado']!r}, filas_insertadas={r2['filas_insertadas']})")
+E       AssertionError: F3: sellar insertó filas con juego 'agresivo' que citan un archivo que main() borra (resultado='sellada', filas_insertadas=32)
+E       assert 32 == 0
+
+tests/test_sello_dinero.py:1277: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_sello_dinero.py::test_un_cambio_de_juego_entre_dos_disparos_no_inserta_filas_que_citen_un_archivo_que_main_borra
+1 failed, 1 passed in 1.27s

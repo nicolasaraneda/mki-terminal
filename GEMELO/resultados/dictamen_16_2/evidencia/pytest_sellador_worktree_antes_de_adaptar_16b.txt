@@ -1,0 +1,22 @@
+.....s.................s.......sssssss.........................F.s       [100%]
+=================================== FAILURES ===================================
+____________ test_la_ventana_horaria_sigue_mandando_con_toely_fuera ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-28/test_la_ventana_horaria_sigue_0')
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_la_ventana_horaria_sigue_mandando_con_toely_fuera(tmp_path, base):
+        tarde = datetime(2026, 9, 9, 14, 0, tzinfo=UTC)    # después de la apertura objetivo (9-sep 13:30Z)
+        r, _ = _sellar(tmp_path, base, sin_dato=(EXCLUIDO,), ahora=tarde)
+>       assert r["insumo_completo"] is True                 # el insumo sí está completo...
+               ^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'insumo_completo'
+
+tests/test_toely_fuera_insumo_e0.py:145: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_toely_fuera_insumo_e0.py::test_la_ventana_horaria_sigue_mandando_con_toely_fuera
+1 failed, 55 passed, 10 skipped in 21.78s

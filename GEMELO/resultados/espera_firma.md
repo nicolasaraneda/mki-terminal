@@ -3088,3 +3088,69 @@ medición que no aparecen en la línea base): hay un test que escribe DDL en `se
 7 del dictamen 16a, ahora medida).
 
 **No se eligió nada.**
+
+---
+
+## 81. Tras rebasar el camino T de §62 sobre el sellador de la 16b (corrida 16-2): la aplicación, la otra forma del disparo de recuperación, las tres recomendadas del auditor que no se plegaron, y la pantalla
+
+**Contexto (bitácora 16-2, 11-oct-2026):** tres parches listos en `GEMELO/propuestas/parches/`, en este orden:
+`camino_T_16_2.diff` (el camino T de §62 con las cuatro decisiones del implementador de la 15, B1/R2/R3/R4/R5 de ese
+dictamen, y R1/R2 del dictamen nuevo plegadas), `b2_contrato_16_2.diff` (enmienda 16-2 de `api/CONTRATO.md`) y
+`b2_api_16_2.diff` (`estado()` con `ultimo_intento`, la API sirviendo las tres claves, `tipos.ts`). Dictamen del
+`auditor-lookahead` (`dictamen_16_2/auditor_camino_T.md`): APLICABLE CON EXIGENCIAS; sus dos bloqueantes son de acta
+(B1, abajo en 2) y de secuencia (B2: los tres parches en el mismo acto, nunca el camino T solo). Nada está aplicado al
+árbol real. Decisiones, ninguna tomada:
+
+1. **Quién aplica y cuándo.** La receta exacta está en la bitácora 16-2 §6.1 (`git apply --check` y `git apply` de los
+   tres en orden, huellas esperadas, suite completa, `tests/test_motor.py`, lista del commit, reversión con
+   `git apply -R` en orden inverso). (a) Nicolás a mano, hoy domingo o el lunes 12-oct fuera de la ventana 17:50 a
+   20:30, antes del sello del martes 13-oct a las 00:30 Chile, con el acta de aplicación (§93.7) firmada con el párrafo
+   de la bitácora §6 a la vista; (b) esperar a la 16-3. **Consecuencia de (b):** el martes 13-oct el sellador sigue en
+   E0.2 y un disparo de recuperación vuelve a quemar la sesión que selle fuera de hora (§99.2 lo declaró).
+   **Recomendación etiquetada:** (a). Lo que se pierde con (a): la mano aplica sin orquestador; la mitigación es que los
+   tres `.diff` son reversibles con `git apply -R` y que la suite real decide (B4 de la 16b, mismo criterio).
+2. **La otra forma del disparo de recuperación, que T NO cubre (B1 del auditor, MEDIDO).** `Persistent=true` produce
+   dos formas de disparo fuera de hora: (i) con timing roto (barra intradía con `available_at` futuro: el 28-sep y el
+   7-oct), que T manda a `intentos_no_verificables` y deja la fecha libre; (ii) con timing OK en un día SIN sesión
+   (PC apagado el viernes a las 23:30 NY, recuperación el sábado con el cierre completo del viernes; o el feriado de
+   XNYS entre semana con el cierre de la víspera), que sella en `sellos_dinero` como `dia_sin_sesion`, `cuenta_para_N =
+   0`, y **ocupa la fecha para siempre, igual que E0.2**, porque `estado_dia` mira el día de la EMISIÓN en el
+   calendario de NY (§57 firmado tal como está). §99.2 eligió (a) descartando (b) `Persistent=false` y (c) las dos con
+   la razón «este ya habría salvado el 7-oct»: cierto para (i), falso para (ii). (a) Aceptarlo y dejarlo declarado en el
+   acta de aplicación (es lo que B1 exige; sin cambio de código); (b) reabrir §99.2 y volver sobre `Persistent=false`,
+   que elimina las dos formas al costo de perder también la recuperación pre-apertura sin barra, que sí sella bien la
+   sesión anterior (medido por el auditor: un boot a las 08:00 NY habría sellado el 6-oct); (c) que la fila de una
+   emisión prospectiva en día sin sesión cuente (toca la definición de §57 y el sellador: acta propia, retador).
+   **Recomendación etiquetada:** (a) ahora, y medir cuántas veces ocurre (ii) antes de elegir (b) o (c): hoy n = 0
+   casos de la forma (ii) en 22 fechas selladas; las dos quemadas fueron de la forma (i).
+3. **R3 del auditor: la fila de un intento tiene que poder explicarse sola (F2, MEDIDO).** Si el cierre nominal cae
+   entre el reloj de congelar y el de sellar (ventana de 1 a 2 s alrededor de las 20:00Z en EDT, alcanzable sólo por
+   un boot de recuperación a las 15:59:59 NY), la fila de intento satisface la regla maestra en sus tres columnas y
+   dice `estado_timing = roto`; la explicación vive sólo en el meta `.no_verificable`. (a) Dejarlo declarado (la fila
+   está fuera de toda métrica y el par fila+meta explica); (b) que el `motivo` de las filas de un intento lleve el
+   instante con que se decidió el timing (sin cambio de esquema); (c) columna nueva `congelado_en_utc` en las dos
+   tablas, con la migración que R2 exige (`IF NOT EXISTS` no la propaga a la tabla real). **Recomendación etiquetada:**
+   (b) en la 16-3, cuando el sellador se vuelva a tocar con firma.
+4. **R4 del auditor (= R1 de la corrida 15, sin hacer): el `.no_verificable` huérfano.** Un par `ext_F.no_verificable.*`
+   congelado por un proceso que murió antes de sellar queda en `DIR_EXT` citado por nadie, indistinguible del caso
+   bueno. (a) Integridad en la dirección archivos → filas (test que exige que todo `.no_verificable.csv` esté citado);
+   (b) que `main()` lo declare al arrancar; (c) nada, declarado. **Recomendación etiquetada:** (a), en la 16-3.
+5. **R5 del auditor: el candado contra dos instancias (F1, MEDIDO como preexistente en E0.2, idéntico en E0.3).**
+   systemd no arranca dos instancias de la misma unidad `oneshot`; la única vía es un `--sellar` a mano con el servicio
+   activo. (a) Regla operativa escrita: antes de cualquier `--sellar` manual, `systemctl --user is-active
+   mki-sello-dinero.service` tiene que decir `inactive`; (b) un lock de archivo en `DIR_EXT` entre congelar y sellar
+   (código en el sellador, acta propia). **Recomendación etiquetada:** (a) ahora (va en la receta de la bitácora §6.1),
+   (b) a la cola.
+6. **La pantalla `/sellos`.** `b2_api_16_2.diff` refleja las tres claves en `tipos.ts` pero `SellosDinero.tsx` no las
+   muestra. (a) Una tarjeta chica «intentos no verificables: N; último: fecha, hora» con la frase `nota_intentos`,
+   en la 16-3; (b) dejarlas sólo en la API. **Recomendación etiquetada:** (a): el dictamen de la 15 pidió que una noche
+   quemada no se viera idéntica a un sábado, y la pantalla es donde se mira.
+
+**Hechos de entorno, para Nicolás, que no son decisión de diseño:** (i) la copia de `dinero/sello_dinero.db` al
+worktree fue denegada otra vez con la forma exacta de la lista de §99.7 (`cp dinero/sello_dinero.db <wt>/dinero/`),
+igual que en la 16-1: los tests de integridad sobre la base real se saltaron en el worktree y el auditor los corrió a
+mano en `mode=ro` (5 chequeos, sin fallas); (ii) `available_at` sigue siendo computado por calendario y no observado, y
+desde E0.3 decide tabla, nombre de archivo y ocupación de la fecha (zona ciega 4 del dictamen; es §72, no firmado): el
+error conservador se ve, el inverso (dato completo publicado tarde) no.
+
+**No se eligió nada.**

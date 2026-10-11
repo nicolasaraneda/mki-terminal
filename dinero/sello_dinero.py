@@ -61,6 +61,21 @@
 # backup versiona. La corrección de una fila sellada es una fila nueva o una
 # errata fechada, nunca una modificación.
 #
+# E0.3 (corrida 15, acta §90.6, política de retención de la evidencia no
+# verificable en GEMELO/propuestas/parches/): el 28-sep-2026 el PC despertó
+# de la suspensión y el timer disparó a las 13:42 NY con la bolsa abierta. E4
+# marcó las 33 filas `no_verificable_timing` —correcto— pero las escribió en
+# `sellos_dinero` y `congelar_extension()` ya había escrito `ext_2026-09-28.csv`
+# con la matriz de media sesión: el disparo bueno de las 23:30 encontró la
+# fecha ocupada, entró por divergencia y la sesión se perdió. Como
+# `UNIQUE (fecha_insumo, ticker, juego)` impide que las filas rechazadas y
+# las buenas convivan en la tabla, un disparo con timing roto va ahora a
+# `intentos_no_verificables` (mismas columnas, misma inmutabilidad) y su
+# evidencia a `ext_<fecha>.no_verificable.csv`: ni la fecha ni el cupo
+# canónico quedan ocupados. El timing se decide en `evaluar_timing()`, UNA
+# función que usan congelar y sellar, ANTES de escribir nada. Las filas que
+# E0.2 dejó en la tabla principal con ese estado se quedan donde están.
+#
 # AISLAMIENTO: nada de acá importa el camino de sellado del riel de medición
 # (tests/test_dinero.py, sección 1). El calendario es `exchange_calendars`
 # directo, como en `precios.py`; `version.py` se lee como texto.
@@ -111,7 +126,11 @@ ESTADO_PENDIENTE = "pendiente"
 ESTADO_NO_VERIFICABLE = "no_verificable_timing"
 ESTADO_SIN_SESION = "dia_sin_sesion"
 ESTADO_INSUMO_INCOMPLETO = "insumo_incompleto"
-VERSION_SELLO = "E0.2"       # E0.1 nunca selló una fila real; E0.2 = tras las exigencias E1–E8 del auditor
+VERSION_SELLO = "E0.3"       # E0.1 nunca selló una fila real; E0.2 = tras las exigencias E1–E8 del auditor;
+                             # E0.3 = un disparo con timing roto ya no escribe en la tabla principal ni en el
+                             # cupo canónico (corrida 15, §90.6): la versión es el corte de método sellado en la fila
+TABLA_SELLOS = "sellos_dinero"
+TABLA_INTENTOS = "intentos_no_verificables"
 MINIMO_CORTES_GATE = 2
 # N que cierra E0: fijado por Nicolás el 8-sep-2026 (acta §84.4.7) ANTES de la
 # primera fila. No se mueve. Sólo cuentan las sesiones con `cuenta_para_N = 1`.
@@ -134,9 +153,21 @@ _ABORTA_MODIFICAR = "SELECT RAISE(ABORT, 'las filas selladas del riel de dinero 
 _ABORTA_BORRAR = "SELECT RAISE(ABORT, 'las filas selladas del riel de dinero no se borran')"
 
 
-def init_db(con: sqlite3.Connection) -> None:
-    con.executescript(f"""
-        CREATE TABLE IF NOT EXISTS sellos_dinero (
+def _ddl_filas(tabla: str) -> str:
+    """Las columnas de una fila sellada y sus dos disparadores de
+    inmutabilidad. E0.3: `intentos_no_verificables` se crea con ESTE mismo
+    texto (una definición, no dos que puedan divergir); la `UNIQUE` vale
+    dentro de cada tabla, así que un intento y el sello bueno de la misma
+    fecha conviven, cada uno en la suya.
+
+    ADVERTENCIA (R2 del auditor, corrida 16-2): `CREATE TABLE IF NOT EXISTS`
+    es un no-op sobre una tabla que ya existe y NO le agrega columnas. La
+    definición única sólo garantiza paridad en bases nacidas con E0.3; sobre
+    la base real, agregar una columna acá exige una migración aparte (con su
+    acta), o las dos tablas divergen en silencio y el INSERT compartido
+    revienta. Un test de integridad compara las columnas sobre la base real."""
+    return f"""
+        CREATE TABLE IF NOT EXISTS {tabla} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha_sello TEXT NOT NULL,          -- día de la EMISIÓN en el calendario de Nueva York (E2)
             fecha_insumo TEXT NOT NULL,         -- última sesión con dato en el insumo
@@ -175,12 +206,17 @@ def init_db(con: sqlite3.Connection) -> None:
             creado_en TEXT NOT NULL,
             UNIQUE (fecha_insumo, ticker, juego)
         );
-        CREATE TRIGGER IF NOT EXISTS sellos_dinero_inmutable_1 BEFORE UPDATE ON sellos_dinero
+        CREATE TRIGGER IF NOT EXISTS {tabla}_inmutable_1 BEFORE UPDATE ON {tabla}
             BEGIN {_ABORTA_MODIFICAR}; END;
-        CREATE TRIGGER IF NOT EXISTS sellos_dinero_inmutable_2 BEFORE DELETE ON sellos_dinero
+        CREATE TRIGGER IF NOT EXISTS {tabla}_inmutable_2 BEFORE DELETE ON {tabla}
             BEGIN {_ABORTA_BORRAR}; END;
+    """
+
+
+_DDL_DIVERGENCIAS = f"""
         -- E4: un segundo sello del MISMO fecha_insumo con OTRO insumo no se ignora en
-        -- silencio: queda registrado acá, y las filas originales no se tocan.
+        -- silencio: queda registrado acá, y las filas originales no se tocan. E0.3: un
+        -- segundo INTENTO no verificable de la misma fecha también (política §2.4).
         CREATE TABLE IF NOT EXISTS divergencias_sello (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha_insumo TEXT NOT NULL,
@@ -195,7 +231,13 @@ def init_db(con: sqlite3.Connection) -> None:
             BEGIN {_ABORTA_MODIFICAR}; END;
         CREATE TRIGGER IF NOT EXISTS divergencias_sello_inmutable_2 BEFORE DELETE ON divergencias_sello
             BEGIN {_ABORTA_BORRAR}; END;
-    """)
+"""
+
+
+def init_db(con: sqlite3.Connection) -> None:
+    # Todo es CREATE ... IF NOT EXISTS: sobre la base real, E0.3 sólo AGREGA la
+    # tabla de intentos y sus disparadores; ninguna fila ni tabla existente se toca.
+    con.executescript(_ddl_filas(TABLA_SELLOS) + _ddl_filas(TABLA_INTENTOS) + _DDL_DIVERGENCIAS)
     con.commit()
 
 
@@ -233,6 +275,31 @@ def dia_en_calendario_del_exchange(instante_utc: datetime) -> str:
     ts = pd.Timestamp(instante_utc)
     ts = ts.tz_convert("UTC") if ts.tzinfo else ts.tz_localize("UTC")
     return str(ts.tz_convert(_cal().tz).normalize().date())
+
+
+def evaluar_timing(disponibilidad_por_ticker: dict, fecha_insumo: str, ahora_utc: datetime) -> dict:
+    """La regla maestra en UNA función pura: available_at < emisión < apertura
+    objetivo. `available_at` es el máximo `available_at_utc` de la
+    disponibilidad por ticker (cierre UTC por calendario de la última sesión
+    con dato), NUNCA el reloj de pared; sin disponibilidad, el cierre por
+    calendario de `fecha_insumo`. La sesión objetivo es la primera cuya
+    apertura es posterior a available_at.
+
+    E0.3: la usan `congelar_extension` (antes de escribir la evidencia, para
+    elegir el nombre) y `sellar` (para elegir la tabla), con el instante que
+    cada una recibe. Hasta E0.2 el cálculo vivía sólo dentro de `sellar`, y
+    por eso el 28-sep-2026 la extensión intradía ya ocupaba el nombre
+    canónico cuando el timing se decidió."""
+    if ahora_utc.tzinfo is None:
+        raise ValueError("ahora_utc tiene que traer zona horaria")
+    ahora = ahora_utc.astimezone(timezone.utc)
+    avail = max((v["available_at_utc"] for v in (disponibilidad_por_ticker or {}).values()
+                 if v.get("available_at_utc")), default=None)
+    if avail is None:
+        avail = cierre_utc(fecha_insumo).isoformat()
+    sesion_obj, apertura_obj = proxima_sesion_despues_de(datetime.fromisoformat(avail))
+    return {"avail": avail, "sesion_obj": sesion_obj, "apertura_obj": apertura_obj,
+            "timing_ok": datetime.fromisoformat(avail) < ahora < apertura_obj}
 
 
 # ------------------------------------------------------------
@@ -289,25 +356,61 @@ def sello_previo(fecha_insumo: str, ruta_db: str | None = None) -> dict | None:
     el nombre del archivo de extensión que esas filas citan, o None. Sólo
     lectura (`mode=ro`); una base inexistente o sin tabla es «no hay sello».
     No filtra por `juego` (R4 del auditor, corrida 13): la fecha sellada es
-    una sola, la lleve el juego que la lleve."""
+    una sola, la lleve el juego que la lleve. E0.3: mira SÓLO `sellos_dinero`;
+    un intento no verificable de la fecha no es un sello (`intento_previo`)."""
+    return _cita_previa(TABLA_SELLOS, fecha_insumo, ruta_db)
+
+
+def intento_previo(fecha_insumo: str, ruta_db: str | None = None) -> dict | None:
+    """E0.3: ¿esta `fecha_insumo` ya tiene un intento no verificable? Mismo
+    contrato que `sello_previo` sobre `intentos_no_verificables`. Una base
+    anterior a E0.3 no tiene la tabla: cero intentos, no un error."""
+    return _cita_previa(TABLA_INTENTOS, fecha_insumo, ruta_db)
+
+
+def _cita_previa(tabla: str, fecha_insumo: str, ruta_db: str | None) -> dict | None:
     ruta_db = ruta_db or RUTA_DB
     if not os.path.exists(ruta_db):
         return None
     con = conectar(ruta_db, solo_lectura=True)
     try:
-        fila = con.execute("SELECT insumo_ext_sha256, insumo_ext_archivo FROM sellos_dinero "
-                           "WHERE fecha_insumo = ? ORDER BY id LIMIT 1", (fecha_insumo,)).fetchone()
+        return _cita_en(con, tabla, fecha_insumo)
     except sqlite3.OperationalError:      # base sin la tabla todavía
         return None
     finally:
         con.close()
+
+
+def _cita_en(con: sqlite3.Connection, tabla: str, fecha_insumo: str) -> dict | None:
+    """El sha y el archivo que citan las filas de esa fecha en esa tabla (la
+    primera, por id), o None."""
+    fila = con.execute(f"SELECT insumo_ext_sha256, insumo_ext_archivo FROM {tabla} "
+                       "WHERE fecha_insumo = ? ORDER BY id LIMIT 1", (fecha_insumo,)).fetchone()
     return {"sha256": fila[0], "archivo": fila[1]} if fila else None
 
 
-def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str | None = None) -> tuple:
+def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str | None = None,
+                       ahora_utc: datetime | None = None) -> tuple:
     """Escribe la extensión recortada a las sesiones POSTERIORES a `base_hasta`
     y su metadato con disponibilidad por ticker (G8) y solape (E7).
     Devuelve (ruta_csv, meta).
+
+    E0.3 (corrida 15, acta §90.6, política de retención de la evidencia no
+    verificable): el timing se decide ACÁ, antes de escribir, con la misma
+    función que usa `sellar()` (`evaluar_timing`) y el instante `ahora_utc`
+    (default: el reloj; los tests lo inyectan). El 28-sep-2026 el timer
+    disparó a las 13:42 NY con la bolsa abierta: E4 marcó las filas, pero
+    esta función ya había escrito `ext_2026-09-28.csv` con la matriz de media
+    sesión y el disparo bueno de las 23:30 encontró la fecha ocupada. Ahora:
+      · timing ok → como siempre (las tres ramas de E4-bis de abajo);
+      · timing roto, fecha sin sello y sin intento previo →
+        `ext_<fecha>.no_verificable.csv` + `.meta.json`, con
+        `cupo_canonico: false` y el bloque `timing` (los tres instantes que
+        prueban por qué no es verificable); el nombre canónico queda LIBRE
+        para el sello bueno;
+      · timing roto y la fecha ya con intento (o ya sellada: rama E4-bis) →
+        temporal fuera de DIR_EXT, `persistido: False`, igual que el
+        divergente: un solo intento persistido por fecha (política §2.4).
 
     E4-bis (corrida 13, dictamen del `auditor-lookahead`, opción A):
     `ext_<fecha>.csv` y su meta son la EVIDENCIA que citan las filas selladas
@@ -332,6 +435,7 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str 
         política de retención, otra forma de que `--sin-red` levante mañana
         un insumo que E4 rechazó."""
     ruta_db = ruta_db or RUTA_DB
+    ahora = ahora_utc or datetime.now(timezone.utc)
     os.makedirs(DIR_EXT, exist_ok=True)
     idx = pd.to_datetime(cierres_ext.index)
     if getattr(idx, "tz", None) is not None:
@@ -346,6 +450,8 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str 
     hasta = str(ext.index.max().date())
     contenido = ext.to_csv().encode("utf-8")
     sha_nuevo = hashlib.sha256(contenido).hexdigest()
+    disponibilidad = precios.disponibilidad_por_ticker(ext)
+    timing = evaluar_timing(disponibilidad, hasta, ahora)
     ruta = os.path.join(DIR_EXT, f"ext_{hasta}.csv")
     ruta_meta = os.path.splitext(ruta)[0] + ".meta.json"
     divergente_de = None
@@ -361,6 +467,21 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str 
         divergente_de = {"archivo": previo["archivo"] or f"ext_{hasta}.csv", "sha256_sellado": previo["sha256"],
                          "nota": ("la sesión ya estaba sellada con otro insumo; el archivo sellado no se toca y este "
                                   "insumo NO se conserva (temporal fuera de la carpeta de evidencia, borrado por main)")}
+    elif not timing["timing_ok"]:
+        # E0.3: un insumo que E4 va a rechazar no ocupa el cupo canónico
+        ruta = os.path.join(DIR_EXT, f"ext_{hasta}{SUFIJO_NO_VERIFICABLE}.csv")
+        ruta_meta = os.path.splitext(ruta)[0] + ".meta.json"
+        intento = intento_previo(hasta, ruta_db)
+        if intento is not None:
+            import tempfile
+            fd, ruta = tempfile.mkstemp(prefix=f"ext_{hasta}{SUFIJO_DIVERGENTE}", suffix=".csv")
+            os.close(fd)
+            ruta_meta = None
+            divergente_de = {"archivo": intento["archivo"] or f"ext_{hasta}{SUFIJO_NO_VERIFICABLE}.csv",
+                             "sha256_intento": intento["sha256"],
+                             "nota": ("la fecha ya tiene un intento no verificable; un solo intento persistido por "
+                                      "fecha (política §2.4): este insumo NO se conserva (temporal fuera de la "
+                                      "carpeta de evidencia, borrado por main)")}
     with open(ruta, "wb") as f:
         f.write(contenido)
     sha_archivo = _sha256(ruta)
@@ -374,10 +495,17 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str 
         "tickers": list(ext.columns), "filas": int(len(ext)),
         "desde": str(ext.index.min().date()), "hasta": hasta,
         "sha256": sha_archivo,
-        "disponibilidad": {"exchange": EXCHANGE, "por_ticker": precios.disponibilidad_por_ticker(ext)},
+        "disponibilidad": {"exchange": EXCHANGE, "por_ticker": disponibilidad},
         "solape_con_congelado": solape,
         "advertencia": "cierres ajustados retroactivamente por yfinance: no point-in-time (declarado, no corregido)",
     }
+    if not timing["timing_ok"]:
+        # E0.3: el meta declara que NO ocupa el cupo canónico y los tres instantes que lo prueban
+        meta["cupo_canonico"] = False
+        meta["timing"] = {"available_at": timing["avail"], "emision_utc": ahora.astimezone(timezone.utc).isoformat(),
+                          "apertura_objetivo_utc": timing["apertura_obj"].isoformat(),
+                          "sesion_objetivo": timing["sesion_obj"], "timing_ok": False,
+                          "regla": "available_at < emision_utc < apertura_objetivo_utc, y no se cumple"}
     if divergente_de is not None:
         meta["divergente_de"] = divergente_de
         meta["persistido"] = False
@@ -389,13 +517,21 @@ def congelar_extension(cierres_ext: pd.DataFrame, base_hasta: str, ruta_db: str 
 
 
 SUFIJO_DIVERGENTE = "_divergente_"
+SUFIJO_NO_VERIFICABLE = ".no_verificable"
 _NOMBRE_EXTENSION_SELLABLE = re.compile(r"^ext_\d{4}-\d{2}-\d{2}\.csv$")
+_NOMBRE_EXTENSION_NO_VERIFICABLE = re.compile(r"^ext_\d{4}-\d{2}-\d{2}\.no_verificable\.csv$")
 
 
 def es_extension_sellable(nombre: str) -> bool:
     """Sólo `ext_YYYY-MM-DD.csv` es insumo de un sello (`--sin-red` no levanta
-    ninguna otra cosa que haya en la carpeta)."""
+    ninguna otra cosa que haya en la carpeta: ni un divergente ni, desde E0.3,
+    un `.no_verificable.csv`)."""
     return bool(_NOMBRE_EXTENSION_SELLABLE.match(os.path.basename(nombre)))
+
+
+def es_extension_no_verificable(nombre: str) -> bool:
+    """E0.3: la evidencia de un intento no verificable, `ext_YYYY-MM-DD.no_verificable.csv`."""
+    return bool(_NOMBRE_EXTENSION_NO_VERIFICABLE.match(os.path.basename(nombre)))
 
 
 def ultima_extension() -> tuple | None:
@@ -546,6 +682,22 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
     OTRO insumo queda en `divergencias_sello` y no inserta nada (E4). El
     resumen dice lo que PASÓ, no lo que habría pasado.
 
+    E0.3 (corrida 15, §90.6): con timing roto NO inserta en `sellos_dinero`.
+    Las filas van a `intentos_no_verificables` (resultado
+    `intento_no_verificable`), salvo que la fecha ya tenga un intento o un
+    sello: entonces divergencia y cero inserciones. Con timing ok se comporta
+    como en E0.2, y un intento previo de la fecha NO cuenta como sello previo
+    (es lo que deja entrar al sello bueno de las 23:30 después de un disparo
+    con la bolsa abierta). Las filas de un intento citan la evidencia
+    `.no_verificable.csv` que `congelar_extension` escribió; si la evidencia
+    que llega tiene nombre canónico y el timing está roto (la apertura se
+    cruzó en los segundos entre congelar y sellar, o `--sin-red` levantó un
+    canónico que nunca se selló), no se escribe ninguna fila de sello ni de
+    intento: una fila de intentos citando un canónico rompería la política
+    (§5.2) y una fila rota en la principal es lo que E0.3 cierra. Se rechaza,
+    y el rastro queda en `divergencias_sello` (B1 del auditor). Un segundo
+    intento con el MISMO insumo es `ya_intentada`, sin fila (R4).
+
     No exporta nada: el export a data/backups/ lo hace `main()` sobre la base
     real, explícitamente (E5/H8)."""
     cfg = cfg or U.reglas()
@@ -557,15 +709,17 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
     ahora = ahora.astimezone(timezone.utc)
     ts_emision = ahora.isoformat()
     disp = ((meta_ext.get("disponibilidad") or {}).get("por_ticker") or {})
-    avail = max((v["available_at_utc"] for v in disp.values() if v.get("available_at_utc")), default=None)
-    if avail is None:
-        avail = cierre_utc(fecha_insumo).isoformat()
-    sesion_obj, apertura_obj = proxima_sesion_despues_de(datetime.fromisoformat(avail))
+    timing = evaluar_timing(disp, fecha_insumo, ahora)
+    avail, sesion_obj, apertura_obj = timing["avail"], timing["sesion_obj"], timing["apertura_obj"]
     # E2: el «día» del sello en el calendario del exchange, nunca el huso del host
     fecha_sello = dia_en_calendario_del_exchange(ahora)
     estado_dia = "sesion" if es_sesion(fecha_sello) else "sin_sesion"
-    # regla maestra: available_at < timestamp_utc < apertura objetivo
-    timing_ok = datetime.fromisoformat(avail) < ahora < apertura_obj
+    # regla maestra: available_at < timestamp_utc < apertura objetivo. E0.3: además
+    # manda la clase de la evidencia: un insumo que `congelar_extension` congeló como
+    # no verificable (con SU instante, segundos antes) no sella aunque el reloj de acá
+    # diga ok; el reloj del sello sólo puede endurecer el veredicto, nunca ablandarlo.
+    evidencia_no_verificable = (meta_ext.get("cupo_canonico") is False) or es_extension_no_verificable(ruta_ext)
+    timing_ok = timing["timing_ok"] and not evidencia_no_verificable
     estado_timing = "ok" if timing_ok else "roto"
     sesion_previa_a_obj = str(_cal().previous_session(pd.Timestamp(sesion_obj)).date())
     insumo_fresco = (fecha_insumo == sesion_previa_a_obj)
@@ -586,35 +740,107 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
     creado = datetime.now(timezone.utc).isoformat()
     con = conectar(ruta_db)
     try:
-        previas = con.execute("SELECT DISTINCT insumo_ext_sha256, timestamp_utc FROM sellos_dinero "
-                              "WHERE fecha_insumo = ? AND juego = ?", (fecha_insumo, dec["juego"])).fetchall()
-        if previas:
-            shas = {p[0] for p in previas}
-            if meta_ext["sha256"] in shas:
-                return {"resultado": "ya_sellada", "fecha_insumo": fecha_insumo,
-                        "timestamp_utc_original": previas[0][1], "filas_insertadas": 0,
-                        "insumo_ext_sha256": meta_ext["sha256"]}
-            filas_prev = con.execute("SELECT ticker, decision, acciones_regla FROM sellos_dinero WHERE fecha_insumo = ? "
+        def _divergencia(tabla_previa: str, sha_previo: str, contra: str) -> dict:
+            """E4: la fila de `divergencias_sello` y cero inserciones. `contra` dice
+            qué ocupaba la fecha: un sello, o (E0.3) un intento no verificable."""
+            filas_prev = con.execute(f"SELECT ticker, decision, acciones_regla FROM {tabla_previa} WHERE fecha_insumo = ? "
                                      "AND juego = ? ORDER BY ticker", (fecha_insumo, dec["juego"])).fetchall()
             ahora_por_t = {f["ticker"]: (f["decision"], f["acciones_regla"]) for f in dec["filas"]}
             distintas = sum(1 for (t, d, n) in filas_prev if ahora_por_t.get(t) != (d, n))
             conservado = bool(meta_ext.get("persistido", True))
-            detalle = (f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
-                       f"las filas selladas no se tocan; ")
+            if contra == "sello":
+                detalle = (f"segundo sello del {fecha_insumo} con otro insumo; {distintas} decisión(es) distinta(s); "
+                           f"las filas selladas no se tocan; ")
+            else:
+                detalle = (f"segundo intento no verificable del {fecha_insumo} (E0.3, un solo intento persistido por "
+                           f"fecha); {distintas} decisión(es) distinta(s); sha_sellado es el del intento previo, no el "
+                           f"de un sello; las filas previas no se tocan; ")
             detalle += (f"insumo divergente en {os.path.basename(ruta_ext)}" if conservado else
                         "contenido divergente NO conservado (E4-bis, corrida 13): el archivo sellado no se reescribe "
                         "y el insumo divergente no se persiste; sha_nuevo es el de un contenido que ya no existe")
             con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
                         "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
-                        (fecha_insumo, ts_emision, sorted(shas)[0], meta_ext["sha256"], distintas, detalle, creado))
+                        (fecha_insumo, ts_emision, sha_previo, meta_ext["sha256"], distintas, detalle, creado))
             con.commit()
-            return {"resultado": "divergencia_registrada", "fecha_insumo": fecha_insumo, "filas_insertadas": 0,
-                    "sha_sellado": sorted(shas)[0], "sha_nuevo": meta_ext["sha256"], "decisiones_distintas": distintas,
-                    "insumo_divergente_conservado": conservado}
+            return {"resultado": "divergencia_registrada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
+                    "filas_insertadas": 0, "sha_sellado": sha_previo, "sha_nuevo": meta_ext["sha256"],
+                    "decisiones_distintas": distintas, "insumo_divergente_conservado": conservado, "divergente_de": contra}
+
+        previas = con.execute(f"SELECT DISTINCT insumo_ext_sha256, timestamp_utc FROM {TABLA_SELLOS} "
+                              "WHERE fecha_insumo = ? AND juego = ?", (fecha_insumo, dec["juego"])).fetchall()
+        if previas:
+            shas = {p[0] for p in previas}
+            if meta_ext["sha256"] in shas:
+                return {"resultado": "ya_sellada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
+                        "timestamp_utc_original": previas[0][1], "filas_insertadas": 0,
+                        "insumo_ext_sha256": meta_ext["sha256"]}
+            return _divergencia(TABLA_SELLOS, sorted(shas)[0], "sello")
+        tabla = TABLA_SELLOS
+        if not timing_ok:
+            # E0.3: un disparo con timing roto no escribe en la tabla principal ni
+            # ocupa la fecha; y una fecha con intento o sello no admite otro intento
+            tabla = TABLA_INTENTOS
+            ocupada = _cita_en(con, TABLA_INTENTOS, fecha_insumo)
+            if ocupada is not None:
+                if ocupada["sha256"] == meta_ext["sha256"]:
+                    # R4 del auditor (corrida 15): un re-disparo con el MISMO insumo no
+                    # infla `divergencias_sello`; simétrico con `ya_sellada`
+                    return {"resultado": "ya_intentada", "fecha_insumo": fecha_insumo, "timestamp_utc": ts_emision,
+                            "filas_insertadas": 0, "insumo_ext_sha256": meta_ext["sha256"]}
+                return _divergencia(TABLA_INTENTOS, ocupada["sha256"], "intento_no_verificable")
+            ocupada = _cita_en(con, TABLA_SELLOS, fecha_insumo)          # sellada con otro juego (R4)
+            if ocupada is not None:
+                return _divergencia(TABLA_SELLOS, ocupada["sha256"], "sello")
+            if not evidencia_no_verificable:
+                # B1 del auditor (corrida 15): el rechazo deja rastro en la base, en la
+                # única tabla que no cita evidencia; sha_sellado = sha_nuevo = el insumo
+                # rechazado, y el detalle dice qué es cada cosa
+                detalle = (f"disparo con timing roto sobre una evidencia de nombre canónico del {fecha_insumo} (E0.3): "
+                           "la apertura se cruzó entre congelar y sellar, o --sin-red levantó un canónico nunca sellado; "
+                           "NINGUNA fila escrita en sellos_dinero ni en intentos_no_verificables (sólo esta, en "
+                           "divergencias_sello) y el archivo no se toca; sha_sellado es el del propio insumo rechazado, "
+                           f"no el de un sello; available_at={avail}, emision={ts_emision}, "
+                           f"apertura_objetivo={apertura_obj.isoformat()}")
+                con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
+                            "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
+                            (fecha_insumo, ts_emision, meta_ext["sha256"], meta_ext["sha256"], 0, detalle, creado))
+                con.commit()
+                return {"resultado": "rechazado_evidencia_canonica", "fecha_insumo": fecha_insumo,
+                        "timestamp_utc": ts_emision, "available_at": avail, "sesion_objetivo": sesion_obj,
+                        "apertura_objetivo_utc": apertura_obj.isoformat(), "timing_ok": False, "filas_insertadas": 0,
+                        "insumo_ext_sha256": meta_ext["sha256"], "insumo_ext_archivo": os.path.basename(ruta_ext),
+                        "motivo": ("timing roto sobre una evidencia con nombre canónico (la apertura se cruzó entre "
+                                   "congelar y sellar, o --sin-red levantó un canónico nunca sellado): no se escribe "
+                                   "ninguna fila; un intento no cita un canónico y una fila rota no entra en la "
+                                   "tabla principal (E0.3). El archivo no se toca.")}
+        if meta_ext.get("persistido") is False:
+            # R1 del auditor (corrida 16-2, F3): un insumo que `congelar_extension`
+            # mandó a un temporal (la fecha ya tenía sello o intento con OTRO sha) no
+            # puede terminar en una fila: main() borra ese archivo y la fila citaría un
+            # sha que mañana no existe. Todas las ramas legítimas ya salieron arriba con
+            # cero filas; la única que llegaba acá era un cambio de `juego_activo` entre
+            # dos disparos de la misma fecha (`previas` filtra por juego). Queda rastro.
+            cita = _cita_en(con, TABLA_SELLOS, fecha_insumo) or _cita_en(con, TABLA_INTENTOS, fecha_insumo)
+            detalle = (f"insumo NO persistido del {fecha_insumo} con juego {dec['juego']!r} sin filas previas de ese "
+                       "juego (cambio de juego_activo entre dos disparos de la misma fecha): la fecha ya tenía "
+                       "evidencia con otro sha y este insumo vive en un temporal que main() borra; NINGUNA fila "
+                       f"escrita en {TABLA_SELLOS} ni en {TABLA_INTENTOS} (sólo esta, en divergencias_sello): una "
+                       "fila sellada no cita un archivo que no existirá mañana (R1 del auditor, corrida 16-2); "
+                       "decisiones_distintas es NULL porque no hay filas del mismo juego con que comparar")
+            con.execute("INSERT INTO divergencias_sello (fecha_insumo, timestamp_utc, sha_sellado, sha_nuevo, "
+                        "decisiones_distintas, detalle, creado_en) VALUES (?,?,?,?,?,?,?)",
+                        (fecha_insumo, ts_emision, (cita or {}).get("sha256", meta_ext["sha256"]), meta_ext["sha256"],
+                         None, detalle, creado))
+            con.commit()
+            return {"resultado": "rechazado_insumo_no_persistido", "fecha_insumo": fecha_insumo,
+                    "timestamp_utc": ts_emision, "filas_insertadas": 0, "juego": dec["juego"],
+                    "insumo_ext_sha256": meta_ext["sha256"], "sha_sellado": (cita or {}).get("sha256"),
+                    "motivo": ("el insumo no está persistido (temporal fuera de la carpeta de evidencia, borrado por "
+                               "main): no se inserta ninguna fila que lo cite; fila en divergencias_sello")}
         insertadas = 0
         for f in dec["filas"]:
-            cur = con.execute("""
-                INSERT INTO sellos_dinero
+            cur = con.execute(f"""
+                INSERT INTO {tabla}
                 (fecha_sello, fecha_insumo, timestamp_utc, available_at, exchange, sesion_objetivo,
                  apertura_objetivo_utc, ticker, decision, acciones_regla, tamano_nominal, precio_ref_usd,
                  senal_magnitud_pp, senal_banda_baja_pp, senal_banda_alta_pp, senal_fuente, juego,
@@ -635,7 +861,8 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
         con.commit()
     finally:
         con.close()
-    return {"resultado": "sellada", "fecha_sello_ny": fecha_sello, "fecha_insumo": fecha_insumo,
+    return {"resultado": "sellada" if timing_ok else "intento_no_verificable", "tabla": tabla,
+            "fecha_sello_ny": fecha_sello, "fecha_insumo": fecha_insumo,
             "timestamp_utc": ts_emision, "available_at": avail, "sesion_objetivo": sesion_obj,
             "apertura_objetivo_utc": apertura_obj.isoformat(),
             "estado": estado, "estado_timing": estado_timing, "estado_dia": estado_dia, "timing_ok": timing_ok,
@@ -652,18 +879,25 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
 
 
 def exportar_csv(ruta_db: str = RUTA_DB, ruta_csv: str | None = None) -> str:
-    """Toda la tabla (y las divergencias) a CSV en data/backups/, que el job de
-    backup versiona. H8: exportar desde una base que NO es la real exige decir
-    a dónde, para que un test jamás pise el CSV versionado."""
+    """Toda la tabla (y las divergencias, y desde E0.3 los intentos no
+    verificables, a `<ruta>_no_verificables.csv`) a CSV en data/backups/, que
+    el job de backup versiona. H8: exportar desde una base que NO es la real
+    exige decir a dónde, para que un test jamás pise el CSV versionado."""
     if ruta_csv is None:
         if os.path.abspath(ruta_db) != os.path.abspath(RUTA_DB):
             raise ValueError("exportar desde una base que no es la real exige ruta_csv explícita")
         ruta_csv = RUTA_BACKUP_CSV
     con = conectar(ruta_db, solo_lectura=True)
     try:
-        for tabla, ruta in (("sellos_dinero", ruta_csv),
-                            ("divergencias_sello", os.path.splitext(ruta_csv)[0] + "_divergencias.csv")):
-            cur = con.execute(f"SELECT * FROM {tabla} ORDER BY id")
+        for tabla, ruta in ((TABLA_SELLOS, ruta_csv),
+                            ("divergencias_sello", os.path.splitext(ruta_csv)[0] + "_divergencias.csv"),
+                            (TABLA_INTENTOS, os.path.splitext(ruta_csv)[0] + "_no_verificables.csv")):
+            try:
+                cur = con.execute(f"SELECT * FROM {tabla} ORDER BY id")
+            except sqlite3.OperationalError:
+                if tabla != TABLA_INTENTOS:
+                    raise
+                continue          # base anterior a E0.3 sin la tabla de intentos: cero intentos, sin archivo
             cols = [d[0] for d in cur.description]
             filas = cur.fetchall()
             os.makedirs(os.path.dirname(ruta), exist_ok=True)
@@ -705,11 +939,23 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
              "N_objetivo": N_OBJETIVO_E0, "N_objetivo_fuente": N_OBJETIVO_FUENTE,
              "fuente_conteos": ("dinero/sello_dinero.db" if os.path.exists(ruta_db) else "aún sin base: 0 filas"),
              "ultimo": None, "filas_ultimo_sello": [],
-             "divergencias_registradas": 0, "senal_fuente": SENAL_FUENTE, "estatus": "PROPUESTA"}
+             "divergencias_registradas": 0, "senal_fuente": SENAL_FUENTE, "estatus": "PROPUESTA",
+             # E0.3: fechas con un intento no verificable (tabla aparte); no cambia ninguna clave anterior
+             "intentos_no_verificables": 0,
+             # B2 (corrida 16-2, acta §93.7): el último intento, con las MISMAS claves que `ultimo`,
+             # o None. Es lo que vuelve visible fuera del log una noche con timing roto.
+             "ultimo_intento": None}
     if not os.path.exists(ruta_db):
         return vacio
     con = conectar(ruta_db, solo_lectura=True)
     try:
+        try:
+            intentos = con.execute(f"SELECT COUNT(DISTINCT fecha_insumo) FROM {TABLA_INTENTOS}").fetchone()[0]
+            ult_int = con.execute(f"SELECT {', '.join(_CLAVES_ULTIMO)} FROM {TABLA_INTENTOS} "
+                                  "ORDER BY id DESC LIMIT 1").fetchone()
+        except sqlite3.OperationalError:      # base anterior a E0.3: cero intentos, ningún último intento
+            intentos, ult_int = 0, None
+        ultimo_intento = dict(zip(_CLAVES_ULTIMO, ult_int)) if ult_int else None
         filas = con.execute("SELECT COUNT(*) FROM sellos_dinero").fetchone()[0]
         sesiones = con.execute("SELECT COUNT(DISTINCT fecha_insumo) FROM sellos_dinero").fetchone()[0]
         cuentan = con.execute("SELECT COUNT(DISTINCT fecha_insumo) FROM sellos_dinero WHERE cuenta_para_N = 1").fetchone()[0]
@@ -726,7 +972,8 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
     finally:
         con.close()
     return {**vacio, "filas": filas, "sesiones_selladas": sesiones, "sesiones_que_cuentan_para_N": cuentan,
-            "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias}
+            "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias,
+            "intentos_no_verificables": intentos, "ultimo_intento": ultimo_intento}
 
 
 def main(argv=None) -> int:
@@ -762,13 +1009,36 @@ def main(argv=None) -> int:
         if not meta.get("persistido", True) and os.path.exists(ruta):
             os.remove(ruta)
     print(json.dumps(r, indent=1, ensure_ascii=False, default=str))
+    # R5 del auditor (corrida 15): congelar y sellar leen el reloj por separado; el
+    # cruce entre los dos queda MEDIDO en el log, en toda rama, no inferido
+    congelado_en, emision = meta.get("congelado_en_utc"), r.get("timestamp_utc")
+    delta = ((datetime.fromisoformat(emision) - datetime.fromisoformat(congelado_en)).total_seconds()
+             if congelado_en and emision else None)
+    print(f"relojes: congelado_en_utc={congelado_en} timestamp_utc={emision} delta_s={delta}")
     if r.get("resultado") == "sellada":
         exportar_csv(RUTA_DB)
         respaldar_extension(ruta)
         print("export:", RUTA_BACKUP_CSV, "| extensión respaldada en", DIR_BACKUP_EXT)
+    elif r.get("resultado") == "intento_no_verificable":
+        # E0.3: la tabla de intentos se versiona igual que la principal, y el par
+        # `.no_verificable` se respalda igual que el canónico (E5: el sha citado
+        # tiene que existir mañana; política §3-4)
+        exportar_csv(RUTA_DB)
+        respaldar_extension(ruta)
+        print(f"INTENTO NO VERIFICABLE (timing roto): {r['filas_insertadas']} filas en {TABLA_INTENTOS}, ninguna en "
+              f"{TABLA_SELLOS}; evidencia en {os.path.basename(ruta)}, respaldada en {DIR_BACKUP_EXT}; el cupo "
+              f"ext_{r['fecha_insumo']}.csv queda libre para el sello bueno")
     elif r.get("resultado") == "divergencia_registrada":
         exportar_csv(RUTA_DB)          # la tabla de divergencias también se versiona; la extensión sellada no se toca
         print("export:", RUTA_BACKUP_CSV, "| divergencia registrada, ninguna extensión escrita ni respaldada")
+    elif r.get("resultado") == "rechazado_insumo_no_persistido":
+        exportar_csv(RUTA_DB)          # R1 (16-2): el rechazo dejó su fila en divergencias_sello y se versiona
+        print("RECHAZADO (E0.3, R1): insumo no persistido con juego sin filas previas; fila en divergencias_sello, "
+              "ninguna en las tablas de filas:", r.get("motivo"))
+    elif r.get("resultado") == "rechazado_evidencia_canonica":
+        exportar_csv(RUTA_DB)          # B1: el rechazo dejó su fila en divergencias_sello y también se versiona
+        print("RECHAZADO (E0.3): timing roto sobre una evidencia con nombre canónico; fila en divergencias_sello, "
+              "ninguna en las tablas de filas, ningún archivo tocado:", r.get("motivo"))
     return 0
 
 

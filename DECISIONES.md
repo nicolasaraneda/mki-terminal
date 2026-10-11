@@ -9944,3 +9944,149 @@ línea base; zona ciega 7 del dictamen 16a, ahora medida; R5 del dictamen 16-1).
 **100.6. Lo que sigue abierto después de este acto.** El commit de la 16-1 (lista en la bitácora §8; 27 rutas) y la lectura
 del lunes 12-oct (predicciones en la bitácora §7); las firmas de §80; la 16-2 (camino T, §99.2) y la 16-3 (§99.8); las
 recomendadas sin dueño; E1 (§93.15); los cinco commits sin pushear.
+
+## Acta §101, 11-oct-2026 (corrida 16-2, diurna con Nicolás presente). El camino T de §62 rebasado sobre el sellador de la 16b y B2, entregados como tres parches listos con dictamen, receta, predicción falsable y el párrafo para el acta de aplicación; nada aplicado al árbol real. Ninguna firma
+
+Redactada por el orquestador de la corrida (Fable 5.1, esfuerzo alto) al cierre. Encargo: `~/encargo.md` (actas §93.7, §99.2
+y §99.8). Insumos: `GEMELO/resultados/bitacora_16_2.md` (horas de `date`), el dictamen y su addendum en
+`GEMELO/resultados/dictamen_16_2/auditor_camino_T.md`, la tarjeta §81 de `espera_firma.md` y las salidas archivadas en
+`dictamen_16_2/evidencia/`. **Ninguna firma: lo que necesita decisión está en la tarjeta §81.** Ninguna cifra publicada se
+mueve; ninguna fila sellada se reescribe; ningún esquema de base real cambia (la tabla nueva nace con el primer sello
+en escritura, después de que Nicolás aplique); `motor.py`, `snapshot.py`, `senales.py`, el vigía, la sonda, el backup,
+`backtest/`, el README, `.env`, `corredor/` y los timers intactos; **`dinero/sello_dinero.py`, `dinero/reglas.json`,
+`api/` y `frontend/` del árbol real NO cambiaron** (huella del sellador real `cd0e70c8…`, la de HEAD, verificada por el
+auditor al abrir y al cerrar). Nada se commiteó ni se pusheó; el sellador real no se corrió; `dinero/sello_dinero.db`
+sólo en `mode=ro`; ningún job `mki-*` disparó (domingo).
+
+**101.1 (HECHO, no aplicado; por la letra del encargo).** Tres parches en `GEMELO/propuestas/parches/`, en el orden en que
+se aplican y con `git apply --check` limpio sobre HEAD `c271822` (verificado tres veces en worktrees frescos; las ocho
+huellas de los archivos tocados idénticas al worktree de trabajo): **`camino_T_16_2.diff`** (sha256
+`48addf80bc5eecced63af4f916be1eea075834051f0ce4bdfb9aa36d0768f4d4`, 1797 líneas), **`b2_contrato_16_2.diff`**
+(`ad864726cf91e2d50f2430cd3f9351d9cff1dfc657a8398304f682c0a0abf45f`, 53) y **`b2_api_16_2.diff`**
+(`9b4c45d43c848bff11383bf5955a6cfeb748d700f1b08f73fb696b95283e32b5`, 370). El parche de la corrida 15
+(`sello_no_verificable.diff`) queda SUPERADO con nota fechada en su `.md`; se conserva como historia. **Aplicarlos es acto
+de Nicolás con el acta de aplicación de §93.7** (párrafo con todo lo que tiene que tener a la vista en la bitácora §6.2;
+receta paso a paso en §6.1, reversión con `git apply -R` en orden inverso), **antes del sello del martes 13-oct a las
+00:30 Chile** si la sesión del 12-oct ha de ser la primera con E0.3.
+
+**101.2 (DISEÑO; nada nuevo en el mecanismo).** `git apply --3way` del parche de la 15 sobre HEAD aplicó limpio, sin un
+conflicto: la 16b no tocó ninguna línea de contexto. El rebase fue semántico: 15 literales `33` de los tests nuevos de la
+15 pasaron a `N_OPERABLES` (32), y un test de la 16b que sellaba TARDE con evidencia de nombre canónico se adaptó porque
+en E0.3 eso es `rechazado_evidencia_canonica` (su docstring lo dice; lo que fijaba no cambia). **Las cuatro decisiones del
+implementador de la 15 y B1/R2/R3/R4/R5 de aquel dictamen se conservan tal cual**; ninguna dejó de aplicar. Lo firmado
+en §95.4 y §97 no se toca: TOELY fuera por `reglas.json`, cero faltantes tolerados, sin retorno, el sorteo como está;
+`excluidos_universo` viaja también en el retorno de un intento. **Plegado del dictamen nuevo:** R1 (`sellar` no inserta
+cuando el insumo está en un temporal que `main()` borra: fila en `divergencias_sello` con `decisiones_distintas = NULL`
+declarado, resultado `rechazado_insumo_no_persistido`; cierra F3, un cambio de `juego_activo` entre dos disparos de la
+misma fecha, preexistente en E0.2), R2 (paridad de columnas entre las dos tablas verificada sobre la base REAL, con
+`pytest.skip` declarado hasta que exista la tabla, y advertencia en `_ddl_filas`: `IF NOT EXISTS` no propaga una columna
+nueva, una migración exige acta), el cosmético `FROM {TABLA_SELLOS}`, y R6 del addendum (`UltimoSelloDinero` con las 21
+claves de `_CLAVES_ULTIMO`). B2 del dictamen de la 15: `api/CONTRATO.md` enmendado PRIMERO (enmienda 16-2), `estado()`
+gana `ultimo_intento`, `/api/dinero/sellos` sirve `intentos_no_verificables`, `ultimo_intento` y `nota_intentos` dentro
+de `E0` leyendo `estado()`, y la API responde igual con una base anterior a E0.3 sin crearle la tabla. Huellas tras
+aplicar los tres: `dinero/sello_dinero.py` `299a7627f289e70f8ae3cb83166672c451f0921ca88c21450a87892ae3963d93` (con
+sólo el camino T sería `610f5b05…`, que NO es la combinación que se entrega), `api/main.py` `fa7d0651…`,
+`api/CONTRATO.md` `9b40b497…`, `frontend/src/lib/tipos.ts` `1a690ee8…`, `tests/test_sello_dinero.py` `01dcd57b…`,
+`tests/test_toely_fuera_insumo_e0.py` `6a3ecb4b…`, `tests/test_camino_T_16_2.py` `05ab8999…`,
+`tests/test_b2_intentos_visibles_16_2.py` `5d817300…`.
+
+**101.3 (MEDIDO; tests y suites).** Tests de reproducción escritos antes de tocar código propio y rojos sobre HEAD por su
+conducta (`evidencia/pytest_nuevos_sobre_HEAD.txt`, 15:24: 4 failed, 1 passed, 1 skipped): el 28-sep con los relojes
+reales y el 7-oct con SHECY sin barra dan `divergencia_registrada` en HEAD y `sellada` con T; TOELY no entra a la tabla de
+intentos y su ausencia no vuelve incompleto un intento; una recuperación en sábado con el cierre del viernes sella
+`dia_sin_sesion` en la principal igual que E0.2 (control que pasa en HEAD). El test de F3 falló sobre el camino T sin la
+guarda R1 por su aserción (`filas_insertadas=32`). Sellador + camino T + B2 + TOELY en el worktree: **66 passed, 11
+skipped** (los saltados, todos por la base real ausente). Suite completa del árbol real al abrir (HEAD, todas las bases):
+**1116 passed, 5 skipped, 1 xfailed, 0 failed** (15:15:40 a 15:23:28); el árbol real no recibió código, así que la suite
+de cierre es la misma (§101.6). Worktrees sin bases (§95.5; la copia de `dinero/sello_dinero.db` fue denegada otra vez con
+la forma exacta de §99.7): HEAD puro **19 failed, 1012 passed, 84 skipped, 1 xpassed, 6 errors**; con los tres parches
+finales **19 failed, 1044 passed, 90 skipped, 1 xpassed, 6 errors**, y **el conjunto de 25 rojos es idéntico** en los dos
+(bases y artefactos gitignorados ausentes): ningún rojo aparece sólo con los parches. Recolectados 1160 contra 1122
+(+38). **PREDICCIÓN para la suite del árbol real con los tres parches aplicados (nunca corrida):** 1151 passed, 8 skipped,
+1 xfailed, 0 failed. `tsc --noEmit` sobre `tipos.ts` parcheado: exit 0. Los siete tests de aislamiento del arnés de
+parches sobre HEAD + los tres: 7 passed.
+
+**101.4 (MEDIDO; dictamen del `auditor-lookahead`, 15:27:33 a 15:40:44, y addendum 15:49:56 a 15:55:19): APLICABLE CON
+EXIGENCIAS, luego APLICABLE con cero bloqueantes de código.** Sin fuga temporal: `evaluar_timing` es puro, `available_at`
+es backward-only y nunca el reloj de pared, y el veredicto de una fecha es invariante a las sesiones posteriores (prueba
+maestra sobre el instante que decide tabla y nombre). Los cinco chequeos de integridad permanente contra la base REAL en
+`mode=ro` con el módulo parcheado: sin fallas (lo que los saltados del worktree no probaron). Lo que midió y esta acta
+deja escrito, con etiqueta:
+- **B1 (acta; sigue en pie y se cumple acá): el camino T cubre UNA de las dos formas del disparo de recuperación.**
+  Cubre la de timing roto (barra intradía con `available_at` futuro: el 28-sep y el 7-oct), que va a
+  `intentos_no_verificables` y deja la fecha libre. **NO cubre la de timing OK en un día sin sesión** (PC apagado el
+  viernes a las 23:30 NY y recuperación el sábado con el cierre completo del viernes; o el feriado de XNYS entre semana con
+  el cierre de la víspera): sella en `sellos_dinero` como `dia_sin_sesion`, `cuenta_para_N = 0`, y ocupa la fecha para
+  siempre, exactamente igual que E0.2, porque `estado_dia` mira el día de la EMISIÓN en el calendario de NY (§57 firmado
+  tal como está; medido por el auditor en tres escenarios, incluido el 26-nov con media sesión). **Precisión fechada a
+  §99.2 (11-oct-2026):** la razón «este ya habría salvado el 7-oct» es cierta para la primera forma y no para la segunda;
+  §99.2 descartó (b) `Persistent=false` y (c) con esa razón. Reabrirlo es acto posterior de Nicolás (tarjeta §81.2). Hoy
+  n = 0 casos de la segunda forma en 22 fechas selladas. La ocupación de fechas bajo T es un subconjunto de la de E0.2:
+  T sólo actúa con `timing_ok` falso y entonces escribe estrictamente menos.
+- **B2 (secuencia; CERRADA con la receta):** los tres parches en el mismo acto, nunca el camino T solo: `b2_api` toca
+  `estado()` del sellador y consume el mismo cambio por noche; aplicar el camino T solo dejaría en pie la F1 de la 15
+  (una noche quemada idéntica a un sábado).
+- **F1, la zona ciega de la 15, medida:** dos instancias concurrentes rompen la integridad de forma IDÉNTICA en E0.2 y
+  E0.3 (A y B congelan sobre el mismo path; la fila de A lleva los precios de B porque `sellar` relee el disco). No es de
+  T; systemd no arranca dos instancias de la unidad `oneshot`; la única vía es un `--sellar` a mano con el servicio
+  activo. Zona ciega aceptada; regla operativa en la receta y R5 en §81.5.
+- **F2:** si el cierre nominal cae entre los dos relojes de `main()` (ventana de 1 a 2 s), la fila de intento satisface
+  la regla maestra en sus tres columnas y dice `roto`; la explicación vive en el meta `.no_verificable`. Fuera de toda
+  métrica; R3 en §81.3. **F4:** `IF NOT EXISTS` no propaga columnas; cerrada con R2. **R4** (el `.no_verificable`
+  huérfano, R1 de la 15) sigue sin hacer: §81.4.
+- **Zona ciega declarada otra vez, ahora con peso:** `available_at` es computado por calendario y no observado, y desde
+  E0.3 decide tabla, nombre de archivo y ocupación de la fecha; todo el resultado de un disparo de recuperación depende
+  de si la fuente ya emitió una barra intradía del día (un boot a las 08:00 NY habría sellado el 6-oct bien; el de las
+  09:31 produjo el intento del 7-oct). Es §72, no firmado. Fuga por el analista declarada y sin defensa: el único criterio
+  que mide el valor de T (sesiones que cuentan) es el que T mejora; la defensa es que no se aplica retroactivamente.
+
+**101.5 (PREDICCIÓN falsable, martes 13-oct 00:30 Chile, `mode=ro`; consulta exacta en la bitácora §7).** Con los tres
+parches aplicados: sesión del 12-oct `pendiente`, `insumo_completo = 1`, `cuenta_para_N = 1`, 32 filas sin TOELY,
+`version_sello = E0.3`, `sellador_sha256 = 299a7627…`, `reglas_sha256 = b6080eee…`, contador **12 → 13**; la tabla
+`intentos_no_verificables` existe con 0 filas y dos disparadores; nace `data/backups/sello_dinero_no_verificables.csv`
+vacío con cabecera; ningún `.no_verificable.*` en disco; `estado()` con `intentos_no_verificables: 0` y `ultimo_intento:
+null`, servidos por la API. Si falta otro ticker, `insumo_incompleto` con su nombre y contador en 12. Sin los parches: 32
+filas `E0.2`, `cd0e70c8…`, contador 12 → 13 igual, sin tabla ni CSV nuevos, y la causa es la mano.
+
+**101.6 Errores del orquestador, escritos acá.** (1) El primer `git add -A` del worktree incluyó los enlaces `venv` y
+`GEMELO/cache` (los patrones del `.gitignore` llevan barra final y no cazan un enlace); se sacaron del índice y el diff
+se regeneró. (2) `b2_api_16_2.diff` se regeneró una vez sin el archivo de test nuevo (el worktree de regeneración no lo
+tenía con `git add -N`); la verificación en worktree fresco lo cazó («No such file») y se corrigió antes de archivar. (3)
+El worktree `wt162_e1` contenía la pila completa cuando el auditor lo leyó como «camino T solo»; el auditor reconstruyó
+el estado por su cuenta y la huella coincidió. (4) La suite completa del worktree final corrió sobre un
+`tests/test_sello_dinero.py` con una línea en blanco final de más (quitada después para que `git apply` no avise) y
+antes de R6; lo que cambió después está cubierto por `tsc` y por el archivo de B2 corridos tras el cambio.
+
+**101.7 Lo que sigue abierto después de este acto.** El commit de la 16-1 y el de esta corrida (listas en las dos
+bitácoras; 27 y 22 rutas); la aplicación de los tres parches con su acta (§81.1) y la lectura del martes 13-oct (§101.5);
+las firmas de §80 y §81; la 16-3 (§99.8, más §81.3, §81.4 y §81.6 si se firman); E1 (§93.15); los cinco commits sin
+pushear.
+
+## Acta §102, 11-oct-2026. Firmas de Nicolás sobre las tarjetas §80 y §81, la copia de bases, el texto de E1, y el acta de aplicación del camino T de §62 con B2 (§93.7), que aplica él a mano
+
+Redactada por el asistente del chat a partir de las respuestas de Nicolás del 11-oct (15:19, 15:25 y 17:38). Insumos a la vista al firmar, leídos por el asistente desde `D:\proyectos\mki-terminal\corridas\corrida16_1\` y `corrida16_2\`: las bitácoras 16-1 y 16-2, las tarjetas §80 y §81, el acta de cierre §101 y los tres parches, cuyos sha256 leídos por el asistente son los mismos que declara §101.1. Las opciones y las recomendaciones etiquetadas que Nicolás tuvo delante son las de los mensajes del asistente de las 15:17, 15:22 y 17:36. Ninguna de estas firmas mueve una cifra publicada.
+
+**102.1. Tarjeta §80, las elecciones de agente de la corrida 16-1: ratificadas.** Respuestas de Nicolás del 11-oct a las 15:19: «1 a) 2 a) 3 a) 4 a) 5 b) 6 a)». (1) «Fecha nueva» de filas invertidas para el vigía: una fecha dentro de los últimos `DIAS_INVERSION_RECIENTE = 10` días; lo que se pierde: si el vigía no corre en 10 días, una inversión pasa a residuo sin alertar. (2) El predicado del vigía no aplica el filtro de 7 días del verificador. (3) La negativa declarada cierra el caso a las 20:30 sin consumir el marcador (ya aplicado, BL3 del auditor). (4) Sin `sox_fecha` se sigue sellando con el AVISO de siempre. (5) Opción (b): el rechequeo sin negativa pasa a la hora real la próxima vez que el vigía se toque con firma; queda en la cola junto con R6. (6) Si el calendario falla, se sella sin juzgar la frescura, con `AVISO frescura` en `snapshot.log`. En todas, la opción elegida es la recomendación de la tarjeta.
+
+**102.2. Destino de las recomendaciones del auditor de la 16-1 sin dueño: la distribución propuesta.** Respuesta de Nicolás: «distribucion a) esa distribucion». A la corrida 16-3: R5 (`solo_con_base` exige tabla no vacía) y el test que escribe DDL en `senales.DB_PATH` sin parchearlo (hecho de entorno (ii) de §80); R9 (la negativa del fallback del dashboard, `app.py:832`, visible para el vigía o declarada invisible). A la cola, con tarjeta: R6 (los chequeos del vigía en `mode=ro`, junto con X.1 (5)); R3 (registro durable de cada negativa); R7 (publicar el contador de días negados desde el 2-nov, se revisa con datos de noviembre porque mueve una cifra publicada); S2 (reloj atrasado y la guarda (b)); F4 (16 filas selladas en días sin sesión, 5-jul y 7-sep, dentro de las métricas: mueve cifras publicadas, le toca al `estadistico-adversario`). No se elige mandar todo a la cola.
+
+**102.3. Permisos.** El 10-oct Nicolás eligió fusionar su lista anterior completa con la nueva (opción a); respuesta: «vamos con la opcion a)». El 11-oct a las 15:14, `/permissions` mostró cargadas las reglas de §99.7 y, además, las de la lista del proyecto, entre ellas `Edit(**/*.db)` en `deny`. Lectura del asistente (PROBABLE, no confirmada con la pestaña «Recently denied»): esa regla es la que negó las copias de las bases al worktree en las corridas 16a, 16b y 16-1, porque `deny` gana sobre `allow`. Copia de bases al worktree: opción (a), se mantiene la protección `Edit(**/*.db)` y sigue rigiendo el criterio §95.5. Respuesta de Nicolás (15:25): «dejar la proteccion y seguir con el criterio 95.5». No se eligen copiarlas él a un worktree preparado, ni estrechar la regla a las tres bases reales.
+
+**102.4. Declarado al firmar, por la regla de un solo cambio al sellador por noche.** El cambio de `version_reglas` a `0.3.0-PROPUESTA` (§99.5) y las recomendadas R2 y R4 del auditor de la 16b (desglose por `reglas_sha256` en `estado()`; reventar ante un ticker desconocido en `exclusiones_insumo_e0`) tocan `dinero/` y no pueden entrar la noche del 13-oct, que lleva el camino T. La corrida 16-3 las deja como parche, para aplicarlas en una noche posterior sin otro cambio al sellador.
+
+**102.5. Errata de hecho al texto de E1 firmado en §93.11.2.** Respuesta de Nicolás (15:25): «usar el texto corregido». El texto firmado el 4-oct decía que el usuario de práctica no estaba creado; lo está desde el 4-oct (§95.3). El README dice: «The IBKR account is approved and verified, and the paper-trading user exists; the gateway is not set up yet.»
+
+**102.6. Tarjeta §81: todas como recomienda la tarjeta.** Respuesta de Nicolás (17:38): «80 todas como recomienda». La tarjeta §80 ya estaba firmada en 102.1 con las mismas opciones que recomendaba, así que la respuesta se registra para §81, la que estaba en pregunta; Nicolás lo confirma al anexar esta acta. (1) Opción (a): Nicolás aplica a mano los tres parches (102.7). (2) Opción (a): la forma del disparo de recuperación con timing correcto en un día sin sesión, que el camino T no cubre, se acepta y se declara (102.7, punto 4); se mide cuántas veces ocurre antes de reabrir `Persistent=false` o §57 (hoy n = 0 en 22 fechas selladas). No se eligen (b), `Persistent=false` además de T, que pierde también las recuperaciones que sí sellan bien (un arranque a las 08:00 NY habría sellado el 6-oct, medido por el auditor), ni (c), que la fila de un día sin sesión cuente. **Precisión fechada a §99.2 (11-oct-2026):** su razón, «este ya habría salvado el 7 oct», es cierta para el disparo con timing roto y no para el de timing correcto en día sin sesión. (3) Opción (b): las filas de un intento llevan en el `motivo` el instante con que se decidió el timing, sin cambio de esquema; va en el parche de `dinero/` de la corrida 16-3, que se aplica en otra noche (102.4). (4) Opción (a): un test de integridad que exige que todo `.no_verificable.csv` en `DIR_EXT` esté citado por una fila, en la corrida 16-3. (5) Opción (a): regla operativa, antes de cualquier `--sellar` manual `systemctl --user is-active mki-sello-dinero.service` tiene que decir `inactive`; el candado en código queda en la cola. (6) Opción (a): una tarjeta chica en la vista `/sellos` con «intentos no verificables: N; último: fecha, hora» y la frase `nota_intentos`, en la corrida 16-3.
+
+**102.7. Acta de aplicación del camino T de §62 con B2 (§93.7, §99.2, §81.1).**
+- **Qué se aplica, en un solo acto y en este orden** (B2 del auditor: nunca el camino T solo): `GEMELO/propuestas/parches/camino_T_16_2.diff` (sha256 `48addf80bc5eecced63af4f916be1eea075834051f0ce4bdfb9aa36d0768f4d4`), `b2_contrato_16_2.diff` (`ad864726cf91e2d50f2430cd3f9351d9cff1dfc657a8398304f682c0a0abf45f`) y `b2_api_16_2.diff` (`9b4c45d43c848bff11383bf5955a6cfeb748d700f1b08f73fb696b95283e32b5`), con la receta de la bitácora 16-2 §6.1 y la corrección de siempre: todo con `venv/bin/python`. Antes, `systemctl --user is-active mki-sello-dinero.service` dice `inactive`.
+- **Corte de método:** la hora del `date` que Nicolás corre inmediatamente antes del primer `git apply`; se declara en el acta siguiente con el número de la suite.
+- **(1) Las cuatro decisiones del implementador de la corrida 15, conservadas tal cual:** la evidencia canónica con timing roto se rechaza y deja fila en `divergencias_sello`; un segundo intento con el mismo sha devuelve `ya_intentada` sin fila; los dos relojes de `main()` siguen, con el delta medido en el log; `VERSION_SELLO = E0.3` y `sellador_sha256` nuevo en las filas nuevas, sin reescribir ninguna vieja.
+- **(2) Texto B3 de §93.7, literal:** el camino T **sustituye** el mecanismo de §90.6 (a), no lo implementa; `sello_previo()` no distingue estados y no hace falta que lo haga; el efecto firmado se cumple; el mecanismo es otro.
+- **(3) El corte de método es `VERSION_SELLO = E0.3`**, y la huella que llevan las filas nuevas es la de `dinero/sello_dinero.py` con los tres parches: `299a7627f289e70f8ae3cb83166672c451f0921ca88c21450a87892ae3963d93` (con sólo el camino T sería `610f5b05…`, que no es la combinación firmada).
+- **(4) Del dictamen de la corrida 15 al de la 16-2:** lo bloqueante de código de la 15 y sus recomendadas R2 a R5 siguen plegadas; el dictamen nuevo agrega R1 y R2 plegadas (guarda de insumo no persistido; paridad de columnas sobre la base real) y dos bloqueantes que no son de código, que esta acta cumple: **B1, la cobertura declarada sin exceso** (el camino T cubre el disparo de recuperación con timing roto, como el 28-sep y el 7-oct, y NO el de timing correcto en un día sin sesión, que sigue sellando `dia_sin_sesion` en `sellos_dinero` y ocupando la fecha; 102.6 (2)); y **B2, la secuencia** (los tres parches en el mismo acto).
+- **(5) Lo que no cambia:** las sesiones del 28-sep, 6-oct y 7-oct siguen perdidas (§57); N sigue en 12 hasta el primer sello con E0.3; `version_reglas` no se mueve (§99.5, corrida 16-3, otra noche); el timer no se toca; ninguna fila sellada se reescribe; la tabla `intentos_no_verificables` no existe hasta el primer sello en escritura.
+- **Si la suite del árbol real da un rojo que no sea de entorno**, se revierte en orden inverso con `git apply -R` y se borran los dos tests nuevos sin seguimiento; la sesión del 12-oct queda en E0.2 y eso se declara.
+- **Predicción falsable** (bitácora 16-2 §7, acta §101.5): el sello del martes 13-oct a las 00:30 Chile deja la sesión del 12-oct con `version_sello = E0.3`, `sellador_sha256 = 299a7627…`, 32 filas, `insumo_completo = 1` salvo que falte otro ticker, contador de 12 a 13, `intentos_no_verificables` con 0 filas y `data/backups/sello_dinero_no_verificables.csv` nacido vacío con cabecera.
+
+**102.8. Lo que sigue abierto.** La hora del corte y la suite de la aplicación (acta siguiente); la lectura del martes 13-oct; la corrida 16-3 (fuente única, README, higiene de tests, R9, §81.4 y §81.6, y el parche de `dinero/` con `version_reglas`, R2 y R4 de la 16b y §81.3, para una noche sin otro cambio al sellador); la cola (R3, R6 con §80.5, R7, S2, F4, el candado de §81.5); E1 (§93.15).

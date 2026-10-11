@@ -41,26 +41,31 @@ def base():
     return precios.cargar_congelado()
 
 
-def _extension(tmp_path, base, sin_dato=()):
+def _extension(tmp_path, base, sin_dato=(), no_verificable=False):
     """Copia de `_extension_sintetica` de test_sello_dinero.py: una sesión,
-    precios = último cierre × 1.01, `sin_dato` deja NaN esos tickers."""
+    precios = último cierre × 1.01, `sin_dato` deja NaN esos tickers.
+    `no_verificable` (corrida 16-2, E0.3) la escribe como `congelar_extension`
+    escribe la evidencia de un disparo con timing roto: `.no_verificable.csv`
+    y `cupo_canonico: false` en el meta."""
     ult = base.iloc[-1]
     ext = pd.DataFrame({pd.Timestamp(SESION): ult * 1.01}).T
     for t in sin_dato:
         ext.loc[pd.Timestamp(SESION), t] = float("nan")
     ext.index.name = "Date"
-    ruta = str(tmp_path / f"ext_{SESION}.csv")
+    ruta = str(tmp_path / f"ext_{SESION}{'.no_verificable' if no_verificable else ''}.csv")
     ext.to_csv(ruta)
     meta = {"sha256": S._sha256(ruta), "hasta": SESION, "tickers": list(ext.columns),
             "desde": SESION, "extiende_a": {"hasta": "2026-09-04"},
             "disponibilidad": {"exchange": "XNYS", "por_ticker": precios.disponibilidad_por_ticker(ext)}}
+    if no_verificable:
+        meta["cupo_canonico"] = False
     with open(ruta.replace(".csv", ".meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f)
     return ruta, meta
 
 
-def _sellar(tmp_path, base, sin_dato=(), ahora=AHORA):
-    ruta, meta = _extension(tmp_path, base, sin_dato)
+def _sellar(tmp_path, base, sin_dato=(), ahora=AHORA, no_verificable=False):
+    ruta, meta = _extension(tmp_path, base, sin_dato, no_verificable=no_verificable)
     db = str(tmp_path / "s.db")
     return S.sellar(ruta, meta, ahora_utc=ahora, ruta_db=db), db
 
@@ -140,10 +145,18 @@ def test_sin_la_clave_en_reglas_el_comportamiento_es_el_anterior(base):
 # 5. El resto de las reglas del sellador no cambia
 # ------------------------------------------------------------
 def test_la_ventana_horaria_sigue_mandando_con_toely_fuera(tmp_path, base):
+    """ADAPTADO en la corrida 16-2 (camino T, acta §93.7): un disparo con timing
+    roto ya no deja fila en `sellos_dinero`; su evidencia nace `.no_verificable`
+    y sus filas van a `intentos_no_verificables`. Lo que este test fija no
+    cambia: el insumo con sólo TOELY faltante es completo, y la regla maestra
+    sigue mandando sobre eso (cuenta_para_N = 0). Con la evidencia de nombre
+    canónico y timing roto, E0.3 rechaza sin escribir filas
+    (`rechazado_evidencia_canonica`): ésa es la rama que este test NO prueba."""
     tarde = datetime(2026, 9, 9, 14, 0, tzinfo=UTC)    # después de la apertura objetivo (9-sep 13:30Z)
-    r, _ = _sellar(tmp_path, base, sin_dato=(EXCLUIDO,), ahora=tarde)
+    r, _ = _sellar(tmp_path, base, sin_dato=(EXCLUIDO,), ahora=tarde, no_verificable=True)
     assert r["insumo_completo"] is True                 # el insumo sí está completo...
     assert r["timing_ok"] is False and r["cuenta_para_N"] == 0   # ...pero la regla maestra sigue mandando
+    assert r["resultado"] == "intento_no_verificable" and r["excluidos_universo"] == [EXCLUIDO]   # E0.3
 
 
 def test_el_gate_de_invariancia_sigue_en_pie(base):

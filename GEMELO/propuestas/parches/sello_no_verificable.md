@@ -1,5 +1,7 @@
 # PROPUESTA — NO APLICADO. Parche E0.3 del sellador del riel de dinero: un disparo con timing roto no ocupa ni la fecha ni el cupo canónico
 
+> **Nota fechada 11-oct-2026 (corrida 16-2): SUPERADO.** Este `.diff` se escribió sobre HEAD `2f73eb2` y la 16b cambió el sellador (TOELY fuera, `exclusiones_insumo_e0`). El parche vigente del camino T es `camino_T_16_2.diff` (mismo mecanismo, rebasado a tres vías sin conflictos, tests adaptados a 32 operables), seguido de `b2_contrato_16_2.diff` y `b2_api_16_2.diff` (B2). Receta y dictamen nuevo en `GEMELO/resultados/bitacora_16_2.md` y `dictamen_16_2/`. Este archivo y su `.diff` se conservan como historia; no se aplican.
+>
 > **Estatus: PROPUESTA. `dinero/sello_dinero.py` del árbol real NO cambió** (sha256 `480fbdc9…`, idéntico a HEAD
 > `2f73eb2`). El parche vive en `sello_no_verificable.diff`, escrito y probado en un worktree (`wt15_b3`) con copias
 > de las bases y carpetas temporales; el sellador real no se ejecutó. Aplicarlo exige un acta posterior de Nicolás con

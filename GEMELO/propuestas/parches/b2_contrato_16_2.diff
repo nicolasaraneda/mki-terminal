@@ -1,0 +1,53 @@
+diff --git a/api/CONTRATO.md b/api/CONTRATO.md
+index 6356863..61c6fa7 100644
+--- a/api/CONTRATO.md
++++ b/api/CONTRATO.md
+@@ -443,3 +443,48 @@ esperado», «ganancia esperada», «confianza» ni la frase «sostiene casi tod
+ (ordena cantidades que el diseño no ordena); y mientras E1 esté NO EJECUTADO,
+ `E1.posiciones/efectivo/ejecuciones` son `null` (nunca datos de ejemplo).
+ Test: `tests/test_frontend_estatus.py::test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado`.
++
++### Enmienda 16-2 (11-oct-2026) — E0.3: el intento no verificable, visible fuera del log
++
++**Se enmienda ANTES de tocar `api/main.py`**, que es la regla de esta capa
++(B2 del dictamen `GEMELO/resultados/dictamen_15/auditor_parche_sello.md`;
++acta §93.7). Desde `VERSION_SELLO = E0.3` (camino T de §62, PROPUESTA hasta
++que el acta de aplicación fije el corte) un disparo del sellador con timing
++roto —`available_at < timestamp_utc < apertura objetivo` incumplido, como el
++despertar del 28-sep-2026 y el disparo de recuperación del 7-oct-2026— **no
++escribe en `sellos_dinero` ni ocupa `ext_<fecha>.csv`**: sus filas van a la
++tabla aditiva `intentos_no_verificables` (mismas columnas, misma
++inmutabilidad) y su evidencia a `ext_<fecha>.no_verificable.csv`. Hasta esta
++enmienda una noche así era invisible para la API: `sesiones_selladas` no se
++movía, `ultimo_sello` era el de la noche anterior y la única huella estaba en
++`data/sello_dinero.log`, que rota.
++
++`GET /api/dinero/sellos` → `datos.E0` gana tres claves, **aditivas**; ninguna
++clave existente cambia de nombre, tipo ni semántica:
++
++- `intentos_no_verificables`: entero, fechas distintas (`fecha_insumo`) con un
++  intento no verificable. **0 si la base todavía no tiene la tabla** (una base
++  anterior a E0.3 no es un error: la API tiene que responder igual la noche
++  anterior a la primera con T).
++- `ultimo_intento`: el último intento por `id`, con las MISMAS claves que
++  `ultimo_sello` (`fecha_sello`, `fecha_insumo`, `timestamp_utc`,
++  `available_at`, `sesion_objetivo`, `apertura_objetivo_utc`, `estado`,
++  `estado_timing`, `estado_dia`, `insumo_completo`, `cuenta_para_N`, `juego`,
++  `presupuesto_usd`, `insumo_ext_sha256`, `insumo_ext_archivo`,
++  `insumo_base_sha256`, `reglas_sha256`, `sellador_sha256`,
++  `plataforma_version`, `version_sello`, `creado_en`), o `null` si no hay
++  ninguno o la tabla no existe. Su `estado` es siempre
++  `no_verificable_timing` y su `cuenta_para_N` siempre 0.
++- `nota_intentos`: frase fija que declara qué es un intento: un disparo fuera
++  de hora que no cuenta para N, no ocupa la fecha ni el cupo de evidencia, y
++  cuya sesión se sella igual si el disparo siguiente llega a tiempo.
++
++Fuente: `dinero.sello_dinero.estado()` en `mode=ro`, que gana la clave
++`ultimo_intento` (`intentos_no_verificables` ya la traía el parche de la
++corrida 15). La API no computa nada: lee. **Un intento nunca entra** a
++`sesiones_selladas`, `sesiones_que_cuentan_para_N`, `filas`, `ultimo_sello`
++ni `decisiones_proxima_apertura`: se muestra como lo que es, un disparo fuera
++de hora que no cuenta, nunca como sello. La norma del contrato de la corrida
++12 (ninguna frase que insinúe resultado) rige también sobre `nota_intentos`.
++`frontend/src/lib/tipos.ts` refleja las tres claves; la vista `/sellos` no
++las muestra todavía (decisión de pantalla, a firma).

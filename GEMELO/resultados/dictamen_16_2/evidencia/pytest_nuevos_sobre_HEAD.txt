@@ -1,0 +1,110 @@
+FFFF.s                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_reproduccion_28sep_con_los_relojes_reales_el_disparo_bueno_sella_32_sin_toely _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-27/test_reproduccion_28sep_con_lo0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_reproduccion_28sep_con_los_relojes_reales_el_disparo_bueno_sella_32_sin_toely(entorno_temporal, base):
+        db = entorno_temporal
+        ruta1, meta1, r1 = _disparo(_ext(base, SESIONES_HASTA_LUNES, 0.98), db, T_28SEP)
+        assert r1["timing_ok"] is False and r1["estado"] == "no_verificable_timing" and r1["cuenta_para_N"] == 0
+        assert r1["filas_insertadas"] == N_OPERABLES and r1["excluidos_universo"] == [EXCLUIDO]
+    
+        ruta2, meta2, r2 = _disparo(_ext(base, SESIONES_HASTA_LUNES, 1.02), db, T_NOCHE_LUNES)
+        assert meta2["sha256"] != meta1["sha256"]
+>       assert r2["resultado"] == "sellada", (
+            "EL 28-SEP: el disparo bueno de las 23:30 NY no selló porque la fecha quedó ocupada por el intento "
+            f"de la bolsa abierta (resultado={r2['resultado']!r}, filas_insertadas={r2.get('filas_insertadas')})")
+E       AssertionError: EL 28-SEP: el disparo bueno de las 23:30 NY no selló porque la fecha quedó ocupada por el intento de la bolsa abierta (resultado='divergencia_registrada', filas_insertadas=0)
+E       assert 'divergencia_registrada' == 'sellada'
+E         
+E         - sellada
+E         + divergencia_registrada
+
+tests/test_camino_T_16_2.py:137: AssertionError
+_ test_reproduccion_7oct_la_recuperacion_de_la_manana_no_quema_la_sesion_del_dia _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-27/test_reproduccion_7oct_la_recu0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_reproduccion_7oct_la_recuperacion_de_la_manana_no_quema_la_sesion_del_dia(entorno_temporal, base):
+        db = entorno_temporal
+        # la noche del lunes el PC estaba apagado: ningún disparo con fecha_insumo = LUNES
+        ruta1, meta1, r1 = _disparo(_ext(base, SESIONES_HASTA_MARTES, 0.99, sin_dato=(SIN_BARRA,)), db, T_7OCT)
+        assert r1["fecha_insumo"] == MARTES and r1["fecha_sello_ny"] == MARTES
+        assert r1["available_at"] == f"{MARTES}T20:00:00+00:00"            # el cierre por calendario, futuro respecto del disparo
+        assert r1["apertura_objetivo_utc"].startswith(f"{MIERCOLES}T13:30") and r1["sesion_objetivo"] == MIERCOLES
+        assert r1["timing_ok"] is False and r1["estado"] == "no_verificable_timing" and r1["estado_timing"] == "roto"
+        assert r1["insumo_completo"] is False and r1["sin_dato"] == [SIN_BARRA] and r1["cuenta_para_N"] == 0
+        assert r1["filas_insertadas"] == N_OPERABLES and r1["excluidos_universo"] == [EXCLUIDO]
+    
+        # el disparo normal de las 23:30 NY del martes, con el cierre completo
+        ruta2, meta2, r2 = _disparo(_ext(base, SESIONES_HASTA_MARTES, 1.02), db, T_NOCHE_MARTES)
+        assert meta2["sha256"] != meta1["sha256"]
+>       assert r2["resultado"] == "sellada", (
+            "EL 7-OCT: el disparo normal de las 23:30 NY no selló porque la fecha quedó ocupada por el disparo de "
+            f"recuperación de la mañana (resultado={r2['resultado']!r}, filas_insertadas={r2.get('filas_insertadas')})")
+E       AssertionError: EL 7-OCT: el disparo normal de las 23:30 NY no selló porque la fecha quedó ocupada por el disparo de recuperación de la mañana (resultado='divergencia_registrada', filas_insertadas=0)
+E       assert 'divergencia_registrada' == 'sellada'
+E         
+E         - sellada
+E         + divergencia_registrada
+
+tests/test_camino_T_16_2.py:170: AssertionError
+_ test_toely_tampoco_entra_a_la_tabla_de_intentos_y_su_ausencia_no_vuelve_incompleto_un_intento _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-27/test_toely_tampoco_entra_a_la_0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_toely_tampoco_entra_a_la_tabla_de_intentos_y_su_ausencia_no_vuelve_incompleto_un_intento(entorno_temporal, base):
+        """La exclusión se aplica en `decidir`, antes de elegir la tabla: TOELY no
+        aparece en `intentos_no_verificables`, y que TOELY no tenga barra (como
+        el 28-sep) no es un faltante. Un intento con sólo TOELY sin dato lleva
+        `insumo_completo = 1` igual que lo haría un sello."""
+        db = entorno_temporal
+        ruta, meta, r = _disparo(_ext(base, SESIONES_HASTA_LUNES, 0.98, sin_dato=(EXCLUIDO,)), db, T_28SEP)
+>       assert r["resultado"] == "intento_no_verificable"
+E       AssertionError: assert 'sellada' == 'intento_no_verificable'
+E         
+E         - intento_no_verificable
+E         + sellada
+
+tests/test_camino_T_16_2.py:212: AssertionError
+_ test_un_faltante_distinto_de_toely_sigue_siendo_incompleto_tambien_en_un_intento _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-27/test_un_faltante_distinto_de_t0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_un_faltante_distinto_de_toely_sigue_siendo_incompleto_tambien_en_un_intento(entorno_temporal, base):
+        db = entorno_temporal
+        _, _, r = _disparo(_ext(base, SESIONES_HASTA_LUNES, 0.98, sin_dato=("AMD", EXCLUIDO)), db, T_28SEP)
+>       assert r["resultado"] == "intento_no_verificable" and r["estado"] == "no_verificable_timing"
+E       AssertionError: assert ('sellada' == 'intento_no_verificable'
+E         
+E         - intento_no_verificable
+E         + sellada)
+
+tests/test_camino_T_16_2.py:224: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_camino_T_16_2.py::test_reproduccion_28sep_con_los_relojes_reales_el_disparo_bueno_sella_32_sin_toely
+FAILED tests/test_camino_T_16_2.py::test_reproduccion_7oct_la_recuperacion_de_la_manana_no_quema_la_sesion_del_dia
+FAILED tests/test_camino_T_16_2.py::test_toely_tampoco_entra_a_la_tabla_de_intentos_y_su_ausencia_no_vuelve_incompleto_un_intento
+FAILED tests/test_camino_T_16_2.py::test_un_faltante_distinto_de_toely_sigue_siendo_incompleto_tambien_en_un_intento
+4 failed, 1 passed, 1 skipped in 2.30s

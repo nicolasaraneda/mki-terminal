@@ -1349,6 +1349,17 @@ def _e1_estado() -> dict:
     }
 
 
+# Enmienda 16-2 del contrato (11-oct-2026, E0.3 / camino T de §62): frase fija que
+# declara qué es un intento no verificable. Rige la norma del contrato de la
+# corrida 12: nada que insinúe resultado.
+NOTA_INTENTOS_E0 = ("Un intento no verificable es un disparo del sellador fuera de hora (la regla "
+                    "available_at < timestamp_utc < apertura objetivo no se cumplió: un despertar con la bolsa "
+                    "abierta, una recuperación del timer a la mañana siguiente). Desde E0.3 sus filas viven en "
+                    "la tabla aparte intentos_no_verificables: no cuentan para N, no ocupan la fecha ni el cupo "
+                    "de evidencia, y la sesión se sella igual si el disparo siguiente llega a tiempo. Con la tabla "
+                    "ausente (base anterior a E0.3) el conteo es 0 y el último intento es null.")
+
+
 @app.get("/api/dinero/sellos")
 def dinero_sellos():
     from dinero import sello_dinero as S
@@ -1368,6 +1379,11 @@ def dinero_sellos():
                "N_objetivo": e["N_objetivo"], "N_objetivo_fuente": e["N_objetivo_fuente"],
                "fuente_conteos": e["fuente_conteos"], "filas": e["filas"],
                "divergencias_registradas": e.get("divergencias_registradas", 0),
+               # Enmienda 16-2 (E0.3): un disparo con timing roto no es un sello; se muestra como lo que
+               # es y nunca entra a sesiones_selladas, sesiones_que_cuentan_para_N, filas ni ultimo_sello
+               "intentos_no_verificables": e.get("intentos_no_verificables", 0),
+               "ultimo_intento": e.get("ultimo_intento"),
+               "nota_intentos": NOTA_INTENTOS_E0,
                "nota": ("Cuentan sólo las sesiones con fila pendiente de un día con sesión e insumo fresco. "
                         "Estas filas prueban la maquinaria del sellado prospectivo (señal sin información): "
                         "no son un track record de habilidad."),
