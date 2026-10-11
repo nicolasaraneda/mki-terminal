@@ -3021,3 +3021,70 @@ agrega lo que ninguna opción previó: **V4 de la regla sellada de §58 se dispa
 regla se cierra «NO DECIDIBLE» con 4 noches válidas; reiniciar con el universo nuevo es acto de Nicolás con acta) y
 `A(D)` sobre 32 contra `C(D,g)` sobre 33 hace clase C a toda noche con sólo TOELY faltante. Las dos cosas están
 declaradas en el acta §96; la regla no se edita. **Sigue sin elegirse nada.**
+
+---
+
+## 80. Las elecciones de agente de la corrida 16-1 (vigía y riel de medición), a ratificar
+
+**Contexto (bitácora 16-1, 10-oct-2026):** los cuatro bloques firmados en §93.8 (b) y (d), §93.9, §95.2 R2/R3 y §93.3 (ii)
+se construyeron según su letra; donde la letra dejaba una elección, el agente eligió, lo declaró en código y acá lo pone
+a firma. Ninguna mueve una cifra publicada ni reescribe una fila sellada. Cinco elecciones:
+
+1. **Qué es «fecha nueva» en el chequeo del vigía sobre la guarda de `verificacion_puntaje` (§95.2 R3).** El encargo pide
+   «sin alerta si el número es el esperado y estable; con alerta si aparece una fecha nueva», sin definir «nueva». El
+   vigía no guarda estado: define nueva como *una fecha con filas invertidas (`available_at > timestamp_utc`) dentro de los
+   últimos `DIAS_INVERSION_RECIENTE = 10` días* (los 7 que tarda una fila en ser candidata del verificador más tres para
+   leerla). Fuera de la ventana es residuo conocido (hoy, las 24 del 28-sep) y se informa con cuenta y fecha, sin alerta.
+   Una invertida DENTRO de la tabla alerta siempre. (a) Ratificar la ventana de 10 días; (b) otra ventana; (c) estado
+   persistente (un archivo con lo visto la última vez, como el marcador del vigía: «nueva» = no vista antes). Lo que se
+   pierde con (a): si el vigía no corre durante 10 días seguidos, una inversión pasa a residuo sin haber alertado; el
+   chequeo B.2 del mismo día (ancla temporal, §93.9) la habría cazado al sellarse. **Recomendación etiquetada:** (a).
+2. **El predicado del vigía NO aplica el filtro de 7 días del verificador.** Cuenta toda fila invertida con `puntaje_ia`
+   no legacy, candidata o no todavía: una inversión fresca no debe esperar una semana para verse. Es la única diferencia
+   con el predicado de `verificar_puntaje_pendientes` (NULL e igualdad no cuentan, instantes con zona, legacy fuera, igual
+   que allí). (a) Ratificar; (b) replicar el filtro para que las dos cuentas coincidan siempre. **Recomendación:** (a).
+3. **La negativa declarada cierra el caso a las 20:30 SIN consumir el marcador.** La letra de §93.8 (d) dice «el
+   rechequeo de las 20:30 cierra el caso con un mensaje, haya sello o no». Con sello: retractación (como hoy). Sin sello y
+   sin proceso vivo: mensaje «caso cerrado por hoy: la sesión queda sin sello… si un sello manual llegara más tarde,
+   snapshot.py avisará», con la hora real, y el marcador QUEDA. La primera versión lo consumía («no habrá retractación»);
+   el auditor lo marcó bloqueante (BL3: un sello manual posterior dejaría un mensaje contradicho por la base, el defecto
+   que 5.0.2 prohibió) y se corrigió antes de aplicar. Un marcador de otra fecha se ignora al día siguiente, así que
+   dejarlo no cuesta nada. (a) Ratificar; (b) consumirlo igual. **Recomendación:** (a), ya aplicada.
+4. **`sox_fecha` vacío sigue sellando.** La guarda de frescura necesita `sox_fecha` para juzgar; sin él, la rama del
+   reloj de pared sigue sellando como antes, con su AVISO y la alerta de igualdad del vigía (§84.2). Es el mismo residuo
+   que §78 (3) nombra para el verificador. (a) Ratificar; (b) negarse también sin `sox_fecha` (haría de un fallo del
+   calendario un día sin sello). **Recomendación:** (a).
+5. **El mensaje del rechequeo sin negativa conserva el literal «20:30»** (§66 C.6 ii recomendaba la hora real al tocar
+   el vigía; no está firmado). Sólo el mensaje nuevo de la negativa usa la hora real. (a) Dejarlo; (b) hora real también en
+   la rama de falla, en la 16-2 o la 16-3. **Recomendación:** (b), de paso, cuando el vigía se vuelva a tocar con firma.
+6. **Si el calendario falla, la frescura no se juzga y se sella como HEAD, con AVISO** (BL1 del dictamen 16-1: la llamada
+   nueva a `calendarios.es_sesion` estaba sin proteger y su excepción se llevaba el verificador, los respaldos y el
+   epílogo del vigía). El auditor pidió decidir la dirección por escrito: (a) degradar como la rama del `except` de
+   `cierre_utc` (sella, línea `AVISO frescura` en `snapshot.log`; es lo aplicado); (b) negarse con una tercera negativa
+   (`calendario_indisponible`) que el vigía reconozca. Lo que se pierde con (a): un día con el calendario roto sella sin
+   juzgar la frescura, sin alerta del vigía (sólo el AVISO en el log). Es un caso que hoy no puede ocurrir con la fecha
+   de hoy (el calendario de `exchange_calendars` se construye alrededor de ella). **Recomendación:** (a).
+
+**Recomendadas del auditor que esta corrida NO hizo, para decidir dónde van (16-2, 16-3 o cola):** R3, un registro
+durable de cada negativa (JSONL de append fuera de `senales.db`): hoy la negativa vive sólo en `snapshot.log`, que rota
+a 2 MB × 2; R5, que `solo_con_base` exija tabla no vacía y no archivo presente; R6, llevar `chequear_descarga` y
+`chequear_ancla_temporal` a `mode=ro` (hoy abren la base de producción en lectura-escritura y corren `init_db()`); R7,
+publicar el contador de días negados desde el 2-nov (S1: la guarda convierte «sellar mal» en «no sellar», y si la
+latencia de la fuente correlaciona con el volumen, el conjunto sellado deja de ser independiente del dato); R9, que la
+negativa del fallback del dashboard (`app.py:832`) también llegue a `snapshot.log` o se declare invisible para el vigía.
+Y dos hallazgos del auditor que no son de esta corrida: **F4**, un disparo en sábado (D.2, declarado sin cubrir en
+§93.8) sellaría un clon de la señal del viernes con la MISMA sesión objetivo, y ya hay 16 filas selladas en día
+no-sesión dentro de las métricas (5-jul y 7-sep, 8 y 8, `verificada`; las del 7-sep con los mismos estimados que el
+4-sep) — le toca al `estadistico-adversario`; y **S2**, un reloj atrasado 15+ min desde el 2-nov haría disparar la
+guarda (b) en un día legítimo sin reintento.
+
+**Dos hechos de entorno, para Nicolás, que no son decisión de diseño:** (i) la lista de permisos de §99.7 tiene
+`Bash(cp senales.db *)`, `Bash(cp noticias.db *)` y `Bash(cp dinero/sello_dinero.db *)`, pero las tres copias al worktree
+fueron **denegadas** dos veces (con y sin `cd … &&` delante), así que el worktree corrió sin bases y el juez fue, otra vez,
+la suite del árbol real con el control sobre HEAD puro (§95.5); (ii) la suite en un worktree sin bases **crea** una
+`senales.db` y una `noticias.db` vacías (`init_db()` de algún test que no parchea `DB_PATH`), y desde ese momento los
+tests `solo_con_base` dejan de saltarse y corren sobre bases vacías (tres rojos de `test_conocibilidad` en la capa de
+medición que no aparecen en la línea base): hay un test que escribe DDL en `senales.DB_PATH` sin parchearlo (zona ciega
+7 del dictamen 16a, ahora medida).
+
+**No se eligió nada.**

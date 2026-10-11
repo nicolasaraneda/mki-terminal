@@ -421,7 +421,7 @@ def verificar_apertura_pendientes() -> dict:
             "sin_datos_mercado": atascadas, "sin_calendario": sin_calendario}
 
 
-def verificar_puntaje_pendientes() -> int:
+def verificar_puntaje_pendientes() -> dict:
     """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_PUNTAJE
     días hábiles siguientes. Solo evalúa filas de la Etapa 4.6 en adelante
     (con timestamp); las legacy quedan fuera. Tampoco evalúa las que declaran
@@ -431,7 +431,11 @@ def verificar_puntaje_pendientes() -> int:
     `verificacion_puntaje` no tiene columna de estado, la fila excluida no se
     escribe y la exclusión se declara por el log con su cuenta; el `estado`
     de `senales_ticker` no se toca. La regla maestra de timing NO se aplica
-    acá (el acta §93.4 la deja abierta)."""
+    acá (el acta §93.4 la deja abierta).
+
+    Devuelve `{"verificadas": n, "excluidas": k, "fechas_excluidas": [...]}`
+    (corrida 16-1, acta §95.2 R2: la cuenta de excluidas viaja en el retorno
+    y no sólo en una línea de un log que rota). Qué se escribe no cambia."""
     init_db()
     conn = get_connection()
     pendientes = conn.execute(f"""
@@ -486,19 +490,20 @@ def verificar_puntaje_pendientes() -> int:
             (fecha_senal, ticker, puntaje_ia, round(float(retorno_5d), 4),
              datetime.now(timezone.utc).isoformat()))
         verificados += 1
+    fechas = sorted({f for f, _ in excluidas})
     if excluidas:
-        fechas = sorted({f for f, _ in excluidas})
         print(f"  AVISO verificador puntaje: {len(excluidas)} fila(s) con insumo "
               f"conocible después de su emisión (available_at > timestamp_utc) "
               f"excluidas de verificacion_puntaje, sin escribir ni cambiar estado; "
               f"fechas: {', '.join(fechas)}", flush=True)
     conn.commit()
     conn.close()
-    return verificados
+    return {"verificadas": verificados, "excluidas": len(excluidas),
+            "fechas_excluidas": fechas}
 
 
 def verificar_pendientes() -> tuple:
-    """Corre ambos verificadores. Devuelve (dict_apertura, n_puntaje)."""
+    """Corre ambos verificadores. Devuelve (dict_apertura, dict_puntaje)."""
     return verificar_apertura_pendientes(), verificar_puntaje_pendientes()
 
 

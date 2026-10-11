@@ -1,0 +1,543 @@
+.FFFFFFFFFFFsFFFFF.F.FFF...FFF.F                                         [100%]
+==================================== ERRORS ====================================
+__________________ ERROR collecting tests/test_vigia_16_1.py ___________________
+tests/test_vigia_16_1.py:367: in <module>
+    VIEJA = (HOY - timedelta(days=mki_vigia.DIAS_INVERSION_RECIENTE + 10)).isoformat()
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'mki_vigia' has no attribute 'DIAS_INVERSION_RECIENTE'
+=================================== FAILURES ===================================
+___________ test_reproduccion_H0_con_la_fuente_atrasada_no_se_sella ____________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746519590>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+capsys = <_pytest.capture.CaptureFixture object at 0x7997469ab8c0>
+
+    def test_reproduccion_H0_con_la_fuente_atrasada_no_se_sella(sellador, capsys):
+        """REPRODUCCIÓN (falla sobre HEAD, que sella). A las 18:15 de Chile del
+        martes la fuente sirve el SOX del lunes: la sesión del lunes cerró hace
+        un día, la guarda (b) pasa, y HEAD sella el snapshot del martes con el
+        insumo del lunes. Con la guarda de frescura no se sella, no se llama a
+        `guardar_snapshot`, el resultado trae la negativa con su código y en la
+        salida queda la línea fija que lee el vigía."""
+        reloj = _a_las_1815_de_chile(MARTES, segundos=3)
+        assert reloj > calendarios.cierre_utc("XNYS", MARTES)    # el martes YA cerró
+        resultado = sellador["sellar"](reloj, LUNES)
+>       assert resultado["snapshot"] is False, (
+            f"snapshot.py selló el {MARTES} con sox_fecha={LUNES}: insumo de ayer")
+E       AssertionError: snapshot.py selló el 2026-09-29 con sox_fecha=2026-09-28: insumo de ayer
+E       assert True is False
+
+tests/test_frescura.py:88: AssertionError
+____ test_control_dia_de_sesion_con_sox_fecha_de_hoy_sella_igual_que_antes _____
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a277f0>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+capsys = <_pytest.capture.CaptureFixture object at 0x799746370e10>
+
+    def test_control_dia_de_sesion_con_sox_fecha_de_hoy_sella_igual_que_antes(sellador, capsys):
+        """CONTROL: el mismo martes a las 18:15 con el SOX del martes se sella
+        exactamente como antes (sin negativa, sin línea en el log)."""
+        reloj = _a_las_1815_de_chile(MARTES, segundos=3)
+        resultado = sellador["sellar"](reloj, MARTES)
+        assert resultado["snapshot"] is True, resultado
+        assert "negativa" not in resultado
+        sello = sellador["sellos"][0]
+        assert sello["fecha"] == MARTES and sello["sox_fecha"] == MARTES
+        assert sello["available_at"] == calendarios.cierre_utc("XNYS", MARTES).isoformat()
+>       assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'snapshot' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:111: AttributeError
+___________________ test_fin_de_semana_no_cambia_de_conducta ___________________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a24eb0>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+capsys = <_pytest.capture.CaptureFixture object at 0x799746371950>
+
+    def test_fin_de_semana_no_cambia_de_conducta(sellador, capsys):
+        """D.2 del inventario §66 sigue sin firmar: un disparo en sábado con el
+        SOX del viernes sella como antes (fecha sábado, insumo viernes). La
+        guarda de frescura sólo rige en día de sesión de XNYS."""
+        reloj = _a_las_1815_de_chile(SABADO)
+        resultado = sellador["sellar"](reloj, VIERNES)
+        assert resultado["snapshot"] is True, resultado
+        sello = sellador["sellos"][0]
+        assert sello["fecha"] == SABADO and sello["sox_fecha"] == VIERNES
+>       assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'snapshot' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:123: AttributeError
+__________________ test_feriado_de_xnys_no_cambia_de_conducta __________________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a249e0>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+capsys = <_pytest.capture.CaptureFixture object at 0x7997469db950>
+
+    def test_feriado_de_xnys_no_cambia_de_conducta(sellador, capsys):
+        """Labor Day: el job dispara (el timer no conoce los feriados de NYSE),
+        la fuente sirve el viernes, y se sella como antes. Es el único caso
+        histórico con `sox_fecha` ≠ fecha (7-sep-2026) y sigue siendo legítimo."""
+        reloj = _a_las_1815_de_chile(FERIADO)
+        resultado = sellador["sellar"](reloj, VIERNES_PREVIO)
+        assert resultado["snapshot"] is True, resultado
+        sello = sellador["sellos"][0]
+        assert sello["fecha"] == FERIADO and sello["sox_fecha"] == VIERNES_PREVIO
+>       assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'snapshot' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:135: AttributeError
+_______ test_la_guarda_b_de_90_1_sigue_igual_y_ahora_declara_su_negativa _______
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a243b0>, 'preparar': <function sellador.<locals>.preparar at 0x799746a245c0>, 'sellos': []}
+capsys = <_pytest.capture.CaptureFixture object at 0x7997468a83e0>
+
+    def test_la_guarda_b_de_90_1_sigue_igual_y_ahora_declara_su_negativa(sellador, capsys):
+        """El evento del 28-sep (13:42 de Nueva York, `sox_fecha` del mismo día,
+        sesión abierta): la guarda (b) se niega con el MISMO motivo de la
+        corrida 15, y además deja la línea fija con su propio código. La
+        frescura no interviene (sox_fecha == hoy)."""
+        resultado = sellador["sellar"](_instante(EMISION_EVENTO), FECHA_EVENTO)
+        assert resultado["snapshot"] is False and sellador["sellos"] == []
+        assert "no ha cerrado" in resultado["motivo"] and "§90.1 b" in resultado["motivo"]
+        assert resultado["cierre_utc"] == CIERRE_EVENTO
+>       assert resultado["negativa"] == snapshot.NEGATIVA_SESION_ABIERTA
+               ^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'negativa'
+
+tests/test_frescura.py:147: KeyError
+_________________ test_sin_sox_fecha_la_frescura_no_interviene _________________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a24510>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+capsys = <_pytest.capture.CaptureFixture object at 0x7997469e6e70>
+
+    def test_sin_sox_fecha_la_frescura_no_interviene(sellador, capsys):
+        """`sox_fecha` vacío sigue por su rama (reloj de pared): sella, sin
+        negativa, con el AVISO de ancla temporal que el vigía alerta (§84.2).
+        Residuo declarado: la frescura no se puede juzgar sin `sox_fecha`."""
+        resultado = sellador["sellar"](_a_las_1815_de_chile(MARTES), None)
+        assert resultado["snapshot"] is True and "negativa" not in resultado
+        salida = capsys.readouterr().out
+>       assert "AVISO ancla temporal" in salida and snapshot.MARCA_NEGATIVA not in salida
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'snapshot' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:161: AttributeError
+__________ test_si_el_calendario_falla_se_sella_como_antes_con_aviso ___________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a17ab0>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x799746482e50>
+capsys = <_pytest.capture.CaptureFixture object at 0x799746a07f00>
+
+    def test_si_el_calendario_falla_se_sella_como_antes_con_aviso(sellador, monkeypatch, capsys):
+        """BL1 del dictamen 16-1: `calendarios.es_sesion` es una llamada nueva en
+        el camino de sellado. Si el calendario revienta, la frescura no se
+        puede juzgar y se sella como HEAD (degradación con AVISO, la misma
+        dirección que la rama del `except` de `cierre_utc`); la excepción jamás
+        sube a `main()`, donde se llevaría el verificador, los respaldos y el
+        epílogo del vigía. Elección de agente a ratificar (tarjeta §80)."""
+        def revienta(exchange, sesion):
+            raise RuntimeError("calendario roto a propósito")
+        monkeypatch.setattr(calendarios, "es_sesion", revienta)
+        reloj = _a_las_1815_de_chile(MARTES, segundos=3)
+        resultado = sellador["sellar"](reloj, LUNES)
+        assert resultado["snapshot"] is True and "negativa" not in resultado
+        salida = capsys.readouterr().out
+>       assert "AVISO frescura" in salida and "calendario" in salida
+E       AssertionError: assert ('AVISO frescura' in '')
+
+tests/test_frescura.py:178: AssertionError
+_________ test_la_negativa_de_frescura_no_entra_al_bucle_de_reintentos _________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x799746a14460>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x79974645ad50>
+capsys = <_pytest.capture.CaptureFixture object at 0x79974651c6b0>
+
+    def test_la_negativa_de_frescura_no_entra_al_bucle_de_reintentos(sellador, monkeypatch, capsys):
+        """`main()` reintenta a los 20 y 40 min SÓLO ante «sin datos de
+        mercado». Una fuente atrasada no se arregla esperando 20 minutos en
+        este job (el riel de dinero sí espera; éste declara y termina): una sola
+        llamada, ningún sleep, salida 0, y la negativa queda en el log."""
+        sellador["preparar"](_a_las_1815_de_chile(MARTES, segundos=3), LUNES)
+        monkeypatch.setattr(sys, "argv", ["snapshot.py"])
+        monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
+        monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
+        monkeypatch.setattr(senales, "verificar_pendientes",
+                            lambda: ({"verificadas": 0},
+                                     {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
+        monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
+        esperas = []
+        monkeypatch.setattr(snapshot.time, "sleep", lambda s: esperas.append(s))
+        intentos = []
+        original = snapshot.ejecutar_snapshot
+    
+        def contado(*a, **k):
+            intentos.append((a, k))
+            return original(*a, **k)
+        monkeypatch.setattr(snapshot, "ejecutar_snapshot", contado)
+    
+        assert snapshot.main() == 0
+        salida = capsys.readouterr().out
+>       assert snapshot.MARCA_NEGATIVA in salida and f"[{snapshot.NEGATIVA_FRESCURA}]" in salida
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'snapshot' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:208: AttributeError
+______________ test_el_vigia_lee_la_negativa_que_snapshot_escribe ______________
+
+sellador = {'sellar': <function sellador.<locals>.sellar at 0x7997469e3740>, 'preparar': <function sellador.<locals>.preparar at ...        0.1
+1    2330.TW         0.1
+2     8035.T         0.1
+3     IFX.DE         0.1
+4       NVDA         0.1, ...}]}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x79974645b980>
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-20/test_el_vigia_lee_la_negativa_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7997468f0150>
+
+    def test_el_vigia_lee_la_negativa_que_snapshot_escribe(sellador, monkeypatch, tmp_path, capsys):
+        """Integración productor → consumidor: la salida REAL de snapshot.py
+        (cabecera de `main()` incluida) se vuelca a un snapshot.log temporal y
+        `mki_vigia._negativa_declarada_en_log` la reconoce con su código, fecha
+        y sox_fecha. Ningún texto se duplica a mano en el test."""
+        sellador["preparar"](_a_las_1815_de_chile(MARTES, segundos=3), LUNES)
+        monkeypatch.setattr(sys, "argv", ["snapshot.py"])
+        monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
+        monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
+        monkeypatch.setattr(senales, "verificar_pendientes",
+                            lambda: ({"verificadas": 0},
+                                     {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
+        monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
+        assert snapshot.main() == 0
+        ruta = str(tmp_path / "snapshot.log")
+        with open(ruta, "w", encoding="utf-8") as f:
+            f.write(capsys.readouterr().out)
+        monkeypatch.setattr(mki_vigia, "RUTA_SNAPSHOT_LOG", ruta)
+>       negativa = mki_vigia._negativa_declarada_en_log(date.fromisoformat(MARTES))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'mki_vigia' has no attribute '_negativa_declarada_en_log'
+
+tests/test_frescura.py:235: AttributeError
+_________________ test_la_marca_es_una_sola_en_los_dos_modulos _________________
+
+    def test_la_marca_es_una_sola_en_los_dos_modulos():
+>       assert mki_vigia.MARCA_NEGATIVA == snapshot.MARCA_NEGATIVA
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'mki_vigia' has no attribute 'MARCA_NEGATIVA'
+
+tests/test_frescura.py:245: AttributeError
+___________ test_la_guarda_no_agrega_margen_horario_ni_nombra_fechas ___________
+
+    def test_la_guarda_no_agrega_margen_horario_ni_nombra_fechas():
+        """§72 C.2: cualquier margen horario rompe el sello desde el 2-nov-2026.
+        La guarda compara dos FECHAS (`sox_fecha` contra hoy) y pregunta al
+        calendario si hoy es sesión; no mira el reloj, no resta horas, no
+        nombra el evento."""
+        fuente = inspect.getsource(snapshot.ejecutar_snapshot)
+        codigo = "\n".join(l for l in fuente.splitlines() if not l.strip().startswith("#"))
+>       assert "es_sesion" in codigo and "NEGATIVA_FRESCURA" in codigo
+E       assert ('es_sesion' in 'def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFAULT,\n                      reintento...["activa"]),\n            "descarga": f"{salud[\'ok_n\']}/{salud[\'total\']}",\n            "caidos": salud["caidos"]}')
+
+tests/test_frescura.py:259: AssertionError
+__________ test_reproduccion_el_retorno_lleva_la_cuenta_de_excluidas ___________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7997469e0880>, 'leer': <function base_puntaje.<locals>.leer at 0x7997469e05c0>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7997469e0460>}
+
+    def test_reproduccion_el_retorno_lleva_la_cuenta_de_excluidas(base_puntaje):
+        """REPRODUCCIÓN (falla sobre HEAD, que devuelve un entero). Dos filas
+        invertidas de dos fechas y una fila normal: una verificada, dos
+        excluidas, dos fechas, en el retorno y no sólo en stdout."""
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+        base_puntaje["sembrar"]("000660.KS", OTRA_EMISION, OTRO_INSUMO_POSTERIOR, fecha=OTRA_FECHA)
+        base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
+        r = senales.verificar_puntaje_pendientes()
+>       assert isinstance(r, dict), r
+E       AssertionError: 1
+E       assert False
+E        +  where False = isinstance(1, dict)
+
+tests/test_puntaje_retorno.py:58: AssertionError
+----------------------------- Captured stdout call -----------------------------
+  AVISO verificador puntaje: 2 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-19, 2026-09-26
+_____________ test_sin_excluidas_el_retorno_dice_cero_y_sin_fechas _____________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7997469d7ed0>, 'leer': <function base_puntaje.<locals>.leer at 0x7997469d7d70>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7997469d7c10>}
+
+    def test_sin_excluidas_el_retorno_dice_cero_y_sin_fechas(base_puntaje):
+        base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
+        base_puntaje["sembrar"]("005930.KS", EMISION, None)
+>       assert senales.verificar_puntaje_pendientes() == {
+            "verificadas": 2, "excluidas": 0, "fechas_excluidas": []}
+E       AssertionError: assert 2 == {'verificadas': 2, 'excluidas': 0, 'fechas_excluidas': []}
+E        +  where 2 = <function verificar_puntaje_pendientes at 0x799746aaa350>()
+E        +    where <function verificar_puntaje_pendientes at 0x799746aaa350> = senales.verificar_puntaje_pendientes
+
+tests/test_puntaje_retorno.py:68: AssertionError
+_______________ test_sin_candidatas_el_retorno_es_el_mismo_dict ________________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7997469d73d0>, 'leer': <function base_puntaje.<locals>.leer at 0x7997469d7110>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7997469d7530>}
+
+    def test_sin_candidatas_el_retorno_es_el_mismo_dict(base_puntaje):
+>       assert senales.verificar_puntaje_pendientes() == {
+            "verificadas": 0, "excluidas": 0, "fechas_excluidas": []}
+E       AssertionError: assert 0 == {'verificadas': 0, 'excluidas': 0, 'fechas_excluidas': []}
+E        +  where 0 = <function verificar_puntaje_pendientes at 0x799746aaa350>()
+E        +    where <function verificar_puntaje_pendientes at 0x799746aaa350> = senales.verificar_puntaje_pendientes
+
+tests/test_puntaje_retorno.py:73: AssertionError
+___ test_la_cuenta_se_repite_en_cada_corrida_porque_la_fila_sigue_candidata ____
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7997469d6b90>, 'leer': <function base_puntaje.<locals>.leer at 0x7997469d68d0>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x7997469d6cf0>}
+
+    def test_la_cuenta_se_repite_en_cada_corrida_porque_la_fila_sigue_candidata(base_puntaje):
+        """La fila excluida no se escribe, así que vuelve a ser candidata en la
+        corrida siguiente y se vuelve a contar (trato ratificado en §95.2 b)."""
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+        primera = senales.verificar_puntaje_pendientes()
+        segunda = senales.verificar_puntaje_pendientes()
+>       assert primera == segunda == {"verificadas": 0, "excluidas": 1,
+                                      "fechas_excluidas": [FECHA_SENAL]}
+E       AssertionError: assert 0 == {'verificadas': 0, 'excluidas': 1, 'fechas_excluidas': ['2026-09-26']}
+
+tests/test_puntaje_retorno.py:83: AssertionError
+----------------------------- Captured stdout call -----------------------------
+  AVISO verificador puntaje: 1 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-26
+  AVISO verificador puntaje: 1 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-26
+_______________ test_verificar_pendientes_devuelve_los_dos_dicts _______________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x7997469d6560>, 'leer': <function base_puntaje.<locals>.leer at 0x799792ececf0>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x799792e7afb0>}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x799746382990>
+
+    def test_verificar_pendientes_devuelve_los_dos_dicts(base_puntaje, monkeypatch):
+        monkeypatch.setattr(senales, "verificar_apertura_pendientes",
+                            lambda: {"verificadas": 0, "no_verificables": 0,
+                                     "sin_datos_mercado": 0, "sin_calendario": 0})
+        base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+        apertura, puntaje = senales.verificar_pendientes()
+>       assert isinstance(apertura, dict) and isinstance(puntaje, dict)
+E       AssertionError: assert (True and False)
+E        +  where True = isinstance({'verificadas': 0, 'no_verificables': 0, 'sin_datos_mercado': 0, 'sin_calendario': 0}, dict)
+E        +  and   False = isinstance(0, dict)
+
+tests/test_puntaje_retorno.py:93: AssertionError
+----------------------------- Captured stdout call -----------------------------
+  AVISO verificador puntaje: 1 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-26
+_____________________ test_el_retorno_sobre_los_seis_casos _____________________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x799746519220>, 'leer': <function base_puntaje.<locals>.leer at 0x7997465197a0>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x799746519850>}
+
+    def test_el_retorno_sobre_los_seis_casos(base_puntaje):
+        """La cuenta que acompaña a las filas de arriba (falla sobre HEAD)."""
+        _sembrar_escenarios(base_puntaje["sembrar"])
+        r = senales.verificar_puntaje_pendientes()
+>       assert r["verificadas"] == 3 and r["excluidas"] == 2
+               ^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+tests/test_puntaje_retorno.py:144: TypeError
+----------------------------- Captured stdout call -----------------------------
+  AVISO verificador puntaje: 2 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-19, 2026-09-26
+_____________________ test_el_retorno_no_depende_de_la_red _____________________
+
+base_puntaje = {'sembrar': <function base_puntaje.<locals>.sembrar at 0x79974646cd50>, 'leer': <function base_puntaje.<locals>.leer at 0x79974646ce00>, 'ohlc': <function _ohlc_falso.<locals>.falso at 0x799746519fe0>}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x79974647b250>
+
+    def test_el_retorno_no_depende_de_la_red(base_puntaje, monkeypatch):
+        """Con la fuente vacía nada se verifica, pero la cuenta de excluidas es
+        la misma: la exclusión se decide ANTES de la descarga."""
+        monkeypatch.setattr(senales, "_ohlc_local", lambda *a, **k: pd.DataFrame())
+        _sembrar_escenarios(base_puntaje["sembrar"])
+        r = senales.verificar_puntaje_pendientes()
+>       assert r == {"verificadas": 0, "excluidas": 2,
+                     "fechas_excluidas": sorted([OTRA_FECHA, FECHA_SENAL])}
+E       AssertionError: assert 0 == {'verificadas': 0, 'excluidas': 2, 'fechas_excluidas': ['2026-09-19', '2026-09-26']}
+
+tests/test_puntaje_retorno.py:208: AssertionError
+----------------------------- Captured stdout call -----------------------------
+  AVISO verificador puntaje: 2 fila(s) con insumo conocible después de su emisión (available_at > timestamp_utc) excluidas de verificacion_puntaje, sin escribir ni cambiar estado; fechas: 2026-09-19, 2026-09-26
+___________ test_reproduccion_7_sep_excepcion_en_el_lote_1_no_es_ok ____________
+
+corrida = <function corrida.<locals>.correr at 0x79974646ddd0>
+
+    def test_reproduccion_7_sep_excepcion_en_el_lote_1_no_es_ok(corrida):
+        """REPRODUCCIÓN (falla sobre HEAD, que registra `ok`). 25 pendientes,
+        la API rechaza el primer lote: 0 analizados y un `resultado` que no es
+        `ok` ni `freno_presupuesto`, con el tipo del error y el lote."""
+        codigo, registro_, crudo, llamadas, _, _ = corrida(pendientes=25, falla_en_lote=1)
+        assert codigo == 0                      # el job termina; lo que cambia es el registro
+        assert llamadas == [20]
+        assert registro_["analizados"] == 0
+>       assert registro_["resultado"] not in ("ok", "freno_presupuesto"), registro_
+E       AssertionError: {'fecha': '2026-10-10', 'hora_utc': '2026-10-11T02:11:54.611585+00:00', 'origen': 'noticias', 'costo_usd': 0.0, ...}
+E       assert 'ok' not in ('ok', 'freno_presupuesto')
+
+tests/test_noticias_ledger.py:120: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2026-10-11T02:11:54.611476+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD
+[2026-10-11T02:11:54.611502+00:00] dedup retroactivo: {} en 0.0s
+[2026-10-11T02:11:54.611510+00:00] titulares nuevos guardados: 5
+[2026-10-11T02:11:54.611547+00:00] análisis falló en el lote 1: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API.'}, 'request_id': 'req_011CSINTETICO'}
+[2026-10-11T02:11:54.611557+00:00] analizados 0 de 25 pendientes · costo 0.0000 USD
+[2026-10-11T02:11:54.611665+00:00] gasto acumulado hoy: 0.0000 / 0.50 USD
+__________ test_el_ledger_no_lleva_el_texto_de_la_respuesta_de_la_api __________
+
+corrida = <function corrida.<locals>.correr at 0x799744d338a0>
+
+    def test_el_ledger_no_lleva_el_texto_de_la_respuesta_de_la_api(corrida):
+        """El texto completo puede traer identificadores (request_id) y va sólo
+        al log del job, enmascarado; al ledger viaja el TIPO, nada más."""
+        _, _, crudo, _, _, _ = corrida(pendientes=25, falla_en_lote=1)
+        assert "req_011CSINTETICO" not in crudo
+        assert "credit balance" not in crudo and "Error code" not in crudo
+>       assert "BadRequestError" in crudo
+E       assert 'BadRequestError' in '{"fecha": "2026-10-10", "hora_utc": "2026-10-11T02:11:54.616826+00:00", "origen": "noticias", "costo_usd": 0.0, "tope....5, "resultado": "ok", "titulares_nuevos": 5, "analizados": 0, "pendientes_restantes": 25, "acumulado_dia_usd": 0.0}\n'
+
+tests/test_noticias_ledger.py:134: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2026-10-11T02:11:54.616738+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD
+[2026-10-11T02:11:54.616758+00:00] dedup retroactivo: {} en 0.0s
+[2026-10-11T02:11:54.616766+00:00] titulares nuevos guardados: 5
+[2026-10-11T02:11:54.616792+00:00] análisis falló en el lote 1: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API.'}, 'request_id': 'req_011CSINTETICO'}
+[2026-10-11T02:11:54.616801+00:00] analizados 0 de 25 pendientes · costo 0.0000 USD
+[2026-10-11T02:11:54.616894+00:00] gasto acumulado hoy: 0.0000 / 0.50 USD
+_____ test_error_en_el_segundo_lote_conserva_lo_analizado_y_nombra_el_lote _____
+
+corrida = <function corrida.<locals>.correr at 0x799744d485c0>
+
+    def test_error_en_el_segundo_lote_conserva_lo_analizado_y_nombra_el_lote(corrida):
+        _, registro_, _, llamadas, _, _ = corrida(pendientes=45, falla_en_lote=2)
+        assert llamadas == [20, 20]
+>       assert registro_["resultado"] == mki_noticias.RESULTADO_ERROR_ANALISIS
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'mki_noticias' has no attribute 'RESULTADO_ERROR_ANALISIS'
+
+tests/test_noticias_ledger.py:165: AttributeError
+----------------------------- Captured stdout call -----------------------------
+[2026-10-11T02:11:54.623312+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD
+[2026-10-11T02:11:54.623329+00:00] dedup retroactivo: {} en 0.0s
+[2026-10-11T02:11:54.623335+00:00] titulares nuevos guardados: 5
+[2026-10-11T02:11:54.623361+00:00] análisis falló en el lote 2: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API.'}, 'request_id': 'req_011CSINTETICO'}
+[2026-10-11T02:11:54.623370+00:00] analizados 20 de 45 pendientes · costo 0.0035 USD
+[2026-10-11T02:11:54.623375+00:00] resumen del día regenerado
+[2026-10-11T02:11:54.623449+00:00] gasto acumulado hoy: 0.0135 / 0.50 USD
+__________ test_un_error_sin_status_code_registra_el_tipo_y_nada_mas ___________
+
+corrida = <function corrida.<locals>.correr at 0x799744d48d50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x799744cf38c0>
+
+    def test_un_error_sin_status_code_registra_el_tipo_y_nada_mas(corrida, monkeypatch):
+        class RedCaida(Exception):
+            pass
+    
+        def analizar(client, lote):
+            raise RedCaida("timeout hacia api.anthropic.com")
+        pendientes = [{"id": 1, "titular": "t", "tickers": ""}]
+        monkeypatch.setattr(noticias, "obtener_titulares_sin_analizar", lambda conn: pendientes)
+        monkeypatch.setattr(noticias, "_analizar_lote", analizar)
+        # `corrida` ya preparó el resto; se corre main() directo.
+        assert mki_noticias.main() == 0
+        with open(costos.RUTA_LOG, encoding="utf-8") as f:
+            ultima = json.loads([l for l in f if l.strip()][-1])
+>       assert ultima["resultado"] == mki_noticias.RESULTADO_ERROR_ANALISIS
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'mki_noticias' has no attribute 'RESULTADO_ERROR_ANALISIS'
+
+tests/test_noticias_ledger.py:183: AttributeError
+----------------------------- Captured stdout call -----------------------------
+[2026-10-11T02:11:54.627148+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD
+[2026-10-11T02:11:54.627167+00:00] dedup retroactivo: {} en 0.0s
+[2026-10-11T02:11:54.627174+00:00] titulares nuevos guardados: 5
+[2026-10-11T02:11:54.627192+00:00] análisis falló en el lote 1: timeout hacia api.anthropic.com
+[2026-10-11T02:11:54.627200+00:00] analizados 0 de 1 pendientes · costo 0.0000 USD
+[2026-10-11T02:11:54.627342+00:00] gasto acumulado hoy: 0.0000 / 0.50 USD
+__________________ test_el_vigia_falla_con_error_de_analisis ___________________
+
+corrida = <function corrida.<locals>.correr at 0x799744d49590>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x799744cf3b60>
+
+    def test_el_vigia_falla_con_error_de_analisis(corrida, monkeypatch):
+        _, registro_, _, _, _, _ = corrida(pendientes=25, falla_en_lote=1)
+        ok, detalle = _vigia_con_ledger(monkeypatch, registro_)
+>       assert not ok
+E       assert not True
+
+tests/test_noticias_ledger.py:199: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2026-10-11T02:11:54.630854+00:00] mki_noticias.py — gasto hoy 0.0000 / tope 0.50 USD
+[2026-10-11T02:11:54.630870+00:00] dedup retroactivo: {} en 0.0s
+[2026-10-11T02:11:54.630877+00:00] titulares nuevos guardados: 5
+[2026-10-11T02:11:54.630897+00:00] análisis falló en el lote 1: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API.'}, 'request_id': 'req_011CSINTETICO'}
+[2026-10-11T02:11:54.630905+00:00] analizados 0 de 25 pendientes · costo 0.0000 USD
+[2026-10-11T02:11:54.630981+00:00] gasto acumulado hoy: 0.0000 / 0.50 USD
+_____________ test_el_vigia_con_el_ledger_del_7_sep_ya_no_dice_ok ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x799744cf3850>
+
+    def test_el_vigia_con_el_ledger_del_7_sep_ya_no_dice_ok(monkeypatch):
+        """La forma vieja del registro (resultado ok, 0 analizados, pendientes
+        260) sigue leyéndose OK: el ledger histórico no se reescribe y el vigía
+        no puede inferir el error de un registro que no lo trae. Lo que cambia
+        es que un registro NUEVO con error ya no tiene esa forma."""
+        ok, _ = _vigia_con_ledger(monkeypatch, {
+            "resultado": "ok", "analizados": 0, "costo_usd": 0.0, "pendientes_restantes": 260})
+        assert ok
+        ok, detalle = _vigia_con_ledger(monkeypatch, {
+>           "resultado": mki_noticias.RESULTADO_ERROR_ANALISIS, "analizados": 0,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            "costo_usd": 0.0, "pendientes_restantes": 260,
+            "error_tipo": "BadRequestError", "error_lote": 1, "error_http": 400})
+E       AttributeError: module 'mki_noticias' has no attribute 'RESULTADO_ERROR_ANALISIS'
+
+tests/test_noticias_ledger.py:223: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_frescura.py::test_reproduccion_H0_con_la_fuente_atrasada_no_se_sella
+FAILED tests/test_frescura.py::test_control_dia_de_sesion_con_sox_fecha_de_hoy_sella_igual_que_antes
+FAILED tests/test_frescura.py::test_fin_de_semana_no_cambia_de_conducta - Att...
+FAILED tests/test_frescura.py::test_feriado_de_xnys_no_cambia_de_conducta - A...
+FAILED tests/test_frescura.py::test_la_guarda_b_de_90_1_sigue_igual_y_ahora_declara_su_negativa
+FAILED tests/test_frescura.py::test_sin_sox_fecha_la_frescura_no_interviene
+FAILED tests/test_frescura.py::test_si_el_calendario_falla_se_sella_como_antes_con_aviso
+FAILED tests/test_frescura.py::test_la_negativa_de_frescura_no_entra_al_bucle_de_reintentos
+FAILED tests/test_frescura.py::test_el_vigia_lee_la_negativa_que_snapshot_escribe
+FAILED tests/test_frescura.py::test_la_marca_es_una_sola_en_los_dos_modulos
+FAILED tests/test_frescura.py::test_la_guarda_no_agrega_margen_horario_ni_nombra_fechas
+FAILED tests/test_puntaje_retorno.py::test_reproduccion_el_retorno_lleva_la_cuenta_de_excluidas
+FAILED tests/test_puntaje_retorno.py::test_sin_excluidas_el_retorno_dice_cero_y_sin_fechas
+FAILED tests/test_puntaje_retorno.py::test_sin_candidatas_el_retorno_es_el_mismo_dict
+FAILED tests/test_puntaje_retorno.py::test_la_cuenta_se_repite_en_cada_corrida_porque_la_fila_sigue_candidata
+FAILED tests/test_puntaje_retorno.py::test_verificar_pendientes_devuelve_los_dos_dicts
+FAILED tests/test_puntaje_retorno.py::test_el_retorno_sobre_los_seis_casos - ...
+FAILED tests/test_puntaje_retorno.py::test_el_retorno_no_depende_de_la_red - ...
+FAILED tests/test_noticias_ledger.py::test_reproduccion_7_sep_excepcion_en_el_lote_1_no_es_ok
+FAILED tests/test_noticias_ledger.py::test_el_ledger_no_lleva_el_texto_de_la_respuesta_de_la_api
+FAILED tests/test_noticias_ledger.py::test_error_en_el_segundo_lote_conserva_lo_analizado_y_nombra_el_lote
+FAILED tests/test_noticias_ledger.py::test_un_error_sin_status_code_registra_el_tipo_y_nada_mas
+FAILED tests/test_noticias_ledger.py::test_el_vigia_falla_con_error_de_analisis
+FAILED tests/test_noticias_ledger.py::test_el_vigia_con_el_ledger_del_7_sep_ya_no_dice_ok
+ERROR tests/test_vigia_16_1.py - AttributeError: module 'mki_vigia' has no at...
+24 failed, 7 passed, 1 skipped, 1 error in 4.14s

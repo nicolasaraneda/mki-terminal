@@ -40,6 +40,14 @@ TAM_LOTE = 20
 HOLGURA_RESUMEN_USD = 0.05     # el resumen del día solo si queda esta holgura
 COSTO_RESUMEN_ESTIMADO = 0.01  # generar_resumen_dia no expone usage: estimación conservadora
 
+# Corrida 16-1 (acta §93.3 ii, tarjeta §74): cuando el análisis falla, el
+# ledger lo dice con un `resultado` propio —ni «ok» ni «freno_presupuesto»—
+# y con el TIPO del error y el lote, nunca con el texto de la respuesta de
+# la API (puede traer identificadores). Del 7-sep al 2-oct-2026 la API
+# rechazó cada llamada por falta de crédito y el ledger registró «ok · 0
+# analizados» 20 veces: el vigía (`chequear_noticias`) lo repetía como OK.
+RESULTADO_ERROR_ANALISIS = "error_analisis"
+
 
 def _log(msg: str) -> None:
     print(f"[{datetime.now(timezone.utc).isoformat()}] {msg}", flush=True)
@@ -114,7 +122,7 @@ def main() -> int:
     #    interna de noticias.py (decisión documentada en DECISIONES.md).
     conn = noticias.get_connection()
     pendientes = noticias.obtener_titulares_sin_analizar(conn)
-    costo_corrida, analizados, freno = 0.0, 0, False
+    costo_corrida, analizados, freno, error = 0.0, 0, False, None
     for i in range(0, len(pendientes), TAM_LOTE):
         if estado["gasto_usd"] + costo_corrida >= estado["tope_usd"]:
             freno = True
@@ -125,6 +133,13 @@ def main() -> int:
         except Exception as e:
             _log(f"análisis falló en el lote {i // TAM_LOTE + 1}: "
                  f"{enmascarar_secretos(str(e))}")
+            # Al ledger viaja el tipo y el lote; el texto queda sólo en este
+            # log, enmascarado. `status_code` existe en los errores HTTP del
+            # SDK (400 el 7-sep); en cualquier otro error queda en null.
+            codigo_http = getattr(e, "status_code", None)
+            error = {"error_tipo": type(e).__name__,
+                     "error_lote": i // TAM_LOTE + 1,
+                     "error_http": codigo_http if isinstance(codigo_http, int) else None}
             break
         for r in resultados:
             noticias.guardar_analisis(conn, r)
@@ -146,10 +161,13 @@ def main() -> int:
         except Exception as e:
             _log(f"resumen del día falló: {enmascarar_secretos(str(e))}")
 
+    resultado = ("freno_presupuesto" if freno
+                 else RESULTADO_ERROR_ANALISIS if error else "ok")
     registro = costos.registrar_corrida("noticias", costo_corrida + costo_resumen, {
-        "resultado": "freno_presupuesto" if freno else "ok",
+        "resultado": resultado,
         "titulares_nuevos": nuevos, "analizados": analizados,
-        "pendientes_restantes": len(pendientes) - analizados})
+        "pendientes_restantes": len(pendientes) - analizados,
+        **(error or {})})
     _log(f"gasto acumulado hoy: {registro['acumulado_dia_usd']:.4f} / "
          f"{registro['tope_usd']:.2f} USD")
 

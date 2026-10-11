@@ -9804,3 +9804,143 @@ Redactada por el asistente del chat a partir de las respuestas de Nicolás del 4
 **97.2. §79.3, la realización del sorteo sin información: opción (a), como la hace el parche.** Razón de Nicolás: «debido a la inocuidad de que e0 no puntue nada». Con la lista de 32, la realización del sorteo de los demás tickers cambia desde la primera sesión que la use; la distribución por ticker y la semilla no cambian. Medido por el auditor en 40 sesiones del congelado: HEAD 30 compras, parche 25, sortear con 33 y descartar TOELY 30 (igual a HEAD ticker por ticker); TOELY nunca compró. La elección se hizo con los dos resultados a la vista, lo que es inocuo porque E0 no puntúa ningún resultado. Lo que se pierde: la muestra de N = 40 mezcla dos corrientes de sorteo, separadas en cada fila por `reglas_sha256`. No se elige (b), sortear con TOELY y descartarlo, que era la recomendación del auditor y exigía más código en el sellador.
 
 **97.3. Lo que sigue abierto después de este acto.** El acta siguiente, con la hora del `git apply` y el número de la suite; la consulta del martes 6-oct (bitácora 16b §6 y bitácora 16a §6); la confirmación del crédito de noticias del lunes 5-oct (~17:55); y, para el diseño de la corrida 16: §79.2 (marcador de versión), §79.4 (la sonda), el reinicio del conteo de la regla de §58 con el universo de 32, qué puede hacer un agente sin la aprobación de Nicolás (una corrida con reloj quedó tres horas esperando un permiso), y lo de §93.14 y §95.6. E1 sigue con máxima prioridad (§93.15): licencia del `ibapi` e IB Gateway en WSL.
+
+## Acta §98, 4-oct-2026 (noche). Hechos de la aplicación a mano del parche de TOELY (acta §97.1). Ninguna firma
+
+Redactada por el asistente del chat con las salidas de terminal que Nicolás pegó el 4-oct entre las 21:19 y las 21:22. Cumple lo que dejó pendiente el mensaje del commit `f921df0` («la hora del git apply y el numero de la suite se declaran en el acta siguiente»).
+
+**98.1. Corte de método: 4-oct-2026 a las 21:03:47 (Chile, −03:00).** Errata a §97.1, que decía que la hora se leería con `date`: ese paso no se corrió, y la hora se leyó con `stat -c '%y'` de los dos archivos que modificó el `git apply`: `dinero/reglas.json` 21:03:47.802924177 y `dinero/sello_dinero.py` 21:03:47.802959338.
+
+**98.2. Huellas después de aplicar:** `dinero/reglas.json` `b6080eee4351ed433aeb5a124ec4603dcb3db3b3278b1791c40ee8a4ad0abc6c` y `dinero/sello_dinero.py` `cd0e70c8005143b2f6b63c62fb9e3f75b5303e083a936c98c13b86df6a8b2c25`, las dos iguales a las que predijo el acta §96.2.
+
+**98.3. Suite completa del árbol real con el parche, antes del commit:** 1042 passed, 5 skipped, 1 xfailed, 29 warnings, 0 failed, en 411,41 s, igual a la predicción de la bitácora 16b §5. `venv/bin/python tests/test_motor.py`: las seis funciones del motor, idénticas con y sin datos futuros en las tres fechas de prueba (2026-09-04, 2026-07-06, 2026-04-07). Las advertencias son las conocidas: `Pandas4Warning` de `motor.py:215` (deuda `motor_concat.diff`), la de `starlette.testclient` y la de `GEMELO/transversal.py:260`.
+
+**98.4. Commit y push.** `f921df0` «Corrida 16b y actas §95 a §97…», 15 archivos, 1632 inserciones y 22 borrados; el hook corrió la suite completa: 1042 passed, 5 skipped, 1 xfailed, 0 failed, en 417,91 s. Push de Nicolás a las ~21:22: `1a17eac..f921df0 main -> main`, cinco commits (`aa23bf0`, `719497c` y `902106e`, los backups del 30-sep, el 1 y el 2-oct; `f5b659e`, la corrida 16a; `f921df0`). Quedan sin commitear `data/backups/sello_dinero.csv`, `data/sonda_cierre.csv` y `data/backups/sello_dinero_ext/ext_2026-10-02.{csv,meta.json}`, que commitea el backup.
+
+**98.5. Consecuencias en vigor desde el corte.** El universo del insumo de E0 tiene 32 tickers (sin TOELY) desde la sesión del 5-oct. La regla sellada de §58 queda cerrada por su cláusula V4, «NO DECIDIBLE: el universo operable cambió el 5-oct-2026», con 4 noches válidas (acta §96.4); reiniciar el conteo es un acto posterior de Nicolás, con acta. La predicción falsable del sello del 6-oct a las 00:30 Chile es la de §96.5 (contador de 9 a 10).
+
+## Acta §99, 10-oct-2026 (noche). La semana del 5 al 9-oct leída de la máquina, y firmas de Nicolás sobre los disparos de recuperación del sellador, la regla de §58, la sonda, el marcador de versión, `analisis_puntaje_ia`, los permisos de los agentes y el orden de la corrida 16, que empieza esta noche
+
+Redactada por el asistente del chat a partir de las salidas de terminal que Nicolás pegó el 10-oct a las 21:50 y de sus respuestas de las 22:02. Las opciones y las recomendaciones etiquetadas que Nicolás tuvo delante son las del mensaje del asistente de las 21:55. Ninguna de estas firmas mueve una cifra publicada; 99.5 la moverá cuando se aplique.
+
+**99.1. Hechos de la semana (salidas de Nicolás, 10-oct 21:50).**
+- E0: cuentan para N **12** sesiones (eran 9). Cuentan las del 5, 8 y 9-oct (`pendiente`, `insumo_completo = 1`, 32 filas, sin TOELY, `reglas_sha256` `b6080eee4351…`). La del **6-oct no tiene filas**. La del **7-oct quedó `no_verificable_timing`** (32 filas, `SHECY` sin dato). La predicción de §96.5 para el 5-oct se cumplió.
+- Journal de `mki-sello-dinero`: disparos a las 00:30 del 6, 8, 9 y 10-oct; **ningún disparo a las 00:30 del 7-oct y un disparo a las 10:30:55 del 7-oct**. El administrador de systemd pasa del proceso 317 (6-oct) al 319 (desde el 7-oct): hubo al menos un reinicio entre medio. Nicolás informa dos cortes de luz por las lluvias en Santiago. Lectura del asistente (DEDUCIDA, no medida con `journalctl --list-boots`): el PC estaba apagado a las 00:30 del 7-oct, la sesión del 6-oct no se selló, y al volver la máquina el timer (`Persistent=true`) disparó de recuperación a las 10:30:55, selló fuera de hora y dejó ocupada la fecha del 7-oct, que el disparo normal del 8-oct ya no pudo sellar. Es el mismo mecanismo del 28-sep (§62, inventario §66 C.8).
+- Riel de medición: los cinco días sellados con 8 predicciones y descarga 28/28. El del 6-oct, tarde (22:37Z, 19:37 Chile), con retractación del vigía. Vigía del 7 al 9-oct: «todo OK».
+- La guarda de la 16a: 0 filas del 28-sep en `verificacion_puntaje`, 0 filas invertidas de cualquier fecha; el aviso de las 24 excluidas aparece en cada entrada de `snapshot.log`. La predicción de la bitácora 16a §6 se cumplió.
+- Noticias: el crédito llegó a la key del job. Del 5 al 9-oct, entre 998 y 1.020 analizados por día, `resultado` `freno_presupuesto`, costo diario entre 0,505 y 0,510 USD; pendientes de 4.289 a 340. Los errores «credit balance is too low» quedaron en 20 (no suben desde el 2-oct).
+- Git: backups del 5, 7, 8 y 9-oct; **no hay backup del 6-oct** (causa probable: la regla 0 de §70, ratificada en §93.10, con el snapshot del día vivo y tardío; DEDUCIDO). Cuatro commits sin pushear.
+
+**99.2. Los disparos de recuperación del sellador de E0: opción (a), aplicar el camino T de §62 (firmado en §93.7).** Razón de Nicolás: «puesto que este ya habria salvado el 7 oct». Va en la corrida 16-2 (99.7): el parche de la corrida 15 se revisa sobre el sellador que cambió la 16b, con dictamen nuevo del `auditor-lookahead`, B2 preparado y un acta de aplicación con corte de método. No se eligen (b) `Persistent=false` en el timer, (c) las dos, que era la recomendación del asistente, ni se decide aquí la UPS (hardware, decisión personal de Nicolás). Declarado al firmar: hasta que el camino T esté aplicado, un disparo de recuperación sigue quemando la sesión que sella fuera de hora; el camino T no habría salvado el 6-oct.
+
+**99.3. La regla de §58 no se reinicia.** Respuesta de Nicolás: «no reiniciarla, solo se reabre si llegan noches incompletas. todo funciona bien dado que el culpable principal era toely». La regla queda cerrada por V4 (§98.5) y el sellador sigue en `Mon..Fri 23:30 America/New_York` (§88.1). Dato al firmar: desde la salida de TOELY, las tres noches selladas a su hora llegaron con insumo completo (n = 3; la del 7-oct no cuenta, fue un disparo fuera de hora). Se reabre con acta si vuelven las noches con insumo incompleto a las 23:30 NY. No se elige reiniciarla con el universo de 32 (que exigía alinear la sonda).
+
+**99.4. §79.4, la sonda: no se toca.** Respuesta de Nicolás: «como elegimos b en la anterior, pierde relevancia». Con la regla de §58 cerrada, que la sonda cuente 33 y el sellador 32 deja de afectar una lectura pendiente. Las deudas (3) y (4) de la sonda (§91.4) quedan abiertas, sin fecha.
+
+**99.5. §79.2, el marcador de versión: opción (b).** Respuesta de Nicolás: «opcion b)». En la corrida 16-3, junto con la declaración del universo nuevo en el README, `version_reglas` pasa a `0.3.0-PROPUESTA`. Declarado: cambia otra vez `reglas_sha256`, así que E0 tendrá una tercera población de filas, distinguible por versión y por huella. No se eligen (a) dejar sólo la huella, ni (c) subir `VERSION_SELLO`, que choca con el `E0.3` del parche T.
+
+**99.6. `analisis_puntaje_ia` entra a la fuente única: opción (a).** Razón de Nicolás: «debido a la coherencia con una sola fuente». En la corrida 16-3, `backtest/linea_base.py::cargar()` se extiende para tratar el puntaje, y la API y el dashboard leen esa cifra de ahí. Mientras tanto, su protección es la guarda de la 16a. No se eligen (b) dejarla fuera declarada, ni (c) retirarla de la API y el dashboard.
+
+**99.7. Permisos de los agentes: opción (b), una lista explícita.** Razón de Nicolás: «me parece razonable la lista de permisos previa revision». La lista la escribe el asistente con la documentación oficial de Claude Code verificada el 10-oct (code.claude.com/docs/en/permissions y settings), la revisa Nicolás y la instala él en `.claude/settings.local.json` del repo, excluido de git por `.git/info/exclude`. Permite lo que se negó en las corridas 16a y 16b (copiar `senales.db`, `noticias.db` y `dinero/sello_dinero.db` al worktree, `pytest`, `git worktree`, `git apply` y lecturas de git, de `systemctl` y del journal); prohíbe `git commit`, `git push`, `git reset`, cambiar timers o recargar systemd, sellar con el sellador real y leer `.env`. En Claude Code, las reglas `deny` se evalúan antes que las `allow` y antes que el clasificador del modo automático. Ningún agente edita esa lista. Las corridas se lanzan con Nicolás presente. No se eligen (a), sólo presencia sin lista, ni (c), el modo automático amplio.
+
+**99.8. La corrida 16 se parte en tres, en este orden.** Respuesta de Nicolás: «orden 1,2,3». 16-1: vigía y riel de medición (§93.8 (b) y (d), §93.9, §93.3 (ii), §95.2 R2 y R3), antes del 2-nov. 16-2: el camino T (99.2). 16-3: fuente única (§93.4, 93.4-bis ii, 99.6), README (§93.11, el universo de §95.4, 99.5) y lo demás de §93.14.
+
+**99.9. La corrida 16-1 se lanza esta noche, sábado 10-oct, con Nicolás presente.** Respuesta de Nicolás: «este seria un encargo nocturno conmigo presente». Excepción a la regla «los encargos se lanzan de día», como §91.1. Entre esta noche y el lunes 12-oct a las 17:50 no dispara ningún job del riel (el próximo snapshot es el lunes 12-oct a las 18:15; el próximo sello de E0, el martes 13-oct a las 00:30 Chile), lo que la corrida confirma con `list-timers`.
+
+**99.10. Lo que sigue abierto.** La corrida 16-1 y su acta de cierre; 16-2 y 16-3; los cuatro backups sin pushear (acto de Nicolás); E1 (§93.15), que Nicolás avanza a mano en paralelo: licencia del `ibapi` e IB Gateway en WSL.
+
+## Acta §100, 10-oct-2026 (corrida 16-1, nocturna con Nicolás presente). El vigía y el riel de medición: la guarda de frescura, la negativa declarada con epílogo, igualdad y orden del ancla, el predicado de `verificacion_puntaje` en solo lectura, la cuenta de excluidas en el retorno y el ledger de noticias con error, aplicados al árbol real con corte de método. Ninguna firma
+
+Redactada por el orquestador de la corrida (Fable 5.1, esfuerzo alto) al cierre y anexada a las 23:23 (`date`). Encargo:
+`~/encargo.md` (acta §99.8 y §99.9). Insumos: `GEMELO/resultados/bitacora_16_1.md` (horas de `date`), el dictamen
+`GEMELO/resultados/dictamen_16_1/auditor_16_1.md`, la tarjeta §80 de `espera_firma.md` y las salidas archivadas en
+`dictamen_16_1/evidencia/`. **Ninguna firma: lo que necesita decisión está en la tarjeta §80.** Ninguna cifra publicada se
+mueve; ninguna fila sellada se reescribe; ningún esquema cambia; `motor.py` intacto; nada se commiteó ni se pusheó.
+
+**100.1. Corte de método: 10-oct-2026 a las 23:12:48 (Chile, −03:00).** Los cuatro bloques entraron al árbol real en un
+solo acto, por copia desde el worktree (`stat -c '%y'`: `snapshot.py` 23:12:48.857, `senales.py` .860, `mki_vigia.py`
+.861, `mki_noticias.py` .864; los nueve archivos de tests entre .866 y .880). Huellas sha256 en la bitácora §4.2. Suite
+completa del árbol real con todas las bases, después de aplicar: **1116 passed, 5 skipped, 1 xfailed, 0 failed, en
+464,14 s** (23:13:32 → 23:21:18); apertura, antes de tocar nada: 1042 passed, 5 skipped, 1 xfailed (22:19:00 → 22:27:01).
+`tests/test_motor.py`: las seis funciones del motor idénticas con y sin datos futuros en las tres fechas de prueba.
+Ningún job `mki-*` disparó durante la corrida (sábado; `list-timers` copiado en la bitácora §0.1).
+
+**100.2. Lo que rige desde el lunes 12-oct-2026, por bloque.**
+- **A. Guarda de frescura en `snapshot.py` (§93.8 b).** Si `sox_fecha` existe, es distinta de la fecha del snapshot
+  (`date.today()`) y ese día es sesión de XNYS, no se sella. Compara dos fechas y pregunta al calendario; sin margen
+  horario ni reloj (§72 C.2: desde el 2-nov la holgura es de 15 minutos). Va después de la guarda (b) de §90.1, cuya
+  condición no cambia. Fin de semana y feriado de XNYS: se sella como antes (D.2 sigue sin firmar). `sox_fecha` vacío:
+  se sella como antes, por la rama del reloj de pared (§84.2). Si el calendario mismo falla, se sella como HEAD con
+  `AVISO frescura` (BL1 del dictamen; elección 6 de §80). **Las dos negativas se declaran** con una línea fija en
+  `snapshot.log`: `NEGATIVA DECLARADA [sesion_sox_abierta | insumo_no_fresco] fecha=… sox_fecha=…: motivo`, y el
+  resultado lleva la clave `negativa`; ninguna entra al bucle de reintentos de `main()`. Cuenta histórica medida por el
+  auditor en `mode=ro`: 0 sellos de día de sesión con `sox_fecha ≠ fecha`, sobre 52 (53 con `sox_fecha`; el único
+  distinto, 7-sep, es feriado). **Errata fechada a §93.8 y al comentario original del código (10-oct-2026):** la
+  expresión «0 de 45» mezclaba el total con `sox_fecha` (45 al 29-sep) con los de día de sesión (44); la cifra correcta
+  era 0 de 44 al 29-sep y es 0 de 52 al 10-oct.
+- **B. El vigía, un solo toque (§93.8 d, §93.9, §95.2 R3, §93.3 ii).** (1) Sin sello y con negativa declarada en el bloque
+  de hoy de `snapshot.log`, `chequear_snapshot` dice «snapshot: NO sellado por negativa declarada [código]: motivo» y NO
+  cuenta como falla (tampoco «descarga: sin snapshot»); el pase manda un mensaje 🟡 propio con la negativa, «no es
+  falla» y el anuncio del re-chequeo, y deja el marcador con la negativa. A las 20:30: retractación si hay sello; si no,
+  «caso cerrado por hoy… si un sello manual llegara más tarde, snapshot.py avisará», con la hora real, y **el marcador
+  queda** (BL3 del dictamen: un sello manual posterior retracta por `_epilogo_vigia`; ningún mensaje queda contradicho
+  por la base). Sin negativa, todo sigue como en 5.0.1. (2) `chequear_ancla_temporal` prueba `av == ts` (texto de siempre)
+  y además `av > ts` por instantes con zona («available_at POSTERIOR a timestamp_utc… inversión»), y declara las marcas
+  ilegibles como FALLA en vez de morir (BL2). (3) Séptimo chequeo, `chequear_guarda_puntaje`: recomputa en `mode=ro` el
+  predicado de la guarda de la 16a (misma semántica que el verificador: NULL o vacío no cuentan, igualdad no cuenta,
+  legacy fuera, instantes con zona; sin el filtro de 7 días, a propósito) e informa «N fila(s) invertida(s) fuera de
+  verificacion_puntaje (fecha: n…); M dentro». Alerta si M > 0 (la guarda fue vencida) o si alguna fecha con inversión
+  está dentro de `DIAS_INVERSION_RECIENTE = 10` días (elección 1 de §80). Hoy, contra la base real: 24 fuera, todas del
+  28-sep, 0 dentro, sin fecha nueva → OK. (4) Errata «launchd» corregida en el mensaje del proceso colgado. (5) `main()`
+  partido en `revision(hoy)` para poder probar el pase en fin de semana; `resultado == "error_analisis"` del ledger es
+  falla.
+- **C. `verificar_puntaje_pendientes` devuelve un dict** `{"verificadas", "excluidas", "fechas_excluidas"}` (§95.2 R2).
+  Qué escribe no cambia: verificado por el auditor sobre la misma siembra contra la versión de `864606c` y fijado por
+  dos tests (filas esperadas explícitas; comparación contra el commit anterior, discriminante también después de este
+  commit). `verificar_pendientes` propaga; `snapshot.py:main` imprime «verificador puntaje: N verificadas, K excluidas
+  por conocibilidad (fechas: …)»; la línea de AVISO de la 16a sigue igual; `app.py:828` ignora el retorno.
+- **D. `mki_noticias.py`:** cuando `_analizar_lote` lanza, el ledger registra `resultado: error_analisis` con
+  `error_tipo` (nombre de la clase), `error_lote` y `error_http` (si el error trae `status_code` entero; si no, null),
+  nunca el texto de la API, que sigue yendo sólo a `noticias.log` enmascarado. `freno_presupuesto` y «ok con 0
+  analizados y 0 pendientes» siguen igual. Los registros históricos del 7-sep al 2-oct no se reescriben: el vigía sigue
+  leyéndolos como «ok» porque no traen el error (test que lo fija).
+
+**100.3. Método.** Tests escritos antes del código (cuatro archivos nuevos: 1141 líneas a las 22:38, 1238 aplicadas tras las
+exigencias del auditor, 1240 tras la E2 del guardián) y corridos sobre HEAD puro con los
+cuatro módulos de HEAD: las tres reproducciones fallan por conducta («snapshot.py selló el 2026-09-29 con
+sox_fecha=2026-09-28», «'int' object is not subscriptable», «'ok' not in ('ok', 'freno_presupuesto')»), el resto por
+símbolo ausente; 7 controles en verde en HEAD (`evidencia/pytest_nuevos_sobre_HEAD.txt`, regenerado con los tests finales
+a pedido del auditor). Cinco tests existentes adaptados: el test de fijación de H0 de la corrida 15 sale de
+`test_conocibilidad.py` (ahora H0 es una negativa; su reproducción vive en `test_frescura.py`); `test_guarda_puntaje.py`
+lee el dict; `test_parche_guardia_ancla_temporal.py` y `test_parche_snapshot140.py` fijan `date.today()` del módulo bajo
+prueba (antes era «irrelevante», con la frescura decide); `test_vigia.py` exige la ausencia de «launchd». Worktree sin
+bases (100.5): línea base sobre HEAD puro 19 failed + 6 errors (bases ausentes), con los cambios **el mismo conjunto de 25
+rojos y 1004 passed** (+65). Dictamen del `auditor-lookahead` (22:42 → 23:00): **APLICABLE CON EXIGENCIAS**, sin fuga de
+valor futuro demostrada; sus tres bloqueantes de código (BL1 calendario sin proteger, BL2 marca ilegible que enmudecía
+al vigía, BL3 cierre de caso sin retractación posible) se atendieron antes de aplicar, con test cada una, y de las
+recomendadas se hicieron R1 (test que ata los dos predicados), R2, R4 y R8; R3, R5, R6, R7 y R9 quedan sin dueño en §80.
+El artefacto aplicado difiere del auditado en esas correcciones (`evidencia/delta_auditado_a_final.diff`); el auditor no
+volvió a pasar sobre el final. Guardián: `dictamen_16_1/guardian_cierre.md`.
+
+**100.4. Lo que el auditor midió y queda abierto (no bloquea).** F4: un disparo en sábado (D.2, declarado sin cubrir en
+§93.8) sellaría un clon de la señal del viernes con la MISMA sesión objetivo; ya hay 16 filas selladas en día no-sesión
+dentro de las métricas (5-jul y 7-sep, 8 y 8, `verificada`; las del 7-sep con los mismos estimados que el 4-sep) — para
+el `estadistico-adversario`. S1: desde el 2-nov la guarda convierte «sellar mal» en «no sellar» con 15 min de holgura en
+125 de 308 sesiones; si la latencia de la fuente correlaciona con el volumen, el conjunto sellado deja de ser
+independiente del dato; lo resolvería la sonda de §93.14 (sin firmar) y un contador publicado de días negados (R7). S2:
+un reloj atrasado 15+ min haría disparar la guarda (b) en un día legítimo sin reintento. Zona ciega 1: la guarda decide
+con lo que la fuente sirve en el instante, y eso no es reproducible después (el sello del 28-ago declara `sox_fecha`
+28-ago y esa sesión no existe en la descarga de hoy). La negativa vive sólo en `snapshot.log`, que rota (S4, R3).
+
+**100.5. Entorno, para Nicolás.** (i) Las tres copias de bases al worktree (`cp senales.db <wt>/` y las otras dos, las
+formas exactas de la lista de §99.7) fueron **denegadas** dos veces; no se insistió ni se rodeó; rigió §95.5 (la suite
+del árbol real con las bases juzga, con control sobre HEAD puro). (ii) La suite en un worktree sin bases **crea**
+`senales.db` y `noticias.db` vacías (`init_db()` de un test que no parchea `DB_PATH`), y desde entonces los tests
+`solo_con_base` corren sobre una base vacía en vez de saltarse (tres rojos de `test_conocibilidad` que no estaban en la
+línea base; zona ciega 7 del dictamen 16a, ahora medida; R5 del dictamen 16-1). (iii) El badge congelado
+`tests_recolectados` (1025) queda desfasado en +97 (1122 recolectados); lo actualiza la 16-3 con el README (§90.4).
+(iv) Los dos worktrees de la 16b se podaron y el de esta corrida se removió a las 00:18:01 del 11-oct (E1 del guardián).
+
+**100.6. Lo que sigue abierto después de este acto.** El commit de la 16-1 (lista en la bitácora §8; 27 rutas) y la lectura
+del lunes 12-oct (predicciones en la bitácora §7); las firmas de §80; la 16-2 (camino T, §99.2) y la 16-3 (§99.8); las
+recomendadas sin dueño; E1 (§93.15); los cinco commits sin pushear.

@@ -46,7 +46,8 @@ import os
 import shutil
 import subprocess
 import sys
-from datetime import datetime
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
@@ -135,6 +136,16 @@ class _RelojFalso(datetime):
         return cls._instante if tz else cls._instante.replace(tzinfo=None)
 
 
+class _FechaFalsa(date):
+    """Corrida 16-1 (acta §93.8 b): la guarda de frescura compara `sox_fecha`
+    con `date.today()`; la fecha del módulo bajo prueba es la de Chile del
+    reloj inyectado, como en producción."""
+
+    @classmethod
+    def today(cls):
+        return _RelojFalso._instante.astimezone(ZoneInfo("America/Santiago")).date()
+
+
 @pytest.fixture
 def entorno(monkeypatch, tmp_path):
     monkeypatch.setattr(noticias, "sentimiento_promedio_por_ticker", lambda: {})
@@ -168,6 +179,7 @@ def entorno(monkeypatch, tmp_path):
         m = modulos[version]
         _RelojFalso._instante = datetime.fromisoformat(reloj_utc_iso)
         monkeypatch.setattr(m, "datetime", _RelojFalso)
+        monkeypatch.setattr(m, "date", _FechaFalsa)
         db = str(tmp_path / f"senales_{version}.db")
         monkeypatch.setattr(senales, "DB_PATH", db)
         # Guardia: jamás contra la base real.

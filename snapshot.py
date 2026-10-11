@@ -60,6 +60,28 @@ ESPERAS_REINTENTO_SEG = (20 * 60, 40 * 60)
 # (los caídos obtienen otra oportunidad) sin cirugía en el motor.
 ESPERAS_REINTENTO_PARCIAL_SEG = (60, 120)
 
+# Negativas DECLARADAS (acta §93.8 b y d, corrida 16-1): cuando este job se
+# niega a sellar POR REGLA, lo dice con una línea fija en snapshot.log que el
+# vigía reconoce y distingue de una falla («NO sellado por negativa
+# declarada», no «NO se selló»). El texto de la marca es un contrato con
+# mki_vigia.py: no se reformula sin tocar el vigía y sus tests.
+#   NEGATIVA_SESION_ABIERTA — guarda (b) de §90.1: la sesión del SOX usada no
+#                             ha cerrado (el 28-sep: sello con NYSE abierto).
+#   NEGATIVA_FRESCURA       — guarda de frescura, §93.8 (b): hoy es sesión de
+#                             XNYS y la fuente sirve el SOX de otro día (H0 de
+#                             la tarjeta §72: el despertar de mañana sellaría
+#                             el snapshot de hoy con el cierre de ayer).
+MARCA_NEGATIVA = "NEGATIVA DECLARADA"
+NEGATIVA_SESION_ABIERTA = "sesion_sox_abierta"
+NEGATIVA_FRESCURA = "insumo_no_fresco"
+
+
+def _declarar_negativa(codigo: str, fecha: str, sox_fecha, texto: str) -> None:
+    """La línea fija que lee el vigía: marca, código, fecha del snapshot que
+    no se selló, `sox_fecha` visto, y el motivo en prosa."""
+    print(f"  {MARCA_NEGATIVA} [{codigo}] fecha={fecha} sox_fecha={sox_fecha}: {texto}",
+          flush=True)
+
 
 def salud_descarga(fecha: date) -> dict:
     """Salud de la descarga del día: qué tickers esperados (universo + ^SOX)
@@ -91,7 +113,10 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
     dashboard jamás espera), una descarga incompleta se reintenta antes de
     sellar. Si la sesión del SOX usada no ha cerrado al instante de emisión
     (available_at > timestamp_utc), NO sella y lo dice en `motivo` (acta
-    §90.1 b). Devuelve un dict con lo que hizo."""
+    §90.1 b). Si hoy es sesión de XNYS y `sox_fecha` no es hoy, tampoco
+    sella (guarda de frescura, acta §93.8 b). Las dos negativas se declaran
+    con la línea fija de `_declarar_negativa` y viajan en la clave
+    `negativa` del resultado. Devuelve un dict con lo que hizo."""
     if senales.ya_existe_snapshot_hoy():
         return {"snapshot": False, "motivo": "ya existe snapshot de hoy"}
 
@@ -166,14 +191,61 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
         # dispara los reintentos de 20/40 min de main(): reintentar no
         # cierra una sesión.
         if datetime.fromisoformat(available_at) > ahora_utc:
-            return {"snapshot": False,
-                    "motivo": (f"la sesión del SOX usada no ha cerrado: "
-                               f"sox_fecha {sox_fecha} cierra a las "
-                               f"{available_at} y la emisión es de las "
-                               f"{ts_emision} — no se sella (acta §90.1 b)"),
+            motivo = (f"la sesión del SOX usada no ha cerrado: "
+                      f"sox_fecha {sox_fecha} cierra a las "
+                      f"{available_at} y la emisión es de las "
+                      f"{ts_emision} — no se sella (acta §90.1 b)")
+            _declarar_negativa(NEGATIVA_SESION_ABIERTA, hoy.isoformat(), sox_fecha, motivo)
+            return {"snapshot": False, "negativa": NEGATIVA_SESION_ABIERTA,
+                    "motivo": motivo,
                     "sox_fecha": str(sox_fecha), "cierre_utc": available_at,
                     "emision_utc": ts_emision,
                     "descarga": f"{salud['ok_n']}/{salud['total']}"}
+        # Guarda de frescura (acta §93.8 b, 10-oct-2026): la guarda de arriba
+        # protege contra sellar con la sesión del SOX ABIERTA; no contra
+        # sellar con el SOX de una sesión ANTERIOR ya cerrada (H0 de la
+        # tarjeta §72, medido con test en la corrida 15). Un despertar de
+        # mañana en día hábil (inventario §66 D.1) sellaría el snapshot de
+        # HOY con el cierre de AYER, a las 18:15 diría «ya existe» y el
+        # verificador lo aceptaría (emisión antes de la apertura objetivo).
+        # Regla: si hoy es sesión de XNYS y `sox_fecha` no es hoy, no se
+        # sella. Compara dos FECHAS y pregunta al calendario; NO mira el
+        # reloj ni agrega margen horario (desde el 2-nov-2026 la holgura
+        # entre las 18:15 de Chile y el cierre de XNYS es de 15 minutos y
+        # cualquier margen apagaría el sello, §72 C.2). Fin de semana y
+        # feriado de XNYS no son sesión: ahí no interviene (D.2 sigue sin
+        # firmar). Sin `sox_fecha` no hay nada que juzgar: esa rama sigue
+        # sellando con el reloj de pared y su alerta en el vigía (§84.2).
+        # Cuenta histórica, medida en `mode=ro`: 0 sellos de día de sesión
+        # con sox_fecha distinta de su fecha, sobre 44 al 29-sep-2026 (45
+        # con sox_fecha, uno en feriado) y sobre 52 al 10-oct-2026 (53 con
+        # sox_fecha; el único distinto, 7-sep, es feriado de NYSE). Un día
+        # con la fuente atrasada deja de sellar en vez de sellar mal, que es
+        # lo que §90.1 (b) prometía y no producía. Si el calendario mismo
+        # falla (BL1 del dictamen 16-1), no se puede juzgar la frescura: se
+        # sella como HEAD, con AVISO, igual que la rama del `except` de
+        # arriba — una excepción acá se llevaría también al verificador, los
+        # respaldos y el epílogo del vigía.
+        fecha_hoy = hoy.isoformat()
+        if sox_fecha and str(sox_fecha) != fecha_hoy:
+            try:
+                hoy_es_sesion = calendarios.es_sesion("XNYS", fecha_hoy)
+            except Exception as e:
+                from seguridad import enmascarar_secretos
+                print(f"  AVISO frescura: no se pudo consultar el calendario de XNYS "
+                      f"para {fecha_hoy} ({enmascarar_secretos(str(e))}) — se sella "
+                      f"como antes, sin juzgar la frescura (sox_fecha {sox_fecha})",
+                      flush=True)
+                hoy_es_sesion = False
+            if hoy_es_sesion:
+                motivo = (f"hoy {fecha_hoy} es sesión de XNYS y el último cierre del "
+                          f"SOX que sirve la fuente es de {sox_fecha}: insumo no "
+                          f"fresco — no se sella (acta §93.8 b)")
+                _declarar_negativa(NEGATIVA_FRESCURA, fecha_hoy, sox_fecha, motivo)
+                return {"snapshot": False, "negativa": NEGATIVA_FRESCURA,
+                        "motivo": motivo, "fecha": fecha_hoy,
+                        "sox_fecha": str(sox_fecha), "emision_utc": ts_emision,
+                        "descarga": f"{salud['ok_n']}/{salud['total']}"}
         for _, fila in pred.iterrows():
             t = fila["Ticker"]
             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")
@@ -299,7 +371,12 @@ def main() -> int:
 
     verif_apertura, verif_puntaje = senales.verificar_pendientes()
     print(f"  verificador apertura: {verif_apertura}")
-    print(f"  verificador puntaje: {verif_puntaje} verificadas")
+    # Corrida 16-1 (acta §95.2 R2): la cuenta de excluidas por conocibilidad
+    # viaja en el retorno del verificador, no sólo en su línea de AVISO.
+    print(f"  verificador puntaje: {verif_puntaje['verificadas']} verificadas, "
+          f"{verif_puntaje['excluidas']} excluidas por conocibilidad"
+          + (f" (fechas: {', '.join(verif_puntaje['fechas_excluidas'])})"
+             if verif_puntaje["fechas_excluidas"] else ""))
 
     exportados = respaldar_a_csv()
     print(f"  respaldos CSV: {len(exportados)} tablas → data/backups/")

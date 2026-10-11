@@ -494,7 +494,8 @@ def test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos(sellador, monkeypatch, 
     monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
     monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
     monkeypatch.setattr(senales, "verificar_pendientes",
-                        lambda: ({"verificadas": 0}, 0))
+                        lambda: ({"verificadas": 0},
+                                 {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
     monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
     esperas = []
     monkeypatch.setattr(snapshot.time, "sleep", lambda s: esperas.append(s))
@@ -515,24 +516,10 @@ def test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos(sellador, monkeypatch, 
     assert sellador["sellos"] == []
 
 
-def test_hallazgo_una_fuente_atrasada_pasa_la_guarda_y_sella(sellador):
-    """HALLAZGO DOCUMENTADO, no corregido (va a tarjeta). El acta §90.1 (b)
-    dice que con esta guarda «un día con la fuente atrasada deja de sellar
-    en vez de sellar mal». La condición firmada para esta corrida
-    (`available_at > emisión`) NO produce eso: si a las 18:15 de Chile del
-    martes la fuente todavía entrega como último movimiento el del LUNES,
-    `sox_fecha` es el lunes, su sesión cerró hace un día, la guarda pasa y
-    se sella con insumo viejo. Este test fija el comportamiento para que
-    el hueco tenga un número de línea y no viva en la memoria de nadie."""
-    martes, lunes = "2026-09-29", "2026-09-28"
-    assert calendarios.sesion_anterior("XNYS", martes) == lunes
-    reloj = _a_las_1815_de_chile(martes, segundos=3)
-    assert reloj > calendarios.cierre_utc("XNYS", martes)   # el martes YA cerró
-    resultado = sellador["sellar"](reloj, lunes)
-    assert resultado["snapshot"] is True, resultado
-    sello = sellador["sellos"][0]
-    assert sello["sox_fecha"] == lunes
-    assert sello["available_at"] == CIERRE_EVENTO           # insumo de ayer
+# El hallazgo H0 de la corrida 15 («una fuente atrasada pasa la guarda y
+# sella») vivió aquí como test de fijación hasta la corrida 16-1 (10-oct-2026):
+# la guarda de frescura (acta §93.8 b) lo cierra, y su reproducción —ahora
+# como negativa— está en tests/test_frescura.py.
 
 
 # ============================================================

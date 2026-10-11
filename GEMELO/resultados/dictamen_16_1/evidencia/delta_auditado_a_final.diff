@@ -1,0 +1,436 @@
+60c60
+< index 5703c22..408864e 100644
+---
+> index 5703c22..0e239b2 100644
+75c75
+< @@ -45,28 +46,90 @@ RUTA_NOTICIAS_LOG = os.path.join(DIRECTORIO, "data", "noticias.log")
+---
+> @@ -45,28 +46,96 @@ RUTA_NOTICIAS_LOG = os.path.join(DIRECTORIO, "data", "noticias.log")
+104,105c104,111
+< +def _instante(texto: str) -> datetime:
+< +    t = datetime.fromisoformat(texto)
+---
+> +def _instante(texto: str) -> datetime | None:
+> +    """Instante con zona, o None si el texto no es una marca ISO legible
+> +    (BL2 del dictamen 16-1: un valor ilegible se declara como FALLA, nunca
+> +    puede tirar el pase y dejar mudo al vigía)."""
+> +    try:
+> +        t = datetime.fromisoformat(texto)
+> +    except (ValueError, TypeError):
+> +        return None
+169c175
+< @@ -82,7 +145,14 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+---
+> @@ -82,7 +151,14 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+185c191,192
+< @@ -95,13 +165,83 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+---
+> @@ -94,14 +170,118 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+>      conn.close()
+188,191c195,205
+<      de_pared = [t for t, ts, av in filas if av is None or av == ts]
+< +    invertidas = [t for t, ts, av in filas
+< +                  if av is not None and ts is not None and av != ts
+< +                  and _instante(av) > _instante(ts)]
+---
+> -    de_pared = [t for t, ts, av in filas if av is None or av == ts]
+> +    de_pared = [t for t, ts, av in filas if not av or av == ts]
+> +    ilegibles, invertidas = [], []
+> +    for t, ts, av in filas:
+> +        if not av or av == ts:
+> +            continue
+> +        conocible, emitida = _instante(av), _instante(ts)
+> +        if conocible is None or emitida is None:
+> +            ilegibles.append(t)
+> +        elif conocible > emitida:
+> +            invertidas.append(t)
+192a207,210
+> +    if ilegibles:
+> +        problemas.append(f"{len(ilegibles)}/{len(filas)} filas con available_at o "
+> +                         f"timestamp_utc ILEGIBLES ({', '.join(ilegibles)}) — no se pudo "
+> +                         f"evaluar el orden")
+210,221c228,236
+< +def chequear_guarda_puntaje(hoy: date = None) -> tuple:
+< +    """Corrida 16-1 (acta §95.2 R3; dictamen 16a §7): recomputa en `mode=ro`
+< +    el predicado de la guarda de `verificar_puntaje_pendientes` —filas con
+< +    `puntaje_ia` que declaran su insumo conocible DESPUÉS de su emisión
+< +    (available_at > timestamp_utc)— y dice cuántas siguen fuera de
+< +    `verificacion_puntaje` y cuántas están dentro. No depende del log que
+< +    rota ni de ninguna columna nueva. Sin alerta cuando el residuo es el
+< +    conocido (fechas viejas, todas fuera); con alerta si una invertida está
+< +    DENTRO (la guarda fue vencida) o si aparece una fecha NUEVA (dentro de
+< +    `DIAS_INVERSION_RECIENTE` días: un sello que las guardas debían
+< +    impedir). Sin el filtro de 7 días del verificador, a propósito: una
+< +    inversión fresca no debe esperar una semana para verse."""
+---
+> +def _inversiones_puntaje(ruta_db: str) -> tuple:
+> +    """El predicado de la guarda de `verificar_puntaje_pendientes`, recomputado
+> +    en `mode=ro` sobre `ruta_db`: filas con `puntaje_ia`, no legacy, cuyo
+> +    `available_at` es un instante POSTERIOR a `timestamp_utc`. Igual que el
+> +    verificador: NULL o cadena vacía es «sin dato» (no cuenta), la igualdad
+> +    no cuenta, los instantes se comparan con zona. Sin el filtro de 7 días.
+> +    Devuelve tres dicts fecha → n: fuera de `verificacion_puntaje`, dentro,
+> +    e ilegibles (marcas no parseables, que el verificador no distingue y
+> +    acá se declaran). Lanza `sqlite3.Error` si la base no se puede leer."""
+223,227c238
+< +    hoy = hoy or date.today()
+< +    try:
+< +        conn = sqlite3.connect(f"file:{senales.DB_PATH}?mode=ro", uri=True)
+< +    except sqlite3.Error as e:
+< +        return False, f"guarda puntaje: no se pudo abrir la base en solo lectura ({enmascarar_secretos(str(e))})"
+---
+> +    conn = sqlite3.connect(f"file:{ruta_db}?mode=ro", uri=True)
+239,240d249
+< +    except sqlite3.Error as e:
+< +        return False, f"guarda puntaje: la consulta falló ({enmascarar_secretos(str(e))})"
+243c252
+< +    fuera, dentro = {}, {}
+---
+> +    fuera, dentro, ilegibles = {}, {}, {}
+245c254
+< +        if av == ts or _instante(av) <= _instante(ts):
+---
+> +        if not av or av == ts:
+247,248c256,285
+< +        (dentro if esta_dentro else fuera).setdefault(fecha, 0)
+< +        (dentro if esta_dentro else fuera)[fecha] += 1
+---
+> +        conocible, emitida = _instante(av), _instante(ts)
+> +        if conocible is None or emitida is None:
+> +            ilegibles[fecha] = ilegibles.get(fecha, 0) + 1
+> +            continue
+> +        if conocible <= emitida:
+> +            continue
+> +        destino = dentro if esta_dentro else fuera
+> +        destino[fecha] = destino.get(fecha, 0) + 1
+> +    return fuera, dentro, ilegibles
+> +
+> +
+> +def chequear_guarda_puntaje(hoy: date = None) -> tuple:
+> +    """Corrida 16-1 (acta §95.2 R3; dictamen 16a §7): recomputa en `mode=ro`
+> +    el predicado de la guarda de `verificar_puntaje_pendientes` —filas con
+> +    `puntaje_ia` que declaran su insumo conocible DESPUÉS de su emisión
+> +    (available_at > timestamp_utc)— y dice cuántas siguen fuera de
+> +    `verificacion_puntaje` y cuántas están dentro. No depende del log que
+> +    rota ni de ninguna columna nueva. Sin alerta cuando el residuo es el
+> +    conocido (fechas viejas, todas fuera); con alerta si una invertida está
+> +    DENTRO (la guarda fue vencida) o si aparece una fecha NUEVA (dentro de
+> +    `DIAS_INVERSION_RECIENTE` días: un sello que las guardas debían
+> +    impedir). Sin el filtro de 7 días del verificador, a propósito: una
+> +    inversión fresca no debe esperar una semana para verse."""
+> +    import senales
+> +    hoy = hoy or date.today()
+> +    try:
+> +        fuera, dentro, ilegibles = _inversiones_puntaje(senales.DB_PATH)
+> +    except sqlite3.Error as e:
+> +        return False, (f"guarda puntaje: no se pudo leer la base en solo lectura "
+> +                       f"({enmascarar_secretos(str(e))})")
+249a287,291
+> +    if ilegibles:
+> +        detalle = ", ".join(f"{f}: {n}" for f, n in sorted(ilegibles.items()))
+> +        return False, (f"guarda puntaje: {sum(ilegibles.values())} fila(s) con available_at o "
+> +                       f"timestamp_utc ILEGIBLES ({detalle}) — el predicado no se pudo "
+> +                       f"evaluar en ellas; {n_fuera} invertida(s) fuera, {n_dentro} dentro")
+272c314
+< @@ -176,8 +316,10 @@ def chequear_noticias() -> tuple:
+---
+> @@ -176,8 +356,10 @@ def chequear_noticias() -> tuple:
+284c326
+< @@ -191,6 +333,15 @@ def chequear_noticias() -> tuple:
+---
+> @@ -191,6 +373,15 @@ def chequear_noticias() -> tuple:
+300c342
+< @@ -277,12 +428,16 @@ def snapshot_en_curso(hoy: date = None) -> tuple:
+---
+> @@ -277,12 +468,16 @@ def snapshot_en_curso(hoy: date = None) -> tuple:
+319c361
+< @@ -353,22 +508,41 @@ def rechequeo(hoy: date) -> int:
+---
+> @@ -353,22 +548,42 @@ def rechequeo(hoy: date) -> int:
+339,340c381,384
+< +        # que prometer una retractación sería prometer lo que no llega: se
+< +        # cierra el caso, se consume el marcador y se dice con la hora real.
+---
+> +        # que el mensaje cierra el caso por hoy, con la hora real. El
+> +        # marcador QUEDA (BL3 del dictamen 16-1): si un sello manual llegara
+> +        # más tarde, snapshot.py envía la retractación y ningún mensaje
+> +        # publicado queda contradicho por la base (precedente 5.0.2).
+345,346c389,391
+< +                 "y no hay proceso de snapshot vivo. Caso cerrado: la sesión de hoy "
+< +                 "queda sin sello en el riel de medición y no habrá retractación.")
+---
+> +                 "y no hay proceso de snapshot vivo. Caso cerrado por hoy: la sesión "
+> +                 "queda sin sello en el riel de medición. Si un sello manual llegara "
+> +                 "más tarde, snapshot.py avisará.")
+349,350d393
+< +        if ok:
+< +            _consumir_pendiente()
+364c407
+< @@ -377,7 +551,13 @@ def rechequeo(hoy: date) -> int:
+---
+> @@ -377,7 +592,13 @@ def rechequeo(hoy: date) -> int:
+379c422
+< @@ -390,39 +570,51 @@ def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
+---
+> @@ -390,39 +611,51 @@ def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
+450c493
+< @@ -432,6 +624,20 @@ def main(argv=None) -> int:
+---
+> @@ -432,6 +665,20 @@ def main(argv=None) -> int:
+522c565
+< index cb13dda..e27add8 100644
+---
+> index cb13dda..fce96fa 100644
+566c609
+< @@ -166,14 +191,45 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
+---
+> @@ -166,14 +191,61 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
+600,603c643,652
+< +        # Cuenta histórica al firmar: 0 de 45 sellos de día de sesión con
+< +        # sox_fecha distinta de su fecha (el único distinto, 7-sep, es
+< +        # feriado de NYSE). Un día con la fuente atrasada deja de sellar en
+< +        # vez de sellar mal, que es lo que §90.1 (b) prometía y no producía.
+---
+> +        # Cuenta histórica, medida en `mode=ro`: 0 sellos de día de sesión
+> +        # con sox_fecha distinta de su fecha, sobre 44 al 29-sep-2026 (45
+> +        # con sox_fecha, uno en feriado) y sobre 52 al 10-oct-2026 (53 con
+> +        # sox_fecha; el único distinto, 7-sep, es feriado de NYSE). Un día
+> +        # con la fuente atrasada deja de sellar en vez de sellar mal, que es
+> +        # lo que §90.1 (b) prometía y no producía. Si el calendario mismo
+> +        # falla (BL1 del dictamen 16-1), no se puede juzgar la frescura: se
+> +        # sella como HEAD, con AVISO, igual que la rama del `except` de
+> +        # arriba — una excepción acá se llevaría también al verificador, los
+> +        # respaldos y el epílogo del vigía.
+605,613c654,672
+< +        if sox_fecha and str(sox_fecha) != fecha_hoy and calendarios.es_sesion("XNYS", fecha_hoy):
+< +            motivo = (f"hoy {fecha_hoy} es sesión de XNYS y el último cierre del "
+< +                      f"SOX que sirve la fuente es de {sox_fecha}: insumo no "
+< +                      f"fresco — no se sella (acta §93.8 b)")
+< +            _declarar_negativa(NEGATIVA_FRESCURA, fecha_hoy, sox_fecha, motivo)
+< +            return {"snapshot": False, "negativa": NEGATIVA_FRESCURA,
+< +                    "motivo": motivo, "fecha": fecha_hoy,
+< +                    "sox_fecha": str(sox_fecha), "emision_utc": ts_emision,
+< +                    "descarga": f"{salud['ok_n']}/{salud['total']}"}
+---
+> +        if sox_fecha and str(sox_fecha) != fecha_hoy:
+> +            try:
+> +                hoy_es_sesion = calendarios.es_sesion("XNYS", fecha_hoy)
+> +            except Exception as e:
+> +                from seguridad import enmascarar_secretos
+> +                print(f"  AVISO frescura: no se pudo consultar el calendario de XNYS "
+> +                      f"para {fecha_hoy} ({enmascarar_secretos(str(e))}) — se sella "
+> +                      f"como antes, sin juzgar la frescura (sox_fecha {sox_fecha})",
+> +                      flush=True)
+> +                hoy_es_sesion = False
+> +            if hoy_es_sesion:
+> +                motivo = (f"hoy {fecha_hoy} es sesión de XNYS y el último cierre del "
+> +                          f"SOX que sirve la fuente es de {sox_fecha}: insumo no "
+> +                          f"fresco — no se sella (acta §93.8 b)")
+> +                _declarar_negativa(NEGATIVA_FRESCURA, fecha_hoy, sox_fecha, motivo)
+> +                return {"snapshot": False, "negativa": NEGATIVA_FRESCURA,
+> +                        "motivo": motivo, "fecha": fecha_hoy,
+> +                        "sox_fecha": str(sox_fecha), "emision_utc": ts_emision,
+> +                        "descarga": f"{salud['ok_n']}/{salud['total']}"}
+617c676
+< @@ -299,7 +355,12 @@ def main() -> int:
+---
+> @@ -299,7 +371,12 @@ def main() -> int:
+769c828
+< index e8eee76..81ab78f 100644
+---
+> index e8eee76..d2e9b00 100644
+772c831
+< @@ -58,6 +58,18 @@ MARCA = "AVISO ancla temporal"
+---
+> @@ -58,6 +58,23 @@ MARCA = "AVISO ancla temporal"
+787a847,851
+> +
+> +def test_el_pin_de_fecha_es_una_sesion_de_xnys():
+> +    """R8 del dictamen 16-1: el pin no depende de la memoria de nadie."""
+> +    assert calendarios.es_sesion("XNYS", HOY_FIJO.isoformat())
+> +
+791c855
+< @@ -107,6 +119,7 @@ def entorno(monkeypatch, tmp_path):
+---
+> @@ -107,6 +124,7 @@ def entorno(monkeypatch, tmp_path):
+799c863
+< @@ -150,7 +163,7 @@ def test_camino_feliz_sin_aviso_y_vigia_en_verde(entorno, capsys):
+---
+> @@ -150,7 +168,7 @@ def test_camino_feliz_sin_aviso_y_vigia_en_verde(entorno, capsys):
+808c872
+< @@ -170,7 +183,7 @@ def test_si_cierre_utc_falla_el_aviso_sale_y_el_vigia_falla(entorno, capsys, mon
+---
+> @@ -170,7 +188,7 @@ def test_si_cierre_utc_falla_el_aviso_sale_y_el_vigia_falla(entorno, capsys, mon
+817c881
+< @@ -183,7 +196,7 @@ def test_si_no_hay_sox_fecha_el_aviso_sale_igual(entorno, capsys):
+---
+> @@ -183,7 +201,7 @@ def test_si_no_hay_sox_fecha_el_aviso_sale_igual(entorno, capsys):
+880c944
+< index 0000000..6f0c495
+---
+> index 0000000..e780cfb
+883c947
+< @@ -0,0 +1,268 @@
+---
+> @@ -0,0 +1,289 @@
+1046a1111,1129
+> +def test_si_el_calendario_falla_se_sella_como_antes_con_aviso(sellador, monkeypatch, capsys):
+> +    """BL1 del dictamen 16-1: `calendarios.es_sesion` es una llamada nueva en
+> +    el camino de sellado. Si el calendario revienta, la frescura no se
+> +    puede juzgar y se sella como HEAD (degradación con AVISO, la misma
+> +    dirección que la rama del `except` de `cierre_utc`); la excepción jamás
+> +    sube a `main()`, donde se llevaría el verificador, los respaldos y el
+> +    epílogo del vigía. Elección de agente a ratificar (tarjeta §80)."""
+> +    def revienta(exchange, sesion):
+> +        raise RuntimeError("calendario roto a propósito")
+> +    monkeypatch.setattr(calendarios, "es_sesion", revienta)
+> +    reloj = _a_las_1815_de_chile(MARTES, segundos=3)
+> +    resultado = sellador["sellar"](reloj, LUNES)
+> +    assert resultado["snapshot"] is True and "negativa" not in resultado
+> +    salida = capsys.readouterr().out
+> +    assert "AVISO frescura" in salida and "calendario" in salida
+> +    assert snapshot.MARCA_NEGATIVA not in salida
+> +    assert "roto a propósito" in salida             # el motivo queda en el log
+> +
+> +
+1131c1214,1216
+< +    """Cuenta histórica (§66 D.1 la midió en 0 de 45 al 29-sep): ningún
+---
+> +    """Cuenta histórica (§66 D.1 escribió «0 de 45» al 29-sep —errata fechada
+> +    en el acta §100.2: eran 0 de 44 sellos de día de sesión, sobre 45 con
+> +    sox_fecha—; al 10-oct, 0 de 52 sobre 53): ningún
+1154c1239
+< index 0000000..37f41a9
+---
+> index 0000000..3be1eac
+1157c1242
+< @@ -0,0 +1,203 @@
+---
+> @@ -0,0 +1,210 @@
+1171,1175c1256,1259
+< +# escribe esta versión con lo que escribe la de HEAD (`git show
+< +# HEAD:senales.py`, importada bajo otro nombre). Es discriminante mientras
+< +# HEAD no tenga el cambio; después del commit compara la función consigo
+< +# misma y queda como guardia contra una deriva futura del retorno. Por eso
+< +# el mismo archivo fija, además, las filas esperadas de forma explícita.
+---
+> +# escribe esta versión con lo que escribía la versión ANTERIOR al cambio
+> +# (`git show 864606c:senales.py`, importada bajo otro nombre; R2 del
+> +# dictamen 16-1: con `HEAD` el test se volvía tautológico tras el commit).
+> +# El mismo archivo fija, además, las filas esperadas de forma explícita.
+1305a1390,1396
+> +# R2 del dictamen 16-1: la referencia es el commit ANTERIOR al cambio, no
+> +# `HEAD`, para que el test siga siendo discriminante después del commit
+> +# (con `HEAD` compararía la función consigo misma). Es el último commit en
+> +# que `verificar_puntaje_pendientes` devolvía un entero.
+> +COMMIT_DE_REFERENCIA = "864606c"
+> +
+> +
+1307,1308c1398,1400
+< +    """`senales.py` tal como está en HEAD, importado bajo otro nombre.
+< +    None si no hay git o no hay HEAD (p. ej. una copia sin repo)."""
+---
+> +    """`senales.py` tal como está en `COMMIT_DE_REFERENCIA`, importado bajo
+> +    otro nombre. None si no hay git o el commit no está (p. ej. una copia
+> +    sin repo)."""
+1310c1402
+< +        p = subprocess.run(["git", "-C", RAIZ, "show", "HEAD:senales.py"],
+---
+> +        p = subprocess.run(["git", "-C", RAIZ, "show", f"{COMMIT_DE_REFERENCIA}:senales.py"],
+1333c1425
+< +        pytest.skip("sin git o sin HEAD: no hay versión de referencia")
+---
+> +        pytest.skip(f"sin git o sin el commit {COMMIT_DE_REFERENCIA}: no hay versión de referencia")
+1595c1687
+< index 0000000..3ffd8b3
+---
+> index 0000000..69c8522
+1598c1690
+< @@ -0,0 +1,444 @@
+---
+> @@ -0,0 +1,515 @@
+1800c1892,1893
+< +    assert "llegará la retractación" not in texto       # la promesa que no se cumpliría
+---
+> +    assert "llegará la retractación" not in texto       # la promesa de la rama de falla
+> +    assert "no habrá retractación" not in texto         # BL3: tampoco se promete lo contrario
+1802c1895,1912
+< +    assert mki_vigia._leer_pendiente(HOY) is None        # consumido: el caso se cerró
+---
+> +    # BL3 del dictamen 16-1: el marcador QUEDA. Un sello manual posterior
+> +    # retracta por `_epilogo_vigia`, y ningún mensaje queda contradicho.
+> +    assert mki_vigia._leer_pendiente(HOY) is not None
+> +
+> +
+> +def test_tras_el_cierre_de_caso_un_sello_manual_retracta(entorno, monkeypatch):
+> +    """BL3: la secuencia completa. 20:30 sin sello (caso cerrado por hoy),
+> +    después un sello manual: `snapshot._epilogo_vigia()` encuentra el
+> +    marcador y envía la retractación."""
+> +    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: False)
+> +    mki_vigia._escribir_pendiente(HOY, [], False,
+> +                                  negativa={"codigo": snapshot.NEGATIVA_FRESCURA,
+> +                                            "texto": "fuente atrasada"})
+> +    assert mki_vigia.rechequeo(HOY) == 0
+> +    _sellar_hoy(TS_TARDIO)
+> +    snapshot._epilogo_vigia()
+> +    assert len(entorno) == 2 and "recuperado: snapshot sellado" in entorno[1]
+> +    assert mki_vigia._leer_pendiente(HOY) is None
+1906a2017,2030
+> +def test_ancla_una_marca_ilegible_es_falla_y_no_excepcion(entorno):
+> +    """BL2 del dictamen 16-1: un `available_at` no parseable no puede tirar
+> +    el pase y dejar mudo al vigía; es FALLA con texto propio."""
+> +    _filas_hoy([("NVDA", TS, "no-es-una-fecha"), ("MU", TS, AV_ANTES)])
+> +    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
+> +    assert not ok and "ILEGIBLES" in d and "NVDA" in d and "1/2" in d
+> +
+> +
+> +def test_ancla_cadena_vacia_es_reloj_de_pared(entorno):
+> +    _filas_hoy([("NVDA", TS, "")])
+> +    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
+> +    assert not ok and "reloj de pared" in d and "ILEGIBLES" not in d
+> +
+> +
+2001a2126,2164
+> +def test_guarda_puntaje_una_marca_ilegible_es_falla_y_no_excepcion(entorno):
+> +    """BL2 del dictamen 16-1."""
+> +    _sembrar_puntaje(VIEJA, "NVDA", f"{VIEJA}T21:15:00+00:00", "no-es-una-fecha")
+> +    _sembrar_puntaje(VIEJA, "MU", *_inv(VIEJA))
+> +    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
+> +    assert not ok and "ILEGIBLES" in d and f"{VIEJA}: 1" in d
+> +    assert "1 invertida(s) fuera" in d
+> +
+> +
+> +def test_guarda_puntaje_cadena_vacia_es_sin_dato_como_en_el_verificador(entorno):
+> +    _sembrar_puntaje(VIEJA, "NVDA", f"{VIEJA}T21:15:00+00:00", "")
+> +    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
+> +    assert ok and "0 fila" in d
+> +
+> +
+> +def test_los_dos_predicados_coinciden_sobre_la_misma_siembra(entorno, monkeypatch):
+> +    """R1 del dictamen 16-1 (S3): el predicado está escrito dos veces —en el
+> +    verificador y en el vigía— y este test los ata. Misma base: la cuenta
+> +    y las fechas que `verificar_puntaje_pendientes` declara excluidas son
+> +    exactamente las del vigía restringidas a la ventana de 7 días del
+> +    verificador. Red reemplazada por un marco vacío: nada se escribe."""
+> +    import pandas as pd
+> +    monkeypatch.setattr(senales, "_ohlc_local", lambda *a, **k: pd.DataFrame())
+> +    for t in ("NVDA", "MU"):
+> +        _sembrar_puntaje(VIEJA, t, *_inv(VIEJA))
+> +    _sembrar_puntaje(VIEJA, "TSM", *_sana(VIEJA))
+> +    _sembrar_puntaje(VIEJA, "AMD", f"{VIEJA}T21:15:00+00:00", None)
+> +    _sembrar_puntaje(RECIENTE, "INTC", *_inv(RECIENTE))       # fuera de la ventana de 7 días
+> +    _sembrar_puntaje(VIEJA, "ASML", *_inv(VIEJA), estado=senales.ESTADO_LEGACY)
+> +    r = senales.verificar_puntaje_pendientes()
+> +    fuera, dentro, ilegibles = mki_vigia._inversiones_puntaje(senales.DB_PATH)
+> +    limite = (HOY - timedelta(days=7)).isoformat()
+> +    en_ventana = {f: n for f, n in fuera.items() if f <= limite}
+> +    assert r["excluidas"] == sum(en_ventana.values()) == 2
+> +    assert r["fechas_excluidas"] == sorted(en_ventana) == [VIEJA]
+> +    assert dentro == {} and ilegibles == {}
+> +    assert fuera == {VIEJA: 2, RECIENTE: 1}                  # el vigía ve además la reciente
+> +
+> +
+2003c2166
+< +    fuente = inspect.getsource(mki_vigia.chequear_guarda_puntaje)
+---
+> +    fuente = inspect.getsource(mki_vigia._inversiones_puntaje)

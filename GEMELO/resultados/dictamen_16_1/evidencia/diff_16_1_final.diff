@@ -1,0 +1,2205 @@
+diff --git a/mki_noticias.py b/mki_noticias.py
+index b1a9747..9fa1362 100644
+--- a/mki_noticias.py
++++ b/mki_noticias.py
+@@ -40,6 +40,14 @@ TAM_LOTE = 20
+ HOLGURA_RESUMEN_USD = 0.05     # el resumen del día solo si queda esta holgura
+ COSTO_RESUMEN_ESTIMADO = 0.01  # generar_resumen_dia no expone usage: estimación conservadora
+ 
++# Corrida 16-1 (acta §93.3 ii, tarjeta §74): cuando el análisis falla, el
++# ledger lo dice con un `resultado` propio —ni «ok» ni «freno_presupuesto»—
++# y con el TIPO del error y el lote, nunca con el texto de la respuesta de
++# la API (puede traer identificadores). Del 7-sep al 2-oct-2026 la API
++# rechazó cada llamada por falta de crédito y el ledger registró «ok · 0
++# analizados» 20 veces: el vigía (`chequear_noticias`) lo repetía como OK.
++RESULTADO_ERROR_ANALISIS = "error_analisis"
++
+ 
+ def _log(msg: str) -> None:
+     print(f"[{datetime.now(timezone.utc).isoformat()}] {msg}", flush=True)
+@@ -114,7 +122,7 @@ def main() -> int:
+     #    interna de noticias.py (decisión documentada en DECISIONES.md).
+     conn = noticias.get_connection()
+     pendientes = noticias.obtener_titulares_sin_analizar(conn)
+-    costo_corrida, analizados, freno = 0.0, 0, False
++    costo_corrida, analizados, freno, error = 0.0, 0, False, None
+     for i in range(0, len(pendientes), TAM_LOTE):
+         if estado["gasto_usd"] + costo_corrida >= estado["tope_usd"]:
+             freno = True
+@@ -125,6 +133,13 @@ def main() -> int:
+         except Exception as e:
+             _log(f"análisis falló en el lote {i // TAM_LOTE + 1}: "
+                  f"{enmascarar_secretos(str(e))}")
++            # Al ledger viaja el tipo y el lote; el texto queda sólo en este
++            # log, enmascarado. `status_code` existe en los errores HTTP del
++            # SDK (400 el 7-sep); en cualquier otro error queda en null.
++            codigo_http = getattr(e, "status_code", None)
++            error = {"error_tipo": type(e).__name__,
++                     "error_lote": i // TAM_LOTE + 1,
++                     "error_http": codigo_http if isinstance(codigo_http, int) else None}
+             break
+         for r in resultados:
+             noticias.guardar_analisis(conn, r)
+@@ -146,10 +161,13 @@ def main() -> int:
+         except Exception as e:
+             _log(f"resumen del día falló: {enmascarar_secretos(str(e))}")
+ 
++    resultado = ("freno_presupuesto" if freno
++                 else RESULTADO_ERROR_ANALISIS if error else "ok")
+     registro = costos.registrar_corrida("noticias", costo_corrida + costo_resumen, {
+-        "resultado": "freno_presupuesto" if freno else "ok",
++        "resultado": resultado,
+         "titulares_nuevos": nuevos, "analizados": analizados,
+-        "pendientes_restantes": len(pendientes) - analizados})
++        "pendientes_restantes": len(pendientes) - analizados,
++        **(error or {})})
+     _log(f"gasto acumulado hoy: {registro['acumulado_dia_usd']:.4f} / "
+          f"{registro['tope_usd']:.2f} USD")
+ 
+diff --git a/mki_vigia.py b/mki_vigia.py
+index 5703c22..0e239b2 100644
+--- a/mki_vigia.py
++++ b/mki_vigia.py
+@@ -27,9 +27,10 @@ import argparse
+ import json
+ import os
+ import re
++import sqlite3
+ import subprocess
+ import sys
+-from datetime import date, datetime, timezone
++from datetime import date, datetime, timedelta, timezone
+ 
+ from dotenv import load_dotenv
+ 
+@@ -45,28 +46,96 @@ RUTA_NOTICIAS_LOG = os.path.join(DIRECTORIO, "data", "noticias.log")
+ RUTA_PENDIENTE = os.path.join(DIRECTORIO, "data", "vigia_pendiente.json")
+ HORA_RECHEQUEO = "20:30"
+ 
++# Corrida 16-1 (acta §93.8 d): la línea fija con la que snapshot.py declara
++# que se negó a sellar POR REGLA. Es un contrato con snapshot.py
++# (`MARCA_NEGATIVA` allí); un test exige que los dos textos coincidan y que
++# la salida real del sellador se lea desde aquí. Una negativa declarada NO
++# es una falla: se informa con su propio mensaje y su propio epílogo.
++MARCA_NEGATIVA = "NEGATIVA DECLARADA"
++PREFIJO_NEGATIVA = "snapshot: NO sellado por negativa declarada"
++_RE_NEGATIVA = re.compile(
++    re.escape(MARCA_NEGATIVA) + r" \[(?P<codigo>[\w-]+)\] fecha=(?P<fecha>\S+) "
++    r"sox_fecha=(?P<sox_fecha>\S+): (?P<texto>.*)$")
++
++# Corrida 16-1 (acta §95.2 R3): una fila invertida (available_at >
++# timestamp_utc) con fecha dentro de esta ventana es un evento NUEVO —las
++# guardas de §90.1 (b) y §93.8 (b) debían impedirlo— y alerta; fuera de la
++# ventana es el residuo conocido (hoy, las 24 del 28-sep-2026) y sólo se
++# informa con su cuenta. La ventana cubre los 7 días que tarda una fila en
++# ser candidata del verificador más tres para leerla.
++DIAS_INVERSION_RECIENTE = 10
++
+ 
+ def _log(msg: str) -> None:
+     print(f"[{datetime.now(timezone.utc).isoformat()}] {msg}", flush=True)
+ 
+ 
+-def chequear_snapshot() -> tuple:
++def _instante(texto: str) -> datetime | None:
++    """Instante con zona, o None si el texto no es una marca ISO legible
++    (BL2 del dictamen 16-1: un valor ilegible se declara como FALLA, nunca
++    puede tirar el pase y dejar mudo al vigía)."""
++    try:
++        t = datetime.fromisoformat(texto)
++    except (ValueError, TypeError):
++        return None
++    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
++
++
++def _negativa_declarada_en_log(hoy: date) -> dict | None:
++    """La negativa declarada por la ÚLTIMA corrida de snapshot.py que
++    aparece en data/snapshot.log, si es de HOY (la línea lleva la fecha
++    del snapshot que no se selló). Si la última corrida no declaró ninguna
++    —o el log no existe— devuelve None y «no sellado» sigue siendo falla.
++    Mira la última cabecera porque manda la última corrida: una negativa
++    de las 18:15 seguida de una corrida manual que falló sin declararla es
++    una falla, no una negativa."""
++    if not os.path.exists(RUTA_SNAPSHOT_LOG):
++        return None
++    with open(RUTA_SNAPSHOT_LOG, encoding="utf-8", errors="replace") as f:
++        lineas = f.readlines()[-400:]
++    inicio = None
++    for i, linea in enumerate(lineas):
++        if "snapshot.py (origen=" in linea:
++            inicio = i
++    if inicio is None:
++        return None
++    encontrada = None
++    for linea in lineas[inicio:]:
++        m = _RE_NEGATIVA.search(linea.strip())
++        if m and m.group("fecha") == hoy.isoformat():
++            encontrada = m.groupdict()
++    return encontrada
++
++
++def chequear_snapshot(hoy: date = None) -> tuple:
+     import senales
++    hoy = hoy or date.today()
+     info = senales.info_snapshot_hoy()
+     if not info:
++        negativa = _negativa_declarada_en_log(hoy)
++        if negativa:
++            return True, (f"{PREFIJO_NEGATIVA} [{negativa['codigo']}]: "
++                          f"{negativa['texto']}")
+         return False, "snapshot: NO se selló hoy"
+     return True, f"snapshot: sellado (origen {info['origen']})"
+ 
+ 
+-def chequear_descarga() -> tuple:
++def es_negativa(detalle: str) -> bool:
++    return detalle.startswith(PREFIJO_NEGATIVA)
++
++
++def chequear_descarga(hoy: date = None) -> tuple:
+     import senales
++    hoy = hoy or date.today()
+     senales.init_db()
+     conn = senales.get_connection()
+     fila = conn.execute(
+         "SELECT descarga_ok, descarga_total, descarga_caidos FROM snapshots "
+-        "WHERE fecha = ?", (date.today().isoformat(),)).fetchone()
++        "WHERE fecha = ?", (hoy.isoformat(),)).fetchone()
+     conn.close()
+     if fila is None:
++        if _negativa_declarada_en_log(hoy):
++            return True, "descarga: sin snapshot que revisar (negativa declarada)"
+         return False, "descarga: sin snapshot que revisar"
+     ok_n, total, caidos = fila
+     if ok_n is None:
+@@ -82,7 +151,14 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+     la rama del `except` de snapshot.py (available_at) se tomó —sox_fecha
+     vacío o `cierre_utc` falló—, el ancla temporal es reloj de pared, y con
+     el parche del §26 aplicado la sesión objetivo se eligió como en el
+-    defecto. Se lee de la base, no del log: la evidencia es la igualdad."""
++    defecto. Se lee de la base, no del log: la evidencia es la igualdad.
++
++    Corrida 16-1 (acta §93.9, tarjeta §67): la igualdad NO es orden. El
++    28-sep-2026 las 24 filas tenían `available_at` 2 h 17 min POSTERIOR a
++    `timestamp_utc` y este chequeo dijo «OK». Ahora prueba las dos cosas:
++    `av == ts` (rama del except, como siempre) Y `av > ts` (inversión: el
++    insumo se declara conocible después de la emisión), cada una con su
++    texto. Los instantes se comparan con zona, no como texto."""
+     import senales
+     senales.init_db()
+     hoy = hoy or date.today()
+@@ -94,14 +170,118 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
+     conn.close()
+     if not filas:
+         return True, "ancla temporal: sin predicciones selladas hoy que revisar"
+-    de_pared = [t for t, ts, av in filas if av is None or av == ts]
++    de_pared = [t for t, ts, av in filas if not av or av == ts]
++    ilegibles, invertidas = [], []
++    for t, ts, av in filas:
++        if not av or av == ts:
++            continue
++        conocible, emitida = _instante(av), _instante(ts)
++        if conocible is None or emitida is None:
++            ilegibles.append(t)
++        elif conocible > emitida:
++            invertidas.append(t)
++    problemas = []
++    if ilegibles:
++        problemas.append(f"{len(ilegibles)}/{len(filas)} filas con available_at o "
++                         f"timestamp_utc ILEGIBLES ({', '.join(ilegibles)}) — no se pudo "
++                         f"evaluar el orden")
+     if de_pared:
+-        return False, (f"ancla temporal: {len(de_pared)}/{len(filas)} filas con "
+-                       f"available_at = reloj de pared ({', '.join(de_pared)}) — "
+-                       f"la rama del except de snapshot.py se tomó; ver snapshot.log")
++        problemas.append(f"{len(de_pared)}/{len(filas)} filas con "
++                         f"available_at = reloj de pared ({', '.join(de_pared)}) — "
++                         f"la rama del except de snapshot.py se tomó; ver snapshot.log")
++    if invertidas:
++        problemas.append(f"{len(invertidas)}/{len(filas)} filas con "
++                         f"available_at POSTERIOR a timestamp_utc ({', '.join(invertidas)}) — "
++                         f"inversión: el insumo se declara conocible después de la "
++                         f"emisión; las guardas de §90.1 (b) y §93.8 (b) no la frenaron")
++    if problemas:
++        return False, "ancla temporal: " + " · ".join(problemas)
+     return True, f"ancla temporal: {len(filas)}/{len(filas)} filas con cierre del SOX"
+ 
+ 
++def _inversiones_puntaje(ruta_db: str) -> tuple:
++    """El predicado de la guarda de `verificar_puntaje_pendientes`, recomputado
++    en `mode=ro` sobre `ruta_db`: filas con `puntaje_ia`, no legacy, cuyo
++    `available_at` es un instante POSTERIOR a `timestamp_utc`. Igual que el
++    verificador: NULL o cadena vacía es «sin dato» (no cuenta), la igualdad
++    no cuenta, los instantes se comparan con zona. Sin el filtro de 7 días.
++    Devuelve tres dicts fecha → n: fuera de `verificacion_puntaje`, dentro,
++    e ilegibles (marcas no parseables, que el verificador no distingue y
++    acá se declaran). Lanza `sqlite3.Error` si la base no se puede leer."""
++    import senales
++    conn = sqlite3.connect(f"file:{ruta_db}?mode=ro", uri=True)
++    try:
++        filas = conn.execute(f"""
++            SELECT s.fecha, s.ticker, s.timestamp_utc, s.available_at,
++                   v.id IS NOT NULL AS dentro
++            FROM senales_ticker s
++            LEFT JOIN verificacion_puntaje v
++              ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
++            WHERE s.puntaje_ia IS NOT NULL
++              AND s.timestamp_utc IS NOT NULL AND s.available_at IS NOT NULL
++              AND (s.estado IS NULL OR s.estado != '{senales.ESTADO_LEGACY}')
++            ORDER BY s.fecha, s.ticker""").fetchall()
++    finally:
++        conn.close()
++    fuera, dentro, ilegibles = {}, {}, {}
++    for fecha, ticker, ts, av, esta_dentro in filas:
++        if not av or av == ts:
++            continue
++        conocible, emitida = _instante(av), _instante(ts)
++        if conocible is None or emitida is None:
++            ilegibles[fecha] = ilegibles.get(fecha, 0) + 1
++            continue
++        if conocible <= emitida:
++            continue
++        destino = dentro if esta_dentro else fuera
++        destino[fecha] = destino.get(fecha, 0) + 1
++    return fuera, dentro, ilegibles
++
++
++def chequear_guarda_puntaje(hoy: date = None) -> tuple:
++    """Corrida 16-1 (acta §95.2 R3; dictamen 16a §7): recomputa en `mode=ro`
++    el predicado de la guarda de `verificar_puntaje_pendientes` —filas con
++    `puntaje_ia` que declaran su insumo conocible DESPUÉS de su emisión
++    (available_at > timestamp_utc)— y dice cuántas siguen fuera de
++    `verificacion_puntaje` y cuántas están dentro. No depende del log que
++    rota ni de ninguna columna nueva. Sin alerta cuando el residuo es el
++    conocido (fechas viejas, todas fuera); con alerta si una invertida está
++    DENTRO (la guarda fue vencida) o si aparece una fecha NUEVA (dentro de
++    `DIAS_INVERSION_RECIENTE` días: un sello que las guardas debían
++    impedir). Sin el filtro de 7 días del verificador, a propósito: una
++    inversión fresca no debe esperar una semana para verse."""
++    import senales
++    hoy = hoy or date.today()
++    try:
++        fuera, dentro, ilegibles = _inversiones_puntaje(senales.DB_PATH)
++    except sqlite3.Error as e:
++        return False, (f"guarda puntaje: no se pudo leer la base en solo lectura "
++                       f"({enmascarar_secretos(str(e))})")
++    n_fuera, n_dentro = sum(fuera.values()), sum(dentro.values())
++    if ilegibles:
++        detalle = ", ".join(f"{f}: {n}" for f, n in sorted(ilegibles.items()))
++        return False, (f"guarda puntaje: {sum(ilegibles.values())} fila(s) con available_at o "
++                       f"timestamp_utc ILEGIBLES ({detalle}) — el predicado no se pudo "
++                       f"evaluar en ellas; {n_fuera} invertida(s) fuera, {n_dentro} dentro")
++    if not fuera and not dentro:
++        return True, "guarda puntaje: 0 filas con available_at > timestamp_utc, fuera o dentro de verificacion_puntaje"
++    limite = (hoy - timedelta(days=DIAS_INVERSION_RECIENTE)).isoformat()
++    nuevas = sorted(f for f in set(fuera) | set(dentro) if f > limite)
++    detalle_fuera = ", ".join(f"{f}: {n}" for f, n in sorted(fuera.items()))
++    resumen = (f"{n_fuera} fila(s) invertida(s) fuera de verificacion_puntaje"
++               + (f" ({detalle_fuera})" if fuera else "") + f"; {n_dentro} dentro")
++    if dentro:
++        detalle_dentro = ", ".join(f"{f}: {n}" for f, n in sorted(dentro.items()))
++        return False, (f"guarda puntaje: {n_dentro} fila(s) con available_at > timestamp_utc "
++                       f"DENTRO de verificacion_puntaje ({detalle_dentro}) — la guarda de "
++                       f"§93.4-bis (i) fue vencida; {resumen}")
++    if nuevas:
++        return False, (f"guarda puntaje: fecha NUEVA con inversión ({', '.join(nuevas)}), "
++                       f"sellada hace menos de {DIAS_INVERSION_RECIENTE} días — las guardas de "
++                       f"§90.1 (b) y §93.8 (b) debían impedirlo; ver snapshot.log; {resumen}")
++    return True, f"guarda puntaje: {resumen} (residuo conocido, sin fecha nueva)"
++
++
+ def _proceso_noticias_colgado() -> str | None:
+     """5.0.2 — si hay un mki_noticias.py vivo, launchd NO vuelve a disparar
+     el job (un label = un proceso): el 3-ago un fetch sin timeout quedó
+@@ -176,8 +356,10 @@ def chequear_noticias() -> tuple:
+     if not corridas:
+         colgado = _proceso_noticias_colgado()
+         if colgado:
++            # Errata «launchd» corregida en la corrida 16-1 (§67): esta
++            # máquina corre systemd; la regla es la misma en los dos.
+             return False, (f"noticias: el job NO corrió hoy — {colgado}; "
+-                           "launchd no re-dispara mientras siga vivo")
++                           "el planificador no re-dispara el job mientras su proceso siga vivo")
+         if _rastro_noticias_hoy_en_log():
+             refuerzo = ""
+             estado = _estado_systemd_noticias()
+@@ -191,6 +373,15 @@ def chequear_noticias() -> tuple:
+     resultado = ultima.get("resultado", "?")
+     if resultado == "rss_fallo":
+         return False, "noticias: corrió pero el RSS falló"
++    if resultado == "error_analisis":
++        # Corrida 16-1 (acta §93.3 ii, tarjeta §74): del 7-sep al 2-oct-2026
++        # la API rechazó cada llamada por falta de crédito y el ledger decía
++        # «ok · 0 analizados» 20 veces seguidas. «0 analizados con error» es
++        # falla; «0 analizados sin pendientes» y el freno siguen siendo OK.
++        return False, (f"noticias: corrió pero el análisis FALLÓ "
++                       f"({ultima.get('error_tipo', '?')} en el lote {ultima.get('error_lote', '?')}) "
++                       f"· {ultima.get('analizados', 0)} analizados · "
++                       f"pendientes {ultima.get('pendientes_restantes', '?')}")
+     detalle = (f"noticias: {resultado} · {ultima.get('analizados', 0)} analizados "
+                f"· {ultima.get('costo_usd', 0):.4f} USD")
+     return True, detalle
+@@ -277,12 +468,16 @@ def snapshot_en_curso(hoy: date = None) -> tuple:
+     return True, "proceso vivo, sin reintento anunciado en el log"
+ 
+ 
+-def _escribir_pendiente(hoy: date, fallas: list, reintentos_activos: bool) -> None:
++def _escribir_pendiente(hoy: date, fallas: list, reintentos_activos: bool,
++                        negativa: dict | None = None) -> None:
++    """`negativa` (corrida 16-1): la negativa declarada que motivó la alerta,
++    si la hubo; el pase de las 20:30 la usa para cerrar el caso."""
+     with open(RUTA_PENDIENTE, "w", encoding="utf-8") as f:
+         json.dump({"fecha": hoy.isoformat(),
+                    "creado_utc": datetime.now(timezone.utc).isoformat(),
+                    "fallas": fallas,
+-                   "reintentos_activos": reintentos_activos},
++                   "reintentos_activos": reintentos_activos,
++                   "negativa": negativa},
+                   f, ensure_ascii=False, indent=1)
+ 
+ 
+@@ -353,22 +548,42 @@ def rechequeo(hoy: date) -> int:
+     """Pase de las 20:30: el epílogo de la alerta de las 19:00. Sin
+     marcador de hoy → silencio absoluto (el job launchd corre a diario)."""
+     _log("mki_vigia.py --rechequeo — pase de las 20:30")
+-    if _leer_pendiente(hoy) is None:
++    pendiente = _leer_pendiente(hoy)
++    if pendiente is None:
+         _log("sin alerta pendiente de hoy — nada que re-chequear")
+         return 0
+     import senales
+     if senales.info_snapshot_hoy():
+         ok = enviar_retractacion_si_corresponde(hoy)
+         return 0 if ok else 1
++    import alertas
++    activo, detalle = snapshot_en_curso(hoy)
++    negativa = pendiente.get("negativa")
++    if negativa and not activo:
++        # Corrida 16-1 (acta §93.8 d; tarjeta §72 (i)): la alerta de una
++        # negativa declarada tiene epílogo aunque NO haya sello. Nadie va a
++        # reintentar (las negativas no entran al bucle de reintentos), así
++        # que el mensaje cierra el caso por hoy, con la hora real. El
++        # marcador QUEDA (BL3 del dictamen 16-1): si un sello manual llegara
++        # más tarde, snapshot.py envía la retractación y ningún mensaje
++        # publicado queda contradicho por la base (precedente 5.0.2).
++        hora = alertas._hora_chile(datetime.now(timezone.utc).isoformat())
++        texto = (f"🟡 <b>VIGÍA MKI — re-chequeo {hoy.isoformat()}</b>\n"
++                 f"sigue sin sellar a las {hora}: la negativa declarada "
++                 f"[{negativa.get('codigo', '?')}] sigue en pie ({negativa.get('texto', '')}) "
++                 "y no hay proceso de snapshot vivo. Caso cerrado por hoy: la sesión "
++                 "queda sin sello en el riel de medición. Si un sello manual llegara "
++                 "más tarde, snapshot.py avisará.")
++        ok, det = alertas.enviar_mensaje(texto)
++        _log(f"epílogo Telegram (negativa, caso cerrado): {'enviado' if ok else 'NO enviado — ' + det}")
++        return 0 if ok else 1
+     # Sigue sin sellar: se dice, y el marcador QUEDA — si el sello llega
+     # más tarde por su cuenta, snapshot.py enviará la retractación.
+-    activo, detalle = snapshot_en_curso(hoy)
+     estado = (f"reintentos aún activos ({detalle})" if activo
+               else "sin proceso de snapshot vivo")
+     texto = (f"🟠 <b>VIGÍA MKI — re-chequeo {hoy.isoformat()}</b>\n"
+              f"sigue sin sellar a las {HORA_RECHEQUEO}: {estado}. "
+              "Si sella más tarde, llegará la retractación.")
+-    import alertas
+     ok, det = alertas.enviar_mensaje(texto)
+     _log(f"epílogo Telegram: {'enviado' if ok else 'NO enviado — ' + det}")
+     return 0 if ok else 1
+@@ -377,7 +592,13 @@ def rechequeo(hoy: date) -> int:
+ def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
+     """Texto de la alerta de las 19:00. Si el snapshot no selló, la línea
+     anuncia el re-chequeo de las 20:30 — y si hay reintentos EN CURSO, lo
+-    dice en vez de dar el día por perdido (5.0.1)."""
++    dice en vez de dar el día por perdido (5.0.1).
++
++    Corrida 16-1 (acta §93.8 d): si el snapshot NO selló por una negativa
++    declarada, el mensaje es otro —amarillo, no rojo—: dice la negativa con
++    su motivo, deja claro que no es falla, y anuncia el re-chequeo que cierra
++    el caso. Las fallas de los demás chequeos, si las hay, van aparte."""
++    negativa = next((d for ok, d in resultados if es_negativa(d)), None)
+     fallas = []
+     for ok, d in resultados:
+         if ok:
+@@ -390,39 +611,51 @@ def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
+             else:
+                 d = f"{d} — re-chequeo a las {HORA_RECHEQUEO}"
+         fallas.append(d)
+-    bien = [d.split(":")[0] for ok, d in resultados if ok]
++    bien = [d.split(":")[0] for ok, d in resultados if ok and not es_negativa(d)]
++    if negativa is not None:
++        return (f"🟡 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
++                f"{negativa}\n"
++                f"(no es falla: snapshot.py se negó a sellar por regla; "
++                f"re-chequeo a las {HORA_RECHEQUEO} cierra el caso)"
++                + ("\nFalló hoy:\n" + "\n".join(f"· {f}" for f in fallas) if fallas else "")
++                + (f"\nOK: {', '.join(bien)}" if bien else ""))
+     return (f"🛑 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
+             + "Falló hoy:\n" + "\n".join(f"· {f}" for f in fallas)
+             + (f"\nOK: {', '.join(bien)}" if bien else ""))
+ 
+ 
+-def main(argv=None) -> int:
+-    parser = argparse.ArgumentParser(description="El vigía MKI — revisión del día operativo")
+-    parser.add_argument("--rechequeo", action="store_true",
+-                        help="pase de las 20:30: epílogo de la alerta pendiente (5.0.1)")
+-    args = parser.parse_args(argv)
+-    hoy = date.today()
+-    if hoy.weekday() >= 5:
+-        _log("fin de semana — nada que vigilar")
+-        return 0
+-    if args.rechequeo:
+-        return rechequeo(hoy)
+-
++def rotar_log_vigia() -> None:
+     from registro import rotar_log
+     rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
++
++
++def revision(hoy: date) -> int:
++    """El pase de las 19:00 para la fecha `hoy`. Separado de `main()` en
++    la corrida 16-1 para poder probarlo cualquier día (main() exime el fin
++    de semana con el reloj real)."""
++    rotar_log_vigia()
+     _log("mki_vigia.py — revisión del día operativo")
+-    resultados = [chequear_snapshot(), chequear_descarga(), chequear_noticias(),
+-                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy)]
++    resultados = [chequear_snapshot(hoy), chequear_descarga(hoy), chequear_noticias(),
++                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy),
++                  chequear_guarda_puntaje(hoy)]
++    negativa = next((d for ok, d in resultados if es_negativa(d)), None)
+     for ok, detalle in resultados:
+-        _log(f"  {'OK ' if ok else 'FALLA'} {detalle}")
+-    if all(ok for ok, _ in resultados):
++        marca = "NEGATIVA" if es_negativa(detalle) else ("OK " if ok else "FALLA")
++        _log(f"  {marca} {detalle}")
++    if all(ok for ok, _ in resultados) and negativa is None:
+         _log("todo OK — sin alerta")
+         return 0
+ 
+-    sin_sellar = not resultados[0][0]
++    sin_sellar = not resultados[0][0] or negativa is not None
+     en_curso = snapshot_en_curso(hoy) if sin_sellar else (False, "")
+     if sin_sellar:
+-        _escribir_pendiente(hoy, [d for ok, d in resultados if not ok], en_curso[0])
++        detalle_negativa = None
++        if negativa is not None:
++            leida = _negativa_declarada_en_log(hoy) or {}
++            detalle_negativa = {"codigo": leida.get("codigo", "?"),
++                                "texto": leida.get("texto", negativa)}
++        _escribir_pendiente(hoy, [d for ok, d in resultados if not ok], en_curso[0],
++                            negativa=detalle_negativa)
+         _log(f"marcador escrito — el pase de las {HORA_RECHEQUEO} enviará el epílogo")
+ 
+     import alertas
+@@ -432,6 +665,20 @@ def main(argv=None) -> int:
+     return 0 if ok else 1
+ 
+ 
++def main(argv=None) -> int:
++    parser = argparse.ArgumentParser(description="El vigía MKI — revisión del día operativo")
++    parser.add_argument("--rechequeo", action="store_true",
++                        help="pase de las 20:30: epílogo de la alerta pendiente (5.0.1)")
++    args = parser.parse_args(argv)
++    hoy = date.today()
++    if hoy.weekday() >= 5:
++        _log("fin de semana — nada que vigilar")
++        return 0
++    if args.rechequeo:
++        return rechequeo(hoy)
++    return revision(hoy)
++
++
+ if __name__ == "__main__":
+     try:
+         sys.exit(main())
+diff --git a/senales.py b/senales.py
+index 8c92570..6bf7375 100644
+--- a/senales.py
++++ b/senales.py
+@@ -421,7 +421,7 @@ def verificar_apertura_pendientes() -> dict:
+             "sin_datos_mercado": atascadas, "sin_calendario": sin_calendario}
+ 
+ 
+-def verificar_puntaje_pendientes() -> int:
++def verificar_puntaje_pendientes() -> dict:
+     """Compara el Puntaje IA contra el retorno real de los DIAS_FORWARD_PUNTAJE
+     días hábiles siguientes. Solo evalúa filas de la Etapa 4.6 en adelante
+     (con timestamp); las legacy quedan fuera. Tampoco evalúa las que declaran
+@@ -431,7 +431,11 @@ def verificar_puntaje_pendientes() -> int:
+     `verificacion_puntaje` no tiene columna de estado, la fila excluida no se
+     escribe y la exclusión se declara por el log con su cuenta; el `estado`
+     de `senales_ticker` no se toca. La regla maestra de timing NO se aplica
+-    acá (el acta §93.4 la deja abierta)."""
++    acá (el acta §93.4 la deja abierta).
++
++    Devuelve `{"verificadas": n, "excluidas": k, "fechas_excluidas": [...]}`
++    (corrida 16-1, acta §95.2 R2: la cuenta de excluidas viaja en el retorno
++    y no sólo en una línea de un log que rota). Qué se escribe no cambia."""
+     init_db()
+     conn = get_connection()
+     pendientes = conn.execute(f"""
+@@ -486,19 +490,20 @@ def verificar_puntaje_pendientes() -> int:
+             (fecha_senal, ticker, puntaje_ia, round(float(retorno_5d), 4),
+              datetime.now(timezone.utc).isoformat()))
+         verificados += 1
++    fechas = sorted({f for f, _ in excluidas})
+     if excluidas:
+-        fechas = sorted({f for f, _ in excluidas})
+         print(f"  AVISO verificador puntaje: {len(excluidas)} fila(s) con insumo "
+               f"conocible después de su emisión (available_at > timestamp_utc) "
+               f"excluidas de verificacion_puntaje, sin escribir ni cambiar estado; "
+               f"fechas: {', '.join(fechas)}", flush=True)
+     conn.commit()
+     conn.close()
+-    return verificados
++    return {"verificadas": verificados, "excluidas": len(excluidas),
++            "fechas_excluidas": fechas}
+ 
+ 
+ def verificar_pendientes() -> tuple:
+-    """Corre ambos verificadores. Devuelve (dict_apertura, n_puntaje)."""
++    """Corre ambos verificadores. Devuelve (dict_apertura, dict_puntaje)."""
+     return verificar_apertura_pendientes(), verificar_puntaje_pendientes()
+ 
+ 
+diff --git a/snapshot.py b/snapshot.py
+index cb13dda..fce96fa 100644
+--- a/snapshot.py
++++ b/snapshot.py
+@@ -60,6 +60,28 @@ ESPERAS_REINTENTO_SEG = (20 * 60, 40 * 60)
+ # (los caídos obtienen otra oportunidad) sin cirugía en el motor.
+ ESPERAS_REINTENTO_PARCIAL_SEG = (60, 120)
+ 
++# Negativas DECLARADAS (acta §93.8 b y d, corrida 16-1): cuando este job se
++# niega a sellar POR REGLA, lo dice con una línea fija en snapshot.log que el
++# vigía reconoce y distingue de una falla («NO sellado por negativa
++# declarada», no «NO se selló»). El texto de la marca es un contrato con
++# mki_vigia.py: no se reformula sin tocar el vigía y sus tests.
++#   NEGATIVA_SESION_ABIERTA — guarda (b) de §90.1: la sesión del SOX usada no
++#                             ha cerrado (el 28-sep: sello con NYSE abierto).
++#   NEGATIVA_FRESCURA       — guarda de frescura, §93.8 (b): hoy es sesión de
++#                             XNYS y la fuente sirve el SOX de otro día (H0 de
++#                             la tarjeta §72: el despertar de mañana sellaría
++#                             el snapshot de hoy con el cierre de ayer).
++MARCA_NEGATIVA = "NEGATIVA DECLARADA"
++NEGATIVA_SESION_ABIERTA = "sesion_sox_abierta"
++NEGATIVA_FRESCURA = "insumo_no_fresco"
++
++
++def _declarar_negativa(codigo: str, fecha: str, sox_fecha, texto: str) -> None:
++    """La línea fija que lee el vigía: marca, código, fecha del snapshot que
++    no se selló, `sox_fecha` visto, y el motivo en prosa."""
++    print(f"  {MARCA_NEGATIVA} [{codigo}] fecha={fecha} sox_fecha={sox_fecha}: {texto}",
++          flush=True)
++
+ 
+ def salud_descarga(fecha: date) -> dict:
+     """Salud de la descarga del día: qué tickers esperados (universo + ^SOX)
+@@ -91,7 +113,10 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
+     dashboard jamás espera), una descarga incompleta se reintenta antes de
+     sellar. Si la sesión del SOX usada no ha cerrado al instante de emisión
+     (available_at > timestamp_utc), NO sella y lo dice en `motivo` (acta
+-    §90.1 b). Devuelve un dict con lo que hizo."""
++    §90.1 b). Si hoy es sesión de XNYS y `sox_fecha` no es hoy, tampoco
++    sella (guarda de frescura, acta §93.8 b). Las dos negativas se declaran
++    con la línea fija de `_declarar_negativa` y viajan en la clave
++    `negativa` del resultado. Devuelve un dict con lo que hizo."""
+     if senales.ya_existe_snapshot_hoy():
+         return {"snapshot": False, "motivo": "ya existe snapshot de hoy"}
+ 
+@@ -166,14 +191,61 @@ def ejecutar_snapshot(origen: str, ventana_betas: int = motor.VENTANA_BETAS_DEFA
+         # dispara los reintentos de 20/40 min de main(): reintentar no
+         # cierra una sesión.
+         if datetime.fromisoformat(available_at) > ahora_utc:
+-            return {"snapshot": False,
+-                    "motivo": (f"la sesión del SOX usada no ha cerrado: "
+-                               f"sox_fecha {sox_fecha} cierra a las "
+-                               f"{available_at} y la emisión es de las "
+-                               f"{ts_emision} — no se sella (acta §90.1 b)"),
++            motivo = (f"la sesión del SOX usada no ha cerrado: "
++                      f"sox_fecha {sox_fecha} cierra a las "
++                      f"{available_at} y la emisión es de las "
++                      f"{ts_emision} — no se sella (acta §90.1 b)")
++            _declarar_negativa(NEGATIVA_SESION_ABIERTA, hoy.isoformat(), sox_fecha, motivo)
++            return {"snapshot": False, "negativa": NEGATIVA_SESION_ABIERTA,
++                    "motivo": motivo,
+                     "sox_fecha": str(sox_fecha), "cierre_utc": available_at,
+                     "emision_utc": ts_emision,
+                     "descarga": f"{salud['ok_n']}/{salud['total']}"}
++        # Guarda de frescura (acta §93.8 b, 10-oct-2026): la guarda de arriba
++        # protege contra sellar con la sesión del SOX ABIERTA; no contra
++        # sellar con el SOX de una sesión ANTERIOR ya cerrada (H0 de la
++        # tarjeta §72, medido con test en la corrida 15). Un despertar de
++        # mañana en día hábil (inventario §66 D.1) sellaría el snapshot de
++        # HOY con el cierre de AYER, a las 18:15 diría «ya existe» y el
++        # verificador lo aceptaría (emisión antes de la apertura objetivo).
++        # Regla: si hoy es sesión de XNYS y `sox_fecha` no es hoy, no se
++        # sella. Compara dos FECHAS y pregunta al calendario; NO mira el
++        # reloj ni agrega margen horario (desde el 2-nov-2026 la holgura
++        # entre las 18:15 de Chile y el cierre de XNYS es de 15 minutos y
++        # cualquier margen apagaría el sello, §72 C.2). Fin de semana y
++        # feriado de XNYS no son sesión: ahí no interviene (D.2 sigue sin
++        # firmar). Sin `sox_fecha` no hay nada que juzgar: esa rama sigue
++        # sellando con el reloj de pared y su alerta en el vigía (§84.2).
++        # Cuenta histórica, medida en `mode=ro`: 0 sellos de día de sesión
++        # con sox_fecha distinta de su fecha, sobre 44 al 29-sep-2026 (45
++        # con sox_fecha, uno en feriado) y sobre 52 al 10-oct-2026 (53 con
++        # sox_fecha; el único distinto, 7-sep, es feriado de NYSE). Un día
++        # con la fuente atrasada deja de sellar en vez de sellar mal, que es
++        # lo que §90.1 (b) prometía y no producía. Si el calendario mismo
++        # falla (BL1 del dictamen 16-1), no se puede juzgar la frescura: se
++        # sella como HEAD, con AVISO, igual que la rama del `except` de
++        # arriba — una excepción acá se llevaría también al verificador, los
++        # respaldos y el epílogo del vigía.
++        fecha_hoy = hoy.isoformat()
++        if sox_fecha and str(sox_fecha) != fecha_hoy:
++            try:
++                hoy_es_sesion = calendarios.es_sesion("XNYS", fecha_hoy)
++            except Exception as e:
++                from seguridad import enmascarar_secretos
++                print(f"  AVISO frescura: no se pudo consultar el calendario de XNYS "
++                      f"para {fecha_hoy} ({enmascarar_secretos(str(e))}) — se sella "
++                      f"como antes, sin juzgar la frescura (sox_fecha {sox_fecha})",
++                      flush=True)
++                hoy_es_sesion = False
++            if hoy_es_sesion:
++                motivo = (f"hoy {fecha_hoy} es sesión de XNYS y el último cierre del "
++                          f"SOX que sirve la fuente es de {sox_fecha}: insumo no "
++                          f"fresco — no se sella (acta §93.8 b)")
++                _declarar_negativa(NEGATIVA_FRESCURA, fecha_hoy, sox_fecha, motivo)
++                return {"snapshot": False, "negativa": NEGATIVA_FRESCURA,
++                        "motivo": motivo, "fecha": fecha_hoy,
++                        "sox_fecha": str(sox_fecha), "emision_utc": ts_emision,
++                        "descarga": f"{salud['ok_n']}/{salud['total']}"}
+         for _, fila in pred.iterrows():
+             t = fila["Ticker"]
+             exchange = EXCHANGE_POR_TICKER.get(t, "XNYS")
+@@ -299,7 +371,12 @@ def main() -> int:
+ 
+     verif_apertura, verif_puntaje = senales.verificar_pendientes()
+     print(f"  verificador apertura: {verif_apertura}")
+-    print(f"  verificador puntaje: {verif_puntaje} verificadas")
++    # Corrida 16-1 (acta §95.2 R2): la cuenta de excluidas por conocibilidad
++    # viaja en el retorno del verificador, no sólo en su línea de AVISO.
++    print(f"  verificador puntaje: {verif_puntaje['verificadas']} verificadas, "
++          f"{verif_puntaje['excluidas']} excluidas por conocibilidad"
++          + (f" (fechas: {', '.join(verif_puntaje['fechas_excluidas'])})"
++             if verif_puntaje["fechas_excluidas"] else ""))
+ 
+     exportados = respaldar_a_csv()
+     print(f"  respaldos CSV: {len(exportados)} tablas → data/backups/")
+diff --git a/tests/test_conocibilidad.py b/tests/test_conocibilidad.py
+index 64daf5b..25ee461 100644
+--- a/tests/test_conocibilidad.py
++++ b/tests/test_conocibilidad.py
+@@ -494,7 +494,8 @@ def test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos(sellador, monkeypatch,
+     monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
+     monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
+     monkeypatch.setattr(senales, "verificar_pendientes",
+-                        lambda: ({"verificadas": 0}, 0))
++                        lambda: ({"verificadas": 0},
++                                 {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
+     monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
+     esperas = []
+     monkeypatch.setattr(snapshot.time, "sleep", lambda s: esperas.append(s))
+@@ -515,24 +516,10 @@ def test_el_motivo_nuevo_no_entra_al_bucle_de_reintentos(sellador, monkeypatch,
+     assert sellador["sellos"] == []
+ 
+ 
+-def test_hallazgo_una_fuente_atrasada_pasa_la_guarda_y_sella(sellador):
+-    """HALLAZGO DOCUMENTADO, no corregido (va a tarjeta). El acta §90.1 (b)
+-    dice que con esta guarda «un día con la fuente atrasada deja de sellar
+-    en vez de sellar mal». La condición firmada para esta corrida
+-    (`available_at > emisión`) NO produce eso: si a las 18:15 de Chile del
+-    martes la fuente todavía entrega como último movimiento el del LUNES,
+-    `sox_fecha` es el lunes, su sesión cerró hace un día, la guarda pasa y
+-    se sella con insumo viejo. Este test fija el comportamiento para que
+-    el hueco tenga un número de línea y no viva en la memoria de nadie."""
+-    martes, lunes = "2026-09-29", "2026-09-28"
+-    assert calendarios.sesion_anterior("XNYS", martes) == lunes
+-    reloj = _a_las_1815_de_chile(martes, segundos=3)
+-    assert reloj > calendarios.cierre_utc("XNYS", martes)   # el martes YA cerró
+-    resultado = sellador["sellar"](reloj, lunes)
+-    assert resultado["snapshot"] is True, resultado
+-    sello = sellador["sellos"][0]
+-    assert sello["sox_fecha"] == lunes
+-    assert sello["available_at"] == CIERRE_EVENTO           # insumo de ayer
++# El hallazgo H0 de la corrida 15 («una fuente atrasada pasa la guarda y
++# sella») vivió aquí como test de fijación hasta la corrida 16-1 (10-oct-2026):
++# la guarda de frescura (acta §93.8 b) lo cierra, y su reproducción —ahora
++# como negativa— está en tests/test_frescura.py.
+ 
+ 
+ # ============================================================
+diff --git a/tests/test_guarda_puntaje.py b/tests/test_guarda_puntaje.py
+index d5f476b..b759ca3 100644
+--- a/tests/test_guarda_puntaje.py
++++ b/tests/test_guarda_puntaje.py
+@@ -26,6 +26,8 @@
+ # escribe en `tmp_path` con `senales.DB_PATH` parcheado y un guardia lo
+ # comprueba antes. La base real se abre sólo en `mode=ro` o para copiarla.
+ # Sin red: `senales._ohlc_local` está reemplazado. Cero intentos del DSR.
++# Corrida 16-1 (acta §95.2 R2): el verificador devuelve un dict; estos tests
++# leen `["verificadas"]` y tests/test_puntaje_retorno.py prueba el resto.
+ # ============================================================
+ 
+ import inspect
+@@ -144,7 +146,7 @@ def test_reproduccion_una_fila_con_la_inversion_no_entra_a_verificacion_puntaje(
+     DESPUÉS de su emisión, no se escribe en `verificacion_puntaje`, no se
+     cuenta como verificada y no gasta una llamada a la red."""
+     base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     estados, verificadas = base_puntaje["leer"]()
+     assert "005930.KS" not in verificadas, (
+         f"la fila con available_at ({INSUMO_POSTERIOR}) posterior a su "
+@@ -159,7 +161,7 @@ def test_control_la_misma_fila_sin_la_inversion_se_verifica_igual(base_puntaje):
+     """CONTROL: idéntica, salvo que el insumo era conocible ANTES de la
+     emisión. Se verifica como siempre, con el retorno a 5 días de siempre."""
+     base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_ANTERIOR)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     estados, verificadas = base_puntaje["leer"]()
+     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO}
+     assert verificados == 1
+@@ -173,7 +175,7 @@ def test_control_una_fila_legacy_sigue_excluida(base_puntaje):
+                             estado=senales.ESTADO_LEGACY)
+     base_puntaje["sembrar"]("000660.KS", EMISION, INSUMO_POSTERIOR,
+                             estado=senales.ESTADO_LEGACY)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     _, verificadas = base_puntaje["leer"]()
+     assert verificadas == {} and verificados == 0
+     assert base_puntaje["ohlc"].llamadas == []
+@@ -186,7 +188,7 @@ def test_la_guarda_no_dispara_con_available_at_nulo_ni_igual(base_puntaje, avail
+     snapshot.py (available_at cayó al reloj de pared), que tiene su propia
+     alerta en el vigía (acta §84.2). Misma semántica que la guarda (a)."""
+     base_puntaje["sembrar"]("005930.KS", EMISION, available_at)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     _, verificadas = base_puntaje["leer"]()
+     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO}
+     assert verificados == 1
+@@ -201,7 +203,7 @@ def test_la_guarda_compara_instantes_y_no_texto(base_puntaje):
+     assert posterior_en_otro_huso < EMISION                       # como texto
+     assert _instante(posterior_en_otro_huso) > _instante(EMISION)  # como instante
+     base_puntaje["sembrar"]("005930.KS", EMISION, posterior_en_otro_huso)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     _, verificadas = base_puntaje["leer"]()
+     assert verificadas == {} and verificados == 0
+ 
+@@ -220,7 +222,7 @@ def test_la_guarda_no_depende_del_estado_y_no_lo_cambia(base_puntaje):
+                             estado=senales.ESTADO_NO_VERIFICABLE)
+     base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR,
+                             estado=senales.ESTADO_VERIFICADA)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     estados, verificadas = base_puntaje["leer"]()
+     assert verificadas == {"NVDA": RETORNO_5D_ESPERADO}
+     assert verificados == 1
+@@ -258,7 +260,7 @@ def test_sin_filas_excluidas_el_verificador_no_declara_nada(base_puntaje, capsys
+     declarar, para que una línea en snapshot.log sea siempre un hecho."""
+     base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
+     base_puntaje["sembrar"]("005930.KS", EMISION, None)
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     assert verificados == 2
+     assert "AVISO verificador puntaje" not in capsys.readouterr().out
+ 
+@@ -301,7 +303,7 @@ def test_pin_la_regla_maestra_no_esta_en_este_verificador(base_puntaje):
+     assert _instante(emision_tardia) >= apertura        # viola la regla maestra
+     base_puntaje["sembrar"]("005930.KS", emision_tardia, insumo,
+                             sesion_objetivo=sesion.isoformat())
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     _, verificadas = base_puntaje["leer"]()
+     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO} and verificados == 1
+     assert "calendarios" not in inspect.getsource(senales.verificar_puntaje_pendientes)
+@@ -356,7 +358,7 @@ def test_corte_de_metodo_sobre_la_historia_real(monkeypatch, tmp_path, capsys):
+     antes = _volcado(copia)
+     assert repr(antes) == repr((verif_real, invertidas_real, candidatas_real))
+ 
+-    verificados = senales.verificar_puntaje_pendientes()
++    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
+     salida = capsys.readouterr().out
+ 
+     despues = _volcado(copia)
+diff --git a/tests/test_parche_guardia_ancla_temporal.py b/tests/test_parche_guardia_ancla_temporal.py
+index e8eee76..d2e9b00 100644
+--- a/tests/test_parche_guardia_ancla_temporal.py
++++ b/tests/test_parche_guardia_ancla_temporal.py
+@@ -58,6 +58,23 @@ MARCA = "AVISO ancla temporal"
+ PARCHE_PENDIENTE = MARCA not in open(os.path.join(RAIZ, "snapshot.py"), encoding="utf-8").read()
+ TICKERS = ["005930.KS", "2330.TW", "NVDA"]
+ 
++# Corrida 16-1 (acta §93.8 b): la guarda de frescura de snapshot.py exige que
++# en día de sesión de XNYS `sox_fecha` sea HOY. Estos tests sellan con el
++# SOX del 4-sep-2026, así que `date.today()` del módulo bajo prueba queda
++# fijo en esa fecha (una sesión de XNYS); el reloj de pared sigue real.
++HOY_FIJO = date(2026, 9, 4)
++
++
++class _FechaFija(date):
++    @classmethod
++    def today(cls):
++        return HOY_FIJO
++
++
++def test_el_pin_de_fecha_es_una_sesion_de_xnys():
++    """R8 del dictamen 16-1: el pin no depende de la memoria de nadie."""
++    assert calendarios.es_sesion("XNYS", HOY_FIJO.isoformat())
++
+ 
+ def _copias_parcheadas(directorio) -> dict:
+     for a in ARCHIVOS:
+@@ -107,6 +124,7 @@ def entorno(monkeypatch, tmp_path):
+     copias = _copias_parcheadas(tmp_path)
+     snap_g = _importar(copias["snapshot.py"], "snapshot_guardia")
+     vigia_g = _importar(copias["mki_vigia.py"], "mki_vigia_guardia")
++    monkeypatch.setattr(snap_g, "date", _FechaFija)
+     monkeypatch.setattr(noticias, "sentimiento_promedio_por_ticker", lambda: {})
+     monkeypatch.setattr(motor, "puntaje_v0_al",
+                         lambda fecha: pd.DataFrame({"Ticker": TICKERS, "Puntaje v0": [0.1] * len(TICKERS)}))
+@@ -150,7 +168,7 @@ def test_camino_feliz_sin_aviso_y_vigia_en_verde(entorno, capsys):
+     assert MARCA not in capsys.readouterr().out
+     filas = entorno["filas"]()
+     assert all(av != ts and av is not None for _, ts, av in filas)
+-    ok, detalle = entorno["vigia"].chequear_ancla_temporal(date.today())
++    ok, detalle = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
+     assert ok, detalle
+     assert f"{len(TICKERS)}/{len(TICKERS)}" in detalle
+ 
+@@ -170,7 +188,7 @@ def test_si_cierre_utc_falla_el_aviso_sale_y_el_vigia_falla(entorno, capsys, mon
+     assert MARCA in salida and "cierre_utc" in salida
+     filas = entorno["filas"]()
+     assert filas and all(av == ts for _, ts, av in filas), "el ancla quedó en reloj de pared"
+-    ok, detalle = entorno["vigia"].chequear_ancla_temporal(date.today())
++    ok, detalle = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
+     assert not ok
+     assert f"{len(TICKERS)}/{len(TICKERS)}" in detalle and "reloj de pared" in detalle
+ 
+@@ -183,7 +201,7 @@ def test_si_no_hay_sox_fecha_el_aviso_sale_igual(entorno, capsys):
+     entorno["snap"].ejecutar_snapshot("test")
+     salida = capsys.readouterr().out
+     assert MARCA in salida and "sox_fecha" in salida
+-    ok, _ = entorno["vigia"].chequear_ancla_temporal(date.today())
++    ok, _ = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
+     assert not ok
+ 
+ 
+diff --git a/tests/test_parche_snapshot140.py b/tests/test_parche_snapshot140.py
+index 42db406..85d5d50 100644
+--- a/tests/test_parche_snapshot140.py
++++ b/tests/test_parche_snapshot140.py
+@@ -46,7 +46,8 @@ import os
+ import shutil
+ import subprocess
+ import sys
+-from datetime import datetime
++from datetime import date, datetime
++from zoneinfo import ZoneInfo
+ 
+ import pandas as pd
+ import pytest
+@@ -135,6 +136,16 @@ class _RelojFalso(datetime):
+         return cls._instante if tz else cls._instante.replace(tzinfo=None)
+ 
+ 
++class _FechaFalsa(date):
++    """Corrida 16-1 (acta §93.8 b): la guarda de frescura compara `sox_fecha`
++    con `date.today()`; la fecha del módulo bajo prueba es la de Chile del
++    reloj inyectado, como en producción."""
++
++    @classmethod
++    def today(cls):
++        return _RelojFalso._instante.astimezone(ZoneInfo("America/Santiago")).date()
++
++
+ @pytest.fixture
+ def entorno(monkeypatch, tmp_path):
+     monkeypatch.setattr(noticias, "sentimiento_promedio_por_ticker", lambda: {})
+@@ -168,6 +179,7 @@ def entorno(monkeypatch, tmp_path):
+         m = modulos[version]
+         _RelojFalso._instante = datetime.fromisoformat(reloj_utc_iso)
+         monkeypatch.setattr(m, "datetime", _RelojFalso)
++        monkeypatch.setattr(m, "date", _FechaFalsa)
+         db = str(tmp_path / f"senales_{version}.db")
+         monkeypatch.setattr(senales, "DB_PATH", db)
+         # Guardia: jamás contra la base real.
+diff --git a/tests/test_vigia.py b/tests/test_vigia.py
+index 8de620e..53e7424 100644
+--- a/tests/test_vigia.py
++++ b/tests/test_vigia.py
+@@ -271,7 +271,7 @@ def test_noticias_nombra_proceso_colgado(entorno, monkeypatch):
+     ok, detalle = mki_vigia.chequear_noticias()
+     assert not ok
+     assert "proceso 53783 vivo" in detalle
+-    assert "launchd no re-dispara" in detalle
++    assert "no re-dispara" in detalle and "launchd" not in detalle   # errata §67, corrida 16-1
+ 
+ 
+ def test_noticias_sin_proceso_mantiene_mensaje_simple(entorno, monkeypatch, tmp_path):
+diff --git a/tests/test_frescura.py b/tests/test_frescura.py
+new file mode 100644
+index 0000000..e780cfb
+--- /dev/null
++++ b/tests/test_frescura.py
+@@ -0,0 +1,289 @@
++# ============================================================
++# tests/test_frescura.py — la guarda de frescura de snapshot.py (acta §93.8 b,
++# corrida 16-1, 10-oct-2026) y la negativa declarada que el vigía reconoce
++# (acta §93.8 d).
++#
++# El hueco que cierra, H0 de la tarjeta §72 (MEDIDO con test en la corrida
++# 15): la guarda (b) de §90.1 se niega si la sesión de `sox_fecha` NO ha
++# cerrado; con `sox_fecha` de la sesión ANTERIOR, ya cerrada, pasa y sella
++# el snapshot de HOY con el cierre de AYER. Un despertar de mañana en día
++# hábil (inventario §66 D.1) sellaría así y a las 18:15 diría «ya existe».
++#
++# La regla firmada (§93.8 b): si hoy es sesión de XNYS y `sox_fecha` no es
++# hoy, no se sella. SIN margen horario (§72 C.2: desde el 2-nov-2026 la
++# holgura entre las 18:15 de Chile y el cierre de XNYS es de 15 minutos y
++# cualquier margen apagaría el sello). Fin de semana y feriado de XNYS no
++# cambian de conducta (D.2 queda como estaba, sin firmar). `sox_fecha`
++# vacío sigue por su rama (reloj de pared, con alerta del vigía: §84.2).
++#
++# Y la negativa se DECLARA: una línea fija en snapshot.log, con código,
++# fecha y `sox_fecha`, que `mki_vigia.py` distingue de una falla (§93.8 d).
++# La misma línea la emite la guarda (b), cuya condición no cambia.
++#
++# Fixture `sellador` reutilizada de tests/test_conocibilidad.py: snapshot.py
++# REAL con el motor reemplazado, el reloj inyectado y `guardar_snapshot`
++# convertido en espía. Sin red; la base real sólo en `mode=ro`.
++# Cero intentos del DSR.
++# ============================================================
++
++import inspect
++import os
++import sqlite3
++import sys
++from datetime import date, datetime, timedelta, timezone
++
++import pytest
++
++RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++sys.path.insert(0, RAIZ)
++
++import calendarios  # noqa: E402  (real)
++import mki_vigia  # noqa: E402
++import registro  # noqa: E402
++import senales  # noqa: E402
++import snapshot  # noqa: E402
++from test_conocibilidad import (  # noqa: E402,F401  (la fixture se registra al importarla)
++    CHILE, CIERRE_EVENTO, EMISION_EVENTO, FECHA_EVENTO, _a_las_1815_de_chile,
++    _instante, sellador)
++
++BASE_REAL = os.path.join(RAIZ, "senales.db")
++solo_con_base = pytest.mark.skipif(
++    not os.path.exists(BASE_REAL), reason="sin senales.db: no hay historia sellada que leer")
++
++# El escenario H0 de la tarjeta §72, con las mismas fechas que fijó la
++# corrida 15: martes 29-sep-2026 a las 18:15 de Chile, y la fuente todavía
++# entrega como último cierre del SOX el del lunes 28.
++MARTES, LUNES = "2026-09-29", "2026-09-28"
++# Un sábado y un feriado de XNYS (Labor Day) con su viernes anterior: la
++# conducta en esos días no cambia. El 7-sep es, además, el único snapshot
++# histórico con `sox_fecha` distinta de su fecha (consulta en el test de
++# historia real).
++SABADO, VIERNES = "2026-10-10", "2026-10-09"
++FERIADO, VIERNES_PREVIO = "2026-09-07", "2026-09-04"
++
++
++def test_el_escenario_es_el_que_dice_ser():
++    assert calendarios.es_sesion("XNYS", MARTES) and calendarios.es_sesion("XNYS", LUNES)
++    assert calendarios.sesion_anterior("XNYS", MARTES) == LUNES
++    assert date.fromisoformat(SABADO).weekday() == 5
++    assert not calendarios.es_sesion("XNYS", SABADO)
++    assert not calendarios.es_sesion("XNYS", FERIADO)
++    assert date.fromisoformat(FERIADO).weekday() == 0        # un lunes feriado
++    assert calendarios.es_sesion("XNYS", VIERNES) and calendarios.es_sesion("XNYS", VIERNES_PREVIO)
++
++
++# ------------------------------------------------------------
++# Reproducción y controles
++# ------------------------------------------------------------
++def test_reproduccion_H0_con_la_fuente_atrasada_no_se_sella(sellador, capsys):
++    """REPRODUCCIÓN (falla sobre HEAD, que sella). A las 18:15 de Chile del
++    martes la fuente sirve el SOX del lunes: la sesión del lunes cerró hace
++    un día, la guarda (b) pasa, y HEAD sella el snapshot del martes con el
++    insumo del lunes. Con la guarda de frescura no se sella, no se llama a
++    `guardar_snapshot`, el resultado trae la negativa con su código y en la
++    salida queda la línea fija que lee el vigía."""
++    reloj = _a_las_1815_de_chile(MARTES, segundos=3)
++    assert reloj > calendarios.cierre_utc("XNYS", MARTES)    # el martes YA cerró
++    resultado = sellador["sellar"](reloj, LUNES)
++    assert resultado["snapshot"] is False, (
++        f"snapshot.py selló el {MARTES} con sox_fecha={LUNES}: insumo de ayer")
++    assert sellador["sellos"] == [], "guardar_snapshot fue llamado"
++    assert resultado["negativa"] == snapshot.NEGATIVA_FRESCURA
++    assert resultado["sox_fecha"] == LUNES and resultado["fecha"] == MARTES
++    assert MARTES in resultado["motivo"] and LUNES in resultado["motivo"]
++    salida = capsys.readouterr().out
++    lineas = [l for l in salida.splitlines() if snapshot.MARCA_NEGATIVA in l]
++    assert len(lineas) == 1, salida
++    assert f"[{snapshot.NEGATIVA_FRESCURA}]" in lineas[0]
++    assert f"fecha={MARTES}" in lineas[0] and f"sox_fecha={LUNES}" in lineas[0]
++
++
++def test_control_dia_de_sesion_con_sox_fecha_de_hoy_sella_igual_que_antes(sellador, capsys):
++    """CONTROL: el mismo martes a las 18:15 con el SOX del martes se sella
++    exactamente como antes (sin negativa, sin línea en el log)."""
++    reloj = _a_las_1815_de_chile(MARTES, segundos=3)
++    resultado = sellador["sellar"](reloj, MARTES)
++    assert resultado["snapshot"] is True, resultado
++    assert "negativa" not in resultado
++    sello = sellador["sellos"][0]
++    assert sello["fecha"] == MARTES and sello["sox_fecha"] == MARTES
++    assert sello["available_at"] == calendarios.cierre_utc("XNYS", MARTES).isoformat()
++    assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
++
++
++def test_fin_de_semana_no_cambia_de_conducta(sellador, capsys):
++    """D.2 del inventario §66 sigue sin firmar: un disparo en sábado con el
++    SOX del viernes sella como antes (fecha sábado, insumo viernes). La
++    guarda de frescura sólo rige en día de sesión de XNYS."""
++    reloj = _a_las_1815_de_chile(SABADO)
++    resultado = sellador["sellar"](reloj, VIERNES)
++    assert resultado["snapshot"] is True, resultado
++    sello = sellador["sellos"][0]
++    assert sello["fecha"] == SABADO and sello["sox_fecha"] == VIERNES
++    assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
++
++
++def test_feriado_de_xnys_no_cambia_de_conducta(sellador, capsys):
++    """Labor Day: el job dispara (el timer no conoce los feriados de NYSE),
++    la fuente sirve el viernes, y se sella como antes. Es el único caso
++    histórico con `sox_fecha` ≠ fecha (7-sep-2026) y sigue siendo legítimo."""
++    reloj = _a_las_1815_de_chile(FERIADO)
++    resultado = sellador["sellar"](reloj, VIERNES_PREVIO)
++    assert resultado["snapshot"] is True, resultado
++    sello = sellador["sellos"][0]
++    assert sello["fecha"] == FERIADO and sello["sox_fecha"] == VIERNES_PREVIO
++    assert snapshot.MARCA_NEGATIVA not in capsys.readouterr().out
++
++
++def test_la_guarda_b_de_90_1_sigue_igual_y_ahora_declara_su_negativa(sellador, capsys):
++    """El evento del 28-sep (13:42 de Nueva York, `sox_fecha` del mismo día,
++    sesión abierta): la guarda (b) se niega con el MISMO motivo de la
++    corrida 15, y además deja la línea fija con su propio código. La
++    frescura no interviene (sox_fecha == hoy)."""
++    resultado = sellador["sellar"](_instante(EMISION_EVENTO), FECHA_EVENTO)
++    assert resultado["snapshot"] is False and sellador["sellos"] == []
++    assert "no ha cerrado" in resultado["motivo"] and "§90.1 b" in resultado["motivo"]
++    assert resultado["cierre_utc"] == CIERRE_EVENTO
++    assert resultado["negativa"] == snapshot.NEGATIVA_SESION_ABIERTA
++    lineas = [l for l in capsys.readouterr().out.splitlines() if snapshot.MARCA_NEGATIVA in l]
++    assert len(lineas) == 1
++    assert f"[{snapshot.NEGATIVA_SESION_ABIERTA}]" in lineas[0]
++    assert f"fecha={FECHA_EVENTO}" in lineas[0] and f"sox_fecha={FECHA_EVENTO}" in lineas[0]
++
++
++def test_sin_sox_fecha_la_frescura_no_interviene(sellador, capsys):
++    """`sox_fecha` vacío sigue por su rama (reloj de pared): sella, sin
++    negativa, con el AVISO de ancla temporal que el vigía alerta (§84.2).
++    Residuo declarado: la frescura no se puede juzgar sin `sox_fecha`."""
++    resultado = sellador["sellar"](_a_las_1815_de_chile(MARTES), None)
++    assert resultado["snapshot"] is True and "negativa" not in resultado
++    salida = capsys.readouterr().out
++    assert "AVISO ancla temporal" in salida and snapshot.MARCA_NEGATIVA not in salida
++
++
++def test_si_el_calendario_falla_se_sella_como_antes_con_aviso(sellador, monkeypatch, capsys):
++    """BL1 del dictamen 16-1: `calendarios.es_sesion` es una llamada nueva en
++    el camino de sellado. Si el calendario revienta, la frescura no se
++    puede juzgar y se sella como HEAD (degradación con AVISO, la misma
++    dirección que la rama del `except` de `cierre_utc`); la excepción jamás
++    sube a `main()`, donde se llevaría el verificador, los respaldos y el
++    epílogo del vigía. Elección de agente a ratificar (tarjeta §80)."""
++    def revienta(exchange, sesion):
++        raise RuntimeError("calendario roto a propósito")
++    monkeypatch.setattr(calendarios, "es_sesion", revienta)
++    reloj = _a_las_1815_de_chile(MARTES, segundos=3)
++    resultado = sellador["sellar"](reloj, LUNES)
++    assert resultado["snapshot"] is True and "negativa" not in resultado
++    salida = capsys.readouterr().out
++    assert "AVISO frescura" in salida and "calendario" in salida
++    assert snapshot.MARCA_NEGATIVA not in salida
++    assert "roto a propósito" in salida             # el motivo queda en el log
++
++
++def test_la_negativa_de_frescura_no_entra_al_bucle_de_reintentos(sellador, monkeypatch, capsys):
++    """`main()` reintenta a los 20 y 40 min SÓLO ante «sin datos de
++    mercado». Una fuente atrasada no se arregla esperando 20 minutos en
++    este job (el riel de dinero sí espera; éste declara y termina): una sola
++    llamada, ningún sleep, salida 0, y la negativa queda en el log."""
++    sellador["preparar"](_a_las_1815_de_chile(MARTES, segundos=3), LUNES)
++    monkeypatch.setattr(sys, "argv", ["snapshot.py"])
++    monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
++    monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
++    monkeypatch.setattr(senales, "verificar_pendientes",
++                        lambda: ({"verificadas": 0},
++                                 {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
++    monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
++    esperas = []
++    monkeypatch.setattr(snapshot.time, "sleep", lambda s: esperas.append(s))
++    intentos = []
++    original = snapshot.ejecutar_snapshot
++
++    def contado(*a, **k):
++        intentos.append((a, k))
++        return original(*a, **k)
++    monkeypatch.setattr(snapshot, "ejecutar_snapshot", contado)
++
++    assert snapshot.main() == 0
++    salida = capsys.readouterr().out
++    assert snapshot.MARCA_NEGATIVA in salida and f"[{snapshot.NEGATIVA_FRESCURA}]" in salida
++    assert "la fuente no entregó datos" not in salida
++    assert esperas == [] and len(intentos) == 1
++    assert sellador["sellos"] == []
++
++
++# ------------------------------------------------------------
++# El productor y el consumidor de la línea fija son el mismo texto
++# ------------------------------------------------------------
++def test_el_vigia_lee_la_negativa_que_snapshot_escribe(sellador, monkeypatch, tmp_path, capsys):
++    """Integración productor → consumidor: la salida REAL de snapshot.py
++    (cabecera de `main()` incluida) se vuelca a un snapshot.log temporal y
++    `mki_vigia._negativa_declarada_en_log` la reconoce con su código, fecha
++    y sox_fecha. Ningún texto se duplica a mano en el test."""
++    sellador["preparar"](_a_las_1815_de_chile(MARTES, segundos=3), LUNES)
++    monkeypatch.setattr(sys, "argv", ["snapshot.py"])
++    monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
++    monkeypatch.setattr(snapshot, "_epilogo_vigia", lambda: None)
++    monkeypatch.setattr(senales, "verificar_pendientes",
++                        lambda: ({"verificadas": 0},
++                                 {"verificadas": 0, "excluidas": 0, "fechas_excluidas": []}))
++    monkeypatch.setattr(snapshot, "respaldar_a_csv", lambda: [])
++    assert snapshot.main() == 0
++    ruta = str(tmp_path / "snapshot.log")
++    with open(ruta, "w", encoding="utf-8") as f:
++        f.write(capsys.readouterr().out)
++    monkeypatch.setattr(mki_vigia, "RUTA_SNAPSHOT_LOG", ruta)
++    negativa = mki_vigia._negativa_declarada_en_log(date.fromisoformat(MARTES))
++    assert negativa is not None
++    assert negativa["codigo"] == snapshot.NEGATIVA_FRESCURA
++    assert negativa["fecha"] == MARTES and negativa["sox_fecha"] == LUNES
++    assert LUNES in negativa["texto"]
++    # Otro día no la hereda: la negativa es de SU fecha.
++    assert mki_vigia._negativa_declarada_en_log(date.fromisoformat(LUNES)) is None
++
++
++def test_la_marca_es_una_sola_en_los_dos_modulos():
++    assert mki_vigia.MARCA_NEGATIVA == snapshot.MARCA_NEGATIVA
++    assert snapshot.NEGATIVA_FRESCURA != snapshot.NEGATIVA_SESION_ABIERTA
++
++
++# ------------------------------------------------------------
++# Forma de la guarda: por regla, sin margen, sin fechas
++# ------------------------------------------------------------
++def test_la_guarda_no_agrega_margen_horario_ni_nombra_fechas():
++    """§72 C.2: cualquier margen horario rompe el sello desde el 2-nov-2026.
++    La guarda compara dos FECHAS (`sox_fecha` contra hoy) y pregunta al
++    calendario si hoy es sesión; no mira el reloj, no resta horas, no
++    nombra el evento."""
++    fuente = inspect.getsource(snapshot.ejecutar_snapshot)
++    codigo = "\n".join(l for l in fuente.splitlines() if not l.strip().startswith("#"))
++    assert "es_sesion" in codigo and "NEGATIVA_FRESCURA" in codigo
++    assert "margen_horas" not in codigo and "sesion_ya_cerro" not in codigo
++    assert "timedelta(" not in codigo
++    assert "2026-" not in codigo and "-sep" not in codigo and "-nov" not in codigo
++
++
++@solo_con_base
++def test_historia_real_la_guarda_no_habria_rechazado_ningun_sello_de_dia_de_sesion():
++    """Cuenta histórica (§66 D.1 escribió «0 de 45» al 29-sep —errata fechada
++    en el acta §100.2: eran 0 de 44 sellos de día de sesión, sobre 45 con
++    sox_fecha—; al 10-oct, 0 de 52 sobre 53): ningún
++    snapshot sellado en día de sesión de XNYS tiene `sox_fecha` distinta de
++    su fecha. Es la cifra que el encargo pide medir y, desde ahora, un
++    invariante: con la guarda aplicada ninguna fila así puede volver a
++    sellarse. Los `sox_fecha` NULL (sellos anteriores a 5.0) no se juzgan.
++    Base real en `mode=ro`."""
++    conn = sqlite3.connect(f"file:{BASE_REAL}?mode=ro", uri=True)
++    try:
++        filas = conn.execute(
++            "SELECT fecha, sox_fecha FROM snapshots WHERE sox_fecha IS NOT NULL "
++            "ORDER BY fecha").fetchall()
++    finally:
++        conn.close()
++    if not filas:
++        pytest.skip("senales.db sin sellos con sox_fecha (base vacía, p. ej. en un worktree)")
++    assert len(filas) >= 45
++    rechazados = [(f, s) for f, s in filas
++                  if s != f and calendarios.es_sesion("XNYS", f)]
++    assert rechazados == [], rechazados
++    distintos = [(f, s) for f, s in filas if s != f]
++    assert all(not calendarios.es_sesion("XNYS", f) for f, _ in distintos), distintos
+diff --git a/tests/test_puntaje_retorno.py b/tests/test_puntaje_retorno.py
+new file mode 100644
+index 0000000..3be1eac
+--- /dev/null
++++ b/tests/test_puntaje_retorno.py
+@@ -0,0 +1,210 @@
++# ============================================================
++# tests/test_puntaje_retorno.py — la cuenta de excluidas viaja en el valor
++# de retorno de `senales.verificar_puntaje_pendientes` (acta §95.2, R2 del
++# auditor de la corrida 16a; corrida 16-1, 10-oct-2026).
++#
++# Lo que cambia: el verificador devolvía un entero (`verificadas`) y la
++# exclusión por conocibilidad (acta §93.4-bis i) sólo vivía en una línea de
++# `snapshot.log`, que rota. Ahora devuelve un dict con `verificadas`,
++# `excluidas` y `fechas_excluidas`. Lo que NO cambia: qué se escribe en
++# `verificacion_puntaje` (ni una fila más ni una menos) y que el `estado`
++# de `senales_ticker` no se toca.
++#
++# El test de conducta de escritura compara, sobre la MISMA siembra, lo que
++# escribe esta versión con lo que escribía la versión ANTERIOR al cambio
++# (`git show 864606c:senales.py`, importada bajo otro nombre; R2 del
++# dictamen 16-1: con `HEAD` el test se volvía tautológico tras el commit).
++# El mismo archivo fija, además, las filas esperadas de forma explícita.
++#
++# Fixture `base_puntaje` reutilizada de tests/test_guarda_puntaje.py (base
++# temporal, red reemplazada, guardia contra la base real). Cero intentos del
++# DSR.
++# ============================================================
++
++import importlib.util
++import os
++import shutil
++import subprocess
++import sys
++from datetime import date, timedelta
++
++import pandas as pd
++import pytest
++
++RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++sys.path.insert(0, RAIZ)
++
++import senales  # noqa: E402
++from test_guarda_puntaje import (  # noqa: E402,F401  (la fixture se registra al importarla)
++    EMISION, FECHA_SENAL, INSUMO_ANTERIOR, INSUMO_POSTERIOR, RETORNO_5D_ESPERADO,
++    _ohlc_falso, _ro, base_puntaje)
++
++OTRA_FECHA = (date.fromisoformat(FECHA_SENAL) - timedelta(days=7)).isoformat()
++OTRA_EMISION = f"{OTRA_FECHA}T21:15:00+00:00"
++OTRO_INSUMO_POSTERIOR = f"{OTRA_FECHA}T23:00:00+00:00"
++
++
++# ------------------------------------------------------------
++# Reproducción: el retorno
++# ------------------------------------------------------------
++def test_reproduccion_el_retorno_lleva_la_cuenta_de_excluidas(base_puntaje):
++    """REPRODUCCIÓN (falla sobre HEAD, que devuelve un entero). Dos filas
++    invertidas de dos fechas y una fila normal: una verificada, dos
++    excluidas, dos fechas, en el retorno y no sólo en stdout."""
++    base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
++    base_puntaje["sembrar"]("000660.KS", OTRA_EMISION, OTRO_INSUMO_POSTERIOR, fecha=OTRA_FECHA)
++    base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
++    r = senales.verificar_puntaje_pendientes()
++    assert isinstance(r, dict), r
++    assert r == {"verificadas": 1, "excluidas": 2,
++                 "fechas_excluidas": sorted([OTRA_FECHA, FECHA_SENAL])}
++    _, verificadas = base_puntaje["leer"]()
++    assert verificadas == {"NVDA": RETORNO_5D_ESPERADO}
++
++
++def test_sin_excluidas_el_retorno_dice_cero_y_sin_fechas(base_puntaje):
++    base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
++    base_puntaje["sembrar"]("005930.KS", EMISION, None)
++    assert senales.verificar_puntaje_pendientes() == {
++        "verificadas": 2, "excluidas": 0, "fechas_excluidas": []}
++
++
++def test_sin_candidatas_el_retorno_es_el_mismo_dict(base_puntaje):
++    assert senales.verificar_puntaje_pendientes() == {
++        "verificadas": 0, "excluidas": 0, "fechas_excluidas": []}
++
++
++def test_la_cuenta_se_repite_en_cada_corrida_porque_la_fila_sigue_candidata(base_puntaje):
++    """La fila excluida no se escribe, así que vuelve a ser candidata en la
++    corrida siguiente y se vuelve a contar (trato ratificado en §95.2 b)."""
++    base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
++    primera = senales.verificar_puntaje_pendientes()
++    segunda = senales.verificar_puntaje_pendientes()
++    assert primera == segunda == {"verificadas": 0, "excluidas": 1,
++                                  "fechas_excluidas": [FECHA_SENAL]}
++
++
++def test_verificar_pendientes_devuelve_los_dos_dicts(base_puntaje, monkeypatch):
++    monkeypatch.setattr(senales, "verificar_apertura_pendientes",
++                        lambda: {"verificadas": 0, "no_verificables": 0,
++                                 "sin_datos_mercado": 0, "sin_calendario": 0})
++    base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
++    apertura, puntaje = senales.verificar_pendientes()
++    assert isinstance(apertura, dict) and isinstance(puntaje, dict)
++    assert puntaje["excluidas"] == 1 and puntaje["verificadas"] == 0
++
++
++# ------------------------------------------------------------
++# La conducta de escritura es la de HEAD
++# ------------------------------------------------------------
++def _sembrar_escenarios(sembrar) -> None:
++    """Los seis casos que distingue la guarda, en una sola base."""
++    sembrar("NVDA", EMISION, INSUMO_ANTERIOR)                       # normal → se verifica
++    sembrar("005930.KS", EMISION, INSUMO_POSTERIOR)                 # invertida → excluida
++    sembrar("000660.KS", OTRA_EMISION, OTRO_INSUMO_POSTERIOR,
++            fecha=OTRA_FECHA, estado=senales.ESTADO_VERIFICADA)     # invertida de otra fecha
++    sembrar("2330.TW", EMISION, None)                               # NULL → se verifica
++    sembrar("8035.T", EMISION, EMISION)                             # igualdad → se verifica
++    sembrar("MU", EMISION, INSUMO_POSTERIOR, estado=senales.ESTADO_LEGACY)  # legacy → fuera
++
++
++def _volcado(ruta: str) -> tuple:
++    conn = _ro(ruta)
++    try:
++        escritas = conn.execute(
++            "SELECT fecha_senal, ticker, puntaje_ia, retorno_5d_pct "
++            "FROM verificacion_puntaje ORDER BY fecha_senal, ticker").fetchall()
++        tickers = conn.execute(
++            "SELECT fecha, ticker, puntaje_ia, timestamp_utc, available_at, estado "
++            "FROM senales_ticker ORDER BY fecha, ticker").fetchall()
++    finally:
++        conn.close()
++    return escritas, tickers
++
++
++def test_las_filas_escritas_son_exactamente_las_esperadas(base_puntaje):
++    """Fijación explícita: con los seis casos sembrados, se escriben tres
++    filas (normal, NULL, igualdad) y ninguna otra; los estados no cambian.
++    Este test pasa en HEAD y después del cambio: es la conducta que no
++    puede moverse."""
++    _sembrar_escenarios(base_puntaje["sembrar"])
++    antes = _volcado(senales.DB_PATH)
++    senales.verificar_puntaje_pendientes()
++    escritas, tickers = _volcado(senales.DB_PATH)
++    assert escritas == [(FECHA_SENAL, "2330.TW", 0.35, RETORNO_5D_ESPERADO),
++                        (FECHA_SENAL, "8035.T", 0.35, RETORNO_5D_ESPERADO),
++                        (FECHA_SENAL, "NVDA", 0.35, RETORNO_5D_ESPERADO)]
++    assert tickers == antes[1], "senales_ticker cambió"
++
++
++def test_el_retorno_sobre_los_seis_casos(base_puntaje):
++    """La cuenta que acompaña a las filas de arriba (falla sobre HEAD)."""
++    _sembrar_escenarios(base_puntaje["sembrar"])
++    r = senales.verificar_puntaje_pendientes()
++    assert r["verificadas"] == 3 and r["excluidas"] == 2
++    assert r["fechas_excluidas"] == sorted([OTRA_FECHA, FECHA_SENAL])
++
++
++# R2 del dictamen 16-1: la referencia es el commit ANTERIOR al cambio, no
++# `HEAD`, para que el test siga siendo discriminante después del commit
++# (con `HEAD` compararía la función consigo misma). Es el último commit en
++# que `verificar_puntaje_pendientes` devolvía un entero.
++COMMIT_DE_REFERENCIA = "864606c"
++
++
++def _senales_de_head(destino: str):
++    """`senales.py` tal como está en `COMMIT_DE_REFERENCIA`, importado bajo
++    otro nombre. None si no hay git o el commit no está (p. ej. una copia
++    sin repo)."""
++    try:
++        p = subprocess.run(["git", "-C", RAIZ, "show", f"{COMMIT_DE_REFERENCIA}:senales.py"],
++                           capture_output=True, text=True, timeout=30)
++    except (OSError, subprocess.SubprocessError):
++        return None
++    if p.returncode != 0 or not p.stdout:
++        return None
++    ruta = os.path.join(destino, "senales_head.py")
++    with open(ruta, "w", encoding="utf-8") as f:
++        f.write(p.stdout)
++    spec = importlib.util.spec_from_file_location("senales_head", ruta)
++    modulo = importlib.util.module_from_spec(spec)
++    sys.modules["senales_head"] = modulo
++    spec.loader.exec_module(modulo)
++    return modulo
++
++
++def test_la_conducta_de_escritura_es_identica_a_la_de_HEAD(base_puntaje, monkeypatch, tmp_path):
++    """La misma siembra, dos bases: la versión actual escribe en una y la
++    de HEAD en la otra. `verificacion_puntaje` (sin `verificado_en`, que es
++    reloj) y `senales_ticker` quedan byte a byte iguales. Discriminante
++    hasta el commit; guardia después."""
++    head = _senales_de_head(str(tmp_path))
++    if head is None:
++        pytest.skip(f"sin git o sin el commit {COMMIT_DE_REFERENCIA}: no hay versión de referencia")
++    _sembrar_escenarios(base_puntaje["sembrar"])
++    base_actual = senales.DB_PATH
++    base_head = str(tmp_path / "senales_head.db")
++    shutil.copy(base_actual, base_head)
++    assert _volcado(base_actual) == _volcado(base_head)
++
++    monkeypatch.setattr(head, "DB_PATH", base_head)
++    monkeypatch.setattr(head, "_ohlc_local", _ohlc_falso())
++    assert head.DB_PATH.startswith(str(tmp_path))
++    r_actual = senales.verificar_puntaje_pendientes()
++    r_head = head.verificar_puntaje_pendientes()
++
++    assert _volcado(base_actual) == _volcado(base_head)
++    n_head = r_head if isinstance(r_head, int) else r_head["verificadas"]
++    n_actual = r_actual if isinstance(r_actual, int) else r_actual["verificadas"]
++    assert n_actual == n_head == 3
++
++
++def test_el_retorno_no_depende_de_la_red(base_puntaje, monkeypatch):
++    """Con la fuente vacía nada se verifica, pero la cuenta de excluidas es
++    la misma: la exclusión se decide ANTES de la descarga."""
++    monkeypatch.setattr(senales, "_ohlc_local", lambda *a, **k: pd.DataFrame())
++    _sembrar_escenarios(base_puntaje["sembrar"])
++    r = senales.verificar_puntaje_pendientes()
++    assert r == {"verificadas": 0, "excluidas": 2,
++                 "fechas_excluidas": sorted([OTRA_FECHA, FECHA_SENAL])}
++    assert _volcado(senales.DB_PATH)[0] == []
+diff --git a/tests/test_noticias_ledger.py b/tests/test_noticias_ledger.py
+new file mode 100644
+index 0000000..c5632d4
+--- /dev/null
++++ b/tests/test_noticias_ledger.py
+@@ -0,0 +1,226 @@
++# ============================================================
++# tests/test_noticias_ledger.py — «0 analizados con error» no es «ok»
++# (acta §93.3 ii; tarjeta §74; corrida 16-1, 10-oct-2026).
++#
++# El hecho (MEDIDO en la corrida 15): del 7-sep al 2-oct-2026 la API de
++# Anthropic rechazó cada llamada por falta de crédito («Your credit balance
++# is too low…»), `mki_noticias.py` cortó el bucle en la excepción y
++# registró `resultado: ok` con `analizados: 0`; el vigía repitió «noticias:
++# ok · 0 analizados · 0.0000 USD» durante 22 días. Un fallo de crédito era
++# invisible por Telegram.
++#
++# La regla firmada: cuando el análisis falla, el ledger `data/costos_ia.log`
++# registra un `resultado` distinto de `ok` y de `freno_presupuesto`, con el
++# TIPO del error y el lote, y SIN el texto de la respuesta de la API (puede
++# traer identificadores). `freno_presupuesto` sigue siendo OK; «sin
++# pendientes» sigue siendo OK. El vigía (`chequear_noticias`) trata el
++# error como falla.
++#
++# Todo sintético: `mki_noticias.main()` entero con noticias.py, la API,
++# Telegram, el ledger y el log reemplazados. Sin red, sin .env leído por el
++# test (la clave es un literal falso), sin tocar noticias.db real.
++# ============================================================
++
++import json
++import os
++import sys
++
++import pytest
++
++RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++sys.path.insert(0, RAIZ)
++
++import alertas  # noqa: E402
++import costos  # noqa: E402
++import mki_noticias  # noqa: E402
++import mki_vigia  # noqa: E402
++import noticias  # noqa: E402
++import registro  # noqa: E402
++
++TEXTO_API = ("Error code: 400 - {'type': 'error', 'error': {'type': "
++             "'invalid_request_error', 'message': 'Your credit balance is too low "
++             "to access the Anthropic API.'}, 'request_id': 'req_011CSINTETICO'}")
++
++
++class BadRequestError(Exception):
++    """Mismo nombre que la clase del SDK; el test no importa `anthropic`."""
++    status_code = 400
++
++
++class _Usage:
++    input_tokens = 1000
++    output_tokens = 500
++
++
++class _ConnFalsa:
++    def commit(self):
++        pass
++
++    def close(self):
++        pass
++
++
++@pytest.fixture
++def corrida(monkeypatch, tmp_path):
++    """Prepara `mki_noticias.main()` con TODO reemplazado. Devuelve un
++    helper que fija el comportamiento de `_analizar_lote` por lote, corre
++    `main()` y devuelve (código de salida, última línea del ledger)."""
++    ledger = str(tmp_path / "costos_ia.log")
++    monkeypatch.setattr(costos, "RUTA_LOG", ledger)
++    monkeypatch.setenv("NOTICIAS_PRESUPUESTO_USD_DIA", "0.50")
++    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-clave-falsa-de-test")
++    monkeypatch.setattr(registro, "rotar_log", lambda *a, **k: None)
++    monkeypatch.setattr(noticias, "migrar_noticias_v2", lambda: {})
++    monkeypatch.setattr(noticias, "actualizar_titulares", lambda: 5)
++    monkeypatch.setattr(noticias, "get_connection", lambda: _ConnFalsa())
++    monkeypatch.setattr(noticias, "guardar_analisis", lambda conn, r: None)
++    monkeypatch.setattr(noticias, "generar_resumen_dia", lambda client: "")
++    enviados = []
++    monkeypatch.setattr(alertas, "enviar_mensaje",
++                        lambda texto: (enviados.append(texto), (True, "enviado"))[1])
++    import anthropic
++    monkeypatch.setattr(anthropic, "Anthropic", lambda api_key=None: object())
++
++    def correr(pendientes: int, falla_en_lote: int = None):
++        lote_tam = mki_noticias.TAM_LOTE
++        monkeypatch.setattr(
++            noticias, "obtener_titulares_sin_analizar",
++            lambda conn: [{"id": i, "titular": f"t{i}", "tickers": ""}
++                          for i in range(pendientes)])
++        llamadas = []
++
++        def analizar(client, lote):
++            llamadas.append(len(lote))
++            if falla_en_lote is not None and len(llamadas) == falla_en_lote:
++                raise BadRequestError(TEXTO_API)
++            return ([{"titular_id": item["id"]} for item in lote], _Usage())
++        monkeypatch.setattr(noticias, "_analizar_lote", analizar)
++        codigo = mki_noticias.main()
++        with open(ledger, encoding="utf-8") as f:
++            lineas = [json.loads(l) for l in f if l.strip()]
++            f.seek(0)
++            crudo = f.read()
++        assert lineas, "el ledger quedó vacío"
++        return codigo, lineas[-1], crudo, llamadas, enviados, lote_tam
++
++    return correr
++
++
++# ------------------------------------------------------------
++# Reproducción del 7-sep y controles
++# ------------------------------------------------------------
++def test_reproduccion_7_sep_excepcion_en_el_lote_1_no_es_ok(corrida):
++    """REPRODUCCIÓN (falla sobre HEAD, que registra `ok`). 25 pendientes,
++    la API rechaza el primer lote: 0 analizados y un `resultado` que no es
++    `ok` ni `freno_presupuesto`, con el tipo del error y el lote."""
++    codigo, registro_, crudo, llamadas, _, _ = corrida(pendientes=25, falla_en_lote=1)
++    assert codigo == 0                      # el job termina; lo que cambia es el registro
++    assert llamadas == [20]
++    assert registro_["analizados"] == 0
++    assert registro_["resultado"] not in ("ok", "freno_presupuesto"), registro_
++    assert registro_["resultado"] == mki_noticias.RESULTADO_ERROR_ANALISIS
++    assert registro_["error_tipo"] == "BadRequestError"
++    assert registro_["error_lote"] == 1
++    assert registro_["error_http"] == 400
++    assert registro_["pendientes_restantes"] == 25
++
++
++def test_el_ledger_no_lleva_el_texto_de_la_respuesta_de_la_api(corrida):
++    """El texto completo puede traer identificadores (request_id) y va sólo
++    al log del job, enmascarado; al ledger viaja el TIPO, nada más."""
++    _, _, crudo, _, _, _ = corrida(pendientes=25, falla_en_lote=1)
++    assert "req_011CSINTETICO" not in crudo
++    assert "credit balance" not in crudo and "Error code" not in crudo
++    assert "BadRequestError" in crudo
++
++
++def test_control_sin_error_sigue_siendo_ok(corrida):
++    _, registro_, crudo, llamadas, _, _ = corrida(pendientes=25)
++    assert llamadas == [20, 5]
++    assert registro_["resultado"] == "ok" and registro_["analizados"] == 25
++    assert "error_tipo" not in registro_ and "error_tipo" not in crudo
++
++
++def test_control_sin_pendientes_sigue_siendo_ok(corrida):
++    _, registro_, _, llamadas, _, _ = corrida(pendientes=0)
++    assert llamadas == []
++    assert registro_["resultado"] == "ok"
++    assert registro_["analizados"] == 0 and registro_["pendientes_restantes"] == 0
++
++
++def test_control_freno_de_presupuesto_sigue_siendo_freno(corrida, monkeypatch):
++    """Con el tope ya gastado antes de arrancar, el freno manda, como hoy."""
++    monkeypatch.setattr(costos, "estado_presupuesto",
++                        lambda: {"fecha": "x", "gasto_usd": 0.5, "tope_usd": 0.5,
++                                 "restante_usd": 0.0, "agotado": True})
++    _, registro_, _, llamadas, enviados, _ = corrida(pendientes=25)
++    assert llamadas == []
++    assert registro_["resultado"] == "freno_presupuesto"
++    assert any("freno de presupuesto" in t for t in enviados)
++
++
++def test_error_en_el_segundo_lote_conserva_lo_analizado_y_nombra_el_lote(corrida):
++    _, registro_, _, llamadas, _, _ = corrida(pendientes=45, falla_en_lote=2)
++    assert llamadas == [20, 20]
++    assert registro_["resultado"] == mki_noticias.RESULTADO_ERROR_ANALISIS
++    assert registro_["analizados"] == 20 and registro_["error_lote"] == 2
++    assert registro_["pendientes_restantes"] == 25
++
++
++def test_un_error_sin_status_code_registra_el_tipo_y_nada_mas(corrida, monkeypatch):
++    class RedCaida(Exception):
++        pass
++
++    def analizar(client, lote):
++        raise RedCaida("timeout hacia api.anthropic.com")
++    pendientes = [{"id": 1, "titular": "t", "tickers": ""}]
++    monkeypatch.setattr(noticias, "obtener_titulares_sin_analizar", lambda conn: pendientes)
++    monkeypatch.setattr(noticias, "_analizar_lote", analizar)
++    # `corrida` ya preparó el resto; se corre main() directo.
++    assert mki_noticias.main() == 0
++    with open(costos.RUTA_LOG, encoding="utf-8") as f:
++        ultima = json.loads([l for l in f if l.strip()][-1])
++    assert ultima["resultado"] == mki_noticias.RESULTADO_ERROR_ANALISIS
++    assert ultima["error_tipo"] == "RedCaida" and ultima["error_http"] is None
++    assert "timeout" not in json.dumps(ultima)
++
++
++# ------------------------------------------------------------
++# El vigía lo trata como falla
++# ------------------------------------------------------------
++def _vigia_con_ledger(monkeypatch, registro_: dict) -> tuple:
++    monkeypatch.setattr(costos, "corridas_del_dia", lambda origen=None, fecha=None: [registro_])
++    return mki_vigia.chequear_noticias()
++
++
++def test_el_vigia_falla_con_error_de_analisis(corrida, monkeypatch):
++    _, registro_, _, _, _, _ = corrida(pendientes=25, falla_en_lote=1)
++    ok, detalle = _vigia_con_ledger(monkeypatch, registro_)
++    assert not ok
++    assert "análisis FALLÓ" in detalle or "analisis FALLO" in detalle
++    assert "BadRequestError" in detalle and "lote 1" in detalle
++    assert "0 analizados" in detalle and "25" in detalle
++
++
++def test_el_vigia_sigue_ok_con_freno_y_sin_pendientes(monkeypatch):
++    ok, detalle = _vigia_con_ledger(monkeypatch, {
++        "resultado": "freno_presupuesto", "analizados": 1020, "costo_usd": 0.509})
++    assert ok and "freno_presupuesto" in detalle
++    ok, detalle = _vigia_con_ledger(monkeypatch, {
++        "resultado": "ok", "analizados": 0, "costo_usd": 0.0, "pendientes_restantes": 0})
++    assert ok and "0 analizados" in detalle
++
++
++def test_el_vigia_con_el_ledger_del_7_sep_ya_no_dice_ok(monkeypatch):
++    """La forma vieja del registro (resultado ok, 0 analizados, pendientes
++    260) sigue leyéndose OK: el ledger histórico no se reescribe y el vigía
++    no puede inferir el error de un registro que no lo trae. Lo que cambia
++    es que un registro NUEVO con error ya no tiene esa forma."""
++    ok, _ = _vigia_con_ledger(monkeypatch, {
++        "resultado": "ok", "analizados": 0, "costo_usd": 0.0, "pendientes_restantes": 260})
++    assert ok
++    ok, detalle = _vigia_con_ledger(monkeypatch, {
++        "resultado": mki_noticias.RESULTADO_ERROR_ANALISIS, "analizados": 0,
++        "costo_usd": 0.0, "pendientes_restantes": 260,
++        "error_tipo": "BadRequestError", "error_lote": 1, "error_http": 400})
++    assert not ok and "BadRequestError" in detalle
+diff --git a/tests/test_vigia_16_1.py b/tests/test_vigia_16_1.py
+new file mode 100644
+index 0000000..69c8522
+--- /dev/null
++++ b/tests/test_vigia_16_1.py
+@@ -0,0 +1,515 @@
++# ============================================================
++# tests/test_vigia_16_1.py — el único toque al vigía de la corrida 16-1
++# (10-oct-2026), con tres cambios firmados y uno de ledger:
++#
++#   B.1 Negativa declarada contra falla (acta §93.8 d). Si snapshot.py no
++#       selló y en snapshot.log hay una negativa con su línea fija (bloque
++#       A o guarda (b) de §90.1), el vigía dice «NO sellado por negativa
++#       declarada: <motivo>» y NO lo cuenta como falla; sin negativa sigue
++#       siendo falla. La alerta de negativa tiene epílogo: el re-chequeo de
++#       las 20:30 cierra el caso con un mensaje, haya sello o no.
++#   B.2 Los dos chequeos del ancla temporal (acta §93.9): `av == ts` (rama
++#       del except, como hoy) Y `av > ts` (inversión, texto propio).
++#   B.3 El predicado de la guarda de `verificacion_puntaje` (acta §95.2
++#       R3): recomputado en `mode=ro`, informado; alerta sólo si una fila
++#       invertida está DENTRO de la tabla o si aparece una fecha nueva.
++#   D   `chequear_noticias` trata «0 analizados con error» como falla
++#       (§93.3 ii; los tests del ledger están en test_noticias_ledger.py).
++#
++# Todo sintético: DB, marcador y logs en tmp_path; Telegram capturado
++# (fixture `entorno` de tests/test_vigia.py). Ningún test manda un
++# Telegram real ni toca senales.db. Cero intentos del DSR.
++# ============================================================
++
++import inspect
++import os
++import sqlite3
++import sys
++from datetime import date, datetime, timedelta, timezone
++
++import pytest
++
++RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++sys.path.insert(0, RAIZ)
++
++import costos  # noqa: E402
++import mki_vigia  # noqa: E402
++import senales  # noqa: E402
++import snapshot  # noqa: E402
++from test_vigia import (  # noqa: E402,F401  (la fixture se registra al importarla)
++    HOY, TS_TARDIO, _sellar_hoy, entorno)
++
++AYER = HOY - timedelta(days=1)
++
++
++def _cabecera(dia: date, hora_utc: str = "21:15:01") -> str:
++    return (f"[{dia.isoformat()}T{hora_utc}.000000+00:00] snapshot.py "
++            "(origen=programado, modelo=4.6.0, plataforma=5.1.0)\n")
++
++
++def _linea_negativa(codigo: str, dia: date, sox_fecha: date, texto: str) -> str:
++    return (f"  {snapshot.MARCA_NEGATIVA} [{codigo}] fecha={dia.isoformat()} "
++            f"sox_fecha={sox_fecha.isoformat()}: {texto}\n")
++
++
++def _escribir_log(lineas: str) -> None:
++    with open(mki_vigia.RUTA_SNAPSHOT_LOG, "w", encoding="utf-8") as f:
++        f.write(lineas)
++
++
++def _log_con_negativa(codigo=None, dia=HOY, sox_fecha=AYER):
++    codigo = codigo or snapshot.NEGATIVA_FRESCURA
++    _escribir_log(_cabecera(dia)
++                  + _linea_negativa(codigo, dia, sox_fecha,
++                                    f"hoy {dia} es sesión de XNYS y el SOX es de {sox_fecha}")
++                  + "  snapshot: {'snapshot': False, 'negativa': '" + codigo + "'}\n")
++
++
++# ------------------------------------------------------------
++# B.1 — leer la negativa del log
++# ------------------------------------------------------------
++def test_sin_log_no_hay_negativa(entorno):
++    assert mki_vigia._negativa_declarada_en_log(HOY) is None
++
++
++def test_lee_la_negativa_del_bloque_de_hoy(entorno):
++    _log_con_negativa()
++    n = mki_vigia._negativa_declarada_en_log(HOY)
++    assert n["codigo"] == snapshot.NEGATIVA_FRESCURA
++    assert n["fecha"] == HOY.isoformat() and n["sox_fecha"] == AYER.isoformat()
++    assert AYER.isoformat() in n["texto"]
++
++
++def test_la_negativa_de_ayer_no_vale_para_hoy(entorno):
++    _log_con_negativa(dia=AYER, sox_fecha=AYER - timedelta(days=1))
++    assert mki_vigia._negativa_declarada_en_log(HOY) is None
++
++
++def test_un_bloque_posterior_sin_negativa_la_anula(entorno):
++    """Si después de la negativa hubo OTRA corrida de hoy que no la declaró
++    (y tampoco selló, porque el vigía sólo pregunta cuando no hay sello),
++    manda la última corrida: sin negativa, es falla."""
++    codigo = snapshot.NEGATIVA_FRESCURA
++    _escribir_log(_cabecera(HOY)
++                  + _linea_negativa(codigo, HOY, AYER, "fuente atrasada")
++                  + _cabecera(HOY, "22:40:00")
++                  + "  snapshot: {'snapshot': False, 'motivo': 'sin datos de mercado'}\n")
++    assert mki_vigia._negativa_declarada_en_log(HOY) is None
++
++
++def test_reconoce_la_negativa_de_la_guarda_b(entorno):
++    _log_con_negativa(codigo=snapshot.NEGATIVA_SESION_ABIERTA, sox_fecha=HOY)
++    n = mki_vigia._negativa_declarada_en_log(HOY)
++    assert n["codigo"] == snapshot.NEGATIVA_SESION_ABIERTA and n["sox_fecha"] == HOY.isoformat()
++
++
++# ------------------------------------------------------------
++# B.1 — los chequeos
++# ------------------------------------------------------------
++def test_chequeo_snapshot_sin_sello_y_sin_negativa_sigue_siendo_falla(entorno):
++    assert mki_vigia.chequear_snapshot(HOY) == (False, "snapshot: NO se selló hoy")
++
++
++def test_chequeo_snapshot_con_negativa_no_es_falla_y_lo_dice(entorno):
++    _log_con_negativa()
++    ok, detalle = mki_vigia.chequear_snapshot(HOY)
++    assert ok is True
++    assert detalle.startswith(mki_vigia.PREFIJO_NEGATIVA)
++    assert "NO sellado por negativa declarada" in detalle
++    assert snapshot.NEGATIVA_FRESCURA in detalle and AYER.isoformat() in detalle
++
++
++def test_chequeo_snapshot_con_sello_ignora_el_log(entorno):
++    _log_con_negativa()
++    _sellar_hoy(TS_TARDIO)
++    ok, detalle = mki_vigia.chequear_snapshot(HOY)
++    assert ok and detalle.startswith("snapshot: sellado")
++
++
++def test_chequeo_descarga_sin_snapshot_distingue_la_negativa(entorno):
++    assert mki_vigia.chequear_descarga(HOY) == (False, "descarga: sin snapshot que revisar")
++    _log_con_negativa()
++    ok, detalle = mki_vigia.chequear_descarga(HOY)
++    assert ok and "negativa declarada" in detalle
++
++
++# ------------------------------------------------------------
++# B.1 — el pase de las 19:00 con negativa: mensaje propio y marcador
++# ------------------------------------------------------------
++@pytest.fixture
++def todo_lo_demas_ok(monkeypatch):
++    monkeypatch.setattr(mki_vigia, "chequear_noticias", lambda: (True, "noticias: ok · 10 analizados · 0.0100 USD"))
++    monkeypatch.setattr(mki_vigia, "chequear_reporte", lambda: (True, "reporte: enviado hoy"))
++    monkeypatch.setattr(mki_vigia, "chequear_backup", lambda: (True, "backup: commit de hoy presente"))
++    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: False)
++    monkeypatch.setattr(mki_vigia, "rotar_log_vigia", lambda: None)
++
++
++def test_pase_con_negativa_manda_un_mensaje_propio_y_deja_marcador(entorno, todo_lo_demas_ok):
++    _log_con_negativa()
++    assert mki_vigia.revision(HOY) == 0
++    assert len(entorno) == 1
++    texto = entorno[0]
++    assert "NO sellado por negativa declarada" in texto
++    assert snapshot.NEGATIVA_FRESCURA in texto
++    assert "no es falla" in texto
++    assert "re-chequeo a las 20:30" in texto
++    assert "Falló hoy" not in texto          # ninguna falla: la descarga también está cubierta
++    assert "🛑" not in texto                  # no es la alerta roja
++    p = mki_vigia._leer_pendiente(HOY)
++    assert p is not None and p["negativa"]["codigo"] == snapshot.NEGATIVA_FRESCURA
++
++
++def test_pase_sin_negativa_sigue_siendo_la_alerta_roja(entorno, todo_lo_demas_ok):
++    assert mki_vigia.revision(HOY) == 0
++    assert len(entorno) == 1
++    assert "🛑" in entorno[0] and "snapshot: NO se selló hoy" in entorno[0]
++    assert "negativa" not in entorno[0]
++    p = mki_vigia._leer_pendiente(HOY)
++    assert p is not None and p.get("negativa") is None
++
++
++def test_pase_con_negativa_y_otra_falla_las_separa(entorno, todo_lo_demas_ok, monkeypatch):
++    _log_con_negativa()
++    monkeypatch.setattr(mki_vigia, "chequear_reporte", lambda: (False, "reporte: NO hay envío registrado hoy"))
++    assert mki_vigia.revision(HOY) == 0
++    texto = entorno[0]
++    assert "NO sellado por negativa declarada" in texto
++    assert "Falló hoy" in texto and "reporte: NO hay envío" in texto
++    assert "OK:" in texto and "snapshot" not in texto.split("OK:")[1]
++
++
++def test_pase_todo_ok_sigue_en_silencio(entorno, todo_lo_demas_ok):
++    _sellar_hoy(TS_TARDIO)
++    assert mki_vigia.revision(HOY) == 0
++    assert entorno == []
++    assert mki_vigia._leer_pendiente(HOY) is None
++
++
++# ------------------------------------------------------------
++# B.1 — el epílogo de las 20:30 cierra el caso, haya sello o no
++# ------------------------------------------------------------
++def test_rechequeo_con_negativa_y_sin_sello_cierra_el_caso(entorno, monkeypatch):
++    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: False)
++    mki_vigia._escribir_pendiente(HOY, [], False,
++                                  negativa={"codigo": snapshot.NEGATIVA_FRESCURA,
++                                            "texto": "fuente atrasada"})
++    assert mki_vigia.rechequeo(HOY) == 0
++    assert len(entorno) == 1
++    texto = entorno[0]
++    assert "sigue sin sellar" in texto and "negativa declarada" in texto
++    assert "caso cerrado" in texto.lower()
++    assert "llegará la retractación" not in texto       # la promesa de la rama de falla
++    assert "no habrá retractación" not in texto         # BL3: tampoco se promete lo contrario
++    assert "20:30" not in texto or "a las " in texto    # hora real, no el literal
++    # BL3 del dictamen 16-1: el marcador QUEDA. Un sello manual posterior
++    # retracta por `_epilogo_vigia`, y ningún mensaje queda contradicho.
++    assert mki_vigia._leer_pendiente(HOY) is not None
++
++
++def test_tras_el_cierre_de_caso_un_sello_manual_retracta(entorno, monkeypatch):
++    """BL3: la secuencia completa. 20:30 sin sello (caso cerrado por hoy),
++    después un sello manual: `snapshot._epilogo_vigia()` encuentra el
++    marcador y envía la retractación."""
++    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: False)
++    mki_vigia._escribir_pendiente(HOY, [], False,
++                                  negativa={"codigo": snapshot.NEGATIVA_FRESCURA,
++                                            "texto": "fuente atrasada"})
++    assert mki_vigia.rechequeo(HOY) == 0
++    _sellar_hoy(TS_TARDIO)
++    snapshot._epilogo_vigia()
++    assert len(entorno) == 2 and "recuperado: snapshot sellado" in entorno[1]
++    assert mki_vigia._leer_pendiente(HOY) is None
++
++
++def test_rechequeo_con_negativa_y_sello_tardio_retracta(entorno):
++    _sellar_hoy(TS_TARDIO)
++    mki_vigia._escribir_pendiente(HOY, [], False,
++                                  negativa={"codigo": snapshot.NEGATIVA_FRESCURA,
++                                            "texto": "fuente atrasada"})
++    assert mki_vigia.rechequeo(HOY) == 0
++    assert len(entorno) == 1 and "recuperado: snapshot sellado" in entorno[0]
++    assert mki_vigia._leer_pendiente(HOY) is None
++
++
++def test_rechequeo_sin_negativa_conserva_la_conducta_de_5_0_1(entorno, monkeypatch):
++    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: False)
++    mki_vigia._escribir_pendiente(HOY, ["snapshot: NO se selló hoy"], False)
++    assert mki_vigia.rechequeo(HOY) == 0
++    assert "sigue sin sellar" in entorno[0] and "llegará la retractación" in entorno[0]
++    assert mki_vigia._leer_pendiente(HOY) is not None   # el marcador queda
++
++
++def test_rechequeo_con_negativa_pero_proceso_vivo_no_cierra(entorno, monkeypatch):
++    """Caso raro (una corrida manual en curso a las 20:30): no se cierra lo
++    que todavía puede sellar; se informa y el marcador queda."""
++    monkeypatch.setattr(mki_vigia, "_hay_proceso_snapshot", lambda: True)
++    mki_vigia._escribir_pendiente(HOY, [], True,
++                                  negativa={"codigo": snapshot.NEGATIVA_FRESCURA,
++                                            "texto": "fuente atrasada"})
++    assert mki_vigia.rechequeo(HOY) == 0
++    assert "reintentos aún activos" in entorno[0]
++    assert mki_vigia._leer_pendiente(HOY) is not None
++
++
++def test_el_marcador_viejo_sin_campo_negativa_se_lee_igual(entorno):
++    """Compatibilidad: un marcador escrito por la versión anterior (sin la
++    clave) no rompe nada."""
++    import json
++    with open(mki_vigia.RUTA_PENDIENTE, "w", encoding="utf-8") as f:
++        json.dump({"fecha": HOY.isoformat(), "creado_utc": "x",
++                   "fallas": ["snapshot: NO se selló hoy"], "reintentos_activos": False}, f)
++    p = mki_vigia._leer_pendiente(HOY)
++    assert p is not None and p.get("negativa") is None
++
++
++# ------------------------------------------------------------
++# B.2 — ancla temporal: igualdad Y orden
++# ------------------------------------------------------------
++def _filas_hoy(filas) -> None:
++    senales.init_db()
++    conn = senales.get_connection()
++    for ticker, ts, av in filas:
++        conn.execute("""INSERT INTO senales_ticker
++                        (fecha, ticker, apertura_estimada_pct, timestamp_utc, available_at)
++                        VALUES (?, ?, 1.0, ?, ?)""", (HOY.isoformat(), ticker, ts, av))
++    conn.commit()
++    conn.close()
++
++
++TS = f"{HOY.isoformat()}T21:15:00+00:00"
++AV_ANTES = f"{HOY.isoformat()}T20:00:00+00:00"
++AV_DESPUES = f"{HOY.isoformat()}T23:00:00+00:00"
++
++
++def test_ancla_sin_filas(entorno):
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert ok and "sin predicciones" in d
++
++
++def test_ancla_orden_correcto_es_ok(entorno):
++    _filas_hoy([("NVDA", TS, AV_ANTES), ("MU", TS, AV_ANTES)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert ok and "2/2" in d
++
++
++@pytest.mark.parametrize("av", [None, TS], ids=["NULL", "igual"])
++def test_ancla_la_rama_del_except_sigue_alertando(entorno, av):
++    _filas_hoy([("NVDA", TS, av), ("MU", TS, AV_ANTES)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok
++    assert "reloj de pared" in d and "1/2" in d and "NVDA" in d
++    assert "POSTERIOR" not in d
++
++
++def test_ancla_la_inversion_alerta_con_texto_propio(entorno):
++    """El caso del 28-sep: `available_at` 2 h 17 min POSTERIOR a
++    `timestamp_utc`; el vigía decía «OK ancla temporal». Ahora falla con un
++    texto distinto del de la rama del except."""
++    _filas_hoy([("NVDA", TS, AV_DESPUES), ("MU", TS, AV_DESPUES), ("TSM", TS, AV_ANTES)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok
++    assert "POSTERIOR" in d and "2/3" in d and "NVDA" in d and "MU" in d
++    assert "reloj de pared" not in d
++
++
++def test_ancla_compara_instantes_y_no_texto(entorno):
++    """El mismo instante posterior, escrito en otro huso, ordena ANTES como
++    texto: la comparación es de datetimes con zona."""
++    posterior_en_otro_huso = datetime.fromisoformat(AV_DESPUES).astimezone(
++        timezone(timedelta(hours=-4))).isoformat()
++    assert posterior_en_otro_huso < TS                                     # como texto
++    _filas_hoy([("NVDA", TS, posterior_en_otro_huso)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok and "POSTERIOR" in d
++
++
++def test_ancla_una_marca_ilegible_es_falla_y_no_excepcion(entorno):
++    """BL2 del dictamen 16-1: un `available_at` no parseable no puede tirar
++    el pase y dejar mudo al vigía; es FALLA con texto propio."""
++    _filas_hoy([("NVDA", TS, "no-es-una-fecha"), ("MU", TS, AV_ANTES)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok and "ILEGIBLES" in d and "NVDA" in d and "1/2" in d
++
++
++def test_ancla_cadena_vacia_es_reloj_de_pared(entorno):
++    _filas_hoy([("NVDA", TS, "")])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok and "reloj de pared" in d and "ILEGIBLES" not in d
++
++
++def test_ancla_las_dos_ramas_a_la_vez_nombran_las_dos(entorno):
++    _filas_hoy([("NVDA", TS, TS), ("MU", TS, AV_DESPUES), ("TSM", TS, AV_ANTES)])
++    ok, d = mki_vigia.chequear_ancla_temporal(HOY)
++    assert not ok
++    assert "reloj de pared" in d and "POSTERIOR" in d
++    assert "NVDA" in d and "MU" in d
++
++
++# ------------------------------------------------------------
++# B.3 — el predicado de la guarda de verificacion_puntaje, en mode=ro
++# ------------------------------------------------------------
++def _sembrar_puntaje(fecha: str, ticker: str, ts: str, av, estado=None,
++                     en_verificacion: bool = False) -> None:
++    senales.init_db()
++    conn = senales.get_connection()
++    conn.execute("""INSERT INTO senales_ticker
++                    (fecha, ticker, puntaje_ia, timestamp_utc, available_at, estado)
++                    VALUES (?, ?, 0.3, ?, ?, ?)""", (fecha, ticker, ts, av, estado))
++    if en_verificacion:
++        conn.execute("""INSERT INTO verificacion_puntaje
++                        (fecha_senal, ticker, puntaje_ia, retorno_5d_pct, verificado_en)
++                        VALUES (?, ?, 0.3, 1.0, 'x')""", (fecha, ticker))
++    conn.commit()
++    conn.close()
++
++
++VIEJA = (HOY - timedelta(days=mki_vigia.DIAS_INVERSION_RECIENTE + 10)).isoformat()
++RECIENTE = (HOY - timedelta(days=3)).isoformat()
++
++
++def _inv(fecha: str) -> tuple:
++    return f"{fecha}T17:42:00+00:00", f"{fecha}T20:00:00+00:00"   # av > ts
++
++
++def _sana(fecha: str) -> tuple:
++    return f"{fecha}T21:15:00+00:00", f"{fecha}T20:00:00+00:00"   # av < ts
++
++
++def test_guarda_puntaje_sin_filas_invertidas(entorno):
++    _sembrar_puntaje(VIEJA, "NVDA", *_sana(VIEJA))
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert ok and d.startswith("guarda puntaje:") and "0 fila" in d
++
++
++def test_guarda_puntaje_informa_el_residuo_conocido_sin_alertar(entorno):
++    """Las filas invertidas de una fecha vieja, fuera de la tabla: es el
++    estado esperado y estable (hoy, las 24 del 28-sep). Se informa con
++    cuenta y fechas, sin alerta."""
++    for t in ("NVDA", "MU", "TSM"):
++        _sembrar_puntaje(VIEJA, t, *_inv(VIEJA))
++    _sembrar_puntaje(VIEJA, "AMD", *_sana(VIEJA), en_verificacion=True)
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert ok, d
++    assert "3 fila(s)" in d and f"{VIEJA}: 3" in d and "fuera" in d
++    assert "0 dentro" in d
++
++
++def test_guarda_puntaje_alerta_si_una_invertida_esta_dentro(entorno):
++    """La guarda de la 16a fue vencida: una fila invertida llegó a
++    `verificacion_puntaje`. Falla siempre, sea de la fecha que sea."""
++    _sembrar_puntaje(VIEJA, "NVDA", *_inv(VIEJA), en_verificacion=True)
++    _sembrar_puntaje(VIEJA, "MU", *_inv(VIEJA))
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert not ok
++    assert "DENTRO" in d and "1" in d and VIEJA in d
++
++
++def test_guarda_puntaje_alerta_con_una_fecha_nueva(entorno):
++    """Una inversión reciente es un evento nuevo (las guardas de §90.1 b
++    debían impedirlo): alerta aunque esté fuera de la tabla."""
++    _sembrar_puntaje(VIEJA, "NVDA", *_inv(VIEJA))
++    _sembrar_puntaje(RECIENTE, "MU", *_inv(RECIENTE))
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert not ok
++    assert "NUEVA" in d and RECIENTE in d
++
++
++def test_guarda_puntaje_ignora_legacy_null_e_igualdad(entorno):
++    _sembrar_puntaje(VIEJA, "NVDA", *_inv(VIEJA), estado=senales.ESTADO_LEGACY)
++    _sembrar_puntaje(VIEJA, "MU", f"{VIEJA}T21:15:00+00:00", None)
++    _sembrar_puntaje(VIEJA, "TSM", f"{VIEJA}T21:15:00+00:00", f"{VIEJA}T21:15:00+00:00")
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert ok and "0 fila" in d
++
++
++def test_guarda_puntaje_compara_instantes_y_no_texto(entorno):
++    ts = f"{VIEJA}T21:15:00+00:00"
++    av = datetime.fromisoformat(f"{VIEJA}T23:00:00+00:00").astimezone(
++        timezone(timedelta(hours=-4))).isoformat()
++    assert av < ts
++    _sembrar_puntaje(VIEJA, "NVDA", ts, av)
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert ok and "1 fila(s)" in d
++
++
++def test_guarda_puntaje_una_marca_ilegible_es_falla_y_no_excepcion(entorno):
++    """BL2 del dictamen 16-1."""
++    _sembrar_puntaje(VIEJA, "NVDA", f"{VIEJA}T21:15:00+00:00", "no-es-una-fecha")
++    _sembrar_puntaje(VIEJA, "MU", *_inv(VIEJA))
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert not ok and "ILEGIBLES" in d and f"{VIEJA}: 1" in d
++    assert "1 invertida(s) fuera" in d
++
++
++def test_guarda_puntaje_cadena_vacia_es_sin_dato_como_en_el_verificador(entorno):
++    _sembrar_puntaje(VIEJA, "NVDA", f"{VIEJA}T21:15:00+00:00", "")
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert ok and "0 fila" in d
++
++
++def test_los_dos_predicados_coinciden_sobre_la_misma_siembra(entorno, monkeypatch):
++    """R1 del dictamen 16-1 (S3): el predicado está escrito dos veces —en el
++    verificador y en el vigía— y este test los ata. Misma base: la cuenta
++    y las fechas que `verificar_puntaje_pendientes` declara excluidas son
++    exactamente las del vigía restringidas a la ventana de 7 días del
++    verificador. Red reemplazada por un marco vacío: nada se escribe."""
++    import pandas as pd
++    monkeypatch.setattr(senales, "_ohlc_local", lambda *a, **k: pd.DataFrame())
++    for t in ("NVDA", "MU"):
++        _sembrar_puntaje(VIEJA, t, *_inv(VIEJA))
++    _sembrar_puntaje(VIEJA, "TSM", *_sana(VIEJA))
++    _sembrar_puntaje(VIEJA, "AMD", f"{VIEJA}T21:15:00+00:00", None)
++    _sembrar_puntaje(RECIENTE, "INTC", *_inv(RECIENTE))       # fuera de la ventana de 7 días
++    _sembrar_puntaje(VIEJA, "ASML", *_inv(VIEJA), estado=senales.ESTADO_LEGACY)
++    r = senales.verificar_puntaje_pendientes()
++    fuera, dentro, ilegibles = mki_vigia._inversiones_puntaje(senales.DB_PATH)
++    limite = (HOY - timedelta(days=7)).isoformat()
++    en_ventana = {f: n for f, n in fuera.items() if f <= limite}
++    assert r["excluidas"] == sum(en_ventana.values()) == 2
++    assert r["fechas_excluidas"] == sorted(en_ventana) == [VIEJA]
++    assert dentro == {} and ilegibles == {}
++    assert fuera == {VIEJA: 2, RECIENTE: 1}                  # el vigía ve además la reciente
++
++
++def test_guarda_puntaje_abre_la_base_en_solo_lectura_y_no_la_cambia(entorno):
++    fuente = inspect.getsource(mki_vigia._inversiones_puntaje)
++    assert "mode=ro" in fuente
++    assert "UPDATE" not in fuente and "INSERT" not in fuente and "DELETE" not in fuente
++    _sembrar_puntaje(VIEJA, "NVDA", *_inv(VIEJA))
++    antes = sqlite3.connect(senales.DB_PATH).execute("SELECT * FROM senales_ticker").fetchall()
++    mki_vigia.chequear_guarda_puntaje(HOY)
++    despues = sqlite3.connect(senales.DB_PATH).execute("SELECT * FROM senales_ticker").fetchall()
++    assert antes == despues
++
++
++def test_guarda_puntaje_sin_base_no_rompe_el_pase(entorno, monkeypatch):
++    monkeypatch.setattr(senales, "DB_PATH", os.path.join(str(os.path.dirname(mki_vigia.RUTA_PENDIENTE)), "no_existe.db"))
++    ok, d = mki_vigia.chequear_guarda_puntaje(HOY)
++    assert not ok and "guarda puntaje" in d
++
++
++def test_el_pase_incluye_la_guarda_puntaje(entorno, todo_lo_demas_ok, monkeypatch):
++    _sellar_hoy(TS_TARDIO)
++    _sembrar_puntaje(VIEJA, "NVDA", *_inv(VIEJA), en_verificacion=True)
++    assert mki_vigia.revision(HOY) == 0
++    assert len(entorno) == 1 and "guarda puntaje" in entorno[0] and "DENTRO" in entorno[0]
++
++
++# ------------------------------------------------------------
++# Errata «launchd» (§67, bitácora 14 0-bis.9)
++# ------------------------------------------------------------
++def test_el_mensaje_del_proceso_colgado_ya_no_dice_launchd(entorno, monkeypatch):
++    monkeypatch.setattr(costos, "corridas_del_dia", lambda origen=None, fecha=None: [])
++    monkeypatch.setattr(mki_vigia, "_proceso_noticias_colgado",
++                        lambda: "proceso 53783 vivo desde Mon Aug  3 17:52:38 2026")
++    ok, detalle = mki_vigia.chequear_noticias()
++    assert not ok and "proceso 53783 vivo" in detalle
++    assert "launchd" not in detalle
++    assert "no re-dispara" in detalle
++
++
++def test_ningun_texto_que_viaja_por_telegram_nombra_launchd():
++    """Los comentarios pueden contar la historia del Mac; los textos que
++    salen por Telegram describen esta máquina (systemd)."""
++    assert "launchd no re-dispara" not in inspect.getsource(mki_vigia)

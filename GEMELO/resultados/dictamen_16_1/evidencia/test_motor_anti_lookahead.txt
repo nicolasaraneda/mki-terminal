@@ -1,0 +1,26 @@
+
+=== Fecha de prueba: 2026-09-10 ===
+  OK  regimen_al(2026-09-10): idéntico con y sin datos futuros
+  OK  puntaje_v0_al(2026-09-10): idéntico con y sin datos futuros
+  OK  roca_chip_al(2026-09-10): idéntico con y sin datos futuros
+  OK  betas_al(2026-09-10): idéntico con y sin datos futuros
+  OK  prediccion_apertura_al(2026-09-10): idéntico con y sin datos futuros
+  OK  divergencias_al(2026-09-10): idéntico con y sin datos futuros
+
+=== Fecha de prueba: 2026-07-12 ===
+  OK  regimen_al(2026-07-12): idéntico con y sin datos futuros
+  OK  puntaje_v0_al(2026-07-12): idéntico con y sin datos futuros
+  OK  roca_chip_al(2026-07-12): idéntico con y sin datos futuros
+  OK  betas_al(2026-07-12): idéntico con y sin datos futuros
+  OK  prediccion_apertura_al(2026-07-12): idéntico con y sin datos futuros
+  OK  divergencias_al(2026-07-12): idéntico con y sin datos futuros
+
+=== Fecha de prueba: 2026-04-13 ===
+  OK  regimen_al(2026-04-13): idéntico con y sin datos futuros
+  OK  puntaje_v0_al(2026-04-13): idéntico con y sin datos futuros
+  OK  roca_chip_al(2026-04-13): idéntico con y sin datos futuros
+  OK  betas_al(2026-04-13): idéntico con y sin datos futuros
+  OK  prediccion_apertura_al(2026-04-13): idéntico con y sin datos futuros
+  OK  divergencias_al(2026-04-13): idéntico con y sin datos futuros
+
+RESULTADO: todas las funciones del motor pasan el test de no-contaminación (sin look-ahead bias).

@@ -26,6 +26,8 @@
 # escribe en `tmp_path` con `senales.DB_PATH` parcheado y un guardia lo
 # comprueba antes. La base real se abre sólo en `mode=ro` o para copiarla.
 # Sin red: `senales._ohlc_local` está reemplazado. Cero intentos del DSR.
+# Corrida 16-1 (acta §95.2 R2): el verificador devuelve un dict; estos tests
+# leen `["verificadas"]` y tests/test_puntaje_retorno.py prueba el resto.
 # ============================================================
 
 import inspect
@@ -144,7 +146,7 @@ def test_reproduccion_una_fila_con_la_inversion_no_entra_a_verificacion_puntaje(
     DESPUÉS de su emisión, no se escribe en `verificacion_puntaje`, no se
     cuenta como verificada y no gasta una llamada a la red."""
     base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_POSTERIOR)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     estados, verificadas = base_puntaje["leer"]()
     assert "005930.KS" not in verificadas, (
         f"la fila con available_at ({INSUMO_POSTERIOR}) posterior a su "
@@ -159,7 +161,7 @@ def test_control_la_misma_fila_sin_la_inversion_se_verifica_igual(base_puntaje):
     """CONTROL: idéntica, salvo que el insumo era conocible ANTES de la
     emisión. Se verifica como siempre, con el retorno a 5 días de siempre."""
     base_puntaje["sembrar"]("005930.KS", EMISION, INSUMO_ANTERIOR)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     estados, verificadas = base_puntaje["leer"]()
     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO}
     assert verificados == 1
@@ -173,7 +175,7 @@ def test_control_una_fila_legacy_sigue_excluida(base_puntaje):
                             estado=senales.ESTADO_LEGACY)
     base_puntaje["sembrar"]("000660.KS", EMISION, INSUMO_POSTERIOR,
                             estado=senales.ESTADO_LEGACY)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     _, verificadas = base_puntaje["leer"]()
     assert verificadas == {} and verificados == 0
     assert base_puntaje["ohlc"].llamadas == []
@@ -186,7 +188,7 @@ def test_la_guarda_no_dispara_con_available_at_nulo_ni_igual(base_puntaje, avail
     snapshot.py (available_at cayó al reloj de pared), que tiene su propia
     alerta en el vigía (acta §84.2). Misma semántica que la guarda (a)."""
     base_puntaje["sembrar"]("005930.KS", EMISION, available_at)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     _, verificadas = base_puntaje["leer"]()
     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO}
     assert verificados == 1
@@ -201,7 +203,7 @@ def test_la_guarda_compara_instantes_y_no_texto(base_puntaje):
     assert posterior_en_otro_huso < EMISION                       # como texto
     assert _instante(posterior_en_otro_huso) > _instante(EMISION)  # como instante
     base_puntaje["sembrar"]("005930.KS", EMISION, posterior_en_otro_huso)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     _, verificadas = base_puntaje["leer"]()
     assert verificadas == {} and verificados == 0
 
@@ -220,7 +222,7 @@ def test_la_guarda_no_depende_del_estado_y_no_lo_cambia(base_puntaje):
                             estado=senales.ESTADO_NO_VERIFICABLE)
     base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR,
                             estado=senales.ESTADO_VERIFICADA)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     estados, verificadas = base_puntaje["leer"]()
     assert verificadas == {"NVDA": RETORNO_5D_ESPERADO}
     assert verificados == 1
@@ -258,7 +260,7 @@ def test_sin_filas_excluidas_el_verificador_no_declara_nada(base_puntaje, capsys
     declarar, para que una línea en snapshot.log sea siempre un hecho."""
     base_puntaje["sembrar"]("NVDA", EMISION, INSUMO_ANTERIOR)
     base_puntaje["sembrar"]("005930.KS", EMISION, None)
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     assert verificados == 2
     assert "AVISO verificador puntaje" not in capsys.readouterr().out
 
@@ -301,7 +303,7 @@ def test_pin_la_regla_maestra_no_esta_en_este_verificador(base_puntaje):
     assert _instante(emision_tardia) >= apertura        # viola la regla maestra
     base_puntaje["sembrar"]("005930.KS", emision_tardia, insumo,
                             sesion_objetivo=sesion.isoformat())
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     _, verificadas = base_puntaje["leer"]()
     assert verificadas == {"005930.KS": RETORNO_5D_ESPERADO} and verificados == 1
     assert "calendarios" not in inspect.getsource(senales.verificar_puntaje_pendientes)
@@ -356,7 +358,7 @@ def test_corte_de_metodo_sobre_la_historia_real(monkeypatch, tmp_path, capsys):
     antes = _volcado(copia)
     assert repr(antes) == repr((verif_real, invertidas_real, candidatas_real))
 
-    verificados = senales.verificar_puntaje_pendientes()
+    verificados = senales.verificar_puntaje_pendientes()["verificadas"]
     salida = capsys.readouterr().out
 
     despues = _volcado(copia)

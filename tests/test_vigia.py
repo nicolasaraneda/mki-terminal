@@ -271,7 +271,7 @@ def test_noticias_nombra_proceso_colgado(entorno, monkeypatch):
     ok, detalle = mki_vigia.chequear_noticias()
     assert not ok
     assert "proceso 53783 vivo" in detalle
-    assert "launchd no re-dispara" in detalle
+    assert "no re-dispara" in detalle and "launchd" not in detalle   # errata §67, corrida 16-1
 
 
 def test_noticias_sin_proceso_mantiene_mensaje_simple(entorno, monkeypatch, tmp_path):

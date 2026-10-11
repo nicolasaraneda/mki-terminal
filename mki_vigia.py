@@ -27,9 +27,10 @@ import argparse
 import json
 import os
 import re
+import sqlite3
 import subprocess
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 
@@ -45,28 +46,96 @@ RUTA_NOTICIAS_LOG = os.path.join(DIRECTORIO, "data", "noticias.log")
 RUTA_PENDIENTE = os.path.join(DIRECTORIO, "data", "vigia_pendiente.json")
 HORA_RECHEQUEO = "20:30"
 
+# Corrida 16-1 (acta §93.8 d): la línea fija con la que snapshot.py declara
+# que se negó a sellar POR REGLA. Es un contrato con snapshot.py
+# (`MARCA_NEGATIVA` allí); un test exige que los dos textos coincidan y que
+# la salida real del sellador se lea desde aquí. Una negativa declarada NO
+# es una falla: se informa con su propio mensaje y su propio epílogo.
+MARCA_NEGATIVA = "NEGATIVA DECLARADA"
+PREFIJO_NEGATIVA = "snapshot: NO sellado por negativa declarada"
+_RE_NEGATIVA = re.compile(
+    re.escape(MARCA_NEGATIVA) + r" \[(?P<codigo>[\w-]+)\] fecha=(?P<fecha>\S+) "
+    r"sox_fecha=(?P<sox_fecha>\S+): (?P<texto>.*)$")
+
+# Corrida 16-1 (acta §95.2 R3): una fila invertida (available_at >
+# timestamp_utc) con fecha dentro de esta ventana es un evento NUEVO —las
+# guardas de §90.1 (b) y §93.8 (b) debían impedirlo— y alerta; fuera de la
+# ventana es el residuo conocido (hoy, las 24 del 28-sep-2026) y sólo se
+# informa con su cuenta. La ventana cubre los 7 días que tarda una fila en
+# ser candidata del verificador más tres para leerla.
+DIAS_INVERSION_RECIENTE = 10
+
 
 def _log(msg: str) -> None:
     print(f"[{datetime.now(timezone.utc).isoformat()}] {msg}", flush=True)
 
 
-def chequear_snapshot() -> tuple:
+def _instante(texto: str) -> datetime | None:
+    """Instante con zona, o None si el texto no es una marca ISO legible
+    (BL2 del dictamen 16-1: un valor ilegible se declara como FALLA, nunca
+    puede tirar el pase y dejar mudo al vigía)."""
+    try:
+        t = datetime.fromisoformat(texto)
+    except (ValueError, TypeError):
+        return None
+    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+
+def _negativa_declarada_en_log(hoy: date) -> dict | None:
+    """La negativa declarada por la ÚLTIMA corrida de snapshot.py que
+    aparece en data/snapshot.log, si es de HOY (la línea lleva la fecha
+    del snapshot que no se selló). Si la última corrida no declaró ninguna
+    —o el log no existe— devuelve None y «no sellado» sigue siendo falla.
+    Mira la última cabecera porque manda la última corrida: una negativa
+    de las 18:15 seguida de una corrida manual que falló sin declararla es
+    una falla, no una negativa."""
+    if not os.path.exists(RUTA_SNAPSHOT_LOG):
+        return None
+    with open(RUTA_SNAPSHOT_LOG, encoding="utf-8", errors="replace") as f:
+        lineas = f.readlines()[-400:]
+    inicio = None
+    for i, linea in enumerate(lineas):
+        if "snapshot.py (origen=" in linea:
+            inicio = i
+    if inicio is None:
+        return None
+    encontrada = None
+    for linea in lineas[inicio:]:
+        m = _RE_NEGATIVA.search(linea.strip())
+        if m and m.group("fecha") == hoy.isoformat():
+            encontrada = m.groupdict()
+    return encontrada
+
+
+def chequear_snapshot(hoy: date = None) -> tuple:
     import senales
+    hoy = hoy or date.today()
     info = senales.info_snapshot_hoy()
     if not info:
+        negativa = _negativa_declarada_en_log(hoy)
+        if negativa:
+            return True, (f"{PREFIJO_NEGATIVA} [{negativa['codigo']}]: "
+                          f"{negativa['texto']}")
         return False, "snapshot: NO se selló hoy"
     return True, f"snapshot: sellado (origen {info['origen']})"
 
 
-def chequear_descarga() -> tuple:
+def es_negativa(detalle: str) -> bool:
+    return detalle.startswith(PREFIJO_NEGATIVA)
+
+
+def chequear_descarga(hoy: date = None) -> tuple:
     import senales
+    hoy = hoy or date.today()
     senales.init_db()
     conn = senales.get_connection()
     fila = conn.execute(
         "SELECT descarga_ok, descarga_total, descarga_caidos FROM snapshots "
-        "WHERE fecha = ?", (date.today().isoformat(),)).fetchone()
+        "WHERE fecha = ?", (hoy.isoformat(),)).fetchone()
     conn.close()
     if fila is None:
+        if _negativa_declarada_en_log(hoy):
+            return True, "descarga: sin snapshot que revisar (negativa declarada)"
         return False, "descarga: sin snapshot que revisar"
     ok_n, total, caidos = fila
     if ok_n is None:
@@ -82,7 +151,14 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
     la rama del `except` de snapshot.py (available_at) se tomó —sox_fecha
     vacío o `cierre_utc` falló—, el ancla temporal es reloj de pared, y con
     el parche del §26 aplicado la sesión objetivo se eligió como en el
-    defecto. Se lee de la base, no del log: la evidencia es la igualdad."""
+    defecto. Se lee de la base, no del log: la evidencia es la igualdad.
+
+    Corrida 16-1 (acta §93.9, tarjeta §67): la igualdad NO es orden. El
+    28-sep-2026 las 24 filas tenían `available_at` 2 h 17 min POSTERIOR a
+    `timestamp_utc` y este chequeo dijo «OK». Ahora prueba las dos cosas:
+    `av == ts` (rama del except, como siempre) Y `av > ts` (inversión: el
+    insumo se declara conocible después de la emisión), cada una con su
+    texto. Los instantes se comparan con zona, no como texto."""
     import senales
     senales.init_db()
     hoy = hoy or date.today()
@@ -94,12 +170,116 @@ def chequear_ancla_temporal(hoy: date = None) -> tuple:
     conn.close()
     if not filas:
         return True, "ancla temporal: sin predicciones selladas hoy que revisar"
-    de_pared = [t for t, ts, av in filas if av is None or av == ts]
+    de_pared = [t for t, ts, av in filas if not av or av == ts]
+    ilegibles, invertidas = [], []
+    for t, ts, av in filas:
+        if not av or av == ts:
+            continue
+        conocible, emitida = _instante(av), _instante(ts)
+        if conocible is None or emitida is None:
+            ilegibles.append(t)
+        elif conocible > emitida:
+            invertidas.append(t)
+    problemas = []
+    if ilegibles:
+        problemas.append(f"{len(ilegibles)}/{len(filas)} filas con available_at o "
+                         f"timestamp_utc ILEGIBLES ({', '.join(ilegibles)}) — no se pudo "
+                         f"evaluar el orden")
     if de_pared:
-        return False, (f"ancla temporal: {len(de_pared)}/{len(filas)} filas con "
-                       f"available_at = reloj de pared ({', '.join(de_pared)}) — "
-                       f"la rama del except de snapshot.py se tomó; ver snapshot.log")
+        problemas.append(f"{len(de_pared)}/{len(filas)} filas con "
+                         f"available_at = reloj de pared ({', '.join(de_pared)}) — "
+                         f"la rama del except de snapshot.py se tomó; ver snapshot.log")
+    if invertidas:
+        problemas.append(f"{len(invertidas)}/{len(filas)} filas con "
+                         f"available_at POSTERIOR a timestamp_utc ({', '.join(invertidas)}) — "
+                         f"inversión: el insumo se declara conocible después de la "
+                         f"emisión; las guardas de §90.1 (b) y §93.8 (b) no la frenaron")
+    if problemas:
+        return False, "ancla temporal: " + " · ".join(problemas)
     return True, f"ancla temporal: {len(filas)}/{len(filas)} filas con cierre del SOX"
+
+
+def _inversiones_puntaje(ruta_db: str) -> tuple:
+    """El predicado de la guarda de `verificar_puntaje_pendientes`, recomputado
+    en `mode=ro` sobre `ruta_db`: filas con `puntaje_ia`, no legacy, cuyo
+    `available_at` es un instante POSTERIOR a `timestamp_utc`. Igual que el
+    verificador: NULL o cadena vacía es «sin dato» (no cuenta), la igualdad
+    no cuenta, los instantes se comparan con zona. Sin el filtro de 7 días.
+    Devuelve tres dicts fecha → n: fuera de `verificacion_puntaje`, dentro,
+    e ilegibles (marcas no parseables, que el verificador no distingue y
+    acá se declaran). Lanza `sqlite3.Error` si la base no se puede leer."""
+    import senales
+    conn = sqlite3.connect(f"file:{ruta_db}?mode=ro", uri=True)
+    try:
+        filas = conn.execute(f"""
+            SELECT s.fecha, s.ticker, s.timestamp_utc, s.available_at,
+                   v.id IS NOT NULL AS dentro
+            FROM senales_ticker s
+            LEFT JOIN verificacion_puntaje v
+              ON v.fecha_senal = s.fecha AND v.ticker = s.ticker
+            WHERE s.puntaje_ia IS NOT NULL
+              AND s.timestamp_utc IS NOT NULL AND s.available_at IS NOT NULL
+              AND (s.estado IS NULL OR s.estado != '{senales.ESTADO_LEGACY}')
+            ORDER BY s.fecha, s.ticker""").fetchall()
+    finally:
+        conn.close()
+    fuera, dentro, ilegibles = {}, {}, {}
+    for fecha, ticker, ts, av, esta_dentro in filas:
+        if not av or av == ts:
+            continue
+        conocible, emitida = _instante(av), _instante(ts)
+        if conocible is None or emitida is None:
+            ilegibles[fecha] = ilegibles.get(fecha, 0) + 1
+            continue
+        if conocible <= emitida:
+            continue
+        destino = dentro if esta_dentro else fuera
+        destino[fecha] = destino.get(fecha, 0) + 1
+    return fuera, dentro, ilegibles
+
+
+def chequear_guarda_puntaje(hoy: date = None) -> tuple:
+    """Corrida 16-1 (acta §95.2 R3; dictamen 16a §7): recomputa en `mode=ro`
+    el predicado de la guarda de `verificar_puntaje_pendientes` —filas con
+    `puntaje_ia` que declaran su insumo conocible DESPUÉS de su emisión
+    (available_at > timestamp_utc)— y dice cuántas siguen fuera de
+    `verificacion_puntaje` y cuántas están dentro. No depende del log que
+    rota ni de ninguna columna nueva. Sin alerta cuando el residuo es el
+    conocido (fechas viejas, todas fuera); con alerta si una invertida está
+    DENTRO (la guarda fue vencida) o si aparece una fecha NUEVA (dentro de
+    `DIAS_INVERSION_RECIENTE` días: un sello que las guardas debían
+    impedir). Sin el filtro de 7 días del verificador, a propósito: una
+    inversión fresca no debe esperar una semana para verse."""
+    import senales
+    hoy = hoy or date.today()
+    try:
+        fuera, dentro, ilegibles = _inversiones_puntaje(senales.DB_PATH)
+    except sqlite3.Error as e:
+        return False, (f"guarda puntaje: no se pudo leer la base en solo lectura "
+                       f"({enmascarar_secretos(str(e))})")
+    n_fuera, n_dentro = sum(fuera.values()), sum(dentro.values())
+    if ilegibles:
+        detalle = ", ".join(f"{f}: {n}" for f, n in sorted(ilegibles.items()))
+        return False, (f"guarda puntaje: {sum(ilegibles.values())} fila(s) con available_at o "
+                       f"timestamp_utc ILEGIBLES ({detalle}) — el predicado no se pudo "
+                       f"evaluar en ellas; {n_fuera} invertida(s) fuera, {n_dentro} dentro")
+    if not fuera and not dentro:
+        return True, "guarda puntaje: 0 filas con available_at > timestamp_utc, fuera o dentro de verificacion_puntaje"
+    limite = (hoy - timedelta(days=DIAS_INVERSION_RECIENTE)).isoformat()
+    nuevas = sorted(f for f in set(fuera) | set(dentro) if f > limite)
+    detalle_fuera = ", ".join(f"{f}: {n}" for f, n in sorted(fuera.items()))
+    resumen = (f"{n_fuera} fila(s) invertida(s) fuera de verificacion_puntaje"
+               + (f" ({detalle_fuera})" if fuera else "") + f"; {n_dentro} dentro")
+    if dentro:
+        detalle_dentro = ", ".join(f"{f}: {n}" for f, n in sorted(dentro.items()))
+        return False, (f"guarda puntaje: {n_dentro} fila(s) con available_at > timestamp_utc "
+                       f"DENTRO de verificacion_puntaje ({detalle_dentro}) — la guarda de "
+                       f"§93.4-bis (i) fue vencida; {resumen}")
+    if nuevas:
+        return False, (f"guarda puntaje: fecha NUEVA con inversión ({', '.join(nuevas)}), "
+                       f"sellada hace menos de {DIAS_INVERSION_RECIENTE} días — las guardas de "
+                       f"§90.1 (b) y §93.8 (b) debían impedirlo; ver snapshot.log; {resumen}")
+    return True, f"guarda puntaje: {resumen} (residuo conocido, sin fecha nueva)"
 
 
 def _proceso_noticias_colgado() -> str | None:
@@ -176,8 +356,10 @@ def chequear_noticias() -> tuple:
     if not corridas:
         colgado = _proceso_noticias_colgado()
         if colgado:
+            # Errata «launchd» corregida en la corrida 16-1 (§67): esta
+            # máquina corre systemd; la regla es la misma en los dos.
             return False, (f"noticias: el job NO corrió hoy — {colgado}; "
-                           "launchd no re-dispara mientras siga vivo")
+                           "el planificador no re-dispara el job mientras su proceso siga vivo")
         if _rastro_noticias_hoy_en_log():
             refuerzo = ""
             estado = _estado_systemd_noticias()
@@ -191,6 +373,15 @@ def chequear_noticias() -> tuple:
     resultado = ultima.get("resultado", "?")
     if resultado == "rss_fallo":
         return False, "noticias: corrió pero el RSS falló"
+    if resultado == "error_analisis":
+        # Corrida 16-1 (acta §93.3 ii, tarjeta §74): del 7-sep al 2-oct-2026
+        # la API rechazó cada llamada por falta de crédito y el ledger decía
+        # «ok · 0 analizados» 20 veces seguidas. «0 analizados con error» es
+        # falla; «0 analizados sin pendientes» y el freno siguen siendo OK.
+        return False, (f"noticias: corrió pero el análisis FALLÓ "
+                       f"({ultima.get('error_tipo', '?')} en el lote {ultima.get('error_lote', '?')}) "
+                       f"· {ultima.get('analizados', 0)} analizados · "
+                       f"pendientes {ultima.get('pendientes_restantes', '?')}")
     detalle = (f"noticias: {resultado} · {ultima.get('analizados', 0)} analizados "
                f"· {ultima.get('costo_usd', 0):.4f} USD")
     return True, detalle
@@ -277,12 +468,16 @@ def snapshot_en_curso(hoy: date = None) -> tuple:
     return True, "proceso vivo, sin reintento anunciado en el log"
 
 
-def _escribir_pendiente(hoy: date, fallas: list, reintentos_activos: bool) -> None:
+def _escribir_pendiente(hoy: date, fallas: list, reintentos_activos: bool,
+                        negativa: dict | None = None) -> None:
+    """`negativa` (corrida 16-1): la negativa declarada que motivó la alerta,
+    si la hubo; el pase de las 20:30 la usa para cerrar el caso."""
     with open(RUTA_PENDIENTE, "w", encoding="utf-8") as f:
         json.dump({"fecha": hoy.isoformat(),
                    "creado_utc": datetime.now(timezone.utc).isoformat(),
                    "fallas": fallas,
-                   "reintentos_activos": reintentos_activos},
+                   "reintentos_activos": reintentos_activos,
+                   "negativa": negativa},
                   f, ensure_ascii=False, indent=1)
 
 
@@ -353,22 +548,42 @@ def rechequeo(hoy: date) -> int:
     """Pase de las 20:30: el epílogo de la alerta de las 19:00. Sin
     marcador de hoy → silencio absoluto (el job launchd corre a diario)."""
     _log("mki_vigia.py --rechequeo — pase de las 20:30")
-    if _leer_pendiente(hoy) is None:
+    pendiente = _leer_pendiente(hoy)
+    if pendiente is None:
         _log("sin alerta pendiente de hoy — nada que re-chequear")
         return 0
     import senales
     if senales.info_snapshot_hoy():
         ok = enviar_retractacion_si_corresponde(hoy)
         return 0 if ok else 1
+    import alertas
+    activo, detalle = snapshot_en_curso(hoy)
+    negativa = pendiente.get("negativa")
+    if negativa and not activo:
+        # Corrida 16-1 (acta §93.8 d; tarjeta §72 (i)): la alerta de una
+        # negativa declarada tiene epílogo aunque NO haya sello. Nadie va a
+        # reintentar (las negativas no entran al bucle de reintentos), así
+        # que el mensaje cierra el caso por hoy, con la hora real. El
+        # marcador QUEDA (BL3 del dictamen 16-1): si un sello manual llegara
+        # más tarde, snapshot.py envía la retractación y ningún mensaje
+        # publicado queda contradicho por la base (precedente 5.0.2).
+        hora = alertas._hora_chile(datetime.now(timezone.utc).isoformat())
+        texto = (f"🟡 <b>VIGÍA MKI — re-chequeo {hoy.isoformat()}</b>\n"
+                 f"sigue sin sellar a las {hora}: la negativa declarada "
+                 f"[{negativa.get('codigo', '?')}] sigue en pie ({negativa.get('texto', '')}) "
+                 "y no hay proceso de snapshot vivo. Caso cerrado por hoy: la sesión "
+                 "queda sin sello en el riel de medición. Si un sello manual llegara "
+                 "más tarde, snapshot.py avisará.")
+        ok, det = alertas.enviar_mensaje(texto)
+        _log(f"epílogo Telegram (negativa, caso cerrado): {'enviado' if ok else 'NO enviado — ' + det}")
+        return 0 if ok else 1
     # Sigue sin sellar: se dice, y el marcador QUEDA — si el sello llega
     # más tarde por su cuenta, snapshot.py enviará la retractación.
-    activo, detalle = snapshot_en_curso(hoy)
     estado = (f"reintentos aún activos ({detalle})" if activo
               else "sin proceso de snapshot vivo")
     texto = (f"🟠 <b>VIGÍA MKI — re-chequeo {hoy.isoformat()}</b>\n"
              f"sigue sin sellar a las {HORA_RECHEQUEO}: {estado}. "
              "Si sella más tarde, llegará la retractación.")
-    import alertas
     ok, det = alertas.enviar_mensaje(texto)
     _log(f"epílogo Telegram: {'enviado' if ok else 'NO enviado — ' + det}")
     return 0 if ok else 1
@@ -377,7 +592,13 @@ def rechequeo(hoy: date) -> int:
 def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
     """Texto de la alerta de las 19:00. Si el snapshot no selló, la línea
     anuncia el re-chequeo de las 20:30 — y si hay reintentos EN CURSO, lo
-    dice en vez de dar el día por perdido (5.0.1)."""
+    dice en vez de dar el día por perdido (5.0.1).
+
+    Corrida 16-1 (acta §93.8 d): si el snapshot NO selló por una negativa
+    declarada, el mensaje es otro —amarillo, no rojo—: dice la negativa con
+    su motivo, deja claro que no es falla, y anuncia el re-chequeo que cierra
+    el caso. Las fallas de los demás chequeos, si las hay, van aparte."""
+    negativa = next((d for ok, d in resultados if es_negativa(d)), None)
     fallas = []
     for ok, d in resultados:
         if ok:
@@ -390,10 +611,58 @@ def componer_alerta(hoy: date, resultados: list, en_curso: tuple) -> str:
             else:
                 d = f"{d} — re-chequeo a las {HORA_RECHEQUEO}"
         fallas.append(d)
-    bien = [d.split(":")[0] for ok, d in resultados if ok]
+    bien = [d.split(":")[0] for ok, d in resultados if ok and not es_negativa(d)]
+    if negativa is not None:
+        return (f"🟡 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
+                f"{negativa}\n"
+                f"(no es falla: snapshot.py se negó a sellar por regla; "
+                f"re-chequeo a las {HORA_RECHEQUEO} cierra el caso)"
+                + ("\nFalló hoy:\n" + "\n".join(f"· {f}" for f in fallas) if fallas else "")
+                + (f"\nOK: {', '.join(bien)}" if bien else ""))
     return (f"🛑 <b>VIGÍA MKI — {hoy.isoformat()}</b>\n"
             + "Falló hoy:\n" + "\n".join(f"· {f}" for f in fallas)
             + (f"\nOK: {', '.join(bien)}" if bien else ""))
+
+
+def rotar_log_vigia() -> None:
+    from registro import rotar_log
+    rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
+
+
+def revision(hoy: date) -> int:
+    """El pase de las 19:00 para la fecha `hoy`. Separado de `main()` en
+    la corrida 16-1 para poder probarlo cualquier día (main() exime el fin
+    de semana con el reloj real)."""
+    rotar_log_vigia()
+    _log("mki_vigia.py — revisión del día operativo")
+    resultados = [chequear_snapshot(hoy), chequear_descarga(hoy), chequear_noticias(),
+                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy),
+                  chequear_guarda_puntaje(hoy)]
+    negativa = next((d for ok, d in resultados if es_negativa(d)), None)
+    for ok, detalle in resultados:
+        marca = "NEGATIVA" if es_negativa(detalle) else ("OK " if ok else "FALLA")
+        _log(f"  {marca} {detalle}")
+    if all(ok for ok, _ in resultados) and negativa is None:
+        _log("todo OK — sin alerta")
+        return 0
+
+    sin_sellar = not resultados[0][0] or negativa is not None
+    en_curso = snapshot_en_curso(hoy) if sin_sellar else (False, "")
+    if sin_sellar:
+        detalle_negativa = None
+        if negativa is not None:
+            leida = _negativa_declarada_en_log(hoy) or {}
+            detalle_negativa = {"codigo": leida.get("codigo", "?"),
+                                "texto": leida.get("texto", negativa)}
+        _escribir_pendiente(hoy, [d for ok, d in resultados if not ok], en_curso[0],
+                            negativa=detalle_negativa)
+        _log(f"marcador escrito — el pase de las {HORA_RECHEQUEO} enviará el epílogo")
+
+    import alertas
+    texto = componer_alerta(hoy, resultados, en_curso)
+    ok, detalle = alertas.enviar_mensaje(texto)
+    _log(f"alerta Telegram: {'enviada' if ok else 'NO enviada — ' + detalle}")
+    return 0 if ok else 1
 
 
 def main(argv=None) -> int:
@@ -407,29 +676,7 @@ def main(argv=None) -> int:
         return 0
     if args.rechequeo:
         return rechequeo(hoy)
-
-    from registro import rotar_log
-    rotar_log(os.path.join(DIRECTORIO, "data", "vigia.log"))
-    _log("mki_vigia.py — revisión del día operativo")
-    resultados = [chequear_snapshot(), chequear_descarga(), chequear_noticias(),
-                  chequear_reporte(), chequear_backup(), chequear_ancla_temporal(hoy)]
-    for ok, detalle in resultados:
-        _log(f"  {'OK ' if ok else 'FALLA'} {detalle}")
-    if all(ok for ok, _ in resultados):
-        _log("todo OK — sin alerta")
-        return 0
-
-    sin_sellar = not resultados[0][0]
-    en_curso = snapshot_en_curso(hoy) if sin_sellar else (False, "")
-    if sin_sellar:
-        _escribir_pendiente(hoy, [d for ok, d in resultados if not ok], en_curso[0])
-        _log(f"marcador escrito — el pase de las {HORA_RECHEQUEO} enviará el epílogo")
-
-    import alertas
-    texto = componer_alerta(hoy, resultados, en_curso)
-    ok, detalle = alertas.enviar_mensaje(texto)
-    _log(f"alerta Telegram: {'enviada' if ok else 'NO enviada — ' + detalle}")
-    return 0 if ok else 1
+    return revision(hoy)
 
 
 if __name__ == "__main__":

@@ -58,6 +58,23 @@ MARCA = "AVISO ancla temporal"
 PARCHE_PENDIENTE = MARCA not in open(os.path.join(RAIZ, "snapshot.py"), encoding="utf-8").read()
 TICKERS = ["005930.KS", "2330.TW", "NVDA"]
 
+# Corrida 16-1 (acta §93.8 b): la guarda de frescura de snapshot.py exige que
+# en día de sesión de XNYS `sox_fecha` sea HOY. Estos tests sellan con el
+# SOX del 4-sep-2026, así que `date.today()` del módulo bajo prueba queda
+# fijo en esa fecha (una sesión de XNYS); el reloj de pared sigue real.
+HOY_FIJO = date(2026, 9, 4)
+
+
+class _FechaFija(date):
+    @classmethod
+    def today(cls):
+        return HOY_FIJO
+
+
+def test_el_pin_de_fecha_es_una_sesion_de_xnys():
+    """R8 del dictamen 16-1: el pin no depende de la memoria de nadie."""
+    assert calendarios.es_sesion("XNYS", HOY_FIJO.isoformat())
+
 
 def _copias_parcheadas(directorio) -> dict:
     for a in ARCHIVOS:
@@ -107,6 +124,7 @@ def entorno(monkeypatch, tmp_path):
     copias = _copias_parcheadas(tmp_path)
     snap_g = _importar(copias["snapshot.py"], "snapshot_guardia")
     vigia_g = _importar(copias["mki_vigia.py"], "mki_vigia_guardia")
+    monkeypatch.setattr(snap_g, "date", _FechaFija)
     monkeypatch.setattr(noticias, "sentimiento_promedio_por_ticker", lambda: {})
     monkeypatch.setattr(motor, "puntaje_v0_al",
                         lambda fecha: pd.DataFrame({"Ticker": TICKERS, "Puntaje v0": [0.1] * len(TICKERS)}))
@@ -150,7 +168,7 @@ def test_camino_feliz_sin_aviso_y_vigia_en_verde(entorno, capsys):
     assert MARCA not in capsys.readouterr().out
     filas = entorno["filas"]()
     assert all(av != ts and av is not None for _, ts, av in filas)
-    ok, detalle = entorno["vigia"].chequear_ancla_temporal(date.today())
+    ok, detalle = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
     assert ok, detalle
     assert f"{len(TICKERS)}/{len(TICKERS)}" in detalle
 
@@ -170,7 +188,7 @@ def test_si_cierre_utc_falla_el_aviso_sale_y_el_vigia_falla(entorno, capsys, mon
     assert MARCA in salida and "cierre_utc" in salida
     filas = entorno["filas"]()
     assert filas and all(av == ts for _, ts, av in filas), "el ancla quedó en reloj de pared"
-    ok, detalle = entorno["vigia"].chequear_ancla_temporal(date.today())
+    ok, detalle = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
     assert not ok
     assert f"{len(TICKERS)}/{len(TICKERS)}" in detalle and "reloj de pared" in detalle
 
@@ -183,7 +201,7 @@ def test_si_no_hay_sox_fecha_el_aviso_sale_igual(entorno, capsys):
     entorno["snap"].ejecutar_snapshot("test")
     salida = capsys.readouterr().out
     assert MARCA in salida and "sox_fecha" in salida
-    ok, _ = entorno["vigia"].chequear_ancla_temporal(date.today())
+    ok, _ = entorno["vigia"].chequear_ancla_temporal(HOY_FIJO)
     assert not ok
 
 
