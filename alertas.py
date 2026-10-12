@@ -272,10 +272,15 @@ def componer_reporte_sellado(fecha: str = None) -> str:
     else:
         partes.append("Aperturas: sin predicciones selladas hoy ⚠")
 
-    # --- Track record vivo: MISMOS números que el dashboard (misma consulta
-    #     a la DB — senales.metricas_apertura / calibracion_intervalos)
+    # --- Track record vivo: MISMOS números que el dashboard y la API, desde la
+    #     fuente única de la corrida 16-3 (acta §93.4): backtest.linea_base,
+    #     que retira las filas con available_at > timestamp_utc. El import es
+    #     perezoso a propósito: backtest.datos importa el motor y este módulo
+    #     lo cargan snapshot.py y el vigía; el reporte lo importa y no lo
+    #     llama (test_jamas_llama_al_motor sigue en pie).
+    from backtest import linea_base as lb
     partes.append("")
-    m = senales.metricas_apertura(dias=30)
+    m = lb.metricas_apertura(dias=30)
     if m.get("suficiente"):
         partes.append(f"<b>Track record</b> (modelo {MODELO_VERSION}, 30d): "
                       f"N={m['n']} · gap {m['gap']['pct_aciertos']:.1f}% · "
@@ -284,7 +289,7 @@ def componer_reporte_sellado(fecha: str = None) -> str:
     else:
         partes.append(f"<b>Track record</b>: {m['n']} verificaciones — "
                       f"datos insuficientes")
-    cal = senales.calibracion_intervalos()
+    cal = lb.calibracion_intervalos()
     partes.append(f"Cobertura del intervalo 80%: {cal['cobertura_pct']:.1f}% "
                   f"(n={cal['n']})" if cal.get("suficiente")
                   else "Cobertura del intervalo 80%: pendiente")

@@ -1,0 +1,428 @@
+diff --git a/dinero/reglas.json b/dinero/reglas.json
+index 279d088..3e97a97 100644
+--- a/dinero/reglas.json
++++ b/dinero/reglas.json
+@@ -1,6 +1,7 @@
+ {
+  "_": "Reglas del riel de dinero. VERSIONADO A PROPÓSITO: los números no viven en el código. Ninguno de estos valores está FIRMADO todavía; ver GEMELO/resultados/espera_firma.md.",
+- "version_reglas": "0.2.0-PROPUESTA",
++ "version_reglas": "0.3.0-PROPUESTA",
++ "version_reglas_nota": "0.3.0-PROPUESTA desde la corrida 16-3 (acta §99.5, firma de Nicolás del 10-oct-2026; aplicado en una noche sin otro cambio al sellador, acta §102.4): marca LEGIBLE en el CSV versionado de la tercera población de filas de E0 (universo de 32 sin TOELY desde la sesión del 5-oct-2026, acta §95.4), que hasta acá sólo se distinguía cotejando reglas_sha256. Mover la versión cambia reglas_sha256 otra vez; ninguna regla numérica se mueve (tests/test_dinero.py las recomputa). Las dos poblaciones anteriores conservan 0.2.0-PROPUESTA y sus huellas 125a8602… (33 operables, hasta el 2-oct) y b6080eee… (32, del 5 al 9-oct y lo que selle hasta la aplicación).",
+  "juego_activo": "conservador",
+  "exclusiones_insumo_e0": {
+   "_": "Acta §95.4 (4-oct-2026, firma de Nicolás, tarjeta §77): TOELY sale del universo del insumo de E0 desde la sesión del 5-oct-2026, SIN sustituto y SIN retorno aunque la fuente lo retome (yfinance dejó de servir el ADR el 25-sep; 8035.T cotiza; causa no demostrada). Lo lee SÓLO dinero/sello_dinero.py::decidir, después de cuenta_papel.universo_operable, así que el censo (universo_operable.json), m2_periodo y universo_por_presupuesto no cambian. «Insumo completo» sigue exigiendo todos los tickers del universo restante: cero faltantes tolerados. Sin efecto retroactivo: las filas selladas hasta el 2-oct llevan TOELY y la huella anterior de este archivo; reglas_sha256 distingue las dos poblaciones en cada fila. Declarado: el sorteo sin información recorre la lista de operables con un solo generador por sesión, así que la lista más corta corre la REALIZACIÓN del sorteo de los demás desde la primera sesión que la use; distribución por ticker y semilla, intactas.",
+diff --git a/dinero/sello_dinero.py b/dinero/sello_dinero.py
+index d1cdef8..a91030e 100644
+--- a/dinero/sello_dinero.py
++++ b/dinero/sello_dinero.py
+@@ -584,7 +584,16 @@ def decidir(cierres: pd.DataFrame, dia, cfg: dict | None = None,
+     # generador por sesión: la lista más corta corre la REALIZACIÓN del sorteo
+     # de los demás desde la primera sesión que la use (distribución y semilla,
+     # intactas); `reglas_sha256` distingue las filas en cada población.
+-    excluidos = sorted(set((cfg.get("exclusiones_insumo_e0") or {}).get("tickers") or ()) & set(operables))
++    declarados = sorted(set((cfg.get("exclusiones_insumo_e0") or {}).get("tickers") or ()))
++    # R4 del dictamen 16b (corrida 16-3): un nombre declarado que no está en el
++    # censo de operables no se ignora en silencio (un ticker mal escrito dejaría
++    # de excluir y nadie lo sabría); revienta nombrándolo. El censo es fijo (E1/G6:
++    # membresía al DESDE), así que esto sólo salta si alguien edita reglas.json.
++    desconocidos = [t for t in declarados if t not in operables]
++    if desconocidos:
++        raise ValueError(f"exclusiones_insumo_e0 nombra tickers que no están en el censo de operables: "
++                         f"{desconocidos} (R4 del dictamen 16b: la exclusión no se ignora en silencio)")
++    excluidos = declarados
+     operables = [t for t in operables if t not in excluidos]
+     senales = C.senales_sin_informacion(hasta, operables, CP.HORIZONTE_SENAL_HABILES,
+                                         C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
+@@ -837,8 +846,36 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+                     "insumo_ext_sha256": meta_ext["sha256"], "sha_sellado": (cita or {}).get("sha256"),
+                     "motivo": ("el insumo no está persistido (temporal fuera de la carpeta de evidencia, borrado por "
+                                "main): no se inserta ninguna fila que lo cite; fila en divergencias_sello")}
++        # §81.3 (b), firmada en el acta §102.6 (3) (corrida 16-3): las filas de un
++        # intento no verificable dicen en `motivo` con qué instante se decidió el
++        # timing. F2 del dictamen 16-2: si la evidencia nació `.no_verificable`, el
++        # veredicto lo fijó el reloj de `congelar_extension` (su meta lo guarda), y
++        # las tres columnas de tiempo de la fila pueden cumplir la regla maestra y la
++        # fila decir `roto` sin que nada en la fila lo explique. Sin cambio de esquema.
++        nota_timing = None
++        if tabla == TABLA_INTENTOS:
++            bloque_timing = (meta_ext.get("timing") or {}) if evidencia_no_verificable else {}
++            if bloque_timing.get("emision_utc"):
++                # la evidencia nació .no_verificable y su meta trae el instante que lo decidió
++                nota_timing = (f"timing roto decidido al congelar la evidencia, a las {bloque_timing['emision_utc']}: "
++                               f"la regla available_at {avail} < emisión < apertura objetivo "
++                               f"{apertura_obj.isoformat()} no se cumplía a ese instante (§81.3 b)")
++            elif evidencia_no_verificable:
++                # B1 del auditor 16-3: sin bloque `timing` en el meta, el veredicto lo fijó la CLASE de la
++                # evidencia (.no_verificable), no el reloj del sello, que a lo mejor sí cumple la regla;
++                # la fila no puede afirmar lo que no se decidió con ese reloj
++                nota_timing = (f"timing roto decidido por la clase de la evidencia ({os.path.basename(ruta_ext)}, "
++                               f"congelada a las {meta_ext.get('congelado_en_utc')}); el reloj del sello "
++                               f"({ts_emision}) no fijó el veredicto (§81.3 b)")
++            else:
++                nota_timing = (f"timing roto decidido con el reloj del sello {ts_emision}: la regla available_at "
++                               f"{avail} < emisión < apertura objetivo {apertura_obj.isoformat()} no se cumple "
++                               f"(§81.3 b)")
+         insertadas = 0
+         for f in dec["filas"]:
++            motivo = f["motivo"]
++            if nota_timing:
++                motivo = f"{motivo}; {nota_timing}" if motivo else nota_timing
+             cur = con.execute(f"""
+                 INSERT INTO {tabla}
+                 (fecha_sello, fecha_insumo, timestamp_utc, available_at, exchange, sesion_objetivo,
+@@ -852,7 +889,7 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
+                 (fecha_sello, fecha_insumo, ts_emision, avail, EXCHANGE, sesion_obj,
+                  apertura_obj.isoformat(), f["ticker"], f["decision"], f["acciones_regla"], 0,
+                  f["precio_ref_usd"], f["senal_magnitud_pp"], f["senal_banda_baja_pp"], f["senal_banda_alta_pp"],
+-                 SENAL_FUENTE, dec["juego"], dec["presupuesto_usd"], dec["reglas_version"], f["motivo"],
++                 SENAL_FUENTE, dec["juego"], dec["presupuesto_usd"], dec["reglas_version"], motivo,
+                  f["ultimo_cierre_ticker"], f["available_at_ticker"],
+                  meta_ext["sha256"], os.path.basename(ruta_ext), base_sha, reglas_sha, sellador_sha,
+                  PLATAFORMA_VERSION, VERSION_SELLO, estado, estado_timing, estado_dia, int(insumo_completo),
+@@ -944,7 +981,13 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
+              "intentos_no_verificables": 0,
+              # B2 (corrida 16-2, acta §93.7): el último intento, con las MISMAS claves que `ultimo`,
+              # o None. Es lo que vuelve visible fuera del log una noche con timing roto.
+-             "ultimo_intento": None}
++             "ultimo_intento": None,
++             # R2 del dictamen 16b (corrida 16-3): las poblaciones de filas de `sellos_dinero`
++             # (no de la tabla de intentos), por huella de reglas.json y versión, en orden de
++             # primera fecha; aditivo. Es la población de REGLAS: la de MÉTODO es
++             # `sellador_sha256` (hoy 3 contra 2) y no se agrupa acá. La API no lo sirve
++             # (servirlo exige enmendar api/CONTRATO.md antes).
++             "por_reglas_sha256": []}
+     if not os.path.exists(ruta_db):
+         return vacio
+     con = conectar(ruta_db, solo_lectura=True)
+@@ -969,11 +1012,20 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
+                               (ultimo["fecha_insumo"], ultimo["timestamp_utc"]))
+             detalle = [dict(zip([d[0] for d in cur.description], r)) for r in cur.fetchall()]
+         divergencias = con.execute("SELECT COUNT(*) FROM divergencias_sello").fetchone()[0]
++        poblaciones = con.execute(
++            "SELECT reglas_sha256, reglas_version, COUNT(DISTINCT fecha_insumo), "
++            "COUNT(DISTINCT CASE WHEN cuenta_para_N = 1 THEN fecha_insumo END), COUNT(*), "
++            "MIN(fecha_insumo), MAX(fecha_insumo) FROM sellos_dinero "
++            "GROUP BY reglas_sha256, reglas_version ORDER BY MIN(fecha_insumo), reglas_sha256").fetchall()
+     finally:
+         con.close()
++    por_reglas = [{"reglas_sha256": p[0], "reglas_version": p[1], "sesiones_selladas": p[2],
++                   "sesiones_que_cuentan_para_N": p[3], "filas": p[4], "desde": p[5], "hasta": p[6]}
++                  for p in poblaciones]
+     return {**vacio, "filas": filas, "sesiones_selladas": sesiones, "sesiones_que_cuentan_para_N": cuentan,
+             "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias,
+-            "intentos_no_verificables": intentos, "ultimo_intento": ultimo_intento}
++            "intentos_no_verificables": intentos, "ultimo_intento": ultimo_intento,
++            "por_reglas_sha256": por_reglas}
+ 
+ 
+ def main(argv=None) -> int:
+diff --git a/tests/test_version_reglas_16_3.py b/tests/test_version_reglas_16_3.py
+new file mode 100644
+index 0000000..97281f1
+--- /dev/null
++++ b/tests/test_version_reglas_16_3.py
+@@ -0,0 +1,304 @@
++"""Corrida 16-3, Bloque C (acta §102.4): el parche `version_reglas_16_3.diff`,
++que NO se aplica al árbol real en la 16-3 (regla de un solo cambio al sellador
++por noche; la del 13-oct lleva el camino T). Cuatro cosas firmadas o
++recomendadas, en un solo parche:
++
++ (1) §99.5 (firma de Nicolás, 10-oct-2026): `version_reglas` pasa de
++     0.2.0-PROPUESTA a 0.3.0-PROPUESTA, legible en el CSV versionado sin
++     cotejar hashes. Cambia `reglas_sha256` otra vez: tercera población de
++     filas de E0, distinguible por versión y por huella. Ninguna regla
++     numérica se mueve.
++ (2) R4 del dictamen 16b: un ticker declarado en `exclusiones_insumo_e0` que
++     no está en el censo de operables revienta con `ValueError` nombrándolo,
++     en vez de ignorarse en silencio (un nombre mal escrito dejaría de excluir
++     y nadie lo sabría).
++ (3) §81.3 (b), firmada en §102.6 (3): las filas de un intento no verificable
++     llevan en `motivo` el instante con que se decidió el timing (el de
++     congelar, cuando la evidencia nació `.no_verificable`; F2 del dictamen
++     16-2: una fila de intento podía satisfacer la regla maestra en sus tres
++     columnas y decir `roto` sin que la fila lo explicara). Sin cambio de
++     esquema. Las filas de un sello no cambian.
++ (4) R2 del dictamen 16b: `estado()` gana `por_reglas_sha256`, el desglose por
++     población (hash, versión, sesiones, las que cuentan, filas, desde, hasta),
++     aditivo; la API no lo sirve todavía (sin enmienda del contrato).
++
++Escritos antes del código y rojos sobre HEAD por su propia aserción. Base
++temporal en cada test; la real sólo en `mode=ro` y con salto declarado."""
++import json
++import os
++import sqlite3
++from datetime import datetime, timedelta, timezone
++
++import pandas as pd
++import pytest
++
++from dinero import precios
++from dinero import sello_dinero as S
++from dinero import universo_dinero as U
++
++UTC = timezone.utc
++RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++N_OPERABLES = 32
++BASE_HASTA = "2026-09-04"
++LUNES = "2026-09-14"
++SESIONES = ("2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", LUNES)
++T_INTRADIA = datetime(2026, 9, 14, 17, 43, 1, tzinfo=UTC)      # 13:43 NY, bolsa abierta: timing roto
++T_NOCHE = datetime(2026, 9, 15, 3, 30, 4, tzinfo=UTC)          # 23:30 NY: timing ok
++HUELLAS_ANTERIORES = {"125a8602a684939576278093b306add6a6fa7a0157389f71a5c0029455ab9ba0",   # hasta el 2-oct (33 operables)
++                      "b6080eee4351ed433aeb5a124ec4603dcb3db3b3278b1791c40ee8a4ad0abc6c"}   # desde el 5-oct (sin TOELY)
++COLUMNAS_FILA = ("id", "fecha_sello", "fecha_insumo", "timestamp_utc", "available_at", "exchange", "sesion_objetivo",
++                 "apertura_objetivo_utc", "ticker", "decision", "acciones_regla", "tamano_nominal", "precio_ref_usd",
++                 "senal_magnitud_pp", "senal_banda_baja_pp", "senal_banda_alta_pp", "senal_fuente", "juego",
++                 "presupuesto_usd", "reglas_version", "motivo", "ultimo_cierre_ticker", "available_at_ticker",
++                 "insumo_ext_sha256", "insumo_ext_archivo", "insumo_base_sha256", "reglas_sha256", "sellador_sha256",
++                 "plataforma_version", "version_sello", "estado", "estado_timing", "estado_dia", "insumo_completo",
++                 "cuenta_para_N", "creado_en")
++
++
++@pytest.fixture(scope="module")
++def base():
++    return precios.cargar_congelado()
++
++
++@pytest.fixture
++def entorno_temporal(tmp_path, monkeypatch):
++    db = str(tmp_path / "sello_dinero.db")
++    monkeypatch.setattr(S, "DIR_EXT", str(tmp_path / "datos" / "sello"))
++    monkeypatch.setattr(S, "RUTA_DB", db)
++    monkeypatch.setattr(S, "DIR_BACKUP_EXT", str(tmp_path / "backups_ext"))
++    monkeypatch.setattr(S, "RUTA_BACKUP_CSV", str(tmp_path / "sello_dinero.csv"))
++    return db
++
++
++def _ext(base, factor_ultima, sesiones=SESIONES):
++    ult = base.iloc[-1]
++    ext = pd.DataFrame({pd.Timestamp(s): ult * 1.01 for s in sesiones}).T
++    ext.iloc[-1] = ult.values * factor_ultima
++    ext.index.name = "Date"
++    return ext
++
++
++def _disparo(base, db, congelar_en, sellar_en, factor=0.97, cfg=None):
++    ruta, meta = S.congelar_extension(_ext(base, factor), BASE_HASTA, ahora_utc=congelar_en)
++    try:
++        return S.sellar(ruta, meta, ahora_utc=sellar_en, ruta_db=db, cfg=cfg)
++    finally:
++        if not meta.get("persistido", True) and os.path.exists(ruta):
++            os.remove(ruta)
++
++
++def _motivos(db, tabla):
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    try:
++        return [r[0] for r in con.execute(f"SELECT motivo FROM {tabla} ORDER BY ticker")]
++    finally:
++        con.close()
++
++
++def _columnas(db, tabla):
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    try:
++        return tuple(c[1] for c in con.execute(f"PRAGMA table_info({tabla})"))
++    finally:
++        con.close()
++
++
++# ------------------------------------------------------------
++# (1) version_reglas
++# ------------------------------------------------------------
++def test_version_reglas_es_0_3_0_propuesta_con_su_nota_y_sin_mover_ninguna_regla():
++    cfg = U.reglas()
++    assert cfg["version_reglas"] == "0.3.0-PROPUESTA"
++    nota = cfg.get("version_reglas_nota", "")
++    assert "99.5" in nota and "0.3.0-PROPUESTA" in nota and "reglas_sha256" in nota
++    assert cfg["exclusiones_insumo_e0"]["tickers"] == ["TOELY"]       # §95.4 intacta
++    assert cfg["juego_activo"] == "conservador"
++    assert cfg["juegos"]["conservador"]["umbral_senal_pp"] == 1.35      # las reglas numéricas las recomputa test_dinero
++
++
++def test_la_huella_de_reglas_es_una_tercera_poblacion():
++    """El sha del archivo cambia con la versión: las filas que selle llevan una
++    huella distinta de las dos poblaciones ya selladas, y `reglas_version`
++    las distingue sin cotejar hashes."""
++    assert S._sha256(U.RUTA_REGLAS) not in HUELLAS_ANTERIORES
++
++
++def test_una_fila_sellada_con_el_parche_declara_la_version_nueva(entorno_temporal, base):
++    db = entorno_temporal
++    r = _disparo(base, db, T_NOCHE, T_NOCHE)
++    assert r["resultado"] == "sellada" and r["filas_insertadas"] == N_OPERABLES
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    versiones = {x[0] for x in con.execute("SELECT DISTINCT reglas_version FROM sellos_dinero")}
++    huellas = {x[0] for x in con.execute("SELECT DISTINCT reglas_sha256 FROM sellos_dinero")}
++    con.close()
++    assert versiones == {"0.3.0-PROPUESTA"} and not (huellas & HUELLAS_ANTERIORES)
++
++
++# ------------------------------------------------------------
++# (2) R4: la exclusión revienta ante un ticker desconocido
++# ------------------------------------------------------------
++def test_R4_un_ticker_desconocido_en_la_exclusion_revienta_nombrandolo(base):
++    cfg = json.loads(json.dumps(U.reglas()))
++    cfg["exclusiones_insumo_e0"]["tickers"] = ["TOELLY"]
++    with pytest.raises(ValueError, match="TOELLY"):
++        S.decidir(base, base.index.max(), cfg)
++
++
++def test_R4_toely_sigue_saliendo_y_sin_la_clave_todo_sigue_igual(base):
++    dec = S.decidir(base, base.index.max())
++    assert "TOELY" not in dec["operables"] and dec["excluidos_universo"] == ["TOELY"] and len(dec["operables"]) == N_OPERABLES
++    cfg = json.loads(json.dumps(U.reglas()))
++    del cfg["exclusiones_insumo_e0"]
++    dec0 = S.decidir(base, base.index.max(), cfg)
++    assert "TOELY" in dec0["operables"] and dec0["excluidos_universo"] == [] and len(dec0["operables"]) == N_OPERABLES + 1
++
++
++def test_R4_un_ticker_del_universo_pero_fuera_del_censo_tambien_revienta(base):
++    """El censo (`universo_operable`) deja fuera instrumentos que el congelado
++    sí trae; declararlos en la exclusión es declarar algo que la regla no
++    puede hacer, y se dice."""
++    dec = S.decidir(base, base.index.max())
++    fuera_del_censo = sorted(set(base.columns) - set(dec["operables"]) - {"TOELY"})
++    if not fuera_del_censo:
++        pytest.skip("el congelado no trae instrumentos fuera del censo")
++    cfg = json.loads(json.dumps(U.reglas()))
++    cfg["exclusiones_insumo_e0"]["tickers"] = ["TOELY", fuera_del_censo[0]]
++    with pytest.raises(ValueError, match=fuera_del_censo[0]):
++        S.decidir(base, base.index.max(), cfg)
++
++
++# ------------------------------------------------------------
++# (3) §81.3 b: el motivo de un intento lleva el instante del timing
++# ------------------------------------------------------------
++def test_las_filas_de_un_intento_llevan_el_instante_con_que_se_decidio_el_timing(entorno_temporal, base):
++    """F2: la evidencia se congela a T1 (bolsa abierta) y se sella 2 s después
++    a T2; el instante que decidió el timing es T1, el de congelar, y es el que
++    la fila declara aunque sus tres columnas de tiempo digan otra cosa."""
++    db = entorno_temporal
++    t1, t2 = T_INTRADIA, T_INTRADIA + timedelta(seconds=2)
++    r = _disparo(base, db, t1, t2)
++    assert r["resultado"] == "intento_no_verificable" and r["filas_insertadas"] == N_OPERABLES
++    motivos = _motivos(db, S.TABLA_INTENTOS)
++    assert len(motivos) == N_OPERABLES
++    for m in motivos:
++        assert m and f"timing roto decidido al congelar la evidencia, a las {t1.isoformat()}" in m, m
++        assert t2.isoformat() not in m
++        assert "available_at" in m and "apertura objetivo" in m and "no se cumplía a ese instante" in m
++    assert _motivos(db, S.TABLA_SELLOS) == []
++
++
++def test_sin_bloque_timing_la_fila_cita_la_clase_de_la_evidencia_y_no_el_reloj_del_sello(entorno_temporal, base):
++    """B1 del auditor 16-3. Una evidencia `.no_verificable` cuyo meta no trae el
++    bloque `timing` (camino hoy no alcanzable por `main()`: `congelar_extension`
++    siempre lo escribe) se sella a un instante en que la regla SÍ se cumple: el
++    veredicto lo fijó la CLASE de la evidencia, y la fila no puede decir que la
++    regla no se cumplía con el reloj del sello (una frase falsa en un campo
++    inmutable). Cita el instante de congelar (`congelado_en_utc`) y la clase."""
++    db = entorno_temporal
++    ruta, meta = S.congelar_extension(_ext(base, 0.97), BASE_HASTA, ahora_utc=T_INTRADIA)
++    meta_sin_timing = {k: v for k, v in meta.items() if k != "timing"}
++    assert S.evaluar_timing((meta["disponibilidad"] or {}).get("por_ticker"), LUNES, T_NOCHE)["timing_ok"] is True
++    r = S.sellar(ruta, meta_sin_timing, ahora_utc=T_NOCHE, ruta_db=db)
++    assert r["resultado"] == "intento_no_verificable" and r["filas_insertadas"] == N_OPERABLES
++    for m in _motivos(db, S.TABLA_INTENTOS):
++        assert "timing roto decidido por la clase de la evidencia (" + os.path.basename(ruta) in m, m
++        assert f"congelada a las {meta['congelado_en_utc']}" in m
++        assert "no fijó el veredicto" in m and "no se cumple" not in m and "no se cumplía" not in m
++        assert T_NOCHE.isoformat() in m          # el reloj del sello se declara como lo que es
++
++
++def test_las_filas_de_un_sello_no_llevan_la_nota_del_timing(entorno_temporal, base):
++    db = entorno_temporal
++    r = _disparo(base, db, T_NOCHE, T_NOCHE)
++    assert r["resultado"] == "sellada"
++    motivos = _motivos(db, S.TABLA_SELLOS)
++    assert len(motivos) == N_OPERABLES
++    for m in motivos:
++        assert not (m and "timing roto decidido" in m)
++
++
++def test_en_un_intento_el_motivo_de_sin_dato_se_conserva_delante_de_la_nota(entorno_temporal, base):
++    """E3 sigue mandando: el ticker sin cierre lo dice primero, y la nota del
++    timing va detrás, separada por «; »."""
++    db = entorno_temporal
++    ext = _ext(base, 0.97)
++    ext.loc[pd.Timestamp(LUNES), "SHECY"] = float("nan")
++    ruta, meta = S.congelar_extension(ext, BASE_HASTA, ahora_utc=T_INTRADIA)
++    r = S.sellar(ruta, meta, ahora_utc=T_INTRADIA, ruta_db=db)
++    assert r["resultado"] == "intento_no_verificable" and r["sin_dato"] == ["SHECY"]
++    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
++    m_shecy = con.execute(f"SELECT motivo FROM {S.TABLA_INTENTOS} WHERE ticker = 'SHECY'").fetchone()[0]
++    con.close()
++    assert m_shecy.startswith("sin dato en el insumo para la sesión") and "; timing roto decidido al congelar la evidencia" in m_shecy
++
++
++def test_sin_cambio_de_esquema_las_dos_tablas_tienen_las_columnas_de_head(entorno_temporal):
++    con = S.conectar(entorno_temporal)
++    con.close()
++    assert _columnas(entorno_temporal, S.TABLA_SELLOS) == COLUMNAS_FILA
++    assert _columnas(entorno_temporal, S.TABLA_INTENTOS) == COLUMNAS_FILA
++
++
++# ------------------------------------------------------------
++# (4) R2: estado() con el desglose por población
++# ------------------------------------------------------------
++def test_estado_sin_base_trae_el_desglose_vacio_y_las_claves_de_siempre(tmp_path):
++    e = S.estado(str(tmp_path / "no_existe.db"))
++    assert e["por_reglas_sha256"] == []
++    assert {"filas", "sesiones_selladas", "sesiones_que_cuentan_para_N", "intentos_no_verificables", "ultimo_intento"} <= set(e)
++
++
++def test_estado_desglosa_por_poblacion_y_la_suma_es_el_total(entorno_temporal, base, tmp_path, monkeypatch):
++    """Dos poblaciones: se sella una sesión con el reglas.json del parche y
++    otra con una copia de otra versión (otro sha). El desglose las separa, en
++    orden de primera fecha, y suma el total de `estado()`."""
++    db = entorno_temporal
++    r1 = _disparo(base, db, T_NOCHE, T_NOCHE)
++    assert r1["resultado"] == "sellada"
++    otra = tmp_path / "reglas_otra.json"
++    cfg2 = json.loads(json.dumps(U.reglas()))
++    cfg2["version_reglas"] = "0.9.9-PRUEBA"
++    otra.write_text(json.dumps(cfg2, indent=1, ensure_ascii=False), encoding="utf-8")
++    monkeypatch.setattr(U, "RUTA_REGLAS", str(otra))
++    martes = ("2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", LUNES, "2026-09-15")
++    ruta, meta = S.congelar_extension(_ext(base, 0.98, martes), BASE_HASTA, ahora_utc=T_NOCHE + timedelta(days=1))
++    r2 = S.sellar(ruta, meta, ahora_utc=T_NOCHE + timedelta(days=1), ruta_db=db, cfg=cfg2)
++    assert r2["resultado"] == "sellada"
++    e = S.estado(db)
++    pobl = e["por_reglas_sha256"]
++    assert [p["reglas_version"] for p in pobl] == ["0.3.0-PROPUESTA", "0.9.9-PRUEBA"]
++    assert [p["desde"] for p in pobl] == [LUNES, "2026-09-15"] and [p["hasta"] for p in pobl] == [LUNES, "2026-09-15"]
++    assert sum(p["sesiones_selladas"] for p in pobl) == e["sesiones_selladas"] == 2
++    assert sum(p["filas"] for p in pobl) == e["filas"] == 2 * N_OPERABLES
++    assert sum(p["sesiones_que_cuentan_para_N"] for p in pobl) == e["sesiones_que_cuentan_para_N"]
++    assert {p["reglas_sha256"] for p in pobl} == {r1["reglas_sha256"], r2["reglas_sha256"]}
++    assert all(set(p) == {"reglas_sha256", "reglas_version", "sesiones_selladas", "sesiones_que_cuentan_para_N",
++                          "filas", "desde", "hasta"} for p in pobl)
++
++
++def test_estado_sobre_la_base_real_separa_las_poblaciones_ya_selladas():
++    """`mode=ro`. Hoy la base real tiene dos poblaciones (33 operables hasta el
++    2-oct; 32 sin TOELY desde el 5-oct) con la misma `reglas_version`: el
++    desglose las separa por hash y suma el total. Se salta sin la base."""
++    if not os.path.exists(S.RUTA_DB):
++        pytest.skip(f"sin base real en {S.RUTA_DB}")
++    e = S.estado(S.RUTA_DB)
++    pobl = e["por_reglas_sha256"]
++    assert len(pobl) >= 2
++    assert sum(p["sesiones_selladas"] for p in pobl) == e["sesiones_selladas"]
++    assert sum(p["filas"] for p in pobl) == e["filas"]
++    assert sum(p["sesiones_que_cuentan_para_N"] for p in pobl) == e["sesiones_que_cuentan_para_N"]
++    assert HUELLAS_ANTERIORES <= {p["reglas_sha256"] for p in pobl}      # por hash, no por posición (R2 del auditor)
++    assert all(p["desde"] <= p["hasta"] for p in pobl)
++    # las poblaciones ya selladas no se solapan en fechas (si una fecha anterior se sellara con
++    # reglas nuevas, la nueva quedaría en medio y esto lo diría)
++    rangos = sorted((p["desde"], p["hasta"]) for p in pobl)
++    assert all(a[1] < b[0] for a, b in zip(rangos, rangos[1:])), rangos
++
++
++def test_la_api_no_sirve_el_desglose_todavia_y_el_contrato_no_cambia():
++    """R2 es aditivo en `estado()`; `/api/dinero/sellos` arma `E0` clave por
++    clave y no lo expone: servirlo exige enmendar `api/CONTRATO.md` antes."""
++    fuente = open(os.path.join(RAIZ, "api", "main.py"), encoding="utf-8").read()
++    assert "por_reglas_sha256" not in fuente
++    assert "por_reglas_sha256" not in open(os.path.join(RAIZ, "api", "CONTRATO.md"), encoding="utf-8").read()

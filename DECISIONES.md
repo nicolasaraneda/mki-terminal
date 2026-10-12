@@ -10090,3 +10090,191 @@ Redactada por el asistente del chat a partir de las respuestas de Nicolás del 1
 - **Predicción falsable** (bitácora 16-2 §7, acta §101.5): el sello del martes 13-oct a las 00:30 Chile deja la sesión del 12-oct con `version_sello = E0.3`, `sellador_sha256 = 299a7627…`, 32 filas, `insumo_completo = 1` salvo que falte otro ticker, contador de 12 a 13, `intentos_no_verificables` con 0 filas y `data/backups/sello_dinero_no_verificables.csv` nacido vacío con cabecera.
 
 **102.8. Lo que sigue abierto.** La hora del corte y la suite de la aplicación (acta siguiente); la lectura del martes 13-oct; la corrida 16-3 (fuente única, README, higiene de tests, R9, §81.4 y §81.6, y el parche de `dinero/` con `version_reglas`, R2 y R4 de la 16b y §81.3, para una noche sin otro cambio al sellador); la cola (R3, R6 con §80.5, R7, S2, F4, el candado de §81.5); E1 (§93.15).
+
+## Acta §103, 11-oct-2026 (noche). Hechos de la aplicación a mano del camino T con B2 (acta §102.7). Ninguna firma
+
+Redactada por el asistente del chat con las salidas de terminal que Nicolás pegó el 11-oct a las 19:20.
+
+**103.1. Corte de método: domingo 11-oct-2026 a las 17:49:31 (Chile, −03:00)**, leído con `date` inmediatamente antes del primer `git apply`. Antes, `systemctl --user is-active mki-sello-dinero.service` dijo `inactive`. Las huellas de los tres parches coincidieron con §101.1 (`48addf80…`, `ad864726…`, `9b4c45d4…`).
+
+**103.2. Aplicación.** `camino_T_16_2.diff`, `b2_contrato_16_2.diff` y `b2_api_16_2.diff`, en ese orden, sin errores. `dinero/sello_dinero.py` quedó con `299a7627f289e70f8ae3cb83166672c451f0921ca88c21450a87892ae3963d93`, la huella declarada en §102.7 (3).
+
+**103.3. Verificación antes del commit.** Suite completa del árbol real: 1151 passed, 8 skipped, 1 xfailed, 29 warnings, 0 failed, en 468,49 s, igual a la predicción de §101.3. `venv/bin/python tests/test_motor.py`: las seis funciones del motor idénticas con y sin datos futuros en las tres fechas de prueba (2026-09-11, 2026-07-13, 2026-04-14). `tsc --noEmit` del frontend: sin errores.
+
+**103.4. Commit y push.** `ad4b829` «Corrida 16-2 y actas §101 y §102…», 37 archivos, 11.191 inserciones y 137 borrados; el hook corrió la suite completa: 1151 passed, 8 skipped, 1 xfailed, 0 failed, en 480,43 s. Push `c271822..ad4b829`.
+
+**103.5. Error del asistente, número 29.** La secuencia del asistente de las 17:42 probó cada parche por separado con `git apply --check` contra HEAD; `b2_api_16_2.diff` está encadenado sobre `camino_T_16_2.diff` (toca el `sello_dinero.py` que deja el primero) y falló en la línea 941. No se aplicó nada por ese error. La receta de la bitácora 16-2 §6.1 tiene el mismo defecto (un bucle de `--check` contra HEAD) y el asistente la copió sin revisarla. Corregido aplicando en orden: `git apply` es atómico por parche.
+
+**103.6. Predicción vigente** (§101.5): el sello del martes 13-oct a las 00:30 Chile deja la sesión del 12-oct con `version_sello = E0.3`, `sellador_sha256 = 299a7627…`, 32 filas, contador de 12 a 13, la tabla `intentos_no_verificables` con 0 filas y `data/backups/sello_dinero_no_verificables.csv` vacío con cabecera. Consulta exacta en la bitácora 16-2 §7.
+
+## Acta §104, 11-oct-2026 (corrida 16-3, nocturna con Nicolás presente). La fuente única de las cifras publicadas aplicada al reporte de Telegram, la API y el dashboard; el README al día con lo firmado; la suite ya no crea bases ni respaldos en el árbol; la negativa del fallback del dashboard llega al vigía; la tarjeta de intentos en `/sellos`; y el parche de `dinero/` entregado sin aplicar. Ninguna firma
+
+Redactada por el orquestador de la corrida (Fable 5.1, esfuerzo alto) al cierre. Encargo: `~/encargo.md` (actas §93.4,
+§93.4-bis ii, §93.11, §93.12, §95.4, §99.5, §99.6, §99.8, §102.2, §102.4, §102.6). Insumos: `GEMELO/resultados/bitacora_16_3.md`
+(horas de `date`), los tres dictámenes en `GEMELO/resultados/dictamen_16_3/` y las tarjetas §82 a §89 de
+`espera_firma.md`. **Ninguna firma: lo que necesita decisión está en las tarjetas §82 a §89.** **Esta corrida mueve
+cifras publicadas, y eso está firmado (§93.4 y §99.6):** desde el reporte de Telegram del lunes 12-oct, la API y el
+dashboard excluyen de sus cifras de acierto las filas con `available_at > timestamp_utc`. Ninguna fila sellada se
+reescribe; ningún esquema cambia; `motor.py`, `snapshot.py`, `senales.py` (byte a byte), el vigía, la sonda, el backup,
+`dinero/` del árbol real y los timers intactos. Nada se commiteó ni se pusheó; el sellador real no se corrió; las tres
+bases sólo en `mode=ro`, con huellas idénticas al abrir y al cerrar; ningún job `mki-*` disparó (domingo).
+
+**104.1. Corte de método: 11-oct-2026 a las 20:59:44 (Chile, −03:00).** Treinta y tres rutas más la carpeta
+`dictamen_16_3/` entraron al árbol real en un solo acto, por copia desde el worktree (`stat -c '%y'`: de
+`backtest/linea_base.py` 20:59:44.705 a la bitácora 20:59:44.923; huellas sha256 en la bitácora §6). Después: badges
+releídos de la máquina (1216 tests recolectados, 5.1.0, 2026-10-11) y los dos README regenerados (21:00:01); `tsc
+--noEmit`: exit 0; `tests/test_motor.py`: las seis funciones del motor idénticas con y sin datos futuros. **Suite completa
+del árbol real con todas las bases, dos veces: 1207 passed, 8 skipped, 1 xfailed, 0 failed, 29 warnings, en 500,13 s**
+(21:01:21 → 21:09:42, tras aplicar el código) **y el mismo número en 474,48 s sobre el estado FINAL** (22:07:58 →
+22:15:53, tras los textos que exigieron el curador y el guardián; entre las dos, un rojo de `test_epistemico` por dos
+citas por número de línea que el guardián cazó y que se corrigieron); apertura, antes de tocar nada: 1151 passed, 8
+skipped, 1 xfailed (19:30:08 → 19:38:16). `tests/test_motor.py` después de la última suite: `EXIT 0`.
+
+**104.2. Lo que rige desde el lunes 12-oct-2026, por bloque.**
+- **A. La fuente única (§93.4, §93.4-bis ii, §99.6).** `alertas.componer_reporte_sellado`, `api/main.py` (`/api/hoy`
+  `track_record`, `/api/aperturas` `calibracion`, `/api/historial` entero) y `app.py` leen `metricas_apertura`,
+  `calibracion_intervalos`, `evolucion_aciertos_apertura`, `ultimas_predicciones_apertura`, `verificaciones_detalle` y
+  `analisis_puntaje_ia` de `backtest/linea_base.py` (sección «LAS CIFRAS VIVAS PUBLICADAS»: `cargar_vivas`,
+  `cargar_puntaje_vivo` y las seis con los mismos nombres), que pasan por la misma `excluir_sin_conocibilidad` que el
+  árbitro y leen en `mode=ro` (las seis viejas corrían `init_db()` sobre la base sellada en cada llamada). **Letra de la
+  firma y lo que se hizo, dicho sin rodeo (B1 del auditor):** §93.4 dice «leen sus métricas de
+  `backtest/linea_base.py::cargar()`», y `cargar()` deduplica por defecto (regla del 1-sep); aplicarla al pie de la letra
+  habría movido el n de las cifras de toda la historia por otra razón que la conocibilidad, que el encargo §1 prohíbe. La
+  corrida resolvió la contradicción a favor del encargo con `cargar_vivas()` (misma exclusión, sin dedup) y lo puso a
+  firma (tarjeta §82.1), con la magnitud MEDIDA: la deduplicación retiraría 10 filas de julio y agosto (calibración y
+  detalle 482 → 472, acierto del gap de toda la historia 65,6 % → 66,3 %, ventana de 30 días 141 → 141). **MEDIDO sobre la
+  base real (bitácora §2; reproducido de forma independiente por el auditor en once configuraciones con igualdad exacta
+  de frames y dicts):** la única diferencia con las consultas viejas son las 8 filas del 28-sep: track record 30 d n 149
+  → 141 (gap 62,4 % → 63,8 %, MAE 3,95 → 4,07 pp; sesión 65,1 % → 67,4 %, MAE 2,31 → 2,31), calibración 490 → 482 (93,5 % →
+  93,6 %), evolución 64 → 63 fechas, últimas (límite 100) retira las 8 y admite las 8 más antiguas siguientes, desgloses
+  sobre 482, `analisis_puntaje_ia` sin cambio (n 1308; la guarda de la 16a ya dejaba fuera las invertidas). Misma ventana,
+  misma definición del denominador, mismo redondeo, columnas y orden de filas. **Dirección del efecto, declarada completa:**
+  las 8 acertaban 3 en gap y 2 en sesión, así que las tasas vivas suben (+1,4 y +2,3 pp) y el MAE del gap empeora (las 8
+  tenían MAE 1,81 pp); el 37,5 % de ese día es ruido (17 de 56 días con n ≥ 8 están en o bajo esa tasa; P = 0,139). Orden
+  de método, DECLARADO en §90.1 d: la regla se firmó por su mérito; zona ciega Z2 del auditor, DECLARADA: la firma es 14
+  minutos posterior a que el verificador escribiera las 8 filas, con la magnitud a la vista en la bitácora 14 §9. Las dos
+  reglas de higiene pendientes (conocibilidad aplicada hoy, deduplicación en tarjeta) apuntan a favor del campeón; la razón
+  es estructural y queda escrita. `senales.py` byte a byte igual: sus seis funciones quedan sin consumidor publicado y un
+  test lo fija (tarjeta §82.2). `backtest/linea_base.py` dejó de importar `backtest.datos` (que importa el motor): el
+  reporte compone aunque `motor` no sea importable, fijado en un subproceso con el import envenenado (B5 del auditor).
+  `api/CONTRATO.md`: enmienda 16-3, sólo valores, con una nota de forma preexistente (`evolucion` y `ultimas` se sirven
+  con las claves de las columnas). Dictamen del `auditor-lookahead`: **APLICABLE CON EXIGENCIAS**, las cinco bloqueantes
+  atendidas antes de aplicar (`dictamen_16_3/auditor_fuente_unica.md`; bitácora §5.1).
+- **B. El README (§93.11, §93.12, §95.4, §90.4).** E0 con el texto firmado en §93.11.3 («On trading nights when the machine
+  is awake, it emits and seals.»), la declaración del universo de §95.4 (TOELY fuera desde la sesión del 5-oct, sin
+  sustituto y sin retorno; las filas se distinguen por `reglas_sha256`; y, por O2 del curador, que ya había llegado un
+  día tarde el 18 y el 23-sep, §96.3), y el corte de luz entre las causas de una noche perdida, etiquetado DEDUCIDO del
+  journal (§99.1; O1 del curador); E1 con el texto corregido en §102.5, que **difiere del firmado en §93.11.2 por el
+  hecho posterior de §95.3**, como mandó el encargo. `tesis.md:161`: «59×» → «61×» (14.618 / 238, `larga_veces`), con
+  errata fechada; y una cifra retirada el 2-sep (la estimación de MB/año del camino C3) que el archivo seguía ofreciendo
+  sin marca, reemplazada por el valor medido con su errata (B3 del curador). Badges (§90.4) los tres juntos: 1216
+  recolectados, 5.1.0, 2026-10-11. Fusión de tarjetas (§93.12): §69, §70, §72 y §74 FUNDIDAS (textos conservados; §74
+  resuelta de hecho por §93.2 y §99.1), §80 y §81 marcadas FIRMADAS (§102). Curador: **RECHAZA** sobre el estado de las
+  21:01, por tres bloqueantes (el acta §104 citada antes de existir, una frase de la bitácora sobre lo que alguien
+  «miró», la cifra retirada en `tesis.md`), las tres atendidas, más seis observaciones atendidas (O1, O2, O4 a O7) y una
+  declarada sin atender: O3, publicar la proporción de noches perdidas de E0, choca con la firma de §93.11.1 (b), «esta
+  página no lleva contador»; la cifra queda acá: 22 fechas selladas, 12 cuentan para N = 40, 10 no, y dos noches de bolsa
+  sin ninguna fila (25-sep y 6-oct). `dictamen_16_3/curador_readme.md`; bitácora §5.3.
+- **C. El parche de `dinero/`, NO aplicado (§99.5, §102.4, §102.6 (3); R2 y R4 del dictamen 16b).**
+  `GEMELO/propuestas/parches/version_reglas_16_3.diff` (sha256 **`5acdb3e2967e794cf21c981cb83544a5958222fba053fa1635f0e48b584667cd`**,
+  +362/−5 en tres archivos; `git apply --check` limpio sobre HEAD `ad4b829` y sobre el árbol real; pre imágenes
+  `d1cdef8a…` y `279d0884…`): `version_reglas` 0.3.0-PROPUESTA con nota fechada; la exclusión revienta ante un ticker que
+  no está en el censo; las filas de un intento llevan en `motivo` con qué se decidió el timing (el instante de congelar si
+  la evidencia nació `.no_verificable`; la clase de la evidencia y `congelado_en_utc` si el meta no trae el bloque, para
+  no sellar una frase falsa: B1 del auditor); `estado()` gana `por_reglas_sha256` (sólo `sellos_dinero`, sólo por reglas;
+  la API no lo sirve). Tests escritos antes (15; sobre HEAD, con el archivo final, 10 rojos por su aserción, 4 verdes de
+  control, 1 saltado). Huellas tras aplicar: `dinero/reglas.json` `6f3715275dadc5279e3661a9fcc1dc64af799e0a140de3a7f3eff17765ab444a`,
+  `dinero/sello_dinero.py` `2a9c2d57f9c4cbf5eb925526549e565a481c5d6678aadeb2a9227034812280f6` (cuarta población de
+  `sellador_sha256`; tercera de `reglas_sha256`). Dictamen del `auditor-lookahead` sobre la versión `f164b232…`:
+  **APLICABLE CON EXIGENCIAS**, sin fuga demostrada (gate `INVARIANTE`, 40 huellas idénticas, `estado()` real con las 13
+  claves anteriores byte a byte iguales), tres bloqueantes atendidas (B1 corregida en código y test; B2 preflight de R4 en
+  la receta, corrido sobre HEAD el 11-oct 20:48: censo 33, TOELY dentro, gate `INVARIANTE`; B3 rojos retomados con el
+  archivo final). Lo que el auditor midió y queda en tarjeta §89: el raise de R4 se dispara contra el CENSO, y el censo
+  depende de `techo_usd` (bajo ~72 USD TOELY sale del censo); el riel de dinero no tiene vigía, así que una noche que
+  muera en el gate deja cero filas, cero intentos y cero divergencias. Receta de once puntos y predicción falsable en
+  `version_reglas_16_3.md`; quién y qué noche, tarjeta §89.
+- **D. Higiene de tests (R5 y hecho (ii) de §80, §102.2; §81.4 a, §102.6 (4)).** MEDIDO con un detector en un worktree sin
+  bases: el único creador de `senales.db` y `noticias.db` era `tests/test_api.py` (22 tests que pegan a la API, que corre
+  `init_db()` sobre la ruta real). Corrección: un fixture de módulo que apunta la API a copias en tmp de las bases reales
+  (por la API de respaldo de sqlite desde `mode=ro`) o a rutas temporales sin ellas. R5: `tests/bases_de_prueba.py::hay_filas`
+  en `mode=ro`, y **nueve archivos** saltan por «tabla con filas» y no por «archivo presente»: los seis con
+  `solo_con_base` (uno, `test_banco_clausulas.py`, no estaba en la lista del encargo), `test_importador_roundtrip.py` y
+  `test_restaurar_backup.py` (que con una base vacía dejada por otro test compararon 0 filas contra la restauración:
+  MEDIDO en el worktree), y las compuertas de cuerpo de `test_linea_base.py`, `test_epistemico.py` y
+  `test_segundo_sello.py` (B4 del auditor: una pasaba vacuamente, `0 >= 0`). Guarda permanente en `tests/conftest.py`: un
+  test que crea una base en la raíz o un archivo nuevo bajo `data/backups/` falla nombrándolo (inerte en el árbol real;
+  la segunda mitad nació de un hallazgo de esta corrida, 104.5 (1)); barrido que caza el patrón viejo en archivos nuevos.
+  §81.4 (a): test de integridad archivos → filas para la evidencia `.no_verificable` (hoy pasa vacío; muerde con el
+  primer disparo de timing roto en E0.3). Sólo tests: el sellador no se toca. `tests/test_api.py::test_paridad_roca_chip_contra_snapshot`
+  marcado `red` (B3 del auditor): MEDIDO que en HEAD puro y en el árbol real sin los cambios llega a Yahoo bajo `-m "not
+  red"`; en la suite completa lo tapaba la caché que calienta `test_envelope`. **Cobertura:** sin dictamen de auditor
+  (son tests y ayudas de test); el auditor A tocó la frontera (`conftest.py`, `bases_de_prueba.py`, `test_api.py`) por
+  B3 y B4; lo demás lo revisó el guardián, que lo juzga en verde.
+- **E. R9 (§102.2).** `app.py` captura el resultado del fallback del dashboard y, si trae `negativa`, deja en
+  `data/snapshot.log` el mismo bloque que deja el job (cabecera `snapshot.py (origen=dashboard, …)` y la línea fija de
+  `MARCA_NEGATIVA`), una vez por sesión del navegador; el parser REAL del vigía la lee como negativa y no como falla
+  (test). El vigía no se toca. Declarado: manda la última cabecera, como ya ocurría con una corrida manual. **Cobertura:**
+  sin dictamen de auditor (un bloque de `app.py` que no toca el sellado); lo revisó el guardián, que lo juzga en verde con
+  el riesgo declarado donde debe estar.
+- **F. `/sellos` (§81.6 a, §102.6 (6)).** Bloque «Intentos no verificables (E0.3)» dentro de la Card de E0: «intentos no
+  verificables: N; último: fecha, hora (Chile)» y `nota_intentos`; con una base anterior a E0.3 dice 0 sin error. `tsc`
+  limpio. Sin dictamen de auditor (es pantalla); lo revisa el guardián.
+
+**104.3. Método.** Tests escritos antes del código y corridos sobre HEAD puro (Bloque A: 24 rojos de 26, 3 por su propia
+aserción contra la API, el reporte y los consumidores, el resto por símbolo ausente; Bloque C: 10 rojos de 15; D y E, por
+símbolo ausente). Cuatro worktrees: trabajo (`wt163`), control HEAD puro (`wt163_ctrl`), diagnóstico (`wt163_diag`) y el
+parche de `dinero/` (`wt163_dinero`). Copia de `senales.db` al worktree denegada una vez; rigió §95.5: control HEAD puro
+19 failed, 1044 passed, 90 skipped, 1 xpassed, 6 errors; worktree con los cambios finales 19 failed, 1096 passed, 95
+skipped, 6 errors, con el conjunto de rojos igual al del control menos uno (el de las 228 filas, que ahora salta bien)
+más uno conocido (104.6 (2)). Un `rm` de dos archivos que mi test fugó al `data/backups/` del worktree fue denegado y no
+se rodeó. Cuatro dictámenes: dos del `auditor-lookahead` (A y C), uno del `curador-epistemico` y el del `guardian-constitucion`
+(`dictamen_16_3/guardian_cierre.md`, 21:24:08 → 21:59:45): **APROBADO CON EXIGENCIAS**, ninguna regla dura rota; dos
+bloqueantes atendidas antes del cierre (un rojo nuevo en `test_epistemico` por dos citas a `DECISIONES.md` por número de
+línea en documentos escritos DESPUÉS de la suite de las 21:09, corregidas a cita por sección, con la suite completa
+repetida sobre el estado final; y la lista del commit, que decía 50 rutas y son 57, con `data/sonda_cierre.csv`
+declarado como lo que es: no lo commitea el backup, y queda en la mano de Nicolás) y siete de registro (bitácora §8).
+Regla que el guardián deja escrita: un documento tocado después de la suite exige volver a correr los tests que lo leen,
+que se censan con `grep`, no de memoria; y el último Write de una corrida también necesita una suite.
+
+**104.4. Lo que los auditores midieron y queda abierto (no bloquea).** Z1 del auditor A: en los 67 snapshots con los dos
+instantes, `creado_en` es idéntico a `timestamp_utc`; ningún campo registra cuándo una fila se hizo visible, así que la
+regla de conocibilidad caza sólo la forma «disponibilidad declarada posterior al estampado» y es ciega a «estampado
+anterior al cómputo real» (el 6-ago). Z5: `analisis_puntaje_ia` es la única cifra publicada no invariante a truncar (los
+tercios son un ranking de la ventana); nunca puede ser un insumo. Z6: 32 filas del puntaje con `available_at ==
+timestamp_utc` siguen dentro por diseño. El predicado de conocibilidad vive en tres copias (R7); un ISO malformado en
+`available_at` mataría el reporte (R8, hoy 0 de 1.591). Hallazgo del lunes: tres pares de feriado (000660.KS, 005930.KS,
+2330.TW, emitidos el 8 y el 9-oct hacia la misma sesión del 12) entran a la ventana viva y la deduplicación los conserva
+(tarjeta §87). Del auditor C: el riel de dinero no tiene vigía; `motivo` de un intento pasa a ser un campo compuesto.
+
+**104.5. Hallazgos de paso, declarados.** (1) `respaldar_extension(ruta, destino=DIR_BACKUP_EXT)`: el valor por defecto se
+liga al importar; un test con `DIR_BACKUP_EXT` parchado que no pase `destino=` escribe en el `data/backups/` del árbol
+(ocurrió en el worktree de esta corrida, con mi test; el árbol real no lo recibió; la guarda nueva lo caza). (2)
+`api/CONTRATO.md` describía `evolucion` y `ultimas` con claves que la máquina nunca sirvió; declarado sin cambiar las
+claves. (3) Los tests que comparan la base real con la restauración saltaban por `isfile` y pasaban en falso con una base
+vacía. (4) `test_api.py::test_paridad_roca_chip_contra_snapshot` tocaba la red sin el marcador `red` cuando corría solo
+(preexistente). (5) `tesis.md` ofrecía una cifra retirada el 2-sep sin marca (preexistente; el árbitro de la suite no
+cubre ese archivo). (6) El guardián inventarió dos cifras retiradas preexistentes en `.py` que el diff no toca
+(`backtest/linea_base.py`, comentario histórico del `p` sin deduplicar; `tests/test_epistemico.py`, fixtures que prueban
+al árbitro): `cifras.DOCUMENTOS_PUBLICADOS` son cinco `.md`, así que el árbitro de la suite nunca mira un `.py` ni
+`backtest/`; una clase entera de archivos está fuera (hoy sólo el hook sobre el texto nuevo). Va a tarjeta en una corrida
+posterior; confirmar o cambiar esa lectura de la regla 10 es de Nicolás.
+
+**104.6. Errores del orquestador, escritos acá.** (1) El primer `pytest` de `test_api.py` en el worktree (19:53) corrió
+antes de escribir su fixture y dejó `senales.db` y `noticias.db` vacías en el worktree; eso convirtió en rojos 13 tests en
+la primera suite completa del worktree y llevó al hallazgo 104.5 (3). (2) Mi primer test sintético de huérfanos llamó
+`respaldar_extension(ruta)` sin `destino` y fugó dos archivos al `data/backups/` del worktree (104.5 (1)); el `rm` fue
+denegado y los archivos murieron con el worktree. (3) El primer barrido de higiene cazó su propio archivo. (4) Un test del
+parche de `dinero/` mezcló dos escenarios en una carpeta y se partió en dos. (5) Dos comandos compuestos fueron denegados
+enteros por una sola orden y sus correcciones se reaplicaron después. (6) La bitácora §2 afirmó que la regla se firmó
+«antes de mirar» la dirección del efecto, una frase sobre un estado mental que el auditor había desmentido en Z2; la
+cazó el curador. (7) `ESTADO.md` y la bitácora citaron esta acta antes de que existiera; la cazó el curador.
+
+**104.7. Predicciones falsables (lunes 12-oct-2026, `mode=ro`; consulta exacta en la bitácora §7).** Reporte de Telegram de
+las 18:25: N = 133 + k (k ≤ 7, las verificaciones de la sesión del 12-oct; k = 7 da 140), nunca 141 + k; cobertura del 80
+% con n ≥ 482; `/api/historial` con `metricas.n` igual, `evolucion` sin la fila del 28-sep, `ultimas` sin filas del 28-sep,
+`puntaje_ia.n` = 1288 + p con 0 invertidas dentro; las 8 filas del 28-sep siguen en `verificacion_apertura`, `verificada`;
+`/sellos` con «intentos no verificables: 0; último: ninguno» hasta el primer disparo con timing roto.
+
+**104.8. Lo que sigue abierto después de este acto.** El commit de la 16-3 (lista en la bitácora §9, 50 rutas); la lectura
+del lunes (§7) y la del martes (§103.6); las firmas de §82 a §89; la aplicación del parche de `dinero/` (§89); la cola de
+§102.2; E1 (§93.15); los commits sin pushear.

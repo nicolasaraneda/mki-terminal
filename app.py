@@ -8,7 +8,7 @@
 # ============================================================
 
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 import anthropic
 import pandas as pd
@@ -25,6 +25,7 @@ import motor
 import noticias
 import senales
 import snapshot as snapshot_mod
+from backtest import linea_base as lb  # fuente única de las cifras publicadas (acta §93.4, corrida 16-3)
 from universo import (ACCIONES, BENCHMARK, DEFAULT, INDICES, MERCADOS_POR_ABRIR,
                       MONEDA_TICKER, NIVELES_CADENA, PARES_FX, PERIODOS,
                       TICKERS_POR_NIVEL, UNIVERSO, nombre)
@@ -828,8 +829,44 @@ if "verificacion_corrida" not in st.session_state:
     senales.verificar_pendientes()
     st.session_state.verificacion_corrida = True
 
+def _anotar_negativa_en_snapshot_log(resultado: dict, ruta_log: str, ahora_utc: datetime) -> bool:
+    """R9 del dictamen 16-1 (acta §102.2), corrida 16-3. Cuando el fallback de
+    abajo se niega a sellar POR REGLA (guarda (b) de §90.1 o guarda de frescura
+    de §93.8 b), snapshot.py declara la negativa con `print`, que acá cae en la
+    consola de Streamlit y no en `data/snapshot.log`, que es lo único que el
+    vigía lee: la negativa del dashboard era invisible para él. Esta función
+    deja en ese log el MISMO bloque que deja el job (una cabecera
+    `snapshot.py (origen=…)`, que es lo que el vigía usa para encontrar la
+    última corrida, y la línea fija de `MARCA_NEGATIVA`), con los campos del
+    resultado. tests/test_fallback_dashboard_16_3.py la lee con el parser real
+    del vigía. Devuelve True si escribió."""
+    codigo = resultado.get("negativa")
+    if not codigo:
+        return False
+    fecha = resultado.get("fecha") or date.today().isoformat()
+    bloque = (f"[{ahora_utc.isoformat()}] snapshot.py (origen=dashboard, modelo={MODELO_VERSION}, "
+              f"plataforma={snapshot_mod.PLATAFORMA_VERSION}) [fallback del dashboard, app.py]\n"
+              f"  {snapshot_mod.MARCA_NEGATIVA} [{codigo}] fecha={fecha} "
+              f"sox_fecha={resultado.get('sox_fecha')}: {resultado.get('motivo')}\n")
+    with open(ruta_log, "a", encoding="utf-8") as f:
+        f.write(bloque)
+    return True
+
+
 if not senales.ya_existe_snapshot_hoy():
-    snapshot_mod.ejecutar_snapshot("dashboard")
+    _resultado_fallback = snapshot_mod.ejecutar_snapshot("dashboard")
+    # R9 (corrida 16-3): la negativa declarada llega a snapshot.log UNA vez por
+    # sesión del navegador (Streamlit vuelve a correr este archivo en cada
+    # interacción y, mientras no haya sello, reintenta el fallback cada vez).
+    if _resultado_fallback.get("negativa") and "negativa_anotada" not in st.session_state:
+        st.session_state.negativa_anotada = True
+        try:
+            _anotar_negativa_en_snapshot_log(
+                _resultado_fallback,
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "snapshot.log"),
+                datetime.now(timezone.utc))
+        except OSError as e:
+            st.caption(f"la negativa del fallback no pudo anotarse en snapshot.log: {e}")
 
 # Alertas Telegram automáticas (1x por sesión; sin configurar, no hace nada;
 # el registro anti-duplicados evita repetir la misma alerta entre sesiones).
@@ -911,7 +948,7 @@ else:
                               "analiza noticias en la pestaña IA"))
 
 if seccion == "Hoy":
-    metricas_ap_hero = senales.metricas_apertura(dias=30)
+    metricas_ap_hero = lb.metricas_apertura(dias=30)
     if metricas_ap_hero["suficiente"]:
         tarjetas.append(_tarjeta(
             "Track record gap (30d)",
@@ -1416,7 +1453,7 @@ if seccion == "Aperturas":
                        f"Se usa el último movimiento real, del {ult_fecha_apertura}.")
 
         # Badge de calibración: qué dice el verificador sobre los intervalos.
-        calib = senales.calibracion_intervalos()
+        calib = lb.calibracion_intervalos()
         if calib["suficiente"]:
             st.markdown(badge(
                 f"CALIBRACIÓN: {calib['cobertura_pct']:.0f}% de los gaps reales "
@@ -1580,7 +1617,7 @@ if seccion == "Historial":
         "la 4.6 quedó como legacy. Las métricas nunca mezclan versiones del modelo. "
         "Con pocas observaciones se dice 'datos insuficientes' — nada se inventa.")
 
-    metricas_ap = senales.metricas_apertura(dias=30)
+    metricas_ap = lb.metricas_apertura(dias=30)
     tarjetas_hist = []
     if metricas_ap["suficiente"]:
         g, r = metricas_ap["gap"], metricas_ap["retorno_sesion"]
@@ -1598,7 +1635,7 @@ if seccion == "Historial":
             f"{metricas_ap['n']} evaluada(s) — mínimo {senales.MINIMO_OBSERVACIONES}"))
         tarjetas_hist.append(_tarjeta(
             "Aciertos RETORNO de sesión (30d)", "—", "", "datos insuficientes"))
-    calib_h = senales.calibracion_intervalos()
+    calib_h = lb.calibracion_intervalos()
     if calib_h["suficiente"]:
         tarjetas_hist.append(_tarjeta(
             "Cobertura del intervalo 80%", f"{calib_h['cobertura_pct']:.0f}%",
@@ -1615,7 +1652,7 @@ if seccion == "Historial":
         "operable si el gap ya se comió todo el movimiento.")
 
     st.subheader("Evolución del % de aciertos en el tiempo")
-    evolucion = senales.evolucion_aciertos_apertura()
+    evolucion = lb.evolucion_aciertos_apertura()
     if len(evolucion) < 2:
         st.info("Todavía no hay suficientes días verificados para graficar una tendencia.")
     else:
@@ -1628,7 +1665,7 @@ if seccion == "Historial":
                          legend_title=None)
 
     st.subheader("Últimas predicciones vs. realidad")
-    ultimas = senales.ultimas_predicciones_apertura(limite=50)
+    ultimas = lb.ultimas_predicciones_apertura(limite=50)
     if ultimas.empty:
         st.info("Todavía no hay predicciones verificadas con el modelo actual "
                 f"(v{MODELO_VERSION}). El track record limpio empieza a acumularse "
@@ -1658,7 +1695,7 @@ if seccion == "Historial":
     st.caption(
         "Compara el retorno real de los 5 días hábiles siguientes a la señal entre "
         "el tercio de acciones con MEJOR Puntaje IA y el tercio con PEOR Puntaje IA.")
-    analisis_pi = senales.analisis_puntaje_ia(dias=90)
+    analisis_pi = lb.analisis_puntaje_ia(dias=90)
     if not analisis_pi["suficiente"]:
         st.info(f"Datos insuficientes: solo {analisis_pi['n']} observación(es) verificada(s) "
                 f"— se necesitan al menos {senales.MINIMO_OBSERVACIONES}.")

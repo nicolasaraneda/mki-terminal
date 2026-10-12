@@ -1,0 +1,23 @@
+instante UTC: 2026-10-11T22:53:46.646792+00:00 | lb desde /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/backtest/linea_base.py
+
+metricas_apertura(30) NUEVA: {"suficiente": true, "n": 141, "gap": {"pct_aciertos": 63.8, "mae_pp": 4.07}, "retorno_sesion": {"pct_aciertos": 67.4, "mae_pp": 2.31}}
+calibracion NUEVA: {"suficiente": true, "n": 482, "cobertura_pct": 93.6}
+evolucion NUEVA: fechas 63 N total 482 | columnas ['Fecha', '% Aciertos gap', '% Aciertos sesión', 'N'] | dtypes ['str', 'float64', 'float64', 'int64']
+ultimas(50) NUEVA: 50 2026-09-30 .. 2026-10-08 | ultimas(100): 100 2026-09-18 .. 2026-10-08 | columnas ['Fecha', 'Ticker', 'Estimado %', 'Gap real %', 'Sesión real %', 'Acierto gap', 'Acierto sesión', 'Sesión objetivo', 'Emitida (UTC)']
+detalle NUEVA: n 482 aciertos gap 316 | por exchange {'XETR': 62, 'XKRX': 116, 'XTAI': 59, 'XTKS': 245} | columnas ['fecha_senal', 'ticker', 'acierto_gap', 'acierto_direccion', 'error_gap_pp', 'gap_pct', 'apertura_estimada_pct', 'exchange', 'intervalo80_pp', 'regimen']
+puntaje NUEVA: {"suficiente": true, "n": 1308, "retorno_tercio_alto": 0.31, "retorno_tercio_bajo": 1.58, "correlacion": -0.07} | datos columnas ['puntaje', 'retorno']
+ultimas(100): orden nuevo == orden viejo sin invertidas: True
+detalle: orden nuevo == orden viejo sin invertidas: True
+
+metricas VIEJA: {"suficiente": true, "n": 149, "gap": {"pct_aciertos": 62.4, "mae_pp": 3.95}, "retorno_sesion": {"pct_aciertos": 65.1, "mae_pp": 2.31}}
+
+=== deduplicación firmada aplicada a las cifras vivas (informativo, tarjeta) ===
+filas que la regla retira en toda la historia: 10 | fechas: ['2026-07-29', '2026-08-03']
+calibracion n hoy 482 -> con dedup 472
+detalle n hoy 482 -> con dedup 472
+metricas(30) n hoy 141 -> con dedup 141
+detalle acierto gap % hoy 65.6 -> con dedup 66.3
+
+lunes 12-oct, ventana >= 2026-09-12, SIN las verificaciones nuevas del lunes: n 133 gap 67.7 mae 4.04 sesion 70.7 2.2
+pendientes hoy (candidatas a verificarse el lunes 18:15): 11 [('2026-10-08', '000660.KS', '2026-10-12', 'XKRX'), ('2026-10-08', '005930.KS', '2026-10-12', 'XKRX'), ('2026-10-08', '2330.TW', '2026-10-12', 'XTAI'), ('2026-10-09', '000660.KS', '2026-10-12', 'XKRX'), ('2026-10-09', '005930.KS', '2026-10-12', 'XKRX'), ('2026-10-09', '2330.TW', '2026-10-12', 'XTAI'), ('2026-10-09', '3436.T', '2026-10-13', 'XTKS'), ('2026-10-09', '4063.T', '2026-10-13', 'XTKS'), ('2026-10-09', '6857.T', '2026-10-13', 'XTKS'), ('2026-10-09', '8035.T', '2026-10-13', 'XTKS'), ('2026-10-09', 'IFX.DE', '2026-10-12', 'XETR')]
+fechas de señal pendientes: ['2026-10-08', '2026-10-09']

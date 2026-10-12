@@ -37,9 +37,9 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-1025%20recolectados%20al%202026--09--29-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-1216%20recolectados%20al%202026--10--11-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
-![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--09--29-22d3ee?style=flat-square)
+![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--10--11-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)
@@ -388,21 +388,29 @@ awaits the trigger (N ≥ 150 live verifications and a regime change, or
 
 ## Execution rail (paper only)
 
-- **E0 in progress** (since 2026-09-08) — on NYSE trading nights the machine
-  emits and seals a decision for the next open with nominal size zero,
-  driven by a no-information random draw (labelled “machinery test, not a
-  track record”). A sealed session counts towards N = 40 only
-  if it was sealed on time, on a trading day, with complete and fresh
-  input; nights get missed (a paused machine, an incomplete input) and a
-  missed night is never recovered. This page carries no running count: the sealed rows live in
+- **E0 in progress** (since 2026-09-08) — On trading nights when the machine
+  is awake, it emits and seals. What it seals is a decision for the next NYSE
+  open with nominal size zero, driven by a no-information random draw
+  (labelled “machinery test, not a track record”). A sealed session counts
+  towards N = 40 only if it was sealed on time, on a trading
+  day, with complete and fresh input; nights get missed (a paused machine, an
+  incomplete input, or a power cut, the last one deduced from the journal for
+  the night of 2026-10-06, minutes §99.1) and a missed night is never
+  recovered. Universe of the input: from the session of 2026-10-05, TOELY is
+  out of the input, with no substitute and no return even if the source serves
+  it again (minutes §95.4; the source stopped serving that ADR after
+  2026-09-24, and it had already arrived a day late on 2026-09-18 and
+  2026-09-23, minutes §96.3). Rows sealed before and after that session are
+  told apart by `reglas_sha256` in each row. This page carries no running
+  count: the sealed rows live in
   [`data/backups/sello_dinero.csv`](data/backups/sello_dinero.csv), the
   exported copy of the sealing database that the daily backup job versions.
 - **E1 not executed** — broker paper account. Exit condition: the machine
   sends an order and reads back its own execution through the official
-  API in the same cycle. No gateway exists yet and no order has ever been
-  sent; the practice user is pending activation (minutes §91.9, 2026-09-29);
-  the adapter refuses in code to connect to anything that is not a paper
-  account, and a test proves it.
+  API in the same cycle. The IBKR account is approved and verified, and the
+  paper-trading user exists; the gateway is not set up yet. No order has
+  ever been sent; the adapter refuses in code to connect to anything that is
+  not a paper account, and a test proves it.
 - **E2 not started** — real capital, minimum size, only after E0 and E1
   and only against a pre-registered yardstick. No real money is traded.
   Not financial advice.

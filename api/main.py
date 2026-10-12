@@ -23,6 +23,10 @@ import noticias
 import senales
 from api.utilidades import (Z_POR_NOMINAL, cache_ttl, dias_a_proximos_earnings,
                             intervalo_wilson, ohlc_1y, serie_a_lista)
+# Corrida 16-3 (acta §93.4): las cifras publicadas de acierto salen de la
+# fuente única de la capa de medición, que excluye las filas con
+# available_at > timestamp_utc; senales.py sigue para lo demás.
+from backtest import linea_base as lb
 from universo import (ACCIONES, BENCHMARK, EXCHANGE_POR_TICKER, MERCADOS_POR_ABRIR,
                       MONEDA_TICKER, NIVELES_CADENA, TICKERS_POR_NIVEL, UNIVERSO,
                       nombre)
@@ -533,7 +537,7 @@ def hoy():
                              if p["exchange"] == proxima["exchange"]],
         }
 
-    metricas_tr = senales.metricas_apertura(dias=30)
+    metricas_tr = lb.metricas_apertura(dias=30)
     return _envuelve({
         "regimen": regimen,
         "roca_chip": roca,
@@ -558,7 +562,7 @@ def aperturas():
                       if sox else None),
         "ventana_betas": motor.VENTANA_BETAS_DEFAULT,
         "calibracion": {"minimo": senales.MINIMO_OBSERVACIONES,
-                        **senales.calibracion_intervalos()},
+                        **lb.calibracion_intervalos()},
         "predicciones": _predicciones_enriquecidas(),
     })
 
@@ -755,9 +759,10 @@ REGION_POR_EXCHANGE = {"XKRX": "Corea", "XTKS": "Japón", "XTAI": "Taiwán",
 def _estadistica_track_record() -> dict:
     """Presentación 5.0 sobre las verificaciones limpias: intervalos de
     Wilson, curva de calibración (re-escala del sigma sellado) y desgloses
-    por región/régimen. Los datos vienen del helper de senales.py; aquí
-    solo se agrupa y se calcula incertidumbre de PRESENTACIÓN."""
-    df = senales.verificaciones_detalle()
+    por región/régimen. Los datos vienen de la fuente única de la capa de
+    medición (backtest.linea_base, corrida 16-3); aquí solo se agrupa y se
+    calcula incertidumbre de PRESENTACIÓN."""
+    df = lb.verificaciones_detalle()
     if df.empty:
         return {"wilson": None, "calibracion_curva": None,
                 "por_region": [], "por_regimen": []}
@@ -803,8 +808,8 @@ def _estadistica_track_record() -> dict:
 
 @app.get("/api/historial")
 def historial():
-    evolucion = senales.evolucion_aciertos_apertura()
-    ultimas = senales.ultimas_predicciones_apertura(limite=100)
+    evolucion = lb.evolucion_aciertos_apertura()
+    ultimas = lb.ultimas_predicciones_apertura(limite=100)
     estados = senales.conteo_por_estado()
     snapshots = senales.historial_snapshots(60)
 
@@ -820,15 +825,15 @@ def historial():
         conn.close()
     return _envuelve({
         "metricas": {"minimo": senales.MINIMO_OBSERVACIONES,
-                     **senales.metricas_apertura(dias=30)},
+                     **lb.metricas_apertura(dias=30)},
         "calibracion": {"minimo": senales.MINIMO_OBSERVACIONES,
-                        **senales.calibracion_intervalos()},
+                        **lb.calibracion_intervalos()},
         "evolucion": evolucion.to_dict(orient="records"),
         "ultimas": ultimas.to_dict(orient="records"),
         "estados": estados.to_dict(orient="records"),
         "snapshots": snapshots.to_dict(orient="records"),
         "puntaje_ia": {
-            k: v for k, v in senales.analisis_puntaje_ia(dias=90).items()
+            k: v for k, v in lb.analisis_puntaje_ia(dias=90).items()
             if k != "datos"},
         "primera_verificacion_posible": fila[0] if fila else None,
         "pendientes_en_maduracion": fila[1] if fila else 0,

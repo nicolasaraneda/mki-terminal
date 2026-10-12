@@ -40,6 +40,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 
 import restaurar_backup as rb  # noqa: E402
+from bases_de_prueba import hay_filas  # noqa: E402  (corrida 16-3, R5: la base con filas, no el archivo)
 
 ORIGEN = os.path.join(RAIZ, "data", "backups")
 SENALES_REAL = os.path.join(RAIZ, "senales.db")
@@ -67,9 +68,13 @@ COLUMNA_INSTANTE: dict[str, str] = {
 
 SURROGADOS = {"id"}
 
+# Corrida 16-3 (R5 del dictamen 16-1): la condición es «la base real tiene filas
+# selladas», no «el archivo existe». Un archivo vacío que otro test dejó en la
+# raíz (medido el 11-oct-2026: `tests/test_api.py` creaba uno por `init_db()`)
+# hacía que estos tests compararan una base vacía contra la restauración.
 requiere_base_real = pytest.mark.skipif(
-    not os.path.isfile(SENALES_REAL),
-    reason="senales.db no existe en este checkout — exactamente el escenario "
+    not hay_filas(SENALES_REAL, "senales_ticker"),
+    reason="senales.db sin filas selladas en este checkout — exactamente el escenario "
            "de 'se perdió el disco', no hay contra qué comparar",
 )
 
@@ -201,8 +206,8 @@ def restauracion(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def resultados(restauracion):
-    if not os.path.isfile(SENALES_REAL):
-        pytest.skip("senales.db no existe en este checkout")
+    if not hay_filas(SENALES_REAL, "senales_ticker"):
+        pytest.skip("senales.db sin filas selladas en este checkout")
     conn_real = _abrir_ro(SENALES_REAL)
     conn_rest = _abrir_ro(restauracion)
     try:

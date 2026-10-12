@@ -2245,9 +2245,9 @@ causa: que fue una suspensión del host es testimonio de Nicolás (acta §91.5),
 | # | job (OnCalendar, `Persistent`) | 1. qué hizo el 28-sep a las 14:42 | a su hora normal | 2. guarda al cerrar la corrida 15 | 3. costo MEDIDO (n = 1) | 4. recomendación del agente |
 |---|---|---|---|---|---|---|
 | 1 | `mki-noticias` (`Mon..Fri 17:50 America/Santiago`, true) | RSS: 286 titulares; 1 llamada IA rechazada (400 crédito); 0 USD | 96 titulares; misma falla; 0 USD | **ninguna de ventana**; tope diario 0,50 USD con freno entre lotes + timeout de red | 0 USD, nada publicado, nada perdido | (iii) nada para la ventana; el problema del job es otro (E.1) |
-| 2 | `mki-snapshot` (`Mon..Fri 18:15`, true) | **selló** 24 filas con barra intradía; `roca_chip` 44; `available_at` 2 h 17 min posterior a la emisión | «ya existe snapshot de hoy»; no re-sella | **PLANIFICADO**: (b) se niega si `available_at > emisión`; (a) verificador marca; (d) medición excluye; [el ancla de §90.2 quedó DETENIDA: las dos anclas difieren en 33 filas, tarjeta §71] | 24 filas selladas con insumo no reproducible; sesión del 28 sin sello con cierre; publicadas por reporte y API | (i) exactamente como está firmada: sin margen, sin reloj de pared; frescura y fin de semana como decisión aparte (D) |
+| 2 | `mki-snapshot` (`Mon..Fri 18:15`, true) | **selló** 24 filas con barra intradía; `roca_chip` 44; `available_at` 2 h 17 min posterior a la emisión | «ya existe snapshot de hoy»; no re-sella | **PLANIFICADO**: (b) se niega si `available_at > emisión`; (a) verificador marca; (d) medición excluye; [el ancla de §90.2 quedó DETENIDA: las dos anclas difieren en 33 filas, tarjeta §71] | 24 filas selladas con insumo no reproducible; sesión del 28 sin sello con cierre; publicadas por reporte y API | (i) exactamente como está firmada: sin margen, sin reloj de pared; frescura y fin de semana como decisión aparte (D) [§72 FUNDIDA acá por §93.12: la guarda (b) es necesaria y no suficiente; H0 (fuente atrasada) la cierra la guarda de frescura de §93.8 b, aplicada el 10-oct-2026; H2 (`^SOX` sin barra) y D.2 (fin de semana) siguen sin firmar] |
 | 3 | `mki-reporte` (`Mon..Fri 18:25`, true) | reporte de 400 caracteres con huecos declarados, 3,4 s antes del sello | 831 caracteres desde el sello de las 13:42 NY: «sellado 14:42 Chile», SOX −1,63, Roca→Chip 44 | **ninguna**; sin anti-duplicados por diseño | 2 mensajes en Telegram: 1 de ruido, 1 con cifras de barra parcial; nada perdido | (ii) marcar: el mismo mensaje con la línea «disparo fuera de hora» |
-| 4 | `mki-backup` (`Mon..Fri 18:40`, true) | commit `5321f6b` «Backup diario 2026-09-28» **sin nada del 28** | `f7b65e0`, 9 archivos, con la matriz de media sesión | **APLICADO** §90.8: se niega si el snapshot del día no está sellado o si `snapshot.py` está vivo; [fin de semana y día sin sello final: commitea, elección de agente, tarjeta §70] | 1 commit con nombre que no describe su contenido; nada perdido | (i) como está firmada; en fin de semana la misma regla (posterga, no pierde) [la corrida implementó lo contrario: §70] |
+| 4 | `mki-backup` (`Mon..Fri 18:40`, true) | commit `5321f6b` «Backup diario 2026-09-28» **sin nada del 28** | `f7b65e0`, 9 archivos, con la matriz de media sesión | **APLICADO** §90.8: se niega si el snapshot del día no está sellado o si `snapshot.py` está vivo; [fin de semana y día sin sello final: commitea, elección de agente, tarjeta §70] | 1 commit con nombre que no describe su contenido; nada perdido | (i) como está firmada; en fin de semana la misma regla (posterga, no pierde) [la corrida implementó lo contrario: §70] [§70 FUNDIDA acá por §93.12; sus tres elecciones son firma de §93.10: commitea el día hábil sin sello pasadas las 18:15 sin `snapshot.py` vivo, commitea en fin de semana, y con `snapshot.py` vivo nunca] |
 | 5 | `mki-vigia` (`Mon..Fri 19:00`, true) | 4 FALLA + 2 OK (uno sostenido por el commit prematuro); alerta enviada; retractada por snapshot.py 11 s después | todo OK, incluida el ancla temporal sobre las 8 filas invertidas | sólo exención de fin de semana; **no se toca en esta corrida** (tarjeta: `av == ts` Y `av > ts`) | 1 alerta falsa + 1 retractación; nada perdido | (ii) marcar «pase fuera de hora», en la misma tanda que `av == ts`; **no** (i): un vigía que calla por una guarda mal escrita es el peor falso negativo de la tabla |
 | 6 | `mki-vigia-rechequeo` (`Mon..Fri 20:30`, true) | nada: corrió 2 s antes del marcador | nada: el marcador ya estaba consumido | por construcción sólo actúa con marcador de HOY | 0 | (ii) que el texto use la hora real y no el literal `20:30`, al tocar el vigía |
 | 7 | `mki-sonda-cierre` (`Mon..Fri 20..23:05,35` + `Tue..Sat 00..03:05,35 America/New_York`, **false**) | 36 filas a las 13:42 NY, bolsa abierta; el lector las descarta y declara | 8 pases normales | job: ninguna; lector: descarta sólo «antes del cierre»; **no se toca en esta corrida** | 36 filas pre-cierre (28) descartadas + **36 post-cierre fuera de grilla (29) que el lector NO descarta** | (ii) el lector rotula y excluye «fuera de grilla», corrida 16; `regla_58.md` lo dice desde esta noche |
@@ -2592,7 +2592,9 @@ sellado a las 13:42), `roca_chip` habría quedado sellado con el artefacto. `mot
 
 ---
 
-## 69. La skill `gate` sigue importando `scipy` y `sklearn`: la edición la denegó el clasificador de permisos (corrida 15)
+## 69. La skill `gate` sigue importando `scipy` y `sklearn`: la edición la denegó el clasificador de permisos (corrida 15) — **FUNDIDA (acta §93.12, 4-oct-2026): pierde su tarjeta propia; la línea propuesta en `GEMELO/propuestas/skills/gate_gate_de_entorno.md` sigue abierta y la aplica Nicolás a mano**
+
+> **FUNDIDA (§93.12, aplicado en la corrida 16-3):** el texto se conserva porque el acta §92 y la bitácora 15 lo citan; no es decisión pendiente de esta cola.
 
 **El hecho.** El acta §91.4 firmó la deuda (5) de la corrida 14. El 29-sep a las 22:26 el orquestador
 intentó la edición de una línea en `.claude/skills/gate/SKILL.md` y la herramienta `Edit` fue
@@ -2609,7 +2611,9 @@ por diseño. **No se eligió nada.**
 
 ---
 
-## 70. `mki_backup.py`: qué hace un día de semana sin sello cuando ya no puede llegar, y en fin de semana (corrida 15)
+## 70. `mki_backup.py`: qué hace un día de semana sin sello cuando ya no puede llegar, y en fin de semana (corrida 15) — **FUNDIDA en la fila 4 de la tarjeta §66 por el acta §93.12; sus tres elecciones de agente quedaron FIRMADAS en §93.10**
+
+> **FUNDIDA (§93.12, aplicado en la corrida 16-3):** las tres elecciones (commitear el día hábil sin sello pasadas las 18:15 sin `snapshot.py` vivo; commitear en fin de semana; regla 0, con `snapshot.py` vivo nunca) son firma de Nicolás (§93.10). El texto se conserva porque el acta §92, la bitácora 15 y `ESTADO.md` lo citan.
 
 **Lo firmado (§90.8).** El backup se niega a commitear si el snapshot del día no está sellado, y lo
 registra en su log. Aplicado en la corrida 15 con una función pura de cinco ramas y 83 casos de test
@@ -2701,7 +2705,9 @@ candidata del retador. **No se eligió nada; la línea 163 no se tocó.**
 
 ---
 
-## 72. La guarda (b) es necesaria y no suficiente: fuente atrasada, `^SOX` sin barra, fin de semana (corrida 15)
+## 72. La guarda (b) es necesaria y no suficiente: fuente atrasada, `^SOX` sin barra, fin de semana (corrida 15) — **FUNDIDA en la fila 2 de la tarjeta §66 por el acta §93.12; H0 cerrada por la guarda de frescura (§93.8 b, corrida 16-1)**
+
+> **FUNDIDA (§93.12, aplicado en la corrida 16-3):** de los tres huecos, H0 (fuente atrasada) lo cierra la guarda de frescura aplicada el 10-oct-2026 (acta §100.2 A); H2 (`^SOX` sin barra con las acciones ya con barra) y D.2 (fin de semana) siguen sin firmar y viven en la fila 2 de §66. El texto se conserva porque el acta §92 y la bitácora 15 lo citan.
 
 **Lo firmado y aplicado (§90.1 b):** `snapshot.py` se niega a sellar si `available_at > emisión`
 (la sesión de `sox_fecha` no cerró). Rechaza exactamente el caso del 28-sep y ninguno de los 45
@@ -2782,7 +2788,9 @@ parte de `verificacion_puntaje`.
 
 ---
 
-## 74. `mki-noticias` no analiza nada desde el 7-sep-2026: la API de Anthropic rechaza cada llamada por falta de crédito, y todo dice «ok» (corrida 15)
+## 74. `mki-noticias` no analiza nada desde el 7-sep-2026: la API de Anthropic rechaza cada llamada por falta de crédito, y todo dice «ok» (corrida 15) — **FUNDIDA (acta §93.12): sale de esta cola y queda en el «Primero» de `ESTADO.md`; RESUELTA de hecho: crédito repuesto el 4-oct (§93.2), análisis retomado el 5-oct (§99.1), y el ledger distingue el error desde la 16-1 (§93.3 ii, §100.2 D)**
+
+> **FUNDIDA (§93.12, aplicado en la corrida 16-3):** la opción (a) la ejecutó Nicolás el 4-oct-2026 (10 USD; del 5 al 9-oct, entre 998 y 1.020 analizados por día bajo el tope, pendientes de 4.289 a 340, acta §99.1) y la (b) la aplicó la corrida 16-1. El texto se conserva porque el acta §92 y la bitácora 15 lo citan.
 
 **MEDIDO** (inventario del bloque 5 y verificado por el orquestador): `data/noticias.log` tiene **17**
 líneas «análisis falló en el lote 1: Error code: 400 … Your credit balance is too low to access the
@@ -3024,7 +3032,7 @@ declaradas en el acta §96; la regla no se edita. **Sigue sin elegirse nada.**
 
 ---
 
-## 80. Las elecciones de agente de la corrida 16-1 (vigía y riel de medición), a ratificar
+## 80. Las elecciones de agente de la corrida 16-1 (vigía y riel de medición), a ratificar — **FIRMADA el 11-oct-2026 (acta §102.1: 1 a, 2 a, 3 a, 4 a, 5 b, 6 a; destino de las recomendadas sin dueño en §102.2)**
 
 **Contexto (bitácora 16-1, 10-oct-2026):** los cuatro bloques firmados en §93.8 (b) y (d), §93.9, §95.2 R2/R3 y §93.3 (ii)
 se construyeron según su letra; donde la letra dejaba una elección, el agente eligió, lo declaró en código y acá lo pone
@@ -3091,7 +3099,7 @@ medición que no aparecen en la línea base): hay un test que escribe DDL en `se
 
 ---
 
-## 81. Tras rebasar el camino T de §62 sobre el sellador de la 16b (corrida 16-2): la aplicación, la otra forma del disparo de recuperación, las tres recomendadas del auditor que no se plegaron, y la pantalla
+## 81. Tras rebasar el camino T de §62 sobre el sellador de la 16b (corrida 16-2): la aplicación, la otra forma del disparo de recuperación, las tres recomendadas del auditor que no se plegaron, y la pantalla — **FIRMADA el 11-oct-2026 (acta §102.6, todas como recomienda la tarjeta; aplicada a mano por Nicolás a las 17:49:31 del mismo día, acta §103)**
 
 **Contexto (bitácora 16-2, 11-oct-2026):** tres parches listos en `GEMELO/propuestas/parches/`, en este orden:
 `camino_T_16_2.diff` (el camino T de §62 con las cuatro decisiones del implementador de la 15, B1/R2/R3/R4/R5 de ese
@@ -3154,3 +3162,174 @@ desde E0.3 decide tabla, nombre de archivo y ocupación de la fecha (zona ciega 
 error conservador se ve, el inverso (dato completo publicado tarde) no.
 
 **No se eligió nada.**
+
+---
+
+## 82. Las cifras vivas publicadas ya salen de la fuente única, SIN la deduplicación firmada; y las seis funciones de `senales.py` quedan sin consumidor (corrida 16-3)
+
+**Lo aplicado (§93.4, §93.4-bis ii, §99.6; corrida 16-3, 11-oct-2026):** el reporte de Telegram, la API y el dashboard leen
+`metricas_apertura`, `calibracion_intervalos`, `evolucion_aciertos_apertura`, `ultimas_predicciones_apertura`,
+`verificaciones_detalle` y `analisis_puntaje_ia` de `backtest/linea_base.py`, que retira las filas con `available_at >
+timestamp_utc`. **MEDIDO sobre la base real (11-oct, `mode=ro`):** la única diferencia con las consultas viejas son las 8
+filas verificadas del 28-sep-2026: track record 30 d n 149 → 141 (gap 62,4 % → 63,8 %, MAE 3,95 → 4,07 pp), calibración
+490 → 482 (93,5 % → 93,6 %), evolución 64 → 63 fechas, detalle 490 → 482, `analisis_puntaje_ia` sin cambio (n = 1.308).
+`ultimas` (límite 100) retira las 8 y, por el `LIMIT` fijo, admite las 8 más antiguas siguientes.
+**Dirección del efecto, declarada completa (R6 del auditor, MEDIDO):** de las 8, el modelo acertaba 3 en gap (37,5 %)
+y 2 en sesión (25 %), así que la exclusión sube el acierto vivo (+1,4 pp gap, +2,3 pp sesión); pero el MAE del gap
+EMPEORA (3,95 → 4,07 pp: las 8 tenían MAE 1,81 pp, mejor que la ventana), que no es lo que haría una regla construida
+para favorecer al campeón. Y el 37,5 % es ruido de un día: 17 de los 56 días con n ≥ 8 están en o bajo esa tasa
+(distribución diaria: mediana 75 %; el p25 va de 34 % a 38 % según el método de cuantil, `linear` o `higher`),
+`P(≤3 aciertos en 8 | p = 0,624) = 0,139` (0,1388 recomputado por el curador). Orden de método, DECLARADO en el acta
+§90.1 d: la regla se firmó por su mérito el 29-sep a las 18:29 y no por la magnitud del daño. Zona ciega Z2 del auditor,
+DECLARADA: la firma es 14 minutos posterior a que el verificador escribiera las 8 filas, con la magnitud a la vista en la
+bitácora 14 §9, así que la dirección del efecto era computable al redactar; no es demostrable en ninguna dirección.
+
+**Dos elecciones del agente, a ratificar.**
+
+1. **La deduplicación firmada el 1-sep (`deduplicar_por_sesion`, `dedup=True` por defecto en `cargar()`) NO se aplica a
+   las cifras vivas.** **B1 del auditor, dicho sin rodeo:** la LETRA firmada de §93.4 dice «leen sus métricas de
+   `backtest/linea_base.py::cargar()`», y `cargar()` deduplica por defecto; aplicarla al pie de la letra habría movido el
+   n de las cifras de toda la historia por otra razón que la conocibilidad, que el encargo 16-3 §1 prohíbe. La corrida
+   resolvió la contradicción entre la firma y el encargo a favor del encargo, con `cargar_vivas()` (misma exclusión, sin
+   dedup), y lo pone acá para que Nicolás ratifique sabiendo que hubo contradicción. Hasta hoy tampoco se aplicaba (las
+   consultas de `senales.py` nunca dedupicaron). **Las dos reglas de higiene pendientes apuntan en la misma dirección**
+   (R6): la deduplicación también subiría la tasa de acierto del gap de TODA la historia viva (316/482 = 65,6 % → 313/472 =
+   66,3 %, +0,75 pp; sus 10 filas aciertan 3 de 10; no es la ventana sellada del README, que no mide esto); la razón es
+   estructural (una regla que retira filas selladas en condiciones anómalas retira días malos) y no es evidencia de
+   nada, pero queda escrito antes de que alguien lo encuentre. Dato que la tarjeta no traía: `auditar_dedup` cuenta
+   además 23 filas SIN pareja cuya `sesion_objetivo` no calza con su `available_at` (33 que no calzan en total); la regla
+   firmada no las toca por diseño y siguen dentro de las cifras publicadas (es la rama «+ coherencia» de
+   `cola_decisiones.md` §2a-ter, sin firmar). **MEDIDO:** la regla retiraría 10 filas de
+   toda la historia (fechas 2026-07-29 y 2026-08-03), 0 en la ventana de 30 días: calibración 482 → 472, detalle
+   482 → 472 (acierto del gap 65,6 % → 66,3 %), track record 30 d 141 → 141. Un test fija lo declarado
+   (`test_la_deduplicacion_firmada_no_se_aplica_a_las_cifras_vivas_y_queda_declarada`) y cambia con la firma, no antes.
+   (a) Ratificar: las cifras vivas sin deduplicar, declarado en el comentario del módulo y en `api/CONTRATO.md`; (b)
+   aplicar también la deduplicación a las cifras vivas, con acta (mueve las cifras de toda la historia y hace que la
+   capa de medición sirva un solo conjunto de filas para todo). **Recomendación etiquetada:** (a) ahora; (b) cuando se
+   revise la ventana sellada del README (`cifras.CORTE_README`), para mover las dos cosas en un solo acto. Lo que se
+   pierde con (a): la ventana sellada (deduplicada) y las cifras vivas (no) difieren en 10 filas de julio y agosto, como
+   difieren desde el 1-sep.
+2. **Las seis funciones de `senales.py` quedan sin consumidor publicado y NO se borran** (encargo §2.2). `senales.py`
+   está byte a byte igual a HEAD; un test fija que `alertas.py`, `api/main.py` y `app.py` no las llaman. (a) Dejarlas
+   así, con el test como marca; (b) borrarlas en una corrida posterior que ya toque `senales.py` con firma (camino de
+   sellado: test de reproducción, worktree, auditor). **Recomendación etiquetada:** (b), de paso, la próxima vez que
+   `senales.py` se toque con firma; nunca como corrida propia.
+
+**Declarado de paso (sin decisión).** (i) `api/CONTRATO.md` describía `evolucion` y `ultimas` con claves en minúscula que
+la máquina nunca sirvió (sirve `Fecha`, `% Aciertos gap`, …, y el frontend las consume así); la enmienda 16-3 lo deja
+escrito sin cambiar las claves. (ii) **R7:** el predicado de conocibilidad vive ahora en TRES copias (los dos
+verificadores de `senales.py` y `lb.sin_conocibilidad`); el auditor las comparó con seis casos (NULL, uno de los dos NULL,
+igualdad, naive como UTC, offset `-03:00`, cadena vacía) y son idénticas, pero una deriva entre el escritor y el medidor
+sería invisible; R1 de la 16a ya pedía una sola (toca `senales.py`, camino de sellado: con firma). (iii) **R8:**
+`lb._instante_utc` revienta con un ISO malformado; antes las cifras publicadas sumaban columnas sin parsear, ahora un
+`available_at` ilegible en cualquier fila mata el reporte, la ruta de la API y la vista. `snapshot.py` escribe con
+`isoformat()` y hoy 0 de 1.591 filas son ilegibles; queda declarado como acoplamiento nuevo, sin cambiar la función (la
+usa también el árbitro). (iv) **Hallazgo del lunes (auditor):** Seúl y Taipéi cerraron el viernes 9-oct, así que las
+emisiones del 8 y del 9-oct de 000660.KS, 005930.KS y 2330.TW apuntan a la MISMA sesión objetivo (12-oct): tres pares
+de feriado nuevos dentro de la ventana de 30 días, que la regla de deduplicación conserva a propósito (los dos calzan);
+desde el lunes la cifra viva cuenta dos veces esa sesión para esos tickers. Es el hecho de §87.
+
+**No se eligió nada.**
+
+---
+
+## 83. R6 del dictamen 16-1 y el punto 5 de §80: los chequeos del vigía en `mode=ro`, y la hora real en el rechequeo (cola, acta §102.2)
+
+**Hechos (MEDIDOS en la corrida 16-1):** `chequear_descarga` y `chequear_ancla_temporal` abren `senales.db` en
+lectura-escritura y corren `init_db()` (DDL) en cada pase del vigía; el `chequear_guarda_puntaje` nuevo ya lee en
+`mode=ro`. Y el mensaje del rechequeo SIN negativa conserva el literal «20:30» (§66 C.6 ii); Nicolás firmó en §102.1 (5 b)
+que pasa a la hora real **la próxima vez que el vigía se toque con firma**. Las dos cosas son un mismo toque al vigía.
+(a) Un toque al vigía con firma, en la corrida que siga a la lectura de noviembre (R7, §85), con worktree y auditor;
+(b) una corrida chica propia antes. **Recomendación etiquetada:** (a). Lo que se pierde: hasta entonces el vigía sigue
+corriendo DDL sobre la base sellada dos veces por día hábil (hoy inofensivo: `CREATE … IF NOT EXISTS` y migraciones
+idempotentes; lo midió el guardián de la 16-1). **No se eligió nada.**
+
+---
+
+## 84. R3 del dictamen 16-1: un registro durable de cada negativa declarada (cola, acta §102.2)
+
+**Hecho:** la negativa de `snapshot.py` (y, desde la 16-3, la del fallback del dashboard) vive sólo en `data/snapshot.log`,
+que rota a 2 MB × 2 copias (`registro.py`); con ~2 KB por corrida son meses, no días, pero el día que rote la historia
+de negativas se pierde y nada la reconstruye (una negativa no deja fila). (a) JSONL de `append` fuera de `senales.db`
+(`data/negativas.jsonl`) escrito por `snapshot.py` en `_declarar_negativa` (toca camino de sellado: worktree, test,
+auditor, acta); (b) que el vigía lo escriba al leer la negativa (no toca el sellador; se pierde la negativa de un día
+en que el vigía no corrió); (c) nada, declarado: el log rota en meses y la cuenta publicada de días negados (R7, §85)
+la lleva otro mecanismo. **Recomendación etiquetada:** (c) hasta la lectura de noviembre; si R7 se firma, (a) en el
+mismo acto, porque el contador necesita la fuente durable. **No se eligió nada.**
+
+---
+
+## 85. R7 del dictamen 16-1: publicar el contador de días negados desde el 2-nov-2026 (cola, acta §102.2; mueve una cifra publicada)
+
+**Hecho (S1 del dictamen 16-1):** desde el 2-nov la holgura entre las 18:15 de Chile y el cierre de XNYS es de 15 minutos
+en 125 de 308 sesiones; la guarda convierte «sellar mal» en «no sellar». Si la latencia de la fuente correlaciona con el
+volumen (días movidos publican tarde), el conjunto sellado deja de ser independiente del dato y el track record queda
+condicionado a «días tranquilos» sin que nadie lo vea. Publicar cuántos días se negó el sello (por código) es la única
+forma de que un tercero lo juzgue. (a) Contador en `/salud` y en el README desde el 2-nov, leído del registro durable
+(§84 a); (b) sólo en `/salud`; (c) nada hasta medir noviembre. Nicolás ya fijó en §102.2 que **se revisa con datos de
+noviembre**, porque mueve una cifra publicada. **Recomendación etiquetada:** medir noviembre entero (los días negados
+contra los días con sesión) y decidir con la cifra a la vista en diciembre. **No se eligió nada.**
+
+---
+
+## 86. S2 del dictamen 16-1: un reloj atrasado 15 minutos o más haría disparar la guarda (b) en un día legítimo, sin reintento (cola, acta §102.2)
+
+**Hecho (DEDUCIDO del código):** la guarda (b) compara `available_at` (cierre por calendario) con el reloj de pared de la
+emisión; desde el 2-nov el margen es de 15 minutos. Un reloj de la máquina atrasado 15 minutos o más haría que un día
+legítimo pareciera «sesión abierta» y el sello se negara; la negativa no entra al bucle de reintentos. WSL2 sincroniza
+el reloj con el host, y el host con NTP; no está medido cuánto puede derivar tras una suspensión (el latido del journal
+sí registra «Clock change detected»). (a) Un chequeo de reloj en el vigía (la hora del sistema contra una referencia
+externa o contra el `Date` de la respuesta HTTP de la fuente), con alerta si la deriva supera 5 minutos; (b) que la
+negativa `sesion_sox_abierta` reintente una vez a los 20 minutos si la hora del sistema está a menos de 20 minutos del
+cierre (toca `snapshot.py`); (c) declarado, sin código. **Recomendación etiquetada:** (a), en el mismo toque al vigía de
+§83; (b) no, porque un reintento de la negativa reabre la puerta que §90.1 (b) cerró. **No se eligió nada.**
+
+---
+
+## 87. F4 del dictamen 16-1: 16 filas selladas en días sin sesión de XNYS, `verificada`, dentro de las métricas (cola, acta §102.2; le toca al `estadistico-adversario`)
+
+**Hecho (MEDIDO por el auditor 16-1):** un disparo en sábado (D.2, declarado sin cubrir en §93.8) sellaría un clon de la
+señal del viernes con la MISMA sesión objetivo; y ya hay 16 filas así: 8 del 5-jul (domingo; sello manual con el SOX del
+jueves 2) y 8 del 7-sep (feriado de NYSE; `sox_fecha` 4-sep, los mismos estimados que el 4-sep), todas `verificada` y
+dentro de las métricas, incluida la ventana sellada del README (el 5-jul cae antes del corte del 28-ago). La regla de
+deduplicación firmada no las alcanza (los pares de feriado «calzan» los dos). (a) Una regla de medición nueva, «la fecha
+de emisión tiene que ser sesión de XNYS», en la capa de medición (mueve la ventana sellada: acta, los doce bloques, y el
+`estadistico-adversario` antes); (b) una regla sólo para las cifras vivas (abre otra diferencia entre vivas y selladas);
+(c) declarar y no tocar. **Recomendación etiquetada:** que el `estadistico-adversario` mida primero cuánto mueve (a) la
+ventana sellada y su p; decidir con la cifra. **No se eligió nada.**
+
+---
+
+## 88. El candado contra dos instancias del sellador de dinero (§81.5 b; cola, acta §102.6 (5))
+
+**Hecho (F1 de los dictámenes 15 y 16-2, MEDIDO):** dos instancias concurrentes rompen la integridad igual en E0.2 y E0.3
+(las dos congelan sobre el mismo archivo y `sellar` relee el disco). systemd no arranca dos instancias de la unidad
+`oneshot`; la única vía es un `--sellar` a mano con el servicio activo. Rige la regla operativa de §102.6 (5): antes de
+cualquier `--sellar` manual, `systemctl --user is-active mki-sello-dinero.service` tiene que decir `inactive`. (a) Un
+lock de archivo en `DIR_EXT` entre congelar y sellar, en el sellador, con acta propia y una noche sin otro cambio; (b)
+sólo la regla operativa, hasta que ocurra una vez. **Recomendación etiquetada:** (b); (a) si alguna vez un `--sellar`
+manual coincide con el timer (hoy n = 0). **No se eligió nada.**
+
+---
+
+## 89. Quién aplica `version_reglas_16_3.diff` y qué noche (corrida 16-3; acta §102.4)
+
+**Contexto:** `GEMELO/propuestas/parches/version_reglas_16_3.diff` (sha256 `5acdb3e2…`, versión final tras las exigencias
+del auditor; receta y predicción falsable en `version_reglas_16_3.md`; dictamen APLICABLE CON EXIGENCIAS en
+`dictamen_16_3/auditor_version_reglas.md`) lleva lo firmado en §99.5 (`version_reglas` 0.3.0-PROPUESTA) y §102.6 (3)
+(§81.3 b), más R2 y R4 del dictamen 16b. No se aplica en la 16-3 por la regla de un solo cambio al sellador por noche: la
+del 13-oct lleva E0.3. Consecuencias declaradas: tercera población de filas de E0, distinguible por `reglas_version` y por
+`reglas_sha256` (`6f371527…`); `sellador_sha256` nuevo (`2a9c2d57…`, cuarta población de método); `motivo` de un intento
+pasa a ser un campo compuesto que viaja al CSV versionado de no verificables; la API no sirve `por_reglas_sha256`
+(enmienda del contrato aparte, si se quiere). **Dos cosas que el auditor midió y que son decisión aparte:** (R4) el raise
+de la exclusión se dispara contra el CENSO, y el censo depende de `presupuesto.techo_usd`: con un techo bajo ~72 USD TOELY
+sale del censo y el parche mataría la noche sin que nadie tocara la lista; separar «fuera del universo» (reventar) de
+«fuera del censo» (avisar) es una variante posible, no hecha; (R5) el riel de dinero no tiene vigía: ningún chequeo mira
+`sello_dinero.db`, y una noche que muera en el gate deja cero filas, cero intentos y cero divergencias; la receta pone la
+revisión de la mañana siguiente a mano, y un chequeo del vigía sería otro toque con firma (va con §83). (a) Nicolás a mano la noche del martes 13-oct, DESPUÉS de leer el primer sello E0.3 de las 00:30 y
+antes de las 23:30 NY del 13, para que la sesión del 13-oct sea la primera con 0.3.0 (receta en el `.md`; acta de
+aplicación con la hora del `date` y el número de la suite); (b) la corrida siguiente, con el reloj de siempre; (c) no
+aplicarlo y dejar la distinción sólo por hash (opción (a) de §79.2, descartada en §99.5). **Recomendación
+etiquetada:** (a), con el dictamen ya APLICABLE CON EXIGENCIAS atendidas, si el sello del 13-oct a las 00:30 salió como
+predice §103.6 y el preflight de R4 de la receta pasa. Lo que se pierde con (a): la mano aplica sin orquestador;
+mitigación, `git apply -R` y la suite real decide. **No se eligió nada.**

@@ -1,49 +1,50 @@
 # ESTADO
 
 Dónde está el proyecto. Se regenera al cierre. **Máximo 50 líneas.** No es historia
-(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 11-oct-2026 (corrida 16-2, diurna con Nicolás; acta §101).
+(`DECISIONES.md`) ni cifras (`README.md`). **Actualizado:** 11-oct-2026 (corrida 16-3, nocturna con Nicolás; acta §104).
 
-## Primero: dos cosas sin commitear, y tres parches listos que Nicolás aplica a mano
-0. **La 16-1 sigue aplicada al árbol real y SIN commitear** (corte de método 10-oct 23:12:48; lista de 27 rutas en
-   `bitacora_16_1.md` §8). La 16-2 agrega documentos y parches, nunca código (lista en `bitacora_16_2.md` §9).
-1. **Camino T de §62 (§93.7, §99.2), listo para aplicar:** `GEMELO/propuestas/parches/camino_T_16_2.diff`,
-   `b2_contrato_16_2.diff`, `b2_api_16_2.diff`, **en ese orden y en el mismo acto** (B2 del auditor). Receta exacta
-   en `bitacora_16_2.md` §5 a §6; párrafo para el acta de aplicación en §6.2 (las cuatro decisiones del implementador,
-   el texto B3 de §93.7, el corte `VERSION_SELLO = E0.3`, lo que cambió del dictamen 15 al 16-2). Dictamen APLICABLE
-   CON EXIGENCIAS: R1 y R2 plegadas; B1 exige declarar que T cubre el disparo de recuperación con timing roto (28-sep,
-   7-oct) y NO el de timing ok en día sin sesión, que sigue ocupando la fecha como `dia_sin_sesion` (§57).
-2. **Plazo operativo:** antes del sello del martes 13-oct a las 00:30 Chile si se quiere que la sesión del 12-oct sea la
-   primera con E0.3. Commit fuera de 17:50 a 20:30 del lunes. Predicción falsable del 13-oct en la bitácora §7.
-3. **Tarjeta §81** (aplicación, la otra forma del disparo de recuperación, R3/R4/R5 del auditor, la pantalla `/sellos`);
-   **§80** sigue sin firmas. La copia de `dinero/sello_dinero.db` al worktree fue denegada otra vez (§95.5 rigió).
+## Primero: lo que la 16-3 aplicó al árbol real y Nicolás commitea antes de las 17:50 del lunes 12-oct
+0. **La 16-3 está aplicada al árbol real y SIN commitear** (corte de método en `bitacora_16_3.md` §6; lista de rutas en §9).
+   Desde el reporte de Telegram del lunes 18:25, la API y el dashboard, **las cifras de acierto salen de
+   `backtest/linea_base.py` (fuente única, §93.4) y excluyen las filas con `available_at > timestamp_utc`**: track record
+   30 d n 149 → 141 al 11-oct (gap 62,4 % → 63,8 %); `analisis_puntaje_ia` igual. Tabla completa en la bitácora §2.
+1. **El parche de `dinero/` NO está aplicado:** `GEMELO/propuestas/parches/version_reglas_16_3.{diff,md}` (`version_reglas`
+   0.3.0-PROPUESTA, R2, R4, §81.3 b). Va en una noche sin otro cambio al sellador, después del primer sello E0.3 del
+   martes 13-oct a las 00:30; quién y cuándo, tarjeta §89. Dictamen del auditor en `dictamen_16_3/`.
+2. **Tarjetas nuevas §82 a §89** en `espera_firma.md` (dedup de las cifras vivas y las seis funciones de `senales.py`;
+   R6+§80.5; R3; R7; S2; F4; candado §81.5 b; el parche de `dinero/`). §80 y §81 firmadas (§102); §69, §70, §72 y §74
+   FUNDIDAS (§93.12). Crédito de noticias (ex §74) repuesto el 4-oct. Predicciones del lunes 12-oct: bitácora §7.
 
-## Lo que cambia en operación cuando los tres parches entren
-- Un disparo del sellador con timing roto deja sus filas en `intentos_no_verificables` y su evidencia en
-  `ext_<fecha>.no_verificable.csv`; `ext_<fecha>.csv` y la fecha quedan libres para el disparo bueno. Nace
-  `data/backups/sello_dinero_no_verificables.csv`. `estado()` y `/api/dinero/sellos` sirven `intentos_no_verificables`,
-  `ultimo_intento` y `nota_intentos` dentro de `E0`. Un insumo no persistido (cambio de juego) ya no inserta (R1).
-- Lo que NO cambia: las sesiones del 28-sep, 6-oct y 7-oct siguen perdidas; N sigue en 12 hasta el primer sello E0.3;
-  `version_reglas` se mueve en la 16-3 (§99.5); el timer no se toca.
+## Lo que cambia en operación desde el lunes
+- Telegram 18:25: «Track record (modelo 4.6.0, 30d): N=…» ya sin las 8 filas del 28-sep; cobertura del 80 % sobre 482+.
+- `/api/hoy`, `/api/aperturas`, `/api/historial`: mismas claves, valores sin las invertidas (`api/CONTRATO.md`,
+  enmienda 16-3). La API deja de correr `init_db()` sobre `senales.db` en esas rutas (`mode=ro`).
+- Si el fallback del dashboard (Streamlit) se niega a sellar por regla, la negativa queda en `data/snapshot.log` y el
+  vigía la lee como negativa, no como falla (R9). `/sellos` muestra «intentos no verificables: N; último: …».
+- La suite ya no crea `senales.db`/`noticias.db` en un árbol sin bases (guarda en `tests/conftest.py`); ocho archivos de
+  tests saltan por «tabla con filas» y no por «archivo presente» (R5).
+- Lo que NO cambia: `motor.py`, `snapshot.py`, `senales.py` (byte a byte), el vigía, la sonda, el backup, `dinero/`, los
+  timers; ninguna fila sellada; ningún esquema. E0: 10 de las 22 fechas selladas no cuentan y dos noches (25-sep, 6-oct) no
+  tienen filas; ninguna se recupera (§57).
 
-## Lo firmado que sigue por ejecutar (actas §93, §95, §99)
-- **16-3:** fuente única `linea_base.cargar()` para API, Telegram y dashboard (§93.4, 93.4-bis ii), `analisis_puntaje_ia`
-  adentro (§99.6), README (§93.11, universo de §95.4, `version_reglas` 0.3.0-PROPUESTA §99.5), fusión de tarjetas
-  (§93.12), badge `tests_recolectados` (§90.4, hoy desfasado), lo demás de §93.14; y de la 16-2: §81.3 (R3), §81.4 (R4),
-  §81.6 (la pantalla) si se firman.
-- Sin dueño: R3, R5, R6, R7, R9 del dictamen 16-1; F4 (clon del sábado, D.2) al `estadistico-adversario`; regla de §58
-  cerrada por V4 y no reiniciada (§99.3); sonda sin tocar (§99.4).
+## Lo firmado que sigue por ejecutar
+- Aplicar `version_reglas_16_3.diff` (§99.5, §102.4, §102.6 (3); tarjeta §89). Las firmas de §82 a §89.
+- Cola (§102.2): R3 (§84), R6+§80.5 (§83), R7 en noviembre (§85), S2 (§86), F4 al adversario (§87), candado (§88).
 ## Producción
 - **Titular: este PC (WSL), en `main`**, 6 timers del riel + `mki-sonda-cierre` + `mki-sello-dinero`; el modo se le
   pregunta a `modo.py`. Modelo 4.6.0; `PLATAFORMA_VERSION` 5.1.0. Ningún job disparó durante la corrida (domingo).
-- Riel de medición: lunes 12-oct es la primera sesión con la guarda de frescura y el vigía de la 16-1 (predicciones en
-  `bitacora_16_1.md` §7). Residuo conocido: 24 filas del 28-sep invertidas, fuera de `verificacion_puntaje`.
-- **Dinero:** todo SIMULADO. E0: **12 cuentan de 40**, 22 fechas selladas, todas `E0.2`; dos quemadas por disparo fuera de
-  hora (28-sep, 7-oct) y una sin filas (6-oct). Universo de 32 desde el 5-oct (§95.4, §98).
+- Riel de medición: lunes 12-oct, primera sesión con la guarda de frescura y el vigía de la 16-1 (predicciones en
+  `bitacora_16_1.md` §7) y con la fuente única (`bitacora_16_3.md` §7). Residuo: 24 filas del 28-sep invertidas, fuera de
+  `verificacion_puntaje` y, desde hoy, fuera de toda cifra publicada.
+- **Dinero:** todo SIMULADO. E0: **12 cuentan de 40**, 22 fechas selladas, todas `E0.2` (18 con 33 operables, 4 con 32);
+  el primer sello `E0.3` es el del martes 13-oct 00:30 (predicción §103.6). `version_reglas` sigue 0.2.0-PROPUESTA
+  hasta que entre el parche.
 ## Deuda
-`test_motor.py` trunca inclusive; skill `gate` importa `scipy`/`sklearn` (§69); `tesis.md:161` «59×» (§76); PIN de la
-regla maestra a `xfail` estricto (R4 del 16a); el rechequeo sin negativa aún dice el literal «20:30» (§80.5);
-`available_at` computado por calendario y no observado decide tabla desde E0.3 (§72, no firmado).
+`test_motor.py` trunca inclusive; skill `gate` importa `scipy`/`sklearn` (§69, fundida); PIN de la regla maestra a `xfail`
+estricto (R4 del 16a); el rechequeo sin negativa dice «20:30» (§80.5, va con §83);
+`available_at` computado y no observado decide tabla desde E0.3 (§72); `respaldar_extension` con `DIR_BACKUP_EXT` por
+defecto (la guarda del conftest lo caza); las seis de `senales.py` sin consumidor (§82.2); el riel de dinero sin vigía (§89).
 ## Lo más urgente, que sigue siendo de Nicolás
-**Commitear la 16-1 y la 16-2** (una lista en cada bitácora; el hook corre la suite ~8 min); **aplicar los tres parches
-con su acta** antes del martes 00:30 (§81.1); cinco commits sin pushear; las firmas de §80 y §81; E1 (§93.15); las dos
-firmas del pre-registro secuencial (§2a-ter y el MDE) **antes del 19-nov-2026**.
+**Commitear la 16-3** (lista en `bitacora_16_3.md` §9; el hook corre la suite ~8 min; antes de las 17:50 del lunes);
+leer el lunes las predicciones de las bitácoras 16-1 y 16-3 y el martes la de §103.6; aplicar el parche de `dinero/` con
+su acta (§89); las firmas de §82 a §89; E1 (§93.15); las dos firmas del pre-registro secuencial **antes del 19-nov-2026**.

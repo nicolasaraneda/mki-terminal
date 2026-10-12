@@ -13,7 +13,7 @@
 # que cuadre (DECISIONES.md §23).
 #
 # SOLO LECTURA por construcción, como todo backtest/: la única conexión
-# sale de datos._conexion_ro (uri mode=ro). Este módulo no escribe en
+# sale de _conexion_ro (uri mode=ro; propia desde la 16-3, ver abajo). Este módulo no escribe en
 # ninguna base ni toca motor.py.
 #
 # ------------------------------------------------------------
@@ -114,6 +114,7 @@
 import argparse
 import math
 import os
+import sqlite3
 import sys
 from datetime import datetime, timezone
 
@@ -121,8 +122,23 @@ import pandas as pd
 
 import calendarios
 from api.utilidades import intervalo_wilson
-from backtest.datos import RUTA_SENALES, _conexion_ro
 from version import MODELO_VERSION
+
+# Corrida 16-3 (B5 del dictamen del auditor sobre la fuente única): hasta acá
+# `RUTA_SENALES` y `_conexion_ro` se importaban de `backtest/datos.py`, que a
+# nivel de módulo importa `motor` (y con él yfinance, numpy y
+# exchange_calendars). Desde la 16-3 el reporte de Telegram importa este módulo,
+# y la garantía de la 5.0 es que el reporte compone aunque el motor no exista:
+# un `import motor` roto habría matado el reporte entero a las 18:25. Los dos
+# símbolos son triviales y viven acá; `backtest/datos.py` conserva los suyos.
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RUTA_SENALES = os.path.join(RAIZ, "senales.db")
+
+
+def _conexion_ro(ruta: str) -> sqlite3.Connection:
+    """Conexión ESTRICTAMENTE de solo lectura a una base de producción
+    (la misma de `backtest.datos._conexion_ro`, sin arrastrar el motor)."""
+    return sqlite3.connect(f"file:{ruta}?mode=ro", uri=True)
 
 DIR_RESULTADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "resultados", "linea_base")
@@ -521,6 +537,243 @@ def aplicar_convencion(df: pd.DataFrame, convencion: str) -> pd.DataFrame:
         out["base_acierto"] = (out["gap_pct"] >= 0).astype(int)
     out["acierto_gap"] = out["acierto_gap"].astype(int)
     return out
+
+
+# ------------------------------------------------------------
+# LAS CIFRAS VIVAS PUBLICADAS: la fuente única del reporte de Telegram, la
+# API y el dashboard (actas §93.4, §93.4-bis ii y §99.6; corrida 16-3,
+# 11-oct-2026)
+# ------------------------------------------------------------
+# Hasta la corrida 16-3, las cifras de acierto que ve el público salían de
+# seis consultas directas de `senales.py` (`metricas_apertura`,
+# `calibracion_intervalos`, `evolucion_aciertos_apertura`,
+# `ultimas_predicciones_apertura`, `verificaciones_detalle` y
+# `analisis_puntaje_ia`) que NO pasaban por la regla de conocibilidad de
+# arriba: al 29-sep-2026, 8 de las 160 filas de la ventana de 30 días eran
+# las invertidas del evento de la corrida 14 (acta §89), y el reporte, la
+# API y el dashboard las contaban
+# (dictamen_15/auditor_bloque1.md, B1; tarjeta §73). Nicolás firmó UNA sola
+# fuente (§93.4, opción b): estas funciones. Llevan los MISMOS nombres que
+# las de `senales.py` para que la migración de cada consumidor sea un token
+# y la comparación con la función vieja, un test.
+#
+# LO QUE CAMBIA Y LO QUE NO, dicho antes de que alguien lo lea mal:
+#   · La ÚNICA diferencia con las consultas de `senales.py` son las filas que
+#     `excluir_sin_conocibilidad` retira (encargo 16-3, §1): misma ventana
+#     (el `date('now', '-N days')` de SQLite, día UTC), mismo denominador,
+#     mismo redondeo, mismas columnas con los mismos nombres y el mismo orden
+#     de filas: el del índice único (fecha_senal, ticker) con el que SQLite
+#     sirve las consultas viejas, que es lo que hace que las sumas en coma
+#     flotante y los tercios del puntaje (513 empates al 11-oct) den lo
+#     mismo. tests/test_fuente_unica_16_3.py lo fija contra las funciones
+#     viejas, cifra por cifra.
+#   · La DEDUPLICACIÓN firmada (`deduplicar_por_sesion`) NO se aplica acá.
+#     La firma de §93.4 nombra sólo la conocibilidad, y deduplicar movería el
+#     n de las cifras de toda la historia (calibración, evolución, últimas,
+#     detalle) por otra razón que la conocibilidad, lo que el encargo 16-3
+#     prohíbe. Queda MEDIDO y puesto a firma (espera_firma.md, tarjeta §82).
+#     Hasta esa firma las cifras vivas y la ventana sellada del README siguen
+#     difiriendo en eso, como difieren desde el 1-sep-2026.
+#   · `cargar()` de arriba sigue siendo la carga del ÁRBITRO (dedup por
+#     defecto); `cargar_vivas()` es la carga de lo PUBLICADO EN VIVO. Las dos
+#     pasan por la misma `excluir_sin_conocibilidad`.
+#   · Solo lectura, como todo el módulo (`mode=ro`). Las seis consultas de
+#     `senales.py` abrían la base en escritura y corrían `init_db()` (DDL) en
+#     cada llamada; éstas no, y sin base devuelven «datos insuficientes» con
+#     n = 0 sin crear nada.
+#   · `analisis_puntaje_ia` (§99.6): la exclusión es hoy no-operativa sobre la
+#     base real, porque la guarda de la 16a en `verificar_puntaje_pendientes`
+#     ya no deja entrar filas invertidas a `verificacion_puntaje` (0 adentro
+#     al 11-oct). Acá vive igual, para que la cifra publicada no dependa de
+#     lo que un escritor dejó pasar.
+#   · Las seis funciones de `senales.py` quedan sin consumidor publicado y NO
+#     se borran en la 16-3 (tarjeta §82); un test fija que ningún consumidor
+#     publicado las llame. `senales` no se importa acá: la capa de medición no
+#     cuelga del módulo que escribe la base, y el mínimo se ata con un test.
+MINIMO_OBSERVACIONES = 5   # == senales.MINIMO_OBSERVACIONES: debajo, «datos insuficientes»
+
+_COLUMNAS_VIVAS = ["id", "fecha_senal", "ticker", "apertura_estimada_pct", "gap_pct", "retorno_real_pct",
+                   "acierto_gap", "acierto_direccion", "error_gap_pp", "error_pp", "verificado_en",
+                   "exchange", "sesion_objetivo", "intervalo80_pp", "estimado_sellado",
+                   "timestamp_utc", "available_at", "regimen"]
+_COLUMNAS_EVOLUCION = ["Fecha", "% Aciertos gap", "% Aciertos sesión", "N"]
+_COLUMNAS_ULTIMAS = {"fecha_senal": "Fecha", "ticker": "Ticker", "apertura_estimada_pct": "Estimado %",
+                     "gap_pct": "Gap real %", "retorno_real_pct": "Sesión real %", "acierto_gap": "Acierto gap",
+                     "acierto_direccion": "Acierto sesión", "sesion_objetivo": "Sesión objetivo",
+                     "timestamp_utc": "Emitida (UTC)"}
+_COLUMNAS_DETALLE = ["fecha_senal", "ticker", "acierto_gap", "acierto_direccion", "error_gap_pp", "gap_pct",
+                     "apertura_estimada_pct", "exchange", "intervalo80_pp", "regimen"]
+_COLUMNAS_PUNTAJE = ["puntaje", "retorno", "fecha_senal", "ticker", "timestamp_utc", "available_at"]
+
+
+def cargar_vivas(modelo_version: str = MODELO_VERSION, dias: int | None = None,
+                 solo_con_gap: bool = True) -> pd.DataFrame:
+    """Las verificaciones de apertura TAL COMO las consultan las cifras vivas
+    (verificacion_apertura con senales_ticker y snapshots, nunca legacy, una
+    sola modelo_version), menos las filas que la regla de conocibilidad
+    retira.
+
+    `dias`: ventana `fecha_senal >= date('now', '-dias days')`, la misma
+    expresión de SQLite (día UTC) que usa `senales.metricas_apertura`; None
+    es toda la historia. `solo_con_gap`: `gap_pct IS NOT NULL`, que exigen
+    todas las consultas viejas menos `ultimas_predicciones_apertura`.
+
+    Devuelve las columnas que las seis cifras necesitan (`estimado_sellado`
+    es `senales_ticker.apertura_estimada_pct`, el que usa la calibración),
+    ordenadas por (fecha_senal, ticker): el orden del índice único en que
+    SQLite sirve las consultas viejas."""
+    if not os.path.exists(RUTA_SENALES):
+        return pd.DataFrame(columns=_COLUMNAS_VIVAS)
+    filtros, params = [], [modelo_version]
+    if solo_con_gap:
+        filtros.append("AND v.gap_pct IS NOT NULL")
+    if dias is not None:
+        filtros.append("AND v.fecha_senal >= date('now', ?)")
+        params.append(f"-{int(dias)} days")
+    conn = _conexion_ro(RUTA_SENALES)
+    try:
+        df = pd.read_sql_query(f"""
+            SELECT v.id, v.fecha_senal, v.ticker, v.apertura_estimada_pct, v.gap_pct,
+                   v.retorno_real_pct, v.acierto_gap, v.acierto_direccion,
+                   v.error_gap_pp, v.error_pp, v.verificado_en,
+                   s.exchange, s.sesion_objetivo, s.intervalo80_pp,
+                   s.apertura_estimada_pct AS estimado_sellado,
+                   s.timestamp_utc, s.available_at, snap.regimen
+            FROM verificacion_apertura v
+            LEFT JOIN senales_ticker s
+                   ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+            LEFT JOIN snapshots snap ON snap.fecha = v.fecha_senal
+            WHERE v.legacy = 0 AND v.modelo_version = ? {' '.join(filtros)}
+            ORDER BY v.fecha_senal, v.ticker
+        """, conn, params=params)
+    finally:
+        conn.close()
+    return excluir_sin_conocibilidad(df)
+
+
+def metricas_apertura(dias: int = 30, modelo_version: str = MODELO_VERSION) -> dict:
+    """Métricas del DOBLE objetivo (gap y retorno de sesión) sobre la
+    ventana de `dias`: lo que publican el reporte de Telegram, la portada de
+    la API y el dashboard. Mismo cálculo que `senales.metricas_apertura`
+    (sumas en el orden de la consulta, redondeo a 1 y 2 decimales), menos
+    las filas que la regla de conocibilidad retira."""
+    df = cargar_vivas(modelo_version, dias=dias)
+    n = len(df)
+    if n < MINIMO_OBSERVACIONES:
+        return {"suficiente": False, "n": n}
+    return {
+        "suficiente": True, "n": n,
+        "gap": {
+            "pct_aciertos": round(100 * sum(df["acierto_gap"].tolist()) / n, 1),
+            "mae_pp": round(sum(df["error_gap_pp"].tolist()) / n, 2),
+        },
+        "retorno_sesion": {
+            "pct_aciertos": round(100 * sum(df["acierto_direccion"].tolist()) / n, 1),
+            "mae_pp": round(sum(df["error_pp"].tolist()) / n, 2),
+        },
+    }
+
+
+def calibracion_intervalos(modelo_version: str = MODELO_VERSION) -> dict:
+    """Cobertura empírica del intervalo del 80% sobre toda la historia: qué
+    fracción de los gaps reales cayó dentro de estimación ± intervalo80. Sólo
+    filas con intervalo sellado (el JOIN interno de la consulta vieja);
+    debajo del mínimo, «pendiente»."""
+    df = cargar_vivas(modelo_version)
+    d = df[df["intervalo80_pp"].notna()]
+    n = len(d)
+    if n < MINIMO_OBSERVACIONES:
+        return {"suficiente": False, "n": n}
+    dentro = sum(1 for gap, est, int80 in zip(d["gap_pct"].tolist(), d["estimado_sellado"].tolist(),
+                                              d["intervalo80_pp"].tolist())
+                 if abs(gap - est) <= int80)
+    return {"suficiente": True, "n": n, "cobertura_pct": round(100 * dentro / n, 1)}
+
+
+def evolucion_aciertos_apertura(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+    """% de aciertos (gap y sesión) y N por fecha de señal, en orden de fecha.
+    Mismas columnas que la consulta vieja (`Fecha`, `% Aciertos gap`,
+    `% Aciertos sesión`, `N`): el gráfico del dashboard y de /historial las
+    nombra así."""
+    df = cargar_vivas(modelo_version)
+    if df.empty:
+        return pd.DataFrame(columns=_COLUMNAS_EVOLUCION)
+    g = df.groupby("fecha_senal", sort=True)
+    agg = g.agg(gap=("acierto_gap", "mean"), sesion=("acierto_direccion", "mean"), n=("acierto_gap", "size"))
+    return pd.DataFrame({
+        "Fecha": agg.index.tolist(),
+        "% Aciertos gap": (agg["gap"] * 100).tolist(),
+        "% Aciertos sesión": (agg["sesion"] * 100).tolist(),
+        "N": agg["n"].tolist(),
+    })
+
+
+def ultimas_predicciones_apertura(limite: int = 50,
+                                  modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+    """Las últimas `limite` verificaciones (con o sin gap, como la consulta
+    vieja), de la más reciente a la más antigua, con su sesión objetivo y su
+    instante de emisión. El orden dentro de una misma fecha es el del índice
+    único recorrido al revés (ticker descendente), el que la consulta vieja
+    daba sin declararlo."""
+    df = cargar_vivas(modelo_version, solo_con_gap=False)
+    df = df.sort_values(["fecha_senal", "ticker"], ascending=[False, False], kind="stable").head(limite)
+    return df[list(_COLUMNAS_ULTIMAS)].rename(columns=_COLUMNAS_ULTIMAS).reset_index(drop=True)
+
+
+def verificaciones_detalle(modelo_version: str = MODELO_VERSION) -> pd.DataFrame:
+    """Cada verificación limpia con su contexto de emisión (exchange,
+    intervalo sellado, régimen sellado del snapshot del día), para los
+    desgloses por región y por régimen de /historial. La agrupación y los
+    Wilson son presentación (capa API)."""
+    return cargar_vivas(modelo_version)[_COLUMNAS_DETALLE].reset_index(drop=True)
+
+
+def cargar_puntaje_vivo(modelo_version: str = MODELO_VERSION, dias: int | None = 90) -> pd.DataFrame:
+    """`verificacion_puntaje` con `senales_ticker`, como lo consulta
+    `senales.analisis_puntaje_ia` (sólo filas con timestamp_utc, una sola
+    modelo_version, ventana de `dias` sobre fecha_senal), menos las filas que
+    la regla de conocibilidad retira (acta §99.6). Orden (fecha_senal,
+    ticker): el de la consulta vieja, del que dependen los tercios cuando
+    hay empates de puntaje."""
+    if not os.path.exists(RUTA_SENALES):
+        return pd.DataFrame(columns=_COLUMNAS_PUNTAJE)
+    filtro = "AND v.fecha_senal >= date('now', ?)" if dias is not None else ""
+    params = [f"-{int(dias)} days", modelo_version] if dias is not None else [modelo_version]
+    conn = _conexion_ro(RUTA_SENALES)
+    try:
+        df = pd.read_sql_query(f"""
+            SELECT v.puntaje_ia AS puntaje, v.retorno_5d_pct AS retorno,
+                   v.fecha_senal, v.ticker, s.timestamp_utc, s.available_at
+            FROM verificacion_puntaje v
+            JOIN senales_ticker s
+              ON s.fecha = v.fecha_senal AND s.ticker = v.ticker
+            WHERE 1 = 1 {filtro}
+              AND s.timestamp_utc IS NOT NULL AND s.modelo_version = ?
+            ORDER BY v.fecha_senal, v.ticker
+        """, conn, params=params)
+    finally:
+        conn.close()
+    return excluir_sin_conocibilidad(df)
+
+
+def analisis_puntaje_ia(dias: int = 90, modelo_version: str = MODELO_VERSION) -> dict:
+    """¿El Puntaje IA anticipa el retorno a 5 días? Tercio alto contra tercio
+    bajo y correlación, sobre la ventana de `dias`. Mismo cálculo que
+    `senales.analisis_puntaje_ia`; `datos` trae las dos columnas (puntaje,
+    retorno) para el gráfico del dashboard."""
+    df = cargar_puntaje_vivo(modelo_version, dias)[["puntaje", "retorno"]]
+    n = len(df)
+    if n < MINIMO_OBSERVACIONES:
+        return {"suficiente": False, "n": n, "datos": df}
+    df = df.sort_values("puntaje")
+    corte = max(1, n // 3)
+    correlacion = df["puntaje"].corr(df["retorno"]) if n >= 3 else None
+    return {
+        "suficiente": True, "n": n, "datos": df,
+        "retorno_tercio_alto": round(df.iloc[-corte:]["retorno"].mean(), 2),
+        "retorno_tercio_bajo": round(df.iloc[:corte]["retorno"].mean(), 2),
+        "correlacion": round(correlacion, 2) if correlacion is not None else None,
+    }
 
 
 # ------------------------------------------------------------

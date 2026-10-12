@@ -327,7 +327,8 @@ def test_contrastar_abre_senales_solo_en_modo_lectura():
 
 def test_la_base_sellada_real_no_se_toca(tmp_path):
     """Si `senales.db` existe en esta máquina, contrastar no la modifica."""
-    if not os.path.exists(ss.RUTA_SENALES):
+    from bases_de_prueba import hay_filas   # corrida 16-3 (R5): la tabla con filas, no el archivo
+    if not hay_filas(ss.RUTA_SENALES, "verificacion_apertura"):
         pytest.skip("no hay senales.db en esta máquina")
     antes = os.stat(ss.RUTA_SENALES).st_mtime_ns
     ss.contrastar("2026-08-27", "corrida-inexistente",

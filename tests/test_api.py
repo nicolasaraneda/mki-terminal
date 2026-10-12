@@ -8,6 +8,7 @@
 # Correr:  source venv/bin/activate && python -m pytest tests/test_api.py -v
 # ============================================================
 
+import os
 from datetime import date
 
 import pytest
@@ -16,10 +17,45 @@ from fastapi.testclient import TestClient
 import motor
 import senales
 from api.main import app
+from backtest import linea_base as lb
 from universo import UNIVERSO
 from version import MODELO_VERSION
 
 cliente = TestClient(app)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _bases_de_la_api(tmp_path_factory):
+    """Corrida 16-3 (Bloque D; R5 y hecho (ii) de la tarjeta §80, acta §102.2).
+    Estos tests pegan a la API, y la API llama a funciones de `senales.py` y
+    `noticias.py` que corren `init_db()` (DDL, apertura en escritura) sobre la
+    ruta real: en un árbol SIN bases eso creaba `senales.db` y `noticias.db`
+    vacías en la raíz del repo (medido con un detector el 11-oct-2026: todos
+    los tests de este archivo), y desde ahí los tests «con base» de otros
+    archivos corrían sobre una base vacía. Desde acá la API lee, durante
+    este módulo, una COPIA en tmp de cada base real (la real no se abre en
+    escritura) o, sin bases, rutas temporales que `init_db()` crea en tmp.
+    La paridad no cambia: `esperado` y `servido` leen la misma copia."""
+    import sqlite3
+    import noticias
+    carpeta = tmp_path_factory.mktemp("bases_api")
+    mp = pytest.MonkeyPatch()
+    for modulo, nombre in ((senales, "senales.db"), (noticias, "noticias.db")):
+        real, copia = modulo.DB_PATH, str(carpeta / nombre)
+        if os.path.exists(real):
+            # API de respaldo de sqlite desde una conexión mode=ro (R4 del auditor 16-3):
+            # atómica aunque el escritor tenga una transacción abierta; nunca shutil.copy
+            origen = sqlite3.connect(f"file:{real}?mode=ro", uri=True)
+            destino = sqlite3.connect(copia)
+            try:
+                origen.backup(destino)
+            finally:
+                destino.close()
+                origen.close()
+        mp.setattr(modulo, "DB_PATH", copia)
+    mp.setattr(lb, "RUTA_SENALES", str(carpeta / "senales.db"))
+    yield
+    mp.undo()
 
 
 # ------------------------------------------------------------
@@ -53,6 +89,7 @@ def test_paridad_regimen():
         assert servido["ratio_ma_pct"] == esperado["ratio_ma_pct"]
 
 
+@pytest.mark.red  # corrida 16-3 (B3): /api/hoy pide el régimen al motor; corrido solo (o con -m "not red") llega a Yahoo. Medido en HEAD puro y en el árbol real antes de la 16-3: preexistente; en la suite completa lo tapaba la caché que calienta test_envelope
 def test_paridad_roca_chip_contra_snapshot():
     """P0 (4.7.1): el Roca→Chip servido es EXACTAMENTE el valor sellado del
     último snapshot en senales.db — la API no recalcula el índice en vivo."""
@@ -145,10 +182,10 @@ def test_paridad_salud_datos():
 
 
 # ------------------------------------------------------------
-# Paridad con senales.py (track record)
+# Paridad con la fuente única (track record; backtest.linea_base desde la corrida 16-3)
 # ------------------------------------------------------------
 def test_paridad_metricas_apertura():
-    esperado = senales.metricas_apertura(dias=30)
+    esperado = lb.metricas_apertura(dias=30)
     servido = cliente.get("/api/historial").json()["datos"]["metricas"]
     assert servido["suficiente"] == esperado["suficiente"]
     assert servido["n"] == esperado["n"]
@@ -159,7 +196,7 @@ def test_paridad_metricas_apertura():
 
 
 def test_paridad_calibracion():
-    esperado = senales.calibracion_intervalos()
+    esperado = lb.calibracion_intervalos()
     servido = cliente.get("/api/historial").json()["datos"]["calibracion"]
     assert servido["suficiente"] == esperado["suficiente"]
     assert servido["n"] == esperado["n"]
@@ -260,7 +297,7 @@ def test_historial_wilson_contra_formula():
     """El Wilson servido corresponde a los aciertos reales de la DB."""
     from api.utilidades import intervalo_wilson
     datos = cliente.get("/api/historial").json()["datos"]
-    df = senales.verificaciones_detalle()
+    df = lb.verificaciones_detalle()
     if df.empty:
         assert datos["wilson"] is None
         return
@@ -285,7 +322,7 @@ def test_historial_curva_y_desgloses():
             assert abs(curva["real_pct"][idx80]
                        - datos["calibracion"]["cobertura_pct"]) < 0.11
     # los desgloses recomponen el total
-    df = senales.verificaciones_detalle()
+    df = lb.verificaciones_detalle()
     for clave in ("por_region", "por_regimen"):
         assert sum(f["n"] for f in datos[clave]) == len(df)
         for f in datos[clave]:

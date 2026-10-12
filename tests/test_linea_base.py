@@ -21,9 +21,10 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backtest import linea_base as lb
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5: la tabla con filas, no el archivo)
 
-HAY_BASE = os.path.exists(lb.RUTA_SENALES)
-solo_con_base = pytest.mark.skipif(not HAY_BASE, reason="senales.db no está (es gitignored)")
+HAY_BASE = hay_filas(lb.RUTA_SENALES, "verificacion_apertura")
+solo_con_base = pytest.mark.skipif(not HAY_BASE, reason=razon_sin_base(lb.RUTA_SENALES, "verificacion_apertura"))
 
 
 # ------------------------------------------------------------
@@ -161,9 +162,14 @@ def test_cargar_no_modifica_la_base():
 
 
 def test_el_modulo_no_abre_ninguna_conexion_de_escritura():
+    """Corrida 16-3 (B5 del auditor): el módulo ya no importa `backtest.datos`
+    (que arrastra el motor) y trae su propia `_conexion_ro`; la ÚNICA llamada a
+    `sqlite3.connect` del módulo es esa, con URI `mode=ro`."""
     fuente = open(lb.__file__, encoding="utf-8").read()
-    assert "sqlite3.connect(" not in fuente   # solo vía datos._conexion_ro
+    conexiones = [l.strip() for l in fuente.split("\n") if "sqlite3.connect(" in l]
+    assert conexiones == ['return sqlite3.connect(f"file:{ruta}?mode=ro", uri=True)'], conexiones
     assert "get_connection" not in fuente     # ese es el camino de escritura
+    assert "from backtest.datos import" not in fuente and "import backtest.datos" not in fuente
 
 
 # ------------------------------------------------------------
@@ -191,7 +197,7 @@ def _congelado():
 def test_el_corte_congelado_recupera_exactamente_las_228_filas():
     """Si esto se moviera, las afirmaciones de la §2 dejarían de tener un
     conjunto de filas identificable y no serían reproducibles."""
-    if not os.path.exists(lb.RUTA_SENALES):
+    if not HAY_BASE:
         pytest.skip("sin senales.db")
     assert len(_congelado()) == 228
     assert len(lb.aplicar_convencion(_congelado(), "excluir_cero")) == 223
@@ -200,7 +206,7 @@ def test_el_corte_congelado_recupera_exactamente_las_228_filas():
 def test_la_base_viva_ya_creció_por_encima_del_corte():
     """El otro lado del mismo hecho: el experimento sigue corriendo. Si
     este test fallara, o la base se vació o el sellado se detuvo."""
-    if not os.path.exists(lb.RUTA_SENALES):
+    if not HAY_BASE:
         pytest.skip("sin senales.db")
     assert len(lb.cargar(dedup=False)) >= len(_congelado())
 

@@ -550,9 +550,10 @@ def _filas_selladas_excluir_cero():
     """
     import pandas as pd
     from backtest.datos import RUTA_SENALES, _conexion_ro
+    from bases_de_prueba import hay_filas   # corrida 16-3 (R5): la tabla con filas, no el archivo
 
-    if not os.path.exists(RUTA_SENALES):
-        pytest.skip("senales.db no está en esta máquina")
+    if not hay_filas(RUTA_SENALES, "verificacion_apertura"):
+        pytest.skip("senales.db sin filas selladas en esta máquina")
     conn = _conexion_ro(RUTA_SENALES)
     try:
         df = pd.read_sql_query(

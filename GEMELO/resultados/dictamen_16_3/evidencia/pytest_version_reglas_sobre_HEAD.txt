@@ -1,0 +1,239 @@
+FFFF.FFF.F.FFs.                                                          [100%]
+=================================== FAILURES ===================================
+_ test_version_reglas_es_0_3_0_propuesta_con_su_nota_y_sin_mover_ninguna_regla _
+
+    def test_version_reglas_es_0_3_0_propuesta_con_su_nota_y_sin_mover_ninguna_regla():
+        cfg = U.reglas()
+>       assert cfg["version_reglas"] == "0.3.0-PROPUESTA"
+E       AssertionError: assert '0.2.0-PROPUESTA' == '0.3.0-PROPUESTA'
+E         
+E         - 0.3.0-PROPUESTA
+E         ?   ^
+E         + 0.2.0-PROPUESTA
+E         ?   ^
+
+tests/test_version_reglas_16_3.py:111: AssertionError
+______________ test_la_huella_de_reglas_es_una_tercera_poblacion _______________
+
+    def test_la_huella_de_reglas_es_una_tercera_poblacion():
+        """El sha del archivo cambia con la versión: las filas que selle llevan una
+        huella distinta de las dos poblaciones ya selladas, y `reglas_version`
+        las distingue sin cotejar hashes."""
+>       assert S._sha256(U.RUTA_REGLAS) not in HUELLAS_ANTERIORES
+E       AssertionError: assert 'b6080eee4351ed433aeb5a124ec4603dcb3db3b3278b1791c40ee8a4ad0abc6c' not in {'125a8602a684939576278093b306add6a6fa7a0157389f71a5c0029455ab9ba0', 'b6080eee4351ed433aeb5a124ec4603dcb3db3b3278b1791c40ee8a4ad0abc6c'}
+E        +  where 'b6080eee4351ed433aeb5a124ec4603dcb3db3b3278b1791c40ee8a4ad0abc6c' = <function _sha256 at 0x71da769222a0>('/tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163_ctrl/dinero/reglas.json')
+E        +    where <function _sha256 at 0x71da769222a0> = S._sha256
+E        +    and   '/tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163_ctrl/dinero/reglas.json' = U.RUTA_REGLAS
+
+tests/test_version_reglas_16_3.py:123: AssertionError
+_________ test_una_fila_sellada_con_el_parche_declara_la_version_nueva _________
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-77/test_una_fila_sellada_con_el_p0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_una_fila_sellada_con_el_parche_declara_la_version_nueva(entorno_temporal, base):
+        db = entorno_temporal
+        r = _disparo(base, db, T_NOCHE, T_NOCHE)
+        assert r["resultado"] == "sellada" and r["filas_insertadas"] == N_OPERABLES
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        versiones = {x[0] for x in con.execute("SELECT DISTINCT reglas_version FROM sellos_dinero")}
+        huellas = {x[0] for x in con.execute("SELECT DISTINCT reglas_sha256 FROM sellos_dinero")}
+        con.close()
+>       assert versiones == {"0.3.0-PROPUESTA"} and not (huellas & HUELLAS_ANTERIORES)
+E       AssertionError: assert ({'0.2.0-PROPUESTA'} == {'0.3.0-PROPUESTA'}
+E         
+E         Extra items in the left set:
+E         '0.2.0-PROPUESTA'
+E         Extra items in the right set:
+E         '0.3.0-PROPUESTA'
+E         Use -v to get more diff)
+
+tests/test_version_reglas_16_3.py:134: AssertionError
+______ test_R4_un_ticker_desconocido_en_la_exclusion_revienta_nombrandolo ______
+
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_R4_un_ticker_desconocido_en_la_exclusion_revienta_nombrandolo(base):
+        cfg = json.loads(json.dumps(U.reglas()))
+        cfg["exclusiones_insumo_e0"]["tickers"] = ["TOELLY"]
+>       with pytest.raises(ValueError, match="TOELLY"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_version_reglas_16_3.py:143: Failed
+_____ test_R4_un_ticker_del_universo_pero_fuera_del_censo_tambien_revienta _____
+
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_R4_un_ticker_del_universo_pero_fuera_del_censo_tambien_revienta(base):
+        """El censo (`universo_operable`) deja fuera instrumentos que el congelado
+        sí trae; declararlos en la exclusión es declarar algo que la regla no
+        puede hacer, y se dice."""
+        dec = S.decidir(base, base.index.max())
+        fuera_del_censo = sorted(set(base.columns) - set(dec["operables"]) - {"TOELY"})
+        if not fuera_del_censo:
+            pytest.skip("el congelado no trae instrumentos fuera del censo")
+        cfg = json.loads(json.dumps(U.reglas()))
+        cfg["exclusiones_insumo_e0"]["tickers"] = ["TOELY", fuera_del_censo[0]]
+>       with pytest.raises(ValueError, match=fuera_del_censo[0]):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_version_reglas_16_3.py:166: Failed
+_ test_las_filas_de_un_intento_llevan_el_instante_con_que_se_decidio_el_timing _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-77/test_las_filas_de_un_intento_l0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_las_filas_de_un_intento_llevan_el_instante_con_que_se_decidio_el_timing(entorno_temporal, base):
+        """F2: la evidencia se congela a T1 (bolsa abierta) y se sella 2 s después
+        a T2; el instante que decidió el timing es T1, el de congelar, y es el que
+        la fila declara aunque sus tres columnas de tiempo digan otra cosa."""
+        db = entorno_temporal
+        t1, t2 = T_INTRADIA, T_INTRADIA + timedelta(seconds=2)
+        r = _disparo(base, db, t1, t2)
+        assert r["resultado"] == "intento_no_verificable" and r["filas_insertadas"] == N_OPERABLES
+        motivos = _motivos(db, S.TABLA_INTENTOS)
+        assert len(motivos) == N_OPERABLES
+        for m in motivos:
+>           assert m and f"timing roto decidido al congelar la evidencia, a las {t1.isoformat()}" in m, m
+E           AssertionError: una acción cuesta 441.07 USD y el margen disponible es 125.00 USD; el riel no compra fracciones
+E           assert ('una acción cuesta 441.07 USD y el margen disponible es 125.00 USD; el riel no compra fracciones' and 'timing roto decidido al congelar la evidencia, a las 2026-09-14T17:43:01+00:00' in 'una acción cuesta 441.07 USD y el margen disponible es 125.00 USD; el riel no compra fracciones')
+
+tests/test_version_reglas_16_3.py:184: AssertionError
+_ test_sin_bloque_timing_la_fila_cita_la_clase_de_la_evidencia_y_no_el_reloj_del_sello _
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-77/test_sin_bloque_timing_la_fila0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_sin_bloque_timing_la_fila_cita_la_clase_de_la_evidencia_y_no_el_reloj_del_sello(entorno_temporal, base):
+        """B1 del auditor 16-3. Una evidencia `.no_verificable` cuyo meta no trae el
+        bloque `timing` (camino hoy no alcanzable por `main()`: `congelar_extension`
+        siempre lo escribe) se sella a un instante en que la regla SÍ se cumple: el
+        veredicto lo fijó la CLASE de la evidencia, y la fila no puede decir que la
+        regla no se cumplía con el reloj del sello (una frase falsa en un campo
+        inmutable). Cita el instante de congelar (`congelado_en_utc`) y la clase."""
+        db = entorno_temporal
+        ruta, meta = S.congelar_extension(_ext(base, 0.97), BASE_HASTA, ahora_utc=T_INTRADIA)
+        meta_sin_timing = {k: v for k, v in meta.items() if k != "timing"}
+        assert S.evaluar_timing((meta["disponibilidad"] or {}).get("por_ticker"), LUNES, T_NOCHE)["timing_ok"] is True
+        r = S.sellar(ruta, meta_sin_timing, ahora_utc=T_NOCHE, ruta_db=db)
+        assert r["resultado"] == "intento_no_verificable" and r["filas_insertadas"] == N_OPERABLES
+        for m in _motivos(db, S.TABLA_INTENTOS):
+>           assert "timing roto decidido por la clase de la evidencia (" + os.path.basename(ruta) in m, m
+E           AssertionError: una acción cuesta 441.07 USD y el margen disponible es 125.00 USD; el riel no compra fracciones
+E           assert ('timing roto decidido por la clase de la evidencia (' + 'ext_2026-09-14.no_verificable.csv') in 'una acción cuesta 441.07 USD y el margen disponible es 125.00 USD; el riel no compra fracciones'
+E            +  where 'ext_2026-09-14.no_verificable.csv' = <function basename at 0x71dac5212e50>('/tmp/pytest-of-nicolasaraneda/pytest-77/test_sin_bloque_timing_la_fila0/datos/sello/ext_2026-09-14.no_verificable.csv')
+E            +    where <function basename at 0x71dac5212e50> = <module 'posixpath' (frozen)>.basename
+E            +      where <module 'posixpath' (frozen)> = os.path
+
+tests/test_version_reglas_16_3.py:204: AssertionError
+___ test_en_un_intento_el_motivo_de_sin_dato_se_conserva_delante_de_la_nota ____
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-77/test_en_un_intento_el_motivo_d0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+
+    def test_en_un_intento_el_motivo_de_sin_dato_se_conserva_delante_de_la_nota(entorno_temporal, base):
+        """E3 sigue mandando: el ticker sin cierre lo dice primero, y la nota del
+        timing va detrás, separada por «; »."""
+        db = entorno_temporal
+        ext = _ext(base, 0.97)
+        ext.loc[pd.Timestamp(LUNES), "SHECY"] = float("nan")
+        ruta, meta = S.congelar_extension(ext, BASE_HASTA, ahora_utc=T_INTRADIA)
+        r = S.sellar(ruta, meta, ahora_utc=T_INTRADIA, ruta_db=db)
+        assert r["resultado"] == "intento_no_verificable" and r["sin_dato"] == ["SHECY"]
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        m_shecy = con.execute(f"SELECT motivo FROM {S.TABLA_INTENTOS} WHERE ticker = 'SHECY'").fetchone()[0]
+        con.close()
+>       assert m_shecy.startswith("sin dato en el insumo para la sesión") and "; timing roto decidido al congelar la evidencia" in m_shecy
+E       AssertionError: assert (True and '; timing roto decidido al congelar la evidencia' in 'sin dato en el insumo para la sesión 2026-09-14 (último cierre: 2026-09-11)')
+E        +  where True = <built-in method startswith of str object at 0x71dac41509c0>('sin dato en el insumo para la sesión')
+E        +    where <built-in method startswith of str object at 0x71dac41509c0> = 'sin dato en el insumo para la sesión 2026-09-14 (último cierre: 2026-09-11)'.startswith
+
+tests/test_version_reglas_16_3.py:232: AssertionError
+_____ test_estado_sin_base_trae_el_desglose_vacio_y_las_claves_de_siempre ______
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-77/test_estado_sin_base_trae_el_d0')
+
+    def test_estado_sin_base_trae_el_desglose_vacio_y_las_claves_de_siempre(tmp_path):
+        e = S.estado(str(tmp_path / "no_existe.db"))
+>       assert e["por_reglas_sha256"] == []
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'por_reglas_sha256'
+
+tests/test_version_reglas_16_3.py:247: KeyError
+___________ test_estado_desglosa_por_poblacion_y_la_suma_es_el_total ___________
+
+entorno_temporal = '/tmp/pytest-of-nicolasaraneda/pytest-77/test_estado_desglosa_por_pobla0/sello_dinero.db'
+base =                   UMC        GFS  ...        SOXX         XSD
+Date                              ...                   ...99  ...  502.200012  478.519989
+2026-09-04  20.770000  45.209999  ...  519.859985  491.450012
+
+[2011 rows x 36 columns]
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-77/test_estado_desglosa_por_pobla0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x71da7643c650>
+
+    def test_estado_desglosa_por_poblacion_y_la_suma_es_el_total(entorno_temporal, base, tmp_path, monkeypatch):
+        """Dos poblaciones: se sella una sesión con el reglas.json del parche y
+        otra con una copia de otra versión (otro sha). El desglose las separa, en
+        orden de primera fecha, y suma el total de `estado()`."""
+        db = entorno_temporal
+        r1 = _disparo(base, db, T_NOCHE, T_NOCHE)
+        assert r1["resultado"] == "sellada"
+        otra = tmp_path / "reglas_otra.json"
+        cfg2 = json.loads(json.dumps(U.reglas()))
+        cfg2["version_reglas"] = "0.9.9-PRUEBA"
+        otra.write_text(json.dumps(cfg2, indent=1, ensure_ascii=False), encoding="utf-8")
+        monkeypatch.setattr(U, "RUTA_REGLAS", str(otra))
+        martes = ("2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", LUNES, "2026-09-15")
+        ruta, meta = S.congelar_extension(_ext(base, 0.98, martes), BASE_HASTA, ahora_utc=T_NOCHE + timedelta(days=1))
+        r2 = S.sellar(ruta, meta, ahora_utc=T_NOCHE + timedelta(days=1), ruta_db=db, cfg=cfg2)
+        assert r2["resultado"] == "sellada"
+        e = S.estado(db)
+>       pobl = e["por_reglas_sha256"]
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'por_reglas_sha256'
+
+tests/test_version_reglas_16_3.py:268: KeyError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_version_reglas_16_3.py::test_R4_toely_sigue_saliendo_y_sin_la_clave_todo_sigue_igual
+PASSED tests/test_version_reglas_16_3.py::test_las_filas_de_un_sello_no_llevan_la_nota_del_timing
+PASSED tests/test_version_reglas_16_3.py::test_sin_cambio_de_esquema_las_dos_tablas_tienen_las_columnas_de_head
+PASSED tests/test_version_reglas_16_3.py::test_la_api_no_sirve_el_desglose_todavia_y_el_contrato_no_cambia
+SKIPPED [1] tests/test_version_reglas_16_3.py:284: sin base real en /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163_ctrl/dinero/sello_dinero.db
+FAILED tests/test_version_reglas_16_3.py::test_version_reglas_es_0_3_0_propuesta_con_su_nota_y_sin_mover_ninguna_regla
+FAILED tests/test_version_reglas_16_3.py::test_la_huella_de_reglas_es_una_tercera_poblacion
+FAILED tests/test_version_reglas_16_3.py::test_una_fila_sellada_con_el_parche_declara_la_version_nueva
+FAILED tests/test_version_reglas_16_3.py::test_R4_un_ticker_desconocido_en_la_exclusion_revienta_nombrandolo
+FAILED tests/test_version_reglas_16_3.py::test_R4_un_ticker_del_universo_pero_fuera_del_censo_tambien_revienta
+FAILED tests/test_version_reglas_16_3.py::test_las_filas_de_un_intento_llevan_el_instante_con_que_se_decidio_el_timing
+FAILED tests/test_version_reglas_16_3.py::test_sin_bloque_timing_la_fila_cita_la_clase_de_la_evidencia_y_no_el_reloj_del_sello
+FAILED tests/test_version_reglas_16_3.py::test_en_un_intento_el_motivo_de_sin_dato_se_conserva_delante_de_la_nota
+FAILED tests/test_version_reglas_16_3.py::test_estado_sin_base_trae_el_desglose_vacio_y_las_claves_de_siempre
+FAILED tests/test_version_reglas_16_3.py::test_estado_desglosa_por_poblacion_y_la_suma_es_el_total
+10 failed, 4 passed, 1 skipped in 3.32s

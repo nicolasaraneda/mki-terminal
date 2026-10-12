@@ -158,7 +158,10 @@ Lo único que hay que hacer es no romperlo.
 
 ### Camino 4 — POTENCIA CON VALIDEZ. Volver usable la ventana larga.
 
-La ventana larga da 59× la muestra y no es point-in-time. Tres cosas la
+La ventana larga da 61× la muestra sellada (14.618 / 238, el cociente de los dos n
+del árbitro que el generador del README publica como `larga_veces`; **errata
+11-oct-2026:** este párrafo decía «59×», un resto de la rama sin deduplicar
+derogada por D1) y no es point-in-time. Tres cosas la
 defienden hoy: el teorema del factor de ajuste (el objetivo es un cociente y el
 factor se cancela), 0 retornos cambiados en 52.507 celdas, y la reconstrucción
 **fiel al sello: 100 % de signos iguales y gaps idénticos sobre 214 filas**
@@ -166,7 +169,9 @@ factor se cancela), 0 retornos cambiados en 52.507 celdas, y la reconstrucción
 del universo —**declarada NO EVALUABLE**, y ninguno de los diez proveedores
 tasados vende constituyentes históricos— y ahora la intermitencia de estados.
 
-*Qué exige:* la copia cruda congelada al sellar (**C3**: ~60 líneas, ~15 MB/año,
+*Qué exige:* la copia cruda congelada al sellar (**C3**: ~60 líneas; 9 MB/año con
+130 barras o 53 MB/año con 3 años, medidos en `bitacora_07.md` 02:37; la estimación
+«~15 MB/año» que este párrafo traía está retirada desde el 2-sep-2026, errata 11-oct-2026;
 una columna aditiva `insumos_sha256`, corte de método con fecha) y declarar la
 ventana larga **dependiente de la fuente, con fecha y sha256 de descarga**
 (`fuente_canonica.md` §5 y §6). *Dinero:* cero. *Riesgo:* **toca

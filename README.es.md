@@ -35,9 +35,9 @@
 
 ![MKI Terminal — portada Hoy](docs/capturas/50_hoy.png)
 
-![tests](https://img.shields.io/badge/tests-1025%20recolectados%20al%202026--09--29-2ea44f?style=flat-square)
+![tests](https://img.shields.io/badge/tests-1216%20recolectados%20al%202026--10--11-2ea44f?style=flat-square)
 ![modelo](https://img.shields.io/badge/modelo-4.6.0%20congelado-5b6478?style=flat-square)
-![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--09--29-22d3ee?style=flat-square)
+![plataforma](https://img.shields.io/badge/plataforma-5.1.0%20al%202026--10--11-22d3ee?style=flat-square)
 ![sellada](https://img.shields.io/badge/ventana%20sellada-%2B9.7%20pp%20·%20IC%20d%C3%ADa%20%E2%88%927.2%E2%80%A6%2B26.6%20·%20n%3D238-b45309?style=flat-square)
 ![larga](https://img.shields.io/badge/ventana%20larga-%2B15.66%20pp%20·%20n%3D14.618-7c3aed?style=flat-square)
 ![datos](https://img.shields.io/badge/datos-yfinance%20diario-5b6478?style=flat-square)

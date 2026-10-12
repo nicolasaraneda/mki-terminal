@@ -1,0 +1,512 @@
+FFFFFFFFFFFFFFFEF.FFFFFF.FF                                              [100%]
+==================================== ERRORS ====================================
+_ ERROR at teardown of test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida _
+
+request = <SubRequest '_vigilar_red' for <Function test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida>>
+
+    @pytest.fixture(autouse=True)
+    def _vigilar_red(request):
+        """Registra la salida a la red del test y exige el marcador `red`."""
+        if os.environ.get("MKI_RED_LIBRE") == "1":
+            yield
+            return
+        nodeid = request.node.nodeid
+        _actual["nodeid"] = nodeid
+        try:
+            yield
+        finally:
+            _actual["nodeid"] = None
+        destinos = _intentos.get(nodeid)
+        if not destinos or os.environ.get("MKI_RED_INFORME"):
+            return
+        if request.node.get_closest_marker("red") is None:
+>           pytest.fail(
+                f"REGLA de la ventana de sellado: este test abrió conexiones "
+                f"salientes ({', '.join(sorted(destinos))}) y no lleva "
+                f"@pytest.mark.red. Un test que toca la red sin declararlo no "
+                f"puede quedar fuera de la corrida entre 17:50 y 20:30 de Chile, "
+                f"que es cuando el sistema sella. Marcalo, o quitale la red.")
+E           Failed: REGLA de la ventana de sellado: este test abrió conexiones salientes (query1.finance.yahoo.com, query2.finance.yahoo.com) y no lleva @pytest.mark.red. Un test que toca la red sin declararlo no puede quedar fuera de la corrida entre 17:50 y 20:30 de Chile, que es cuando el sistema sella. Marcalo, o quitale la red.
+
+tests/conftest.py:164: Failed
+=================================== FAILURES ===================================
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[metricas_apertura] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f1c6d70>
+cifra = 'metricas_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'metricas_apertura'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[calibracion_intervalos] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f1/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f1/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f1c6c40>
+cifra = 'calibracion_intervalos'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'calibracion_intervalos'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[evolucion_aciertos_apertura] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f2/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f2/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f009d90>
+cifra = 'evolucion_aciertos_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'evolucion_aciertos_apertura'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[ultimas_predicciones_apertura] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f3/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f3/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f01af10>
+cifra = 'ultimas_predicciones_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'ultimas_predicciones_apertura'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[verificaciones_detalle] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f4/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f4/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f01b570>
+cifra = 'verificaciones_detalle'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'verificaciones_detalle'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+_ test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[analisis_puntaje_ia] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f5/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_filas_invertidas_la_f5/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f09e250>
+cifra = 'analisis_puntaje_ia'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales(bases, monkeypatch, cifra):
+        """Mismo n, mismo redondeo, mismas columnas con sus nombres, mismo orden
+        de filas (el del índice único que SQLite usa en la consulta vieja)."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        vieja = getattr(senales, cifra)(**LLAMADAS[cifra])
+>       nueva = getattr(lb, cifra)(**LLAMADAS[cifra])
+                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'analisis_puntaje_ia'
+
+tests/test_fuente_unica_16_3.py:172: AttributeError
+____ test_cada_cifra_excluye_la_fila_invertida_sintetica[metricas_apertura] ____
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f09e850>
+cifra = 'metricas_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'metricas_apertura'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+_ test_cada_cifra_excluye_la_fila_invertida_sintetica[calibracion_intervalos] __
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil1/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil1/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0b1c70>
+cifra = 'calibracion_intervalos'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'calibracion_intervalos'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+_ test_cada_cifra_excluye_la_fila_invertida_sintetica[evolucion_aciertos_apertura] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil2/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil2/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0b2990>
+cifra = 'evolucion_aciertos_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'evolucion_aciertos_apertura'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+_ test_cada_cifra_excluye_la_fila_invertida_sintetica[ultimas_predicciones_apertura] _
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil3/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil3/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0f8910>
+cifra = 'ultimas_predicciones_apertura'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'ultimas_predicciones_apertura'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+_ test_cada_cifra_excluye_la_fila_invertida_sintetica[verificaciones_detalle] __
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil4/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil4/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0f8830>
+cifra = 'verificaciones_detalle'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'verificaciones_detalle'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+___ test_cada_cifra_excluye_la_fila_invertida_sintetica[analisis_puntaje_ia] ___
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil5/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_cada_cifra_excluye_la_fil5/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9ef7f6c0>
+cifra = 'analisis_puntaje_ia'
+
+    @pytest.mark.parametrize("cifra", SEIS)
+    def test_cada_cifra_excluye_la_fila_invertida_sintetica(bases, monkeypatch, cifra):
+        """Con la fila invertida en la base, la fuente nueva da lo que la vieja da
+        SIN ella: la única diferencia permitida entre las dos fuentes son las
+        filas que la regla de conocibilidad retira (encargo 16-3, §1)."""
+        sin, con = bases
+        _apuntar(monkeypatch, sin, con)
+        esperado = getattr(senales, cifra)(**LLAMADAS[cifra])     # la vieja, sobre la base SIN la invertida
+>       obtenido = getattr(lb, cifra)(**LLAMADAS[cifra])          # la nueva, sobre la base CON la invertida
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'analisis_puntaje_ia'
+
+tests/test_fuente_unica_16_3.py:186: AttributeError
+__ test_la_exclusion_de_las_cifras_vivas_es_la_misma_regla_que_la_del_arbitro __
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_la_exclusion_de_las_cifra0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_la_exclusion_de_las_cifra0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0262d0>
+
+    def test_la_exclusion_de_las_cifras_vivas_es_la_misma_regla_que_la_del_arbitro(bases, monkeypatch):
+        """`cargar_vivas` y `cargar` pasan por la MISMA `excluir_sin_conocibilidad`:
+        el conjunto (fecha, ticker) que una retira es el que la otra retira. NULL
+        y la igualdad no disparan (misma semántica que el verificador)."""
+        _, con = bases
+        _apuntar(monkeypatch, con, con)
+>       vivas = set(zip(lb.cargar_vivas()["fecha_senal"], lb.cargar_vivas()["ticker"]))
+                        ^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'cargar_vivas'
+
+tests/test_fuente_unica_16_3.py:207: AttributeError
+____ test_la_ventana_de_dias_es_la_misma_expresion_de_sqlite_que_en_senales ____
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_la_ventana_de_dias_es_la_0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_la_ventana_de_dias_es_la_0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0265d0>
+
+    def test_la_ventana_de_dias_es_la_misma_expresion_de_sqlite_que_en_senales(bases, monkeypatch):
+        """`date('now', '-30 days')` sobre `fecha_senal`, día UTC: la fila de hace
+        45 días queda fuera de la ventana de 30 y dentro de la de 90, en las dos
+        fuentes por igual."""
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+>       assert lb.metricas_apertura(dias=30)["n"] == senales.metricas_apertura(dias=30)["n"] == len(FILAS_SANAS) - 1
+               ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'metricas_apertura'
+
+tests/test_fuente_unica_16_3.py:221: AttributeError
+________ test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida ________
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_reproduccion_la_api_histo0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_reproduccion_la_api_histo0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9f0b9f40>
+
+    def test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida(bases, monkeypatch):
+        """REPRODUCCIÓN (rojo sobre HEAD, que sirve las seis de senales.py): con
+        la fila invertida en la base, `/api/historial` sirve n sin ella en
+        `metricas`, `calibracion`, `wilson`, `puntaje_ia`, y no la lista en
+        `ultimas` ni la suma en `evolucion` ni en los desgloses."""
+        from fastapi.testclient import TestClient
+        from api.main import app
+        sin, con = bases
+        _apuntar(monkeypatch, con, con)
+        datos = TestClient(app).get("/api/historial").json()["datos"]
+        _apuntar(monkeypatch, sin, sin)
+        esperado = senales.metricas_apertura(dias=30)
+>       assert datos["metricas"]["n"] == esperado["n"], (
+            f"/api/historial sirve n={datos['metricas']['n']} en el track record de 30 días: cuenta la fila "
+            f"invertida; sin ella son {esperado['n']}")
+E       AssertionError: /api/historial sirve n=8 en el track record de 30 días: cuenta la fila invertida; sin ella son 7
+E       assert 8 == 7
+
+tests/test_fuente_unica_16_3.py:241: AssertionError
+_____ test_reproduccion_el_reporte_de_telegram_no_cuenta_la_fila_invertida _____
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_reproduccion_el_reporte_d0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_reproduccion_el_reporte_d0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719ea5bd1440>
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-51/test_reproduccion_el_reporte_d0')
+
+    def test_reproduccion_el_reporte_de_telegram_no_cuenta_la_fila_invertida(bases, monkeypatch, tmp_path):
+        """REPRODUCCIÓN (rojo sobre HEAD): el bloque «Track record (30d)» del
+        reporte sellado dice N sin la fila invertida, y la cobertura del 80% se
+        calcula sin ella. El reporte sigue sin llamar al motor."""
+        import alertas
+        sin, con = bases
+        monkeypatch.setattr(noticias, "DB_PATH", str(tmp_path / "noticias.db"))
+        noticias.init_db()
+        _apuntar(monkeypatch, con, con)
+        texto = alertas.componer_reporte_sellado()
+        _apuntar(monkeypatch, sin, sin)
+        m, cal = senales.metricas_apertura(dias=30), senales.calibracion_intervalos()
+>       assert f"N={m['n']} ·" in texto, f"el reporte no dice N={m['n']}:\n{texto}"
+E       AssertionError: el reporte no dice N=7:
+E         <b>MKI</b> · 2026-10-11 · ⚠ sin snapshot sellado hoy · plataforma 5.1.0 / modelo 4.6.0
+E         
+E         Régimen / SOX / Roca→Chip: sin sello hoy — nada que reportar ⚠
+E         
+E         Aperturas: sin predicciones selladas hoy ⚠
+E         
+E         <b>Track record</b> (modelo 4.6.0, 30d): N=8 · gap 50.0% · sesión 87.5% · MAE 2.46/2.49 pp
+E         Cobertura del intervalo 80%: 50.0% (n=8)
+E         
+E         <i>Herramienta de análisis — no constituye asesoría financiera.</i>
+E       assert 'N=7 ·' in '<b>MKI</b> · 2026-10-11 · ⚠ sin snapshot sellado hoy · plataforma 5.1.0 / modelo 4.6.0\n\nRégimen / SOX / Roca→Chip: ...49 pp\nCobertura del intervalo 80%: 50.0% (n=8)\n\n<i>Herramienta de análisis — no constituye asesoría financiera.</i>'
+
+tests/test_fuente_unica_16_3.py:265: AssertionError
+_______ test_sin_base_las_seis_dicen_datos_insuficientes_y_no_crean_nada _______
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-51/test_sin_base_las_seis_dicen_d0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9bd3cd70>
+
+    def test_sin_base_las_seis_dicen_datos_insuficientes_y_no_crean_nada(tmp_path, monkeypatch):
+        ruta = str(tmp_path / "no_existe.db")
+        _apuntar(monkeypatch, ruta, ruta)
+>       assert lb.metricas_apertura(dias=30) == {"suficiente": False, "n": 0}
+               ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'metricas_apertura'
+
+tests/test_fuente_unica_16_3.py:296: AttributeError
+_________________ test_las_seis_no_modifican_la_base_que_leen __________________
+
+bases = ('/tmp/pytest-of-nicolasaraneda/pytest-51/test_las_seis_no_modifican_la_0/sin_invertida.db', '/tmp/pytest-of-nicolasaraneda/pytest-51/test_las_seis_no_modifican_la_0/con_invertida.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9bcef9b0>
+
+    def test_las_seis_no_modifican_la_base_que_leen(bases, monkeypatch):
+        sin, _ = bases
+        _apuntar(monkeypatch, sin, sin)
+        antes = os.stat(sin)
+        with open(sin, "rb") as f:
+            bytes_antes = f.read()
+        for cifra in SEIS:
+>           getattr(lb, cifra)(**LLAMADAS[cifra])
+            ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'backtest.linea_base' has no attribute 'metricas_apertura'
+
+tests/test_fuente_unica_16_3.py:316: AttributeError
+___________ test_las_funciones_nuevas_abren_la_base_solo_en_modo_ro ____________
+
+    def test_las_funciones_nuevas_abren_la_base_solo_en_modo_ro():
+        fuente = open(os.path.join(RAIZ, "backtest", "linea_base.py"), encoding="utf-8").read()
+        arbol = ast.parse(fuente)
+        nombres = {n.name for n in ast.walk(arbol) if isinstance(n, ast.FunctionDef)}
+>       assert set(SEIS) | {"cargar_vivas", "cargar_puntaje_vivo"} <= nombres
+E       AssertionError: assert {'analisis_pu...pertura', ...} <= {'_instante_u...r_dedup', ...}
+E         
+E         Extra items in the left set:
+E         'cargar_vivas'
+E         'calibracion_intervalos'
+E         'evolucion_aciertos_apertura'
+E         'metricas_apertura'
+E         'analisis_puntaje_ia'...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests/test_fuente_unica_16_3.py:328: AssertionError
+___ test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[alertas.py] ___
+
+consumidor = 'alertas.py'
+
+    @pytest.mark.parametrize("consumidor", CONSUMIDORES)
+    def test_ningun_consumidor_publicado_llama_a_las_seis_de_senales(consumidor):
+        """Las seis siguen existiendo en senales.py (no se borran en la 16-3,
+        tarjeta §82) pero ningún consumidor publicado las llama: el reporte, la
+        API y el dashboard leen de `backtest.linea_base`."""
+        ruta = os.path.join(RAIZ, consumidor)
+        usadas = _llamadas_a_senales(ruta) & set(SEIS)
+>       assert not usadas, f"{consumidor} sigue leyendo {sorted(usadas)} de senales.py"
+E       AssertionError: alertas.py sigue leyendo ['calibracion_intervalos', 'metricas_apertura'] de senales.py
+E       assert not {'calibracion_intervalos', 'metricas_apertura'}
+
+tests/test_fuente_unica_16_3.py:353: AssertionError
+__ test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[api/main.py] ___
+
+consumidor = 'api/main.py'
+
+    @pytest.mark.parametrize("consumidor", CONSUMIDORES)
+    def test_ningun_consumidor_publicado_llama_a_las_seis_de_senales(consumidor):
+        """Las seis siguen existiendo en senales.py (no se borran en la 16-3,
+        tarjeta §82) pero ningún consumidor publicado las llama: el reporte, la
+        API y el dashboard leen de `backtest.linea_base`."""
+        ruta = os.path.join(RAIZ, consumidor)
+        usadas = _llamadas_a_senales(ruta) & set(SEIS)
+>       assert not usadas, f"{consumidor} sigue leyendo {sorted(usadas)} de senales.py"
+E       AssertionError: api/main.py sigue leyendo ['analisis_puntaje_ia', 'calibracion_intervalos', 'evolucion_aciertos_apertura', 'metricas_apertura', 'ultimas_predicciones_apertura', 'verificaciones_detalle'] de senales.py
+E       assert not {'analisis_puntaje_ia', 'calibracion_intervalos', 'evolucion_aciertos_apertura', 'metricas_apertura', 'ultimas_predicciones_apertura', 'verificaciones_detalle'}
+
+tests/test_fuente_unica_16_3.py:353: AssertionError
+_____ test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[app.py] _____
+
+consumidor = 'app.py'
+
+    @pytest.mark.parametrize("consumidor", CONSUMIDORES)
+    def test_ningun_consumidor_publicado_llama_a_las_seis_de_senales(consumidor):
+        """Las seis siguen existiendo en senales.py (no se borran en la 16-3,
+        tarjeta §82) pero ningún consumidor publicado las llama: el reporte, la
+        API y el dashboard leen de `backtest.linea_base`."""
+        ruta = os.path.join(RAIZ, consumidor)
+        usadas = _llamadas_a_senales(ruta) & set(SEIS)
+>       assert not usadas, f"{consumidor} sigue leyendo {sorted(usadas)} de senales.py"
+E       AssertionError: app.py sigue leyendo ['analisis_puntaje_ia', 'calibracion_intervalos', 'evolucion_aciertos_apertura', 'metricas_apertura', 'ultimas_predicciones_apertura'] de senales.py
+E       assert not {'analisis_puntaje_ia', 'calibracion_intervalos', 'evolucion_aciertos_apertura', 'metricas_apertura', 'ultimas_predicciones_apertura'}
+
+tests/test_fuente_unica_16_3.py:353: AssertionError
+_______________ test_el_minimo_de_observaciones_es_el_de_senales _______________
+
+    def test_el_minimo_de_observaciones_es_el_de_senales():
+>       assert lb.MINIMO_OBSERVACIONES == senales.MINIMO_OBSERVACIONES == 5
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'MINIMO_OBSERVACIONES'
+
+tests/test_fuente_unica_16_3.py:368: AttributeError
+_ test_la_deduplicacion_firmada_no_se_aplica_a_las_cifras_vivas_y_queda_declarada _
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-51/test_la_deduplicacion_firmada_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x719e9907bcd0>
+
+    def test_la_deduplicacion_firmada_no_se_aplica_a_las_cifras_vivas_y_queda_declarada(tmp_path, monkeypatch):
+        """La regla de deduplicación (1-sep-2026) rige en el árbitro (`cargar`,
+        dedup por defecto). Para las cifras vivas NO está firmada: §93.4 nombra
+        sólo la conocibilidad, y aplicarla movería el n de las cifras de toda la
+        historia por otra razón, lo que el encargo 16-3 prohíbe. Este test fija
+        lo DECLARADO (tarjeta §82); si Nicolás firma la deduplicación para las
+        cifras vivas, este test cambia con esa firma, no antes."""
+        ruta = str(tmp_path / "pares.db")
+        _crear(ruta)
+        _apuntar(monkeypatch, ruta, ruta)
+        # el par del defecto de snapshot.py: dos emisiones de días distintos que apuntan a la
+        # MISMA sesión objetivo; la de la emisión tardía (martes 01:23Z) no «calza» con la sesión
+        # que sigue a su available_at y la deduplicación la retira; la otra sí calza
+        _sembrar(ruta, "2026-07-28", "005930.KS", emision="2026-07-28T21:15:00+00:00",
+                 available="2026-07-28T20:00:00+00:00", sesion="2026-07-29")
+        _sembrar(ruta, "2026-07-27", "005930.KS", emision="2026-07-28T01:23:34+00:00",
+                 available="2026-07-27T20:00:00+00:00", sesion="2026-07-29")
+        for f in FILAS_SANAS[:4]:
+            _sembrar(ruta, **f)
+        con_dedup, sin_dedup = lb.cargar(), lb.cargar(dedup=False)
+        assert len(sin_dedup) == len(con_dedup) + 1, "la siembra no reproduce un par que la regla retire"
+>       assert len(lb.cargar_vivas()) == len(sin_dedup)
+                   ^^^^^^^^^^^^^^^
+E       AttributeError: module 'backtest.linea_base' has no attribute 'cargar_vivas'
+
+tests/test_fuente_unica_16_3.py:392: AttributeError
+=============================== warnings summary ===============================
+tests/test_fuente_unica_16_3.py::test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida
+  /home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[metricas_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[calibracion_intervalos]
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[evolucion_aciertos_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[ultimas_predicciones_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[verificaciones_detalle]
+FAILED tests/test_fuente_unica_16_3.py::test_sin_filas_invertidas_la_fuente_nueva_da_exactamente_lo_mismo_que_senales[analisis_puntaje_ia]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[metricas_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[calibracion_intervalos]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[evolucion_aciertos_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[ultimas_predicciones_apertura]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[verificaciones_detalle]
+FAILED tests/test_fuente_unica_16_3.py::test_cada_cifra_excluye_la_fila_invertida_sintetica[analisis_puntaje_ia]
+FAILED tests/test_fuente_unica_16_3.py::test_la_exclusion_de_las_cifras_vivas_es_la_misma_regla_que_la_del_arbitro
+FAILED tests/test_fuente_unica_16_3.py::test_la_ventana_de_dias_es_la_misma_expresion_de_sqlite_que_en_senales
+FAILED tests/test_fuente_unica_16_3.py::test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida
+FAILED tests/test_fuente_unica_16_3.py::test_reproduccion_el_reporte_de_telegram_no_cuenta_la_fila_invertida
+FAILED tests/test_fuente_unica_16_3.py::test_sin_base_las_seis_dicen_datos_insuficientes_y_no_crean_nada
+FAILED tests/test_fuente_unica_16_3.py::test_las_seis_no_modifican_la_base_que_leen
+FAILED tests/test_fuente_unica_16_3.py::test_las_funciones_nuevas_abren_la_base_solo_en_modo_ro
+FAILED tests/test_fuente_unica_16_3.py::test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[alertas.py]
+FAILED tests/test_fuente_unica_16_3.py::test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[api/main.py]
+FAILED tests/test_fuente_unica_16_3.py::test_ningun_consumidor_publicado_llama_a_las_seis_de_senales[app.py]
+FAILED tests/test_fuente_unica_16_3.py::test_el_minimo_de_observaciones_es_el_de_senales
+FAILED tests/test_fuente_unica_16_3.py::test_la_deduplicacion_firmada_no_se_aplica_a_las_cifras_vivas_y_queda_declarada
+ERROR tests/test_fuente_unica_16_3.py::test_reproduccion_la_api_historial_no_cuenta_la_fila_invertida
+24 failed, 2 passed, 1 warning, 1 error in 4.86s

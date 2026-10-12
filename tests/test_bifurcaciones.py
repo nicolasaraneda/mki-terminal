@@ -26,10 +26,11 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from GEMELO import bifurcaciones as bf
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5)
 
-HAY_BASE = os.path.exists(bf.RUTA_SENALES)
+HAY_BASE = hay_filas(bf.RUTA_SENALES, "verificacion_apertura")
 solo_con_base = pytest.mark.skipif(
-    not HAY_BASE, reason="senales.db no está (es gitignored)")
+    not HAY_BASE, reason=razon_sin_base(bf.RUTA_SENALES, "verificacion_apertura"))
 
 RUTA_MODULO = os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "GEMELO", "bifurcaciones.py")

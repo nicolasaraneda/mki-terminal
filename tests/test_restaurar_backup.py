@@ -17,6 +17,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 
 import restaurar_backup as rb  # noqa: E402
+from bases_de_prueba import hay_filas  # noqa: E402  (corrida 16-3, R5: la base con filas, no el archivo)
 
 ORIGEN = os.path.join(RAIZ, "data", "backups")
 SENALES_REAL = os.path.join(RAIZ, "senales.db")
@@ -153,9 +154,11 @@ def test_coaccion_vacio_es_cadena_vacia_en_columnas_default_vacio():
 
 # ------------------------------------------ comparación contra las bases reales
 
+# Corrida 16-3 (R5 del dictamen 16-1): con filas, no sólo el archivo (ver
+# tests/test_importador_roundtrip.py, misma razón).
 pytestmark_reales = pytest.mark.skipif(
-    not (os.path.isfile(SENALES_REAL) and os.path.isfile(NOTICIAS_REAL)),
-    reason="senales.db/noticias.db no existen en este checkout — exactamente "
+    not (hay_filas(SENALES_REAL, "verificacion_puntaje") and hay_filas(NOTICIAS_REAL, "titulares")),
+    reason="senales.db/noticias.db sin filas en este checkout — exactamente "
            "el escenario de 'se perdió el disco', nada que comparar",
 )
 

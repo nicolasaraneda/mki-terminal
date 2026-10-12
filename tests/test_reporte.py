@@ -18,6 +18,7 @@ import pytest
 import alertas
 import noticias
 import senales
+from backtest import linea_base as lb
 
 
 HOY = date.today().isoformat()
@@ -29,6 +30,9 @@ AHORA = datetime.now(timezone.utc).isoformat()
 def dbs(monkeypatch, tmp_path):
     """senales.db y noticias.db temporales, pobladas con un día sellado."""
     monkeypatch.setattr(senales, "DB_PATH", str(tmp_path / "senales.db"))
+    # corrida 16-3: el track record del reporte sale de la fuente única, que
+    # lee senales.db por su propia ruta (mode=ro)
+    monkeypatch.setattr(lb, "RUTA_SENALES", str(tmp_path / "senales.db"))
     monkeypatch.setattr(noticias, "DB_PATH", str(tmp_path / "noticias.db"))
     senales.init_db()
     noticias.init_db()
@@ -105,11 +109,11 @@ def test_reporte_completo(dbs):
     assert "6 selladas en total" in texto
     # IFX (|0.3|, el 6º) queda fuera del top 5
     assert "β0.12" not in texto
-    # Track record: MISMOS números que la consulta del dashboard
-    m = senales.metricas_apertura(dias=30)
+    # Track record: MISMOS números que el dashboard y la API (fuente única, 16-3)
+    m = lb.metricas_apertura(dias=30)
     assert f"N={m['n']}" in texto
     assert f"gap {m['gap']['pct_aciertos']:.1f}%" in texto
-    cal = senales.calibracion_intervalos()
+    cal = lb.calibracion_intervalos()
     assert f"Cobertura del intervalo 80%: {cal['cobertura_pct']:.1f}%" in texto
     # Noticias: por relevancia (TSMC 0.95 antes que Samsung 0.90), HTML escapado
     assert texto.index("TSMC lifts capex") < texto.index("Samsung &lt;b&gt;flags")
@@ -124,6 +128,7 @@ def test_palabra_prohibida(dbs):
 
 def test_sin_snapshot_lo_dice(dbs, monkeypatch, tmp_path):
     monkeypatch.setattr(senales, "DB_PATH", str(tmp_path / "vacia.db"))
+    monkeypatch.setattr(lb, "RUTA_SENALES", str(tmp_path / "vacia.db"))
     texto = alertas.componer_reporte_sellado()
     assert "sin snapshot sellado hoy" in texto
     assert "sin predicciones selladas hoy" in texto

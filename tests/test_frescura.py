@@ -46,9 +46,11 @@ from test_conocibilidad import (  # noqa: E402,F401  (la fixture se registra al 
     CHILE, CIERRE_EVENTO, EMISION_EVENTO, FECHA_EVENTO, _a_las_1815_de_chile,
     _instante, sellador)
 
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5)
+
 BASE_REAL = os.path.join(RAIZ, "senales.db")
 solo_con_base = pytest.mark.skipif(
-    not os.path.exists(BASE_REAL), reason="sin senales.db: no hay historia sellada que leer")
+    not hay_filas(BASE_REAL, "snapshots"), reason=razon_sin_base(BASE_REAL, "snapshots"))
 
 # El escenario H0 de la tarjeta §72, con las mismas fechas que fijó la
 # corrida 15: martes 29-sep-2026 a las 18:15 de Chile, y la fuente todavía

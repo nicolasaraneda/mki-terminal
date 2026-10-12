@@ -1,0 +1,2271 @@
+......................FFFFFF............................................ [  5%]
+........................................................................ [ 11%]
+............................................sssssss.ssssssss..........s. [ 17%]
+.sss....ssss..sss..s......sEEEEEE.............................s......... [ 23%]
+..ss...sss.............................................................. [ 29%]
+.....FF.......................X..s.........................s..F......... [ 35%]
+..................................................................s..... [ 41%]
+..................................FFFFFF..F...FFFF...................... [ 47%]
+......................................sF.............ss.F..sssss.ssss... [ 53%]
+..ss............................s...s...........s..s............s..FFF.F [ 59%]
+....FF..F..F.F.......................................................... [ 65%]
+...........FF........................................................... [ 71%]
+.......................................................s.......sssssss.s [ 77%]
+........................................................................ [ 83%]
+........................................................................ [ 89%]
+...ss...s.sssss......s...........s...................................... [ 95%]
+.........................................................                [100%]
+==================================== ERRORS ====================================
+____ ERROR at setup of test_el_arbitro_computa_la_ventana_sellada_publicada ____
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+______ ERROR at setup of test_todo_estimador_del_arbitro_lleva_intervalo _______
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+________ ERROR at setup of test_los_doce_bloques_estan_en_sus_archivos _________
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_ ERROR at setup of test_los_nueve_bloques_del_readme_en_ingles_estan_en_su_archivo _
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_________ ERROR at setup of test_si_n_cambia_cambian_los_doce_bloques __________
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_ ERROR at setup of test_si_la_convencion_cambia_cambian_los_doce_bloques_y_la_derogada_no_esta _
+
+    @pytest.fixture(scope="module")
+    def sellada():
+>       return cifras.sellada()
+               ^^^^^^^^^^^^^^^^
+
+tests/test_cifras_arbitro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+=================================== FAILURES ===================================
+_______ test_D1_la_friccion_del_juego_activo_viaja_como_objeto_con_banda _______
+
+    def test_D1_la_friccion_del_juego_activo_viaja_como_objeto_con_banda():
+        from api.main import _estado_rieles
+>       din = _estado_rieles()["rieles"][1]
+              ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:336: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+___________ test_D3_la_sigma_servida_y_el_MDE80_no_comparten_oracion ___________
+
+    def test_D3_la_sigma_servida_y_el_MDE80_no_comparten_oracion():
+        from api.main import _estado_rieles
+>       pot = _estado_rieles()["rieles"][1]["potencia"]
+              ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:348: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_____________ test_D9_el_mapa_no_se_sirve_sin_presupuesto_ni_modo ______________
+
+    def test_D9_el_mapa_no_se_sirve_sin_presupuesto_ni_modo():
+        from api.main import _estado_rieles, _mapa_con_etiqueta
+>       m = _estado_rieles()["rieles"][1]["mapa"]
+            ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:361: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+___________ test_D11_que_lo_mata_no_dice_que_R2_no_esta_recomputado ____________
+
+    def test_D11_que_lo_mata_no_dice_que_R2_no_esta_recomputado():
+        import re
+        from api.main import _estado_rieles
+>       q = _estado_rieles()["rieles"][0]["que_lo_mata"]
+            ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:369: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+___________ test_D12_D13_cobertura_con_wilson_y_etiqueta_de_regimen ____________
+
+    def test_D12_D13_cobertura_con_wilson_y_etiqueta_de_regimen():
+        from api.main import _estado_rieles
+>       med = _estado_rieles()["rieles"][0]
+              ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:376: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+________ test_D15_los_dos_denominadores_de_la_senal_larga_van_separados ________
+
+    def test_D15_los_dos_denominadores_de_la_senal_larga_van_separados():
+        from api.main import _estado_rieles
+>       sl = _estado_rieles()["rieles"][1]["senal_larga"]
+             ^^^^^^^^^^^^^^^^
+
+tests/test_api.py:386: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_______ test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice ________
+
+    def test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice():
+        """Paridad de la capa nueva: lo que sirve la API es exactamente el
+        artefacto generado, sin recomputar nada."""
+        import json
+        from fastapi.testclient import TestClient
+    
+        from api.main import app
+        c = TestClient(app)
+    
+        r = c.get("/api/dinero/universo")
+        assert r.status_code == 200
+        disco = json.load(open(os.path.join(
+            RAIZ, "dinero/resultados/universo_operable.json"), encoding="utf-8"))
+        assert r.json()["datos"]["resumen"] == disco["resumen"]
+    
+        r = c.get("/api/dinero/cuenta")
+        assert r.status_code == 200
+        assert r.json()["datos"]["etiqueta"] == "SIMULADO"
+    
+>       r = c.get("/api/rieles")
+            ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_dinero.py:531: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/testclient.py:483: in get
+    return super().get(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/testclient.py:455: in request
+    return super().request(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/testclient.py:354: in handle_request
+    raise exc
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/testclient.py:351: in handle_request
+    portal.call(self.app, scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/anyio/from_thread.py:338: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.14/concurrent/futures/_base.py:450: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.14/concurrent/futures/_base.py:395: in __get_result
+    raise self._exception
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/anyio/from_thread.py:263: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/middleware/cors.py:88: in __call__
+    await self.app(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/routing.py:670: in __call__
+    await self.middleware_stack(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:2683: in app
+    await route.handle(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:1266: in handle
+    await super().handle(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/routing.py:280: in handle
+    await self.app(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:150: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:136: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:690: in app
+    raw_response = await run_endpoint_function(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/routing.py:346: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:2641: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+/home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:1033: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+api/main.py:1330: in rieles
+    return {"meta": _meta_simple(), "datos": _estado_rieles()}
+                                             ^^^^^^^^^^^^^^^^
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+____________ test_las_cifras_del_riel_de_medicion_salen_del_arbitro ____________
+
+    def test_las_cifras_del_riel_de_medicion_salen_del_arbitro():
+        """No se escriben a mano en la API: si el árbitro se mueve, la vista se
+        mueve con él o el test se pone rojo."""
+        from fastapi.testclient import TestClient
+    
+        import cifras
+        from api.main import app
+>       c = cifras.sellada()
+            ^^^^^^^^^^^^^^^^
+
+tests/test_dinero.py:551: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_____ test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado ______
+
+    def test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado():
+        """Observación del curador: la mayoría de las frases fijas viven en la API,
+        no en el TSX. Mismo censo sobre el JSON servido."""
+        import json
+        from api.main import dinero_sellos, rieles
+        prohibidas = ("rentable", "retorno esperado", "ganancia esperada", "confianza", "sostiene casi toda")
+>       for payload in (dinero_sellos(), rieles()):
+                                         ^^^^^^^^
+
+tests/test_frontend_estatus.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+api/main.py:1330: in rieles
+    return {"meta": _meta_simple(), "datos": _estado_rieles()}
+                                             ^^^^^^^^^^^^^^^^
+api/utilidades.py:33: in envuelto
+    valor = fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^
+api/main.py:1179: in _estado_rieles
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+______________ test_cada_fila_sellada_vuelve_identica[snapshots] _______________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+tabla = 'snapshots'
+
+    @requiere_base_real
+    @pytest.mark.parametrize("tabla", list(CLAVES_NATURALES))
+    def test_cada_fila_sellada_vuelve_identica(resultados, tabla):
+        """Fila por fila, columna por columna, sin tolerancia. Falla listando
+        las filas y la razón; las filas posteriores al respaldo se toleran y
+        se declaran como warning."""
+        r = resultados[tabla]
+        if r.posteriores_al_respaldo:
+            warnings.warn(
+                f"{tabla}: {len(r.posteriores_al_respaldo)} fila(s) de la base viva "
+                f"posteriores al respaldo, no comparables todavía:\n"
+                f"{_formatear(r.posteriores_al_respaldo)}",
+                stacklevel=1,
+            )
+>       assert r.discrepancias == [], (
+            f"{tabla}: {len(r.discrepancias)} discrepancia(s) entre la base real "
+            f"(n={r.n_real}) y la restauración (n={r.n_restaurada}), "
+            f"{r.celdas_comparadas} celdas comparadas:\n{_formatear(r.discrepancias)}"
+        )
+E       AssertionError: snapshots: 68 discrepancia(s) entre la base real (n=0) y la restauración (n=68), 0 celdas comparadas:
+E           ('2026-07-04',): fila en la restauración que la base real no tiene
+E           ('2026-07-05',): fila en la restauración que la base real no tiene
+E           ('2026-07-08',): fila en la restauración que la base real no tiene
+E           ('2026-07-09',): fila en la restauración que la base real no tiene
+E           ('2026-07-13',): fila en la restauración que la base real no tiene
+E           ('2026-07-14',): fila en la restauración que la base real no tiene
+E           ('2026-07-15',): fila en la restauración que la base real no tiene
+E           ('2026-07-16',): fila en la restauración que la base real no tiene
+E           ('2026-07-17',): fila en la restauración que la base real no tiene
+E           ('2026-07-20',): fila en la restauración que la base real no tiene
+E           ('2026-07-21',): fila en la restauración que la base real no tiene
+E           ('2026-07-22',): fila en la restauración que la base real no tiene
+E           ('2026-07-23',): fila en la restauración que la base real no tiene
+E           ('2026-07-24',): fila en la restauración que la base real no tiene
+E           ('2026-07-27',): fila en la restauración que la base real no tiene
+E           ('2026-07-28',): fila en la restauración que la base real no tiene
+E           ('2026-07-29',): fila en la restauración que la base real no tiene
+E           ('2026-07-30',): fila en la restauración que la base real no tiene
+E           ('2026-07-31',): fila en la restauración que la base real no tiene
+E           ('2026-08-03',): fila en la restauración que la base real no tiene
+E           ('2026-08-04',): fila en la restauración que la base real no tiene
+E           ('2026-08-05',): fila en la restauración que la base real no tiene
+E           ('2026-08-06',): fila en la restauración que la base real no tiene
+E           ('2026-08-07',): fila en la restauración que la base real no tiene
+E           ('2026-08-10',): fila en la restauración que la base real no tiene
+E           ... y 43 más
+E       assert [(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 68 more items, first extra item: (('2026-07-04',), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:231: AssertionError
+____________ test_cada_fila_sellada_vuelve_identica[senales_ticker] ____________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+tabla = 'senales_ticker'
+
+    @requiere_base_real
+    @pytest.mark.parametrize("tabla", list(CLAVES_NATURALES))
+    def test_cada_fila_sellada_vuelve_identica(resultados, tabla):
+        """Fila por fila, columna por columna, sin tolerancia. Falla listando
+        las filas y la razón; las filas posteriores al respaldo se toleran y
+        se declaran como warning."""
+        r = resultados[tabla]
+        if r.posteriores_al_respaldo:
+            warnings.warn(
+                f"{tabla}: {len(r.posteriores_al_respaldo)} fila(s) de la base viva "
+                f"posteriores al respaldo, no comparables todavía:\n"
+                f"{_formatear(r.posteriores_al_respaldo)}",
+                stacklevel=1,
+            )
+>       assert r.discrepancias == [], (
+            f"{tabla}: {len(r.discrepancias)} discrepancia(s) entre la base real "
+            f"(n={r.n_real}) y la restauración (n={r.n_restaurada}), "
+            f"{r.celdas_comparadas} celdas comparadas:\n{_formatear(r.discrepancias)}"
+        )
+E       AssertionError: senales_ticker: 1591 discrepancia(s) entre la base real (n=0) y la restauración (n=1591), 0 celdas comparadas:
+E           ('2026-07-04', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '3436.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '4063.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'AMD'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'ARM'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'ASML'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'AVGO'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'BHP'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'FCX'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'IFX.DE'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'INTC'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'MSFT'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'MU'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'NVDA'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'QCOM'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'TSM'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'TXN'): fila en la restauración que la base real no tiene
+E           ('2026-07-04', 'UMC'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '2330.TW'): fila en la restauración que la base real no tiene
+E           ... y 1566 más
+E       assert [(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 1591 more items, first extra item: (('2026-07-04', '000660.KS'), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:231: AssertionError
+________ test_cada_fila_sellada_vuelve_identica[verificacion_apertura] _________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+tabla = 'verificacion_apertura'
+
+    @requiere_base_real
+    @pytest.mark.parametrize("tabla", list(CLAVES_NATURALES))
+    def test_cada_fila_sellada_vuelve_identica(resultados, tabla):
+        """Fila por fila, columna por columna, sin tolerancia. Falla listando
+        las filas y la razón; las filas posteriores al respaldo se toleran y
+        se declaran como warning."""
+        r = resultados[tabla]
+        if r.posteriores_al_respaldo:
+            warnings.warn(
+                f"{tabla}: {len(r.posteriores_al_respaldo)} fila(s) de la base viva "
+                f"posteriores al respaldo, no comparables todavía:\n"
+                f"{_formatear(r.posteriores_al_respaldo)}",
+                stacklevel=1,
+            )
+>       assert r.discrepancias == [], (
+            f"{tabla}: {len(r.discrepancias)} discrepancia(s) entre la base real "
+            f"(n={r.n_real}) y la restauración (n={r.n_restaurada}), "
+            f"{r.celdas_comparadas} celdas comparadas:\n{_formatear(r.discrepancias)}"
+        )
+E       AssertionError: verificacion_apertura: 490 discrepancia(s) entre la base real (n=0) y la restauración (n=490), 0 celdas comparadas:
+E           ('2026-07-05', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '3436.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '4063.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'IFX.DE'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '3436.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '4063.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'IFX.DE'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '3436.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '4063.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'IFX.DE'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', '2330.TW'): fila en la restauración que la base real no tiene
+E           ... y 465 más
+E       assert [(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 490 more items, first extra item: (('2026-07-05', '000660.KS'), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:231: AssertionError
+_________ test_cada_fila_sellada_vuelve_identica[verificacion_puntaje] _________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+tabla = 'verificacion_puntaje'
+
+    @requiere_base_real
+    @pytest.mark.parametrize("tabla", list(CLAVES_NATURALES))
+    def test_cada_fila_sellada_vuelve_identica(resultados, tabla):
+        """Fila por fila, columna por columna, sin tolerancia. Falla listando
+        las filas y la razón; las filas posteriores al respaldo se toleran y
+        se declaran como warning."""
+        r = resultados[tabla]
+        if r.posteriores_al_respaldo:
+            warnings.warn(
+                f"{tabla}: {len(r.posteriores_al_respaldo)} fila(s) de la base viva "
+                f"posteriores al respaldo, no comparables todavía:\n"
+                f"{_formatear(r.posteriores_al_respaldo)}",
+                stacklevel=1,
+            )
+>       assert r.discrepancias == [], (
+            f"{tabla}: {len(r.discrepancias)} discrepancia(s) entre la base real "
+            f"(n={r.n_real}) y la restauración (n={r.n_restaurada}), "
+            f"{r.celdas_comparadas} celdas comparadas:\n{_formatear(r.discrepancias)}"
+        )
+E       AssertionError: verificacion_puntaje: 1366 discrepancia(s) entre la base real (n=0) y la restauración (n=1366), 0 celdas comparadas:
+E           ('2026-07-05', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'AMD'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'ARM'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'ASML'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'AVGO'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'IFX.DE'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'INTC'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'MSFT'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'MU'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'NVDA'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'QCOM'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'TSM'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'TXN'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'UMC'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '000660.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '005930.KS'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '2330.TW'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '6857.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', '8035.T'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'AMD'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'ARM'): fila en la restauración que la base real no tiene
+E           ... y 1341 más
+E       assert [(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 1366 more items, first extra item: (('2026-07-05', '000660.KS'), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:231: AssertionError
+_____________ test_cada_fila_sellada_vuelve_identica[divergencias] _____________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+tabla = 'divergencias'
+
+    @requiere_base_real
+    @pytest.mark.parametrize("tabla", list(CLAVES_NATURALES))
+    def test_cada_fila_sellada_vuelve_identica(resultados, tabla):
+        """Fila por fila, columna por columna, sin tolerancia. Falla listando
+        las filas y la razón; las filas posteriores al respaldo se toleran y
+        se declaran como warning."""
+        r = resultados[tabla]
+        if r.posteriores_al_respaldo:
+            warnings.warn(
+                f"{tabla}: {len(r.posteriores_al_respaldo)} fila(s) de la base viva "
+                f"posteriores al respaldo, no comparables todavía:\n"
+                f"{_formatear(r.posteriores_al_respaldo)}",
+                stacklevel=1,
+            )
+>       assert r.discrepancias == [], (
+            f"{tabla}: {len(r.discrepancias)} discrepancia(s) entre la base real "
+            f"(n={r.n_real}) y la restauración (n={r.n_restaurada}), "
+            f"{r.celdas_comparadas} celdas comparadas:\n{_formatear(r.discrepancias)}"
+        )
+E       AssertionError: divergencias: 401 discrepancia(s) entre la base real (n=0) y la restauración (n=401), 0 celdas comparadas:
+E           ('2026-07-05', 'ASML (ADR) vs Tokyo Electron'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'BHP Group vs Freeport-McMoRan'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'Micron vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'SK Hynix vs Micron'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'SK Hynix vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-05', 'TSMC (Taiwán) vs UMC (ADR)'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'ASML (ADR) vs Tokyo Electron'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'BHP Group vs Freeport-McMoRan'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'Micron vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'SK Hynix vs Micron'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'SK Hynix vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-08', 'TSMC (Taiwán) vs UMC (ADR)'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'ASML (ADR) vs Tokyo Electron'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'BHP Group vs Freeport-McMoRan'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'Micron vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'SK Hynix vs Micron'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'SK Hynix vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-09', 'TSMC (Taiwán) vs UMC (ADR)'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'ASML (ADR) vs Tokyo Electron'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'BHP Group vs Freeport-McMoRan'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'Micron vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'SK Hynix vs Micron'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'SK Hynix vs Samsung Electronics'): fila en la restauración que la base real no tiene
+E           ('2026-07-13', 'TSMC (Taiwán) vs UMC (ADR)'): fila en la restauración que la base real no tiene
+E           ('2026-07-14', 'ASML (ADR) vs Tokyo Electron'): fila en la restauración que la base real no tiene
+E           ... y 376 más
+E       assert [(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 401 more items, first extra item: (('2026-07-05', 'ASML (ADR) vs Tokyo Electron'), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:231: AssertionError
+_____________________ test_ningun_sello_queda_sin_comparar _____________________
+
+resultados = {'snapshots': ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0...02', 'UMC'), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]), ...}
+
+    @requiere_base_real
+    def test_ningun_sello_queda_sin_comparar(resultados):
+        """Que el test anterior no pase por comparar cero filas: todas las
+        tablas tienen filas y ninguna quedó fuera de la comparación."""
+        for tabla, r in resultados.items():
+>           assert r.n_real > 0 and r.n_restaurada > 0, f"{tabla}: sin filas"
+E           AssertionError: snapshots: sin filas
+E           assert (0 > 0)
+E            +  where 0 = ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0, discrepancia... (('2026-10-09',), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]).n_real
+
+tests/test_importador_roundtrip.py:244: AssertionError
+___________ test_plataforma_version_de_cada_snapshot_vuelve_identica ___________
+
+restauracion = '/tmp/pytest-of-nicolasaraneda/pytest-60/roundtrip0/senales_restaurado.db'
+
+    @requiere_base_real
+    def test_plataforma_version_de_cada_snapshot_vuelve_identica(restauracion):
+        """El criterio de aceptación la nombra, así que tiene su propio test:
+        para cada `fecha` sellada, `plataforma_version` (incluido NULL, que es
+        el valor sellado de los snapshots anteriores a 5.0.0) es idéntica."""
+        conn_real = _abrir_ro(SENALES_REAL)
+        conn_rest = _abrir_ro(restauracion)
+        try:
+            real = dict(conn_real.execute("SELECT fecha, plataforma_version FROM snapshots"))
+            rest = dict(conn_rest.execute("SELECT fecha, plataforma_version FROM snapshots"))
+        finally:
+            conn_real.close()
+            conn_rest.close()
+        distintas = [(f, real[f], rest.get(f, "<ausente>")) for f in sorted(real)
+                     if f not in rest or real[f] != rest[f]
+                     or type(real[f]) is not type(rest[f])]
+        assert distintas == [], f"plataforma_version difiere en {len(distintas)} snapshot(s): {distintas}"
+>       assert len(real) == len(rest)
+E       AssertionError: assert 0 == 68
+E        +  where 0 = len({})
+E        +  and   68 = len({'2026-07-04': None, '2026-07-05': None, '2026-07-08': None, '2026-07-09': None, ...})
+
+tests/test_importador_roundtrip.py:322: AssertionError
+__________ test_contraprueba_detecta_un_valor_corrompido_en_la_copia ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_contraprueba_detecta_un_v0')
+
+    @requiere_base_real
+    def test_contraprueba_detecta_un_valor_corrompido_en_la_copia(tmp_path):
+        """La comparación tiene que poder fallar. Se restaura a tmp, se
+        corrompe en la COPIA (a) un REAL en el último decimal, (b) una
+        `plataforma_version`, (c) se borra una fila, (d) se cambia un id, y se
+        verifica que cada una aparece con su clave y su razón."""
+        ruta_senales, _n, _r = rb.restaurar(ORIGEN, str(tmp_path / "r"))
+        conn = _abrir_ro(ruta_senales)
+        try:
+            fecha_a, roca = conn.execute(
+                "SELECT fecha, roca_chip FROM snapshots WHERE roca_chip IS NOT NULL "
+                "ORDER BY fecha LIMIT 1").fetchone()
+            fecha_b = conn.execute(
+                "SELECT fecha FROM snapshots WHERE plataforma_version IS NOT NULL "
+                "ORDER BY fecha DESC LIMIT 1").fetchone()[0]
+            fs, tk = conn.execute(
+                "SELECT fecha_senal, ticker FROM verificacion_apertura ORDER BY id LIMIT 1").fetchone()
+            id_div, fecha_d, par_d = conn.execute(
+                "SELECT id, fecha, par FROM divergencias ORDER BY id DESC LIMIT 1").fetchone()
+        finally:
+            conn.close()
+    
+        # (a) un ulp de diferencia: si la comparación fuera tolerante, no lo vería
+        roca_corrupto = roca + 1e-12 if roca + 1e-12 != roca else roca * (1 + 1e-15)
+        assert roca_corrupto != roca
+        _corromper(ruta_senales, "UPDATE snapshots SET roca_chip = ? WHERE fecha = ?", (roca_corrupto, fecha_a))
+        # (b) plataforma_version cambiada a otra etiqueta
+        _corromper(ruta_senales, "UPDATE snapshots SET plataforma_version = '9.9.9' WHERE fecha = ?", (fecha_b,))
+        # (c) una fila sellada desaparece de la restauración
+        _corromper(ruta_senales, "DELETE FROM verificacion_apertura WHERE fecha_senal = ? AND ticker = ?", (fs, tk))
+        # (d) un id surrogado distinto (contenido intacto)
+        _corromper(ruta_senales, "UPDATE divergencias SET id = ? WHERE id = ?", (id_div + 100000, id_div))
+    
+        conn_real = _abrir_ro(SENALES_REAL)
+        conn_rest = _abrir_ro(ruta_senales)
+        try:
+            r_snap = comparar_tabla(conn_real, conn_rest, "snapshots")
+            r_va = comparar_tabla(conn_real, conn_rest, "verificacion_apertura")
+            r_div = comparar_tabla(conn_real, conn_rest, "divergencias")
+        finally:
+            conn_real.close()
+            conn_rest.close()
+    
+        razones_snap = {(k, razon.split(":")[0]) for k, razon in r_snap.discrepancias}
+>       assert ((fecha_a,), "columna roca_chip") in razones_snap, r_snap.discrepancias
+E       AssertionError: [(('2026-07-04',), 'fila en la restauración que la base real no tiene'), (('2026-07-05',), 'fila en la restauración qu... restauración que la base real no tiene'), (('2026-07-14',), 'fila en la restauración que la base real no tiene'), ...]
+E       assert (('2026-07-04',), 'columna roca_chip') in {(('2026-07-04',), 'fila en la restauración que la base real no tiene'), (('2026-07-05',), 'fila en la restauración qu... restauración que la base real no tiene'), (('2026-07-14',), 'fila en la restauración que la base real no tiene'), ...}
+
+tests/test_importador_roundtrip.py:446: AssertionError
+_________ test_contraprueba_detecta_cambio_de_clase_de_almacenamiento __________
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_contraprueba_detecta_camb0')
+
+    @requiere_base_real
+    def test_contraprueba_detecta_cambio_de_clase_de_almacenamiento(tmp_path):
+        """Un 120 guardado como 120.0 (mismo valor, otra clase) también se
+        detecta: la comparación es de clase + valor, no solo de valor."""
+        ruta_senales, _n, _r = rb.restaurar(ORIGEN, str(tmp_path / "r"))
+        conn = _abrir_ro(ruta_senales)
+        try:
+            fecha, vb = conn.execute(
+                "SELECT fecha, ventana_betas FROM snapshots WHERE ventana_betas IS NOT NULL "
+                "ORDER BY fecha LIMIT 1").fetchone()
+        finally:
+            conn.close()
+        assert isinstance(vb, int)
+        # sqlite guarda 120.0 como REAL en una columna INTEGER solo si no es
+        # convertible sin pérdida; forzamos vía texto para que quede como TEXT.
+        _corromper(ruta_senales, "UPDATE snapshots SET ventana_betas = CAST(? AS TEXT) || 'x' WHERE fecha = ?", (vb, fecha))
+        conn_real = _abrir_ro(SENALES_REAL)
+        conn_rest = _abrir_ro(ruta_senales)
+        try:
+            r = comparar_tabla(conn_real, conn_rest, "snapshots")
+        finally:
+            conn_real.close()
+            conn_rest.close()
+>       assert len(r.discrepancias) == 1
+E       AssertionError: assert 68 == 1
+E        +  where 68 = len([(('2026-07-04',), 'fila en la restauración que la base real no tiene'), (('2026-07-05',), 'fila en la restauración qu... restauración que la base real no tiene'), (('2026-07-14',), 'fila en la restauración que la base real no tiene'), ...])
+E        +    where [(('2026-07-04',), 'fila en la restauración que la base real no tiene'), (('2026-07-05',), 'fila en la restauración qu... restauración que la base real no tiene'), (('2026-07-14',), 'fila en la restauración que la base real no tiene'), ...] = ResultadoTabla(tabla='snapshots', n_real=0, n_restaurada=68, columnas_comparadas=16, celdas_comparadas=0, discrepancia... (('2026-10-09',), 'fila en la restauración que la base real no tiene')], posteriores_al_respaldo=[], ids_distintos=[]).discrepancias
+
+tests/test_importador_roundtrip.py:480: AssertionError
+____________ test_contraprueba_detecta_una_fila_de_mas_en_la_copia _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_contraprueba_detecta_una_0')
+
+    @requiere_base_real
+    def test_contraprueba_detecta_una_fila_de_mas_en_la_copia(tmp_path):
+        """La dirección inversa también falla: una fila que la restauración
+        tiene y la base real no (un CSV con una fila inventada o de otra
+        máquina) se lista con su clave y su razón."""
+        ruta_senales, _n, _r = rb.restaurar(ORIGEN, str(tmp_path / "r"))
+        _corromper(ruta_senales,
+                   "INSERT INTO verificacion_puntaje (fecha_senal, ticker, puntaje_ia, "
+                   "retorno_5d_pct, verificado_en) VALUES ('1999-01-01', 'ZZZ', 0.0, 0.0, 'x')")
+        conn_real = _abrir_ro(SENALES_REAL)
+        conn_rest = _abrir_ro(ruta_senales)
+        try:
+            r = comparar_tabla(conn_real, conn_rest, "verificacion_puntaje")
+        finally:
+            conn_real.close()
+            conn_rest.close()
+>       assert r.discrepancias == [
+            (("1999-01-01", "ZZZ"), "fila en la restauración que la base real no tiene")]
+E       AssertionError: assert [(('1999-01-0... tiene'), ...] == [(('1999-01-0...al no tiene')]
+E         
+E         Left contains 1366 more items, first extra item: (('2026-07-05', '000660.KS'), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff
+
+tests/test_importador_roundtrip.py:501: AssertionError
+_______ test_limite_declarado_un_csv_que_perdio_el_ultimo_dia_solo_avisa _______
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_limite_declarado_un_csv_q0')
+
+    @requiere_base_real
+    def test_limite_declarado_un_csv_que_perdio_el_ultimo_dia_solo_avisa(tmp_path):
+        """LÍMITE DECLARADO, no virtud: si el CSV perdiera el ÚLTIMO día
+        sellado entero, la comparación no puede distinguirlo de "la base viva
+        creció después del respaldo" (el instante del respaldo se lee del propio
+        CSV — sin reloj ni memoria externos no hay otra referencia). Ese caso
+        queda como WARNING con la lista de claves, no como fallo. Se mide acá
+        para que el límite sea visible y no se descubra el día que importe.
+        Cualquier día que NO sea el último sí falla (ver test_contraprueba_
+        detecta_un_valor_corrompido_en_la_copia, caso c). Todo esto ocurre
+        sobre la COPIA temporal de pytest; la base real solo se lee en ro."""
+        ruta_senales, _n, _r = rb.restaurar(ORIGEN, str(tmp_path / "r"))
+        conn = _abrir_ro(ruta_senales)
+        try:
+            ultima = conn.execute("SELECT MAX(fecha) FROM snapshots").fetchone()[0]
+            n_st = conn.execute("SELECT COUNT(*) FROM senales_ticker WHERE fecha = ?", (ultima,)).fetchone()[0]
+        finally:
+            conn.close()
+        assert n_st > 0
+        quitar = "DELETE FROM {} WHERE fecha = ?"  # sobre la copia temporal
+        _corromper(ruta_senales, quitar.format("snapshots"), (ultima,))
+        _corromper(ruta_senales, quitar.format("senales_ticker"), (ultima,))
+        conn_real = _abrir_ro(SENALES_REAL)
+        conn_rest = _abrir_ro(ruta_senales)
+        try:
+            r_snap = comparar_tabla(conn_real, conn_rest, "snapshots")
+            r_st = comparar_tabla(conn_real, conn_rest, "senales_ticker")
+        finally:
+            conn_real.close()
+            conn_rest.close()
+>       assert r_snap.discrepancias == [] and r_st.discrepancias == []
+E       AssertionError: assert ([(('2026-07-0... tiene'), ...] == []
+E         
+E         Left contains 67 more items, first extra item: (('2026-07-04',), 'fila en la restauración que la base real no tiene')
+E         Use -v to get more diff)
+
+tests/test_importador_roundtrip.py:536: AssertionError
+_ test_integridad_en_disco_real_todo_no_verificable_esta_citado_por_una_fila[DIR_BACKUP_EXT] _
+
+directorio = 'DIR_BACKUP_EXT'
+
+    @pytest.mark.parametrize("directorio", ["DIR_EXT", "DIR_BACKUP_EXT"])
+    def test_integridad_en_disco_real_todo_no_verificable_esta_citado_por_una_fila(directorio):
+        """Sobre la evidencia real y su respaldo versionado, en `mode=ro`. Hoy
+        (antes del primer sello E0.3) la tabla no existe y no hay ningún
+        `.no_verificable.csv` en disco: el test pasa vacío, y empieza a morder
+        la primera vez que un disparo con timing roto congele uno."""
+        carpeta = getattr(S, directorio)
+        if not os.path.isdir(carpeta) and not os.path.exists(S.RUTA_DB):
+            pytest.skip("sin evidencia ni base real en este checkout")
+        huerfanos = huerfanos_no_verificables(carpeta, S.RUTA_DB)
+>       assert not huerfanos, ("PARAR Y REPORTAR (no borrar el archivo): evidencia no verificable que ninguna fila cita en "
+                               f"{carpeta}: {huerfanos}")
+E       AssertionError: PARAR Y REPORTAR (no borrar el archivo): evidencia no verificable que ninguna fila cita en /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/data/backups/sello_dinero_ext: ['ext_2026-09-14.no_verificable.csv']
+E       assert not ['ext_2026-09-14.no_verificable.csv']
+
+tests/test_integridad_no_verificable_16_3.py:117: AssertionError
+__________ test_el_corte_congelado_recupera_exactamente_las_228_filas __________
+
+    def test_el_corte_congelado_recupera_exactamente_las_228_filas():
+        """Si esto se moviera, las afirmaciones de la §2 dejarían de tener un
+        conjunto de filas identificable y no serían reproducibles."""
+        if not os.path.exists(lb.RUTA_SENALES):
+            pytest.skip("sin senales.db")
+>       assert len(_congelado()) == 228
+E       assert 0 == 228
+E        +  where 0 = len(Empty DataFrame\nColumns: [fecha, ticker, apertura_estimada_pct, gap_pct, acierto_gap, error_gap_pp, retorno_real_pct, ... intervalo80_pp, n_muestra, beta, exchange, sesion_objetivo, available_at, regimen, sox_usado_pct, sox_fecha]\nIndex: [])
+E        +    where Empty DataFrame\nColumns: [fecha, ticker, apertura_estimada_pct, gap_pct, acierto_gap, error_gap_pp, retorno_real_pct, ... intervalo80_pp, n_muestra, beta, exchange, sesion_objetivo, available_at, regimen, sox_usado_pct, sox_fecha]\nIndex: [] = _congelado()
+
+tests/test_linea_base.py:197: AssertionError
+_____________ test_los_dos_readme_son_lo_que_el_generador_produce ______________
+
+    def test_los_dos_readme_son_lo_que_el_generador_produce():
+>       r = G.generar(escribir=False)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_readme.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:232: in generar
+    v = valores() if v is None else v
+        ^^^^^^^^^
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_________ test_un_marcador_sin_clave_en_el_arbitro_rompe_la_generacion _________
+
+    def test_un_marcador_sin_clave_en_el_arbitro_rompe_la_generacion():
+        with pytest.raises(G.MarcadorSinFuente, match="no_existe"):
+>           G.render("n = {{n}}, x = {{no_existe}}")
+
+tests/test_readme.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:219: in render
+    v = valores() if v is None else v
+        ^^^^^^^^^
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_______________ test_toda_clave_del_arbitro_rinde_texto_no_vacio _______________
+
+    def test_toda_clave_del_arbitro_rinde_texto_no_vacio():
+>       v = G.valores()
+            ^^^^^^^^^^^
+
+tests/test_readme.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_______ test_los_doce_bloques_y_los_nueve_en_ingles_vienen_de_marcadores _______
+
+    def test_los_doce_bloques_y_los_nueve_en_ingles_vienen_de_marcadores():
+        """Los fragmentos que el árbitro vigila tienen que estar en las
+        PLANTILLAS con marcadores, no como texto: si estuvieran escritos a mano
+        coincidirían hoy y se desincronizarían mañana."""
+        import cifras
+>       c = cifras.sellada()
+            ^^^^^^^^^^^^^^^^
+
+tests/test_readme.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+__ test_el_readme_no_lleva_contador_vivo_de_e0_y_remite_a_la_copia_versionada __
+
+    def test_el_readme_no_lleva_contador_vivo_de_e0_y_remite_a_la_copia_versionada():
+        """Reemplaza a `test_el_contador_de_e0_del_readme_es_el_de_la_copia_versionada`,
+        RETIRADO por el acta §90.3. Aquel test exigía que README.md publicara el
+        conteo de sesiones selladas de `data/backups/sello_dinero.csv`; el backup
+        mueve ese CSV cada noche y nada regenera el README, así que la página se
+        desincronizaba sola y la suite se ponía roja sola (dos rojos al abrir y
+        al cerrar la corrida 14). Razón de Nicolás al firmar la opción (b): «para
+        evitar riesgos innecesarios, evitamos rojos o posibles errores de codigo
+        nuevo». Lo que se fija ahora es lo contrario: que el contador NO esté."""
+        # (a) ninguna plantilla usa marcadores de E0, salvo la constante firmada
+        for nombre in ("README.es.tmpl.md", "README.en.tmpl.md"):
+            de_e0 = {m for m in G.marcadores_de(_plantilla(nombre)) if m.startswith("e0_")}
+            assert de_e0 <= {"e0_N_objetivo"}, f"{nombre}: marcadores de contador de E0: {sorted(de_e0)}"
+        # (b) la página no lleva el patrón del contador
+        texto = _leer("README.md")
+        assert not re.search(r"\*\*\d+\*\*\s+count\s+towards\s+N", texto), "README.md volvió a llevar un contador de E0"
+        assert not re.search(r"Sealed\s+prospective\s+sessions\s+so\s+far", texto)
+        # (c) remite a la copia versionada, y la copia existe
+        assert "](data/backups/sello_dinero.csv)" in _seccion_e0(texto)
+        assert os.path.exists(_RUTA_CSV_DINERO)
+        # la constante firmada sigue saliendo del sellador
+>       assert G.valores()["e0_N_objetivo"] == "40"
+               ^^^^^^^^^^^
+
+tests/test_readme.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_____________ test_el_generador_no_abre_el_csv_del_riel_de_dinero ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x76c1580ebbd0>
+
+    def test_el_generador_no_abre_el_csv_del_riel_de_dinero(monkeypatch):
+        """(d) del acta §90.3: si el generador no lee el CSV, el README no puede
+        volver a depender de lo que el sellador escriba esta noche. Se espía
+        `open` y además se anota, por si algún `except` se traga la excepción."""
+        abiertos = []
+        real = builtins.open
+    
+        def espia(ruta, *a, **k):
+            if "sello_dinero.csv" in str(ruta):
+                abiertos.append(str(ruta))
+                raise AssertionError(f"el generador abrió {ruta}")
+            return real(ruta, *a, **k)
+    
+        monkeypatch.setattr(builtins, "open", espia)
+>       v = G.valores()
+            ^^^^^^^^^^^
+
+tests/test_readme.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+__ test_los_dos_readme_llevan_en_los_badges_los_valores_congelados_y_su_fecha __
+
+    def test_los_dos_readme_llevan_en_los_badges_los_valores_congelados_y_su_fecha():
+        b = _badges_json()
+        fecha_url = b["leido_el"].replace("-", "--")
+>       assert G.valores()["badge_leido_el_url"] == fecha_url
+               ^^^^^^^^^^^
+
+tests/test_readme.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+____________ test_el_n_de_intentos_del_readme_es_el_de_veredicto_51 ____________
+
+    def test_el_n_de_intentos_del_readme_es_el_de_veredicto_51():
+        """El generador lee `backtest/veredicto_51.py` como texto; acá se
+        contrasta con el módulo importado, que es lo que la máquina usa."""
+        from backtest import veredicto_51 as V
+>       v = G.valores()
+            ^^^^^^^^^^^
+
+tests/test_readme.py:311: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/generar_readme.py:154: in valores
+    c = cifras.sellada()
+        ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_ test_las_veces_de_la_ventana_larga_son_el_cociente_de_los_dos_n_del_arbitro __
+
+    def test_las_veces_de_la_ventana_larga_son_el_cociente_de_los_dos_n_del_arbitro():
+        """Acta §88.5 (iii): el literal del título era el cociente contra el n de
+        la rama sin deduplicar (derogada por D1). Ahora sale de los dos n del
+        árbitro, con el formato entero que tenía. No se fija el número: si el
+        corte del README se mueve con firma, el cociente se mueve con él."""
+        import cifras
+>       veces = f"{cifras.larga().n / cifras.sellada()['n']:.0f}"
+                                      ^^^^^^^^^^^^^^^^
+
+tests/test_readme.py:349: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+hasta_sello = None, dedup = True
+
+    def sellada(hasta_sello: str | None = None, dedup: bool = DEDUP_PUBLICADO) -> dict:
+        """Las cifras de la ventana sellada bajo la convención canónica
+        (`excluir_cero`) y la regla de deduplicación firmada (`dedup=True`, lo
+        publicado en el README desde el 3-sep-2026), al instante pinchado del
+        README. Toda cifra lleva su n y su intervalo; los estimadores de la
+        ventaja llevan además el intervalo de clúster de día y el p de
+        permutación de signo por día, que son los que respetan que las filas de
+        un día no son independientes. `dedup=False` es la rama derogada."""
+        import sqlite3
+        import pandas as pd
+        from backtest import linea_base as lb
+        from GEMELO import bifurcaciones as bf
+        corte = hasta_sello or CORTE_README
+        crudo = lb.cargar(hasta_sello=corte, dedup=dedup)
+        df = lb.aplicar_convencion(crudo, lb.CONVENCION_OFICIAL)
+        d = lb.duelo(df)
+        m = lb.magnitud(df)
+        cal = lb.calibracion(df)
+        n = d["n"]
+        f = lambda x: float(x) if x is not None else None   # sin np.float64 en el JSON
+        # --- clúster de día sobre la diferencia acierto_modelo − acierto_base ---
+        diff = (df["acierto_gap"].astype(int) - df["base_acierto"].astype(int)).to_numpy(dtype=float)
+        grupos = _grupos_por_dia(df, diff)
+        punto, lo, hi = bf._bootstrap_dia(grupos, N_BOOT_DIA)
+        _, lo_t, hi_t = bf._ic_t_cluster(grupos)
+        p_dia = bf._p_permutacion_dia(grupos, N_PERM_DIA)
+        icc = bf.icc_y_deff(grupos)
+        # --- ganancia de MAE contra predecir cero, CON su intervalo de día ---
+        # Era el único estimador del árbitro que salía sin intervalo (dictamen del
+        # `curador-epistemico`, 6-sep-2026, exigencia 1, y su O16: el test que dice
+        # vigilar esto no lo cazaba porque `mae_mejora_pct` es un cociente y el
+        # detector busca pares punto/intervalo). El cociente no tiene unidad de
+        # replicación; la ganancia por fila sí, y es el día.
+        gan = (df["gap_pct"].abs()
+               - (df["apertura_estimada_pct"] - df["gap_pct"]).abs()).to_numpy(dtype=float)
+        g_gan = _grupos_por_dia(df, gan)
+        _, gan_lo, gan_hi = bf._ic_t_cluster(g_gan)
+        gan_p = bf._p_permutacion_dia(g_gan, N_PERM_DIA)
+        # --- McNemar exacta (binomial bilateral), al lado de la χ²cc que publica el README ---
+        from math import comb
+>       b, c = int(d["mcnemar_b01"]), int(d["mcnemar_b10"])
+                   ^^^^^^^^^^^^^^^^
+E       KeyError: 'mcnemar_b01'
+
+cifras.py:125: KeyError
+_____________ test_verificacion_puntaje_es_identica_a_la_base_real _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_verificacion_puntaje_es_i0')
+
+    @pytestmark_reales
+    def test_verificacion_puntaje_es_identica_a_la_base_real(tmp_path):
+        """De las ocho tablas, `verificacion_puntaje` es la que hoy (31-ago-2026)
+        coincide exactamente con la base real — sirve de canario: si esto deja
+        de ser cierto, algo cambió en cómo se exporta o se importa esa tabla."""
+        destino = tmp_path / "restaurado"
+        ruta_senales, _n, _r = rb.restaurar(ORIGEN, str(destino))
+        diffs = rb.comparar_con_original(SENALES_REAL, ruta_senales, rb.ESQUEMA_SENALES)
+        por_tabla = {d.tabla: d for d in diffs}
+        vp = por_tabla["verificacion_puntaje"]
+>       assert vp.identica, (
+            f"verificacion_puntaje ya no es idéntica al backup: "
+            f"n_original={vp.conteo_original} n_restaurado={vp.conteo_restaurado}"
+        )
+E       AssertionError: verificacion_puntaje ya no es idéntica al backup: n_original=0 n_restaurado=1366
+E       assert False
+E        +  where False = DiferenciaTabla(tabla='verificacion_puntaje', conteo_original=0, conteo_restaurado=1366, hash_original='e3b0c44298fc1c...427ae41e4649b934ca495991b7852b855', hash_restaurado='1dffdfb1feb70d40ae1d71c694626c606dab1d1fae18b137c5ea57e581ec69b0').identica
+
+tests/test_restaurar_backup.py:173: AssertionError
+_____ test_comparacion_no_pierde_filas_de_noticias_que_no_esten_en_el_csv ______
+
+tmp_path = PosixPath('/tmp/pytest-of-nicolasaraneda/pytest-60/test_comparacion_no_pierde_fil0')
+
+    @pytestmark_reales
+    def test_comparacion_no_pierde_filas_de_noticias_que_no_esten_en_el_csv(tmp_path):
+        """Las tablas de noticias solo pueden CRECER entre un backup y ahora
+        (nunca se borra un titular) — si la base restaurada (congelada al
+        momento del backup) tuviera MÁS filas que la base real actual, eso sí
+        sería una señal de corrupción real, no de staleness normal."""
+        destino = tmp_path / "restaurado"
+        _s, ruta_noticias, _r = rb.restaurar(ORIGEN, str(destino))
+        diffs = rb.comparar_con_original(NOTICIAS_REAL, ruta_noticias, rb.ESQUEMA_NOTICIAS)
+        for d in diffs:
+>           assert d.conteo_restaurado <= d.conteo_original, (
+                f"{d.tabla}: el backup tiene MÁS filas ({d.conteo_restaurado}) que la "
+                f"base real actual ({d.conteo_original}) — eso no es staleness, "
+                "es una pérdida real en la base real y hay que investigarlo"
+            )
+E           AssertionError: titulares: el backup tiene MÁS filas (11149) que la base real actual (0) — eso no es staleness, es una pérdida real en la base real y hay que investigarlo
+E           assert 11149 <= 0
+E            +  where 11149 = DiferenciaTabla(tabla='titulares', conteo_original=0, conteo_restaurado=11149, hash_original='e3b0c44298fc1c149afbf4c8...427ae41e4649b934ca495991b7852b855', hash_restaurado='eda183c3762f42718c8e3096e855fdce0e96923ffa5b3f475b9d8c508fafd817').conteo_restaurado
+E            +  and   0 = DiferenciaTabla(tabla='titulares', conteo_original=0, conteo_restaurado=11149, hash_original='e3b0c44298fc1c149afbf4c8...427ae41e4649b934ca495991b7852b855', hash_restaurado='eda183c3762f42718c8e3096e855fdce0e96923ffa5b3f475b9d8c508fafd817').conteo_original
+
+tests/test_restaurar_backup.py:189: AssertionError
+=============================== warnings summary ===============================
+../../../../../../home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/nicolasaraneda/dev/mki-terminal/venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_api.py: 12 warnings
+  /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/motor.py:215: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+    df = pd.concat([ret_accion.rename("y")] + regresores, axis=1).dropna()
+
+tests/test_api.py: 6 warnings
+tests/test_cifras_arbitro.py: 1 warning
+tests/test_dinero.py: 2 warnings
+tests/test_frontend_estatus.py: 1 warning
+tests/test_readme.py: 9 warnings
+  /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/GEMELO/bifurcaciones.py:759: RuntimeWarning: invalid value encountered in scalar divide
+    punto = float(sumas.sum() / cuentas.sum())
+
+tests/test_api.py: 6 warnings
+tests/test_cifras_arbitro.py: 1 warning
+tests/test_dinero.py: 2 warnings
+tests/test_frontend_estatus.py: 1 warning
+tests/test_readme.py: 9 warnings
+  /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/GEMELO/bifurcaciones.py:737: RuntimeWarning: invalid value encountered in scalar divide
+    R = float(S.sum() / C.sum())
+
+tests/test_transversal.py: 16 warnings
+  /tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163/GEMELO/transversal.py:260: RuntimeWarning: invalid value encountered in divide
+    beta_hasta_i = np.where(var > 0, cov / var, np.nan)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_api.py::test_D1_la_friccion_del_juego_activo_viaja_como_objeto_con_banda
+FAILED tests/test_api.py::test_D3_la_sigma_servida_y_el_MDE80_no_comparten_oracion
+FAILED tests/test_api.py::test_D9_el_mapa_no_se_sirve_sin_presupuesto_ni_modo
+FAILED tests/test_api.py::test_D11_que_lo_mata_no_dice_que_R2_no_esta_recomputado
+FAILED tests/test_api.py::test_D12_D13_cobertura_con_wilson_y_etiqueta_de_regimen
+FAILED tests/test_api.py::test_D15_los_dos_denominadores_de_la_senal_larga_van_separados
+FAILED tests/test_dinero.py::test_los_tres_endpoints_del_riel_sirven_lo_que_el_contrato_dice
+FAILED tests/test_dinero.py::test_las_cifras_del_riel_de_medicion_salen_del_arbitro
+FAILED tests/test_frontend_estatus.py::test_las_frases_fijas_de_la_api_del_riel_tampoco_insinuan_resultado
+FAILED tests/test_importador_roundtrip.py::test_cada_fila_sellada_vuelve_identica[snapshots]
+FAILED tests/test_importador_roundtrip.py::test_cada_fila_sellada_vuelve_identica[senales_ticker]
+FAILED tests/test_importador_roundtrip.py::test_cada_fila_sellada_vuelve_identica[verificacion_apertura]
+FAILED tests/test_importador_roundtrip.py::test_cada_fila_sellada_vuelve_identica[verificacion_puntaje]
+FAILED tests/test_importador_roundtrip.py::test_cada_fila_sellada_vuelve_identica[divergencias]
+FAILED tests/test_importador_roundtrip.py::test_ningun_sello_queda_sin_comparar
+FAILED tests/test_importador_roundtrip.py::test_plataforma_version_de_cada_snapshot_vuelve_identica
+FAILED tests/test_importador_roundtrip.py::test_contraprueba_detecta_un_valor_corrompido_en_la_copia
+FAILED tests/test_importador_roundtrip.py::test_contraprueba_detecta_cambio_de_clase_de_almacenamiento
+FAILED tests/test_importador_roundtrip.py::test_contraprueba_detecta_una_fila_de_mas_en_la_copia
+FAILED tests/test_importador_roundtrip.py::test_limite_declarado_un_csv_que_perdio_el_ultimo_dia_solo_avisa
+FAILED tests/test_integridad_no_verificable_16_3.py::test_integridad_en_disco_real_todo_no_verificable_esta_citado_por_una_fila[DIR_BACKUP_EXT]
+FAILED tests/test_linea_base.py::test_el_corte_congelado_recupera_exactamente_las_228_filas
+FAILED tests/test_readme.py::test_los_dos_readme_son_lo_que_el_generador_produce
+FAILED tests/test_readme.py::test_un_marcador_sin_clave_en_el_arbitro_rompe_la_generacion
+FAILED tests/test_readme.py::test_toda_clave_del_arbitro_rinde_texto_no_vacio
+FAILED tests/test_readme.py::test_los_doce_bloques_y_los_nueve_en_ingles_vienen_de_marcadores
+FAILED tests/test_readme.py::test_el_readme_no_lleva_contador_vivo_de_e0_y_remite_a_la_copia_versionada
+FAILED tests/test_readme.py::test_el_generador_no_abre_el_csv_del_riel_de_dinero
+FAILED tests/test_readme.py::test_los_dos_readme_llevan_en_los_badges_los_valores_congelados_y_su_fecha
+FAILED tests/test_readme.py::test_el_n_de_intentos_del_readme_es_el_de_veredicto_51
+FAILED tests/test_readme.py::test_las_veces_de_la_ventana_larga_son_el_cociente_de_los_dos_n_del_arbitro
+FAILED tests/test_restaurar_backup.py::test_verificacion_puntaje_es_identica_a_la_base_real
+FAILED tests/test_restaurar_backup.py::test_comparacion_no_pierde_filas_de_noticias_que_no_esten_en_el_csv
+ERROR tests/test_cifras_arbitro.py::test_el_arbitro_computa_la_ventana_sellada_publicada
+ERROR tests/test_cifras_arbitro.py::test_todo_estimador_del_arbitro_lleva_intervalo
+ERROR tests/test_cifras_arbitro.py::test_los_doce_bloques_estan_en_sus_archivos
+ERROR tests/test_cifras_arbitro.py::test_los_nueve_bloques_del_readme_en_ingles_estan_en_su_archivo
+ERROR tests/test_cifras_arbitro.py::test_si_n_cambia_cambian_los_doce_bloques
+ERROR tests/test_cifras_arbitro.py::test_si_la_convencion_cambia_cambian_los_doce_bloques_y_la_derogada_no_esta
+33 failed, 1094 passed, 75 skipped, 1 xpassed, 67 warnings, 6 errors in 459.14s (0:07:39)
+EXIT 1
+Sun Oct 11 20:22:03 -03 2026

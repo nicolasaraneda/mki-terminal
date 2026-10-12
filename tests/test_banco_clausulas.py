@@ -23,8 +23,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import backtest.linea_base as lb                        # noqa: E402
 from GEMELO import banco_clausulas as bc                # noqa: E402
 
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5: la tabla con filas, no el archivo)
+
 solo_con_base = pytest.mark.skipif(
-    not os.path.exists(lb.RUTA_SENALES), reason="sin senales.db")
+    not hay_filas(lb.RUTA_SENALES, "verificacion_apertura"), reason=razon_sin_base(lb.RUTA_SENALES, "verificacion_apertura"))
 
 
 @pytest.fixture(scope="module")

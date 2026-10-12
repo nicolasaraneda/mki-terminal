@@ -1,0 +1,58 @@
+/tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/medicion/medir_antes.py:133: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  dd30 = dd[dd.fecha_senal >= (pd.Timestamp.utcnow().normalize() - pd.Timedelta(days=30)).strftime("%Y-%m-%d")]
+instante UTC: 2026-10-11T22:38:42.772051+00:00 | date('now') sqlite: 2026-10-11 | modelo: 4.6.0
+
+=== metricas_apertura(30) ===
+ANTES : {"suficiente": true, "n": 149, "gap": {"pct_aciertos": 62.4, "mae_pp": 3.95}, "retorno_sesion": {"pct_aciertos": 65.1, "mae_pp": 2.31}}
+DESPUES: {"suficiente": true, "n": 141, "gap": {"pct_aciertos": 63.8, "mae_pp": 4.07}, "retorno_sesion": {"pct_aciertos": 67.4, "mae_pp": 2.31}}
+excluidas: [('2026-09-28', '000660.KS', 'gap', -0.7353, 'acierto_gap', 1, 'acierto_dir', 1, 'err_gap', 0.5847, 'err', 1.1503), ('2026-09-28', '005930.KS', 'gap', -1.4815, 'acierto_gap', 1, 'acierto_dir', 0, 'err_gap', 0.5115, 'err', 1.8959), ('2026-09-28', '2330.TW', 'gap', 0.0, 'acierto_gap', 0, 'acierto_dir', 0, 'err_gap', 0.53, 'err', 0.53), ('2026-09-28', '3436.T', 'gap', 2.3179, 'acierto_gap', 0, 'acierto_dir', 0, 'err_gap', 3.3979, 'err', 1.7423), ('2026-09-28', '4063.T', 'gap', -1.0701, 'acierto_gap', 1, 'acierto_dir', 1, 'err_gap', 0.5701, 'err', 0.2767), ('2026-09-28', '6857.T', 'gap', 0.2668, 'acierto_gap', 0, 'acierto_dir', 0, 'err_gap', 1.1868, 'err', 1.4536), ('2026-09-28', '8035.T', 'gap', 4.3658, 'acierto_gap', 0, 'acierto_dir', 0, 'err_gap', 5.2758, 'err', 6.6545), ('2026-09-28', 'IFX.DE', 'gap', 2.3511, 'acierto_gap', 0, 'acierto_dir', 0, 'err_gap', 2.4011, 'err', 4.8759)]
+ventana del lunes (fecha_senal >= 2026-09-12), hoy sin filas nuevas: ANTES {"suficiente": true, "n": 141, "gap": {"pct_aciertos": 66.0, "mae_pp": 3.92}, "retorno_sesion": {"pct_aciertos": 68.1, "mae_pp": 2.21}} DESPUES {"suficiente": true, "n": 133, "gap": {"pct_aciertos": 67.7, "mae_pp": 4.04}, "retorno_sesion": {"pct_aciertos": 70.7, "mae_pp": 2.2}}
+filas con fecha_senal = 2026-09-11 (salen de la ventana el lunes): 8
+
+=== calibracion_intervalos ===
+ANTES : {"suficiente": true, "n": 490, "cobertura_pct": 93.5}
+DESPUES: {"suficiente": true, "n": 482, "cobertura_pct": 93.6}
+excluidas (fecha,ticker,dentro): [('2026-09-28', '000660.KS', True), ('2026-09-28', '005930.KS', True), ('2026-09-28', '2330.TW', True), ('2026-09-28', '3436.T', True), ('2026-09-28', '4063.T', True), ('2026-09-28', '6857.T', True), ('2026-09-28', '8035.T', False), ('2026-09-28', 'IFX.DE', True)]
+v.apertura_estimada_pct != s.apertura_estimada_pct: 0 de 490
+
+=== evolucion_aciertos_apertura ===
+ANTES : filas(fechas)= 64 N total= 490
+DESPUES: filas(fechas)= 63 N total= 482
+fechas que cambian o desaparecen:
+         Fecha  % Aciertos gap_a  % Aciertos sesión_a  N_a  % Aciertos gap_d  % Aciertos sesión_d  N_d     _merge
+55  2026-09-28              37.5                 25.0    8               NaN                  NaN  NaN  left_only
+
+=== ultimas_predicciones_apertura ===
+total filas sin LIMIT: 490 | gap_pct NULL: 0
+invertidas en el total: 8
+LIMIT 50: ANTES fechas 2026-09-30..2026-10-08, invertidas dentro: 0
+LIMIT 50: DESPUES fechas 2026-09-30..2026-10-08
+LIMIT 100: ANTES fechas 2026-09-21..2026-10-08, invertidas dentro: 8
+LIMIT 100: DESPUES fechas 2026-09-18..2026-10-08
+orden observado ids en la última fecha: [490, 489, 488, 487, 486]
+orden observado == (fecha DESC, id ASC): False | == (fecha DESC, id DESC): False
+
+=== verificaciones_detalle ===
+ANTES n= 490 aciertos gap= 319 | DESPUES n= 482 aciertos gap= 316
+por exchange ANTES: {'XETR': 63, 'XKRX': 118, 'XTAI': 60, 'XTKS': 249} | DESPUES: {'XETR': 62, 'XKRX': 116, 'XTAI': 59, 'XTKS': 245}
+por regimen ANTES: {'Alcista · vol alta': 325, 'Alcista · vol baja': 157, 'sin': 8}
+orden observado detalle == (fecha, id): False
+orden observado metricas (sin ORDER BY) == id: False
+
+=== analisis_puntaje_ia(90) ===
+ANTES : {"suficiente": true, "n": 1308, "retorno_tercio_alto": 0.31, "retorno_tercio_bajo": 1.58, "correlacion": -0.07}
+DESPUES: {"suficiente": true, "n": 1308, "retorno_tercio_alto": 0.31, "retorno_tercio_bajo": 1.58, "correlacion": -0.07}
+invertidas dentro: 0
+igualdad av==ts dentro: 32 | av NULL: 0
+
+=== deduplicación (informativo) ===
+pares (ticker,sesion_objetivo) con >1 fila: 24 | filas en esos pares: 56
+fechas de esos pares: ['2026-07-29', '2026-07-30', '2026-08-03', '2026-08-04', '2026-08-10', '2026-08-11', '2026-08-14', '2026-08-17', '2026-09-18', '2026-09-21', '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-28', '2026-10-02', '2026-10-05']
+en la ventana de 30 días: pares con >1 fila: 9
+
+=== totales ===
+verificacion_apertura total: 490 | no legacy mv: 490
+verificacion_puntaje total: 1366
+senales_ticker invertidas (texto): (24, '2026-09-28', '2026-09-28')
+max fecha_senal verificacion_apertura: ('2026-10-08', '2026-10-09T21:15:13.992746+00:00')
+snapshots max fecha: ('2026-10-09',)

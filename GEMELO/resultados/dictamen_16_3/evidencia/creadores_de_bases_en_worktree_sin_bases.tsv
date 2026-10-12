@@ -1,0 +1,23 @@
+# raiz=/tmp/claude-1000/-home-nicolasaraneda-dev-mki-terminal/74ee956a-2055-4ebb-81f1-c79c5ee891cf/scratchpad/wt163_diag existian={'senales.db': False, 'noticias.db': False, 'dinero/sello_dinero.db': False}
+senales.db	49152	tests/test_api.py::test_envelope_en_todos_los_endpoints
+noticias.db	36864	tests/test_api.py::test_envelope_en_todos_los_endpoints
+senales.db	0	tests/test_api.py::test_paridad_regimen
+senales.db	0	tests/test_api.py::test_paridad_roca_chip_contra_snapshot
+senales.db	0	tests/test_api.py::test_roca_chip_identico_entre_vistas
+senales.db	49152	tests/test_api.py::test_paridad_betas
+senales.db	49152	tests/test_api.py::test_paridad_predicciones_apertura
+senales.db	49152	tests/test_api.py::test_paridad_divergencias
+senales.db	49152	tests/test_api.py::test_paridad_salud_datos
+senales.db	49152	tests/test_api.py::test_paridad_metricas_apertura
+senales.db	49152	tests/test_api.py::test_paridad_calibracion
+senales.db	49152	tests/test_api.py::test_paridad_estados
+senales.db	49152	tests/test_api.py::test_comparador_base100
+senales.db	0	tests/test_api.py::test_detalle_perfil
+senales.db	49152	tests/test_api.py::test_noticias_solo_cache
+noticias.db	36864	tests/test_api.py::test_noticias_solo_cache
+senales.db	49152	tests/test_api.py::test_universo_expuesto
+senales.db	0	tests/test_api.py::test_husos_cinta
+senales.db	49152	tests/test_api.py::test_meta_versionado_dual
+senales.db	49152	tests/test_api.py::test_salud_operacion
+senales.db	49152	tests/test_api.py::test_historial_wilson_contra_formula
+senales.db	49152	tests/test_api.py::test_historial_curva_y_desgloses

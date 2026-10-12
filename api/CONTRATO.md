@@ -488,3 +488,45 @@ de hora que no cuenta, nunca como sello. La norma del contrato de la corrida
 12 (ninguna frase que insinúe resultado) rige también sobre `nota_intentos`.
 `frontend/src/lib/tipos.ts` refleja las tres claves; la vista `/sellos` no
 las muestra todavía (decisión de pantalla, a firma).
+
+### Enmienda 16-3 (11-oct-2026) — la fuente única de las cifras de acierto (acta §93.4)
+
+**Sólo cambian valores; ninguna forma cambia.** Se declara, como pide esta
+capa cuando la forma no se mueve. Desde la corrida 16-3, toda cifra de
+acierto que sirve la API sale de `backtest/linea_base.py` (la misma capa de
+medición que el árbitro del README) y no de las consultas directas de
+`senales.py`:
+
+- `GET /api/hoy` → `track_record` (`lb.metricas_apertura(dias=30)`);
+- `GET /api/aperturas` → `calibracion` (`lb.calibracion_intervalos()`);
+- `GET /api/historial` → `metricas`, `calibracion`, `evolucion`, `ultimas`,
+  `puntaje_ia`, y los derivados de presentación `wilson`, `calibracion_curva`,
+  `por_region` y `por_regimen` (que agrupan `lb.verificaciones_detalle()`).
+
+Qué cambia en los valores: esas cifras **excluyen las filas con
+`available_at > timestamp_utc`** (regla de conocibilidad, acta §90.1 d), que
+hasta aquí contaban. Misma ventana (`date('now', '-N days')` de SQLite, día
+UTC), misma DEFINICIÓN del denominador (el conteo baja porque salen filas, no
+porque cambie qué se cuenta), mismo redondeo, mismas claves, mismo orden de
+filas; la única diferencia son las filas que la regla retira. Medido sobre la base
+real el 11-oct-2026 (`mode=ro`): `track_record`/`metricas` n 149 → 141 (gap
+62.4 % → 63.8 %, MAE 3.95 → 4.07 pp; sesión 65.1 % → 67.4 %, MAE 2.31 → 2.31
+pp), `calibracion` n 490 → 482 (93.5 % → 93.6 %), `evolucion` 64 → 63
+fechas (desaparece la del 2026-09-28), `ultimas` (límite 100) retira las 8
+del 28-sep y, por el `LIMIT` fijo, admite las 8 más antiguas siguientes (la
+ventana corre de 2026-09-21 a 2026-09-18), los desgloses de `/historial`
+quedan sobre 482 filas sin las 8 del 28-sep; `puntaje_ia` no se mueve (n = 1308: la guarda
+de la 16a ya deja fuera las invertidas de `verificacion_puntaje`). La
+deduplicación firmada el 1-sep NO se aplica a estas cifras (no está firmada
+para ellas; tarjeta §82 de `espera_firma.md`). La fuente lee `senales.db` en
+`mode=ro`: la API deja de correr `init_db()` sobre la base sellada en estas
+rutas. Fija: `tests/test_fuente_unica_16_3.py`.
+
+**Nota de forma, preexistente y declarada acá:** `evolucion` y `ultimas` se
+sirven con las claves de las columnas del DataFrame (`Fecha`, `% Aciertos
+gap`, `% Aciertos sesión`, `N`; `Fecha`, `Ticker`, `Estimado %`, `Gap real %`,
+`Sesión real %`, `Acierto gap`, `Acierto sesión`, `Sesión objetivo`,
+`Emitida (UTC)`), que es lo que `frontend/src/vistas/Historial.tsx` consume
+(`dataKey="% Aciertos gap"`), y no con las claves en minúscula que el bloque
+de `/api/historial` de arriba escribió en su día. La 16-3 no cambia esas
+claves: lo deja escrito para que el contrato diga lo que la máquina sirve.

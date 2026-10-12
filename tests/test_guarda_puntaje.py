@@ -46,10 +46,12 @@ sys.path.insert(0, RAIZ)
 import calendarios  # noqa: E402  (real)
 import senales  # noqa: E402
 
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5)
+
 BASE_REAL = os.path.join(RAIZ, "senales.db")
-HAY_BASE = os.path.exists(BASE_REAL)
+HAY_BASE = hay_filas(BASE_REAL, "senales_ticker")
 solo_con_base = pytest.mark.skipif(
-    not HAY_BASE, reason="sin senales.db: no hay historia sellada que leer")
+    not HAY_BASE, reason=razon_sin_base(BASE_REAL, "senales_ticker"))
 
 # Una fecha sintética que YA cumple los 7 días que exige la consulta del
 # verificador, calculada y no escrita: la guarda es por regla, no por fecha.

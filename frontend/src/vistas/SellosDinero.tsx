@@ -95,6 +95,21 @@ export function SellosDinero() {
             ))}
           </div>
           <p className="mt-3 max-w-3xl text-[11px] leading-relaxed text-text-2">{d.E0.nota}</p>
+          {/* Corrida 16-3 (§81.6 a, firmada en el acta §102.6 (6)): un disparo fuera de hora no es un sello y
+              desde E0.3 vive en la tabla aparte; la pantalla es donde se mira, para que una noche quemada no se
+              vea idéntica a un sábado. Las tres claves las sirve /api/dinero/sellos (enmienda 16-2 del contrato);
+              con una base anterior a E0.3 llegan 0 y null, y la tarjeta dice 0 sin error. */}
+          <div className="mt-3 rounded border border-border bg-bg-2 px-3 py-2">
+            <div className="mini-label text-text-3">Intentos no verificables (E0.3, disparos fuera de hora)</div>
+            <div className="mt-1 font-mono text-[12px] tabular-nums text-text-1">
+              intentos no verificables: {d.E0.intentos_no_verificables ?? 0}; último:{' '}
+              {d.E0.ultimo_intento
+                ? `${d.E0.ultimo_intento.fecha_insumo}, ${horaChile(d.E0.ultimo_intento.timestamp_utc)}`
+                : 'ninguno'}
+            </div>
+            <p className="mt-1 max-w-3xl text-[10px] leading-relaxed text-text-3">{d.E0.nota_intentos}</p>
+            <div className="mt-0.5 text-[10px] text-text-3">fuente: {d.E0.fuente_conteos} (tabla intentos_no_verificables)</div>
+          </div>
         </Card>
 
         <Card titulo="E1 — cuenta de práctica" estatus={d.E1.estatus} className="capa-1">

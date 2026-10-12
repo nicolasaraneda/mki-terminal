@@ -54,10 +54,12 @@ import senales  # noqa: E402
 import snapshot  # noqa: E402
 from backtest import linea_base as lb  # noqa: E402
 
+from bases_de_prueba import hay_filas, razon_sin_base  # noqa: E402  (corrida 16-3, R5)
+
 BASE_REAL = os.path.join(RAIZ, "senales.db")
-HAY_BASE = os.path.exists(BASE_REAL)
+HAY_BASE = hay_filas(BASE_REAL, "verificacion_apertura")
 solo_con_base = pytest.mark.skipif(
-    not HAY_BASE, reason="sin senales.db: no hay historia sellada que leer")
+    not HAY_BASE, reason=razon_sin_base(BASE_REAL, "verificacion_apertura"))
 
 CHILE = ZoneInfo("America/Santiago")
 NUEVA_YORK = ZoneInfo("America/New_York")
