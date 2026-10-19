@@ -584,7 +584,16 @@ def decidir(cierres: pd.DataFrame, dia, cfg: dict | None = None,
     # generador por sesión: la lista más corta corre la REALIZACIÓN del sorteo
     # de los demás desde la primera sesión que la use (distribución y semilla,
     # intactas); `reglas_sha256` distingue las filas en cada población.
-    excluidos = sorted(set((cfg.get("exclusiones_insumo_e0") or {}).get("tickers") or ()) & set(operables))
+    declarados = sorted(set((cfg.get("exclusiones_insumo_e0") or {}).get("tickers") or ()))
+    # R4 del dictamen 16b (corrida 16-3): un nombre declarado que no está en el
+    # censo de operables no se ignora en silencio (un ticker mal escrito dejaría
+    # de excluir y nadie lo sabría); revienta nombrándolo. El censo es fijo (E1/G6:
+    # membresía al DESDE), así que esto sólo salta si alguien edita reglas.json.
+    desconocidos = [t for t in declarados if t not in operables]
+    if desconocidos:
+        raise ValueError(f"exclusiones_insumo_e0 nombra tickers que no están en el censo de operables: "
+                         f"{desconocidos} (R4 del dictamen 16b: la exclusión no se ignora en silencio)")
+    excluidos = declarados
     operables = [t for t in operables if t not in excluidos]
     senales = C.senales_sin_informacion(hasta, operables, CP.HORIZONTE_SENAL_HABILES,
                                         C.SEMILLA_SENAL_SIN_INFORMACION, desde=CP.DESDE)
@@ -837,8 +846,36 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
                     "insumo_ext_sha256": meta_ext["sha256"], "sha_sellado": (cita or {}).get("sha256"),
                     "motivo": ("el insumo no está persistido (temporal fuera de la carpeta de evidencia, borrado por "
                                "main): no se inserta ninguna fila que lo cite; fila en divergencias_sello")}
+        # §81.3 (b), firmada en el acta §102.6 (3) (corrida 16-3): las filas de un
+        # intento no verificable dicen en `motivo` con qué instante se decidió el
+        # timing. F2 del dictamen 16-2: si la evidencia nació `.no_verificable`, el
+        # veredicto lo fijó el reloj de `congelar_extension` (su meta lo guarda), y
+        # las tres columnas de tiempo de la fila pueden cumplir la regla maestra y la
+        # fila decir `roto` sin que nada en la fila lo explique. Sin cambio de esquema.
+        nota_timing = None
+        if tabla == TABLA_INTENTOS:
+            bloque_timing = (meta_ext.get("timing") or {}) if evidencia_no_verificable else {}
+            if bloque_timing.get("emision_utc"):
+                # la evidencia nació .no_verificable y su meta trae el instante que lo decidió
+                nota_timing = (f"timing roto decidido al congelar la evidencia, a las {bloque_timing['emision_utc']}: "
+                               f"la regla available_at {avail} < emisión < apertura objetivo "
+                               f"{apertura_obj.isoformat()} no se cumplía a ese instante (§81.3 b)")
+            elif evidencia_no_verificable:
+                # B1 del auditor 16-3: sin bloque `timing` en el meta, el veredicto lo fijó la CLASE de la
+                # evidencia (.no_verificable), no el reloj del sello, que a lo mejor sí cumple la regla;
+                # la fila no puede afirmar lo que no se decidió con ese reloj
+                nota_timing = (f"timing roto decidido por la clase de la evidencia ({os.path.basename(ruta_ext)}, "
+                               f"congelada a las {meta_ext.get('congelado_en_utc')}); el reloj del sello "
+                               f"({ts_emision}) no fijó el veredicto (§81.3 b)")
+            else:
+                nota_timing = (f"timing roto decidido con el reloj del sello {ts_emision}: la regla available_at "
+                               f"{avail} < emisión < apertura objetivo {apertura_obj.isoformat()} no se cumple "
+                               f"(§81.3 b)")
         insertadas = 0
         for f in dec["filas"]:
+            motivo = f["motivo"]
+            if nota_timing:
+                motivo = f"{motivo}; {nota_timing}" if motivo else nota_timing
             cur = con.execute(f"""
                 INSERT INTO {tabla}
                 (fecha_sello, fecha_insumo, timestamp_utc, available_at, exchange, sesion_objetivo,
@@ -852,7 +889,7 @@ def sellar(ruta_ext: str, meta_ext: dict, ahora_utc: datetime | None = None,
                 (fecha_sello, fecha_insumo, ts_emision, avail, EXCHANGE, sesion_obj,
                  apertura_obj.isoformat(), f["ticker"], f["decision"], f["acciones_regla"], 0,
                  f["precio_ref_usd"], f["senal_magnitud_pp"], f["senal_banda_baja_pp"], f["senal_banda_alta_pp"],
-                 SENAL_FUENTE, dec["juego"], dec["presupuesto_usd"], dec["reglas_version"], f["motivo"],
+                 SENAL_FUENTE, dec["juego"], dec["presupuesto_usd"], dec["reglas_version"], motivo,
                  f["ultimo_cierre_ticker"], f["available_at_ticker"],
                  meta_ext["sha256"], os.path.basename(ruta_ext), base_sha, reglas_sha, sellador_sha,
                  PLATAFORMA_VERSION, VERSION_SELLO, estado, estado_timing, estado_dia, int(insumo_completo),
@@ -944,7 +981,13 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
              "intentos_no_verificables": 0,
              # B2 (corrida 16-2, acta §93.7): el último intento, con las MISMAS claves que `ultimo`,
              # o None. Es lo que vuelve visible fuera del log una noche con timing roto.
-             "ultimo_intento": None}
+             "ultimo_intento": None,
+             # R2 del dictamen 16b (corrida 16-3): las poblaciones de filas de `sellos_dinero`
+             # (no de la tabla de intentos), por huella de reglas.json y versión, en orden de
+             # primera fecha; aditivo. Es la población de REGLAS: la de MÉTODO es
+             # `sellador_sha256` (hoy 3 contra 2) y no se agrupa acá. La API no lo sirve
+             # (servirlo exige enmendar api/CONTRATO.md antes).
+             "por_reglas_sha256": []}
     if not os.path.exists(ruta_db):
         return vacio
     con = conectar(ruta_db, solo_lectura=True)
@@ -969,11 +1012,20 @@ def estado(ruta_db: str = RUTA_DB) -> dict:
                               (ultimo["fecha_insumo"], ultimo["timestamp_utc"]))
             detalle = [dict(zip([d[0] for d in cur.description], r)) for r in cur.fetchall()]
         divergencias = con.execute("SELECT COUNT(*) FROM divergencias_sello").fetchone()[0]
+        poblaciones = con.execute(
+            "SELECT reglas_sha256, reglas_version, COUNT(DISTINCT fecha_insumo), "
+            "COUNT(DISTINCT CASE WHEN cuenta_para_N = 1 THEN fecha_insumo END), COUNT(*), "
+            "MIN(fecha_insumo), MAX(fecha_insumo) FROM sellos_dinero "
+            "GROUP BY reglas_sha256, reglas_version ORDER BY MIN(fecha_insumo), reglas_sha256").fetchall()
     finally:
         con.close()
+    por_reglas = [{"reglas_sha256": p[0], "reglas_version": p[1], "sesiones_selladas": p[2],
+                   "sesiones_que_cuentan_para_N": p[3], "filas": p[4], "desde": p[5], "hasta": p[6]}
+                  for p in poblaciones]
     return {**vacio, "filas": filas, "sesiones_selladas": sesiones, "sesiones_que_cuentan_para_N": cuentan,
             "ultimo": ultimo, "filas_ultimo_sello": detalle, "divergencias_registradas": divergencias,
-            "intentos_no_verificables": intentos, "ultimo_intento": ultimo_intento}
+            "intentos_no_verificables": intentos, "ultimo_intento": ultimo_intento,
+            "por_reglas_sha256": por_reglas}
 
 
 def main(argv=None) -> int:
