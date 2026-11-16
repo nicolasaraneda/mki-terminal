@@ -572,7 +572,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 659,0.5,7970.T,medio,Anuncio de recompra de acciones y aumento de dividendo en Shin-Etsu Polymer señala confianza de management pero relevancia limitada para sector.,2026-07-26T02:36:29.219021+00:00,0.5
 660,0.15,4063.T,bajo,Análisis de métricas de valuación de Shin-Etsu Chemical proporciona perspectiva fundamental sin catalizador de noticias específico.,2026-07-26T02:36:29.219033+00:00,0.35
 663,0.4,,medio,Aumento de envíos de obleas de silicio del 13% YoY indica recuperación de la demanda del sector de semiconductores.,2026-07-26T02:36:22.608682+00:00,0.85
-664,-0.05,3436.T,bajo,Análisis de valuación de SUMCO tras volatilidad de precios refleja incertidumbre sin información operativa concreta nueva.,2026-07-26T02:36:29.219006+00:00,0.4
 665,0.3,MSFT,bajo,Recomendación de compra de Microsoft antes de resultados afecta tangencialmente semiconductores como cliente de procesadores y chips IA.,2026-07-26T02:32:20.827049+00:00,0.4
 666,0.4,MSFT,bajo,Microsoft cerca de mínimos anuales con potencial de recuperación afecta débilmente sector semiconductores como comprador de chips.,2026-07-26T02:32:20.827080+00:00,0.3
 667,0.55,"NVDA,AMD,TSM,2330.TW,INTC",alto,"Crisis energética por demanda de centros de datos impulsa fuerte demanda de semiconductores avanzados, beneficiando a fabricantes y diseñadores de chips.",2026-07-26T02:32:33.563122+00:00,0.85
