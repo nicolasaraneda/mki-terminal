@@ -9454,7 +9454,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 10814,-0.65,005930.KS,medio,"Sentencia arbitral confirma responsabilidad de Samsung por corrupción en fusión de 2015, generando riesgo legal y reputacional significativo para el fabricante de semiconductores.",2026-10-05T21:00:01.589203+00:00,0.6
 10815,0.5,005930.KS,medio,MediaTek Dimensity en tablets Samsung refuerza posicionamiento del grupo en semiconductores para dispositivos móviles con IA.,2026-10-05T21:00:01.589492+00:00,0.8
 10816,0.2,GOOGL,bajo,Anuncio de verificación mDL con Samsung y Google; tangencialmente relacionado con semiconductores sin impacto directo en chipmakers.,2026-10-05T21:00:43.537245+00:00,0.3
-10817,0.5,005930.KS,bajo,"Lanzamiento de nueva tablet Samsung con enfoque en productividad, mostrando diversificación más allá de semiconductores puros.",2026-10-05T21:01:08.236900+00:00,0.4
 10818,0.85,MU,alto,Resultados positivos en línea y perspectiva fuerte para Q1 de Micron generan confianza en demanda de memoria.,2026-10-05T21:03:15.568131+00:00,0.95
 10819,0.4,000660.KS,bajo,Especulación sobre IPO de unidad estadounidense de SK Hynix genera incertidumbre pero sin confirmar impacto en estructura corporativa.,2026-10-05T20:59:47.835778+00:00,0.55
 10820,0.4,MU,medio,Análisis de perspectivas de Micron considerando demanda de memoria AI versus valuación; tono cautelosamente optimista sobre boom sostenible.,2026-10-05T21:00:43.537277+00:00,0.8
@@ -11214,7 +11213,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 12665,0.7,ASML,alto,ASML destacada como inversión clave para participar en boom de infraestructura AI; positivo estratégico relevante.,2026-10-12T20:55:20.269401+00:00,0.8
 12666,0.6,ASML,alto,"Anticipación de resultados positivos en próximos earnings de ASML, proveedor esencial de equipamiento litográfico, genera expectativas alcistas en sector.",2026-10-12T20:54:17.604265+00:00,0.8
 12667,0.3,"ASML,AVGO",alto,"Visión optimista de ASML sobre ciclo de IA post-2028 contrasta con advertencia de Broadcom sobre cuello de botella financiero, generando señales mixtas.",2026-10-12T20:54:17.604290+00:00,0.9
-12669,0.25,FCX,bajo,Análisis de Freeport-McMoRan no tiene relación significativa con sector de semiconductores.,2026-10-12T20:55:53.186894+00:00,0.05
 12670,0.1,,bajo,Artículo exploratorio sobre oportunidades en cobre con impacto indirecto mínimo en fabricantes de chips.,2026-10-12T20:56:23.659880+00:00,0.2
 12674,0.6,MSFT,medio,Impulso de Microsoft en chips propios reduce dependencia de terceros; impacto mixto para proveedores de semiconductores.,2026-10-12T20:53:30.781422+00:00,0.7
 12675,0.5,MSFT,medio,Estrategia de chips propios de Microsoft es neutra para el ecosistema; crea competencia pero reduce riesgo de suministro.,2026-10-12T20:53:30.781455+00:00,0.65
@@ -14481,7 +14479,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 16112,-0.8,INTC,alto,"Intel cae 25% por retrasos en suministro y debilidad en PC, evento crítico que afecta percepciones de toda la industria semiconductora.",2026-10-30T20:55:04.248106+00:00,0.95
 16114,0.4,"NVDA,ASML",medio,Análisis de captura de valor en boom chips IA entre NVDA y ASML; posiciona competencia sin evento nuevo.,2026-10-30T20:55:20.297423+00:00,0.6
 16115,-0.7,INTC,alto,Preocupaciones sobre gasto de capital en IA y debilidad de Intel generan duda sobre retorno de inversión en semiconductores en Europa.,2026-10-30T20:55:04.248120+00:00,0.85
-16116,0.7,8035.T,alto,Tokyo Electron reporta ganancia Q2 +27% por demanda AI y proyecta outlook positivo con recompra de ¥150B.,2026-10-30T20:55:20.297331+00:00,0.95
 16119,0.0,,bajo,Minería de metales no ferrosos sin relación directa con sector de semiconductores.,2026-10-30T20:54:16.256711+00:00,0.05
 16123,0.2,MSFT,bajo,Iniciativa de IA de Microsoft con otros líderes tecnológicos tiene relevancia marginal directa para el sector de semiconductores.,2026-10-30T20:53:29.985034+00:00,0.2
 16124,-0.75,"INTC,GOOGL",alto,La caída de Google e Intel como triggers del tech wreck afecta directamente el sentimiento del sector de semiconductores.,2026-10-30T20:53:45.651810+00:00,0.9
@@ -15172,7 +15169,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 16827,0.3,"TSM,ASML",medio,Análisis comparativo de monopolios semiconductores refuerza importancia de TSMC en cadena de valor global.,2026-11-04T20:54:16.429771+00:00,0.7
 16828,0.55,"AVGO,TSM",medio,Comparación de Broadcom vs TSMC como potencias en AI destaca relevancia de foundries y fabless en ecosistema semiconductor.,2026-11-04T20:55:01.668015+00:00,0.85
 16829,0.5,ASML,medio,Cobertura de ASML como acción en tendencia reconoce su rol crítico en cadena de suministro de semiconductores como proveedor de litografía.,2026-11-04T20:54:49.236499+00:00,0.8
-16830,0.45,6857.T,medio,Desempeño de Advantest (fabricante de equipos de prueba) en 2024 indica fortaleza en capex de chips pero análisis carece de profundidad específica.,2026-11-04T20:54:32.792106+00:00,0.75
 16831,0.6,IFX.DE,medio,Asociación estratégica Infineon-Vertiv para infraestructura crítica de poder amplía aplicaciones de semiconductores en centros de datos y energía.,2026-11-04T20:54:49.236456+00:00,0.7
 16834,0.0,,bajo,Artículo sobre minería de cobre sin conexión directa con la industria de semiconductores o sus cadenas de suministro.,2026-11-04T20:54:02.063431+00:00,0.05
 16835,-0.35,FCX,bajo,Oportunidad de compra en Freeport tras caída de cobre es irrelevante para semiconductor; solo materia prima distante de sector.,2026-11-04T20:54:32.792110+00:00,0.1
@@ -15324,7 +15320,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 16987,0.5,META,medio,Adquisición de startup de IA de Meta aumenta demanda interna de semiconductores y capacidades de procesamiento para IA.,2026-11-04T20:53:21.466016+00:00,0.6
 16988,-0.4,,bajo,"GigaDevice reporta suministro ajustado de DRAM y ganancias de precio más lentas, indica presión de margen en segmento de memoria.",2026-11-04T20:55:31.114294+00:00,0.5
 16989,0.55,,medio,"CXMT logra validación de DRAM de sexta generación, refleja impulso chino en autosuficiencia de semiconductores ante restricciones comerciales.",2026-11-04T20:55:31.114283+00:00,0.65
-16990,0.6,,medio,Recomendación general de compra en semiconductores post sell-off refleja perspectiva positiva de sector sin enfoque específico en activos.,2026-11-04T20:54:49.236530+00:00,0.7
 16992,0.0,NVDA,bajo,Predicción de precios futuros es especulativa sin fundamentos sólidos para evaluación de sentimiento.,2026-11-05T20:54:48.301999+00:00,0.2
 16993,0.6,NVDA,bajo,Señal técnica alcista histórica proporciona contrapeso positivo pero es análisis especulativo de corto plazo.,2026-11-05T20:54:48.302018+00:00,0.4
 16994,0.65,"NVDA,MSFT",alto,"Spotlight positivo de Bank of America hacia líderes de IA beneficia directamente a Nvidia y Microsoft, impulsores clave del sector de semiconductores.",2026-11-05T20:55:05.064514+00:00,0.9
@@ -15479,7 +15474,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 17148,-0.7,QCOM,alto,"Debilidad en chips para smartphones contrarresta fortaleza en data-center, indicando presión significativa en línea de negocio crítica de Qualcomm.",2026-11-05T20:56:41.258487+00:00,0.9
 17149,-0.6,QCOM,medio,"Qualcomm enfrenta costos de reestructuración de $332M por ajuste de plantilla, indicativo de presión en márgenes y eficiencia operativa.",2026-11-05T20:57:44.870985+00:00,0.8
 17150,0.45,QCOM,alto,Pivot de Qualcomm hacia data centers compensa caída de smartphone market y abre nuevo segmento de alto margen en semiconductores.,2026-11-05T20:58:02.336724+00:00,0.85
-17151,0.15,QCOM,bajo,Comunicado rutinario de disponibilidad de reporte de resultados sin información sustantiva sobre desempeño empresarial.,2026-11-05T20:58:18.656585+00:00,0.3
 17152,0.35,QCOM,medio,"Qualcomm anuncia resultados Q4 y fiscal 2026, presentando desempeño financiero a inversores del sector.",2026-11-05T20:57:13.018857+00:00,0.8
 17153,-0.4,QCOM,medio,Contracción del 21% en mercado de SoC móviles amenaza posición de Qualcomm frente a competidores como Apple.,2026-11-05T20:54:48.301957+00:00,0.7
 17154,-0.7,QCOM,alto,Qualcomm superó Q4 pero guidance Q1 débil genera preocupación por demanda móvil y márgenes de ganancia futuros.,2026-11-05T20:56:57.111241+00:00,0.9
