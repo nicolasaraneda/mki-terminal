@@ -3879,7 +3879,6 @@ titular_id,sentimiento,tickers_afectados,impacto_estimado,explicacion,analizado_
 4212,0.4,ASML,medio,Recompra de acciones de ASML refleja confianza gerencial pero impacto limitado en perspectiva de negocio fundamental.,2026-08-24T22:08:29.793024+00:00,0.5
 4213,-0.5,NVDA,medio,Nvidia firma deal de $1.5B pero la acción del socio cae 25%; posible saturación o preocupación sobre términos del acuerdo.,2026-08-24T22:07:26.831646+00:00,0.7
 4221,-0.5,BHP,medio,"Compensación por desastre ambiental en Brasil afecta costos operacionales y exposición legal de BHP, sin conexión directa al sector semiconductor.",2026-08-24T22:07:52.882991+00:00,0.3
-4222,0.1,FCX,bajo,"Freeport-McMoRan es minería, sin relación directa con industria de semiconductores.",2026-08-24T22:07:26.831445+00:00,0.05
 4223,0.6,FCX,medio,"Recomendación de compra para Freeport McMoRan, productor de cobre esencial para la cadena de suministro de semiconductores, con impacto indirecto positivo.",2026-08-24T22:09:20.168235+00:00,0.3
 4224,0.1,NVDA,bajo,"Nvidia mencionada en contexto de futuros del Dow con otros factores macroeconómicos dominando, impacto neutral.",2026-08-24T22:08:54.978027+00:00,0.4
 4228,0.6,MSFT,medio,Cartera de $678B consolida a Microsoft como generador de demanda institucional crítica para semiconductores de IA.,2026-08-24T22:07:14.824220+00:00,0.6
