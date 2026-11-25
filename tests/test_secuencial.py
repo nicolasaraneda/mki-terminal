@@ -127,7 +127,12 @@ def test_pasivo_es_un_rango_y_el_piso_es_el_extremo_favorable():
 
 
 def test_connor_reproduce_el_n_del_plan():
-    assert round(n_mcnemar(0.10)) == 403
+    """CORRIDA 17: 403 era el n con el `p_d` de la rama de filas que la
+    decisión D1 de Nicolás derogó el 3-sep-2026 (acta §78). Con el `p_d` de
+    la ventana antecedente ANCLADA y la regla de deduplicación firmada da
+    384. Que esta constante siga reproduciendo desde su script lo fija
+    `tests/test_secuencial_17.py::test_p_d_del_plan_es_la_que_mide_el_script`."""
+    assert round(n_mcnemar(0.10)) == 384
 
 
 def test_futilidad_es_monotona():
@@ -192,6 +197,10 @@ def test_la_rama_degenerada_devuelve_todas_las_claves():
 def test_ejecutar_sobrevive_al_caso_degenerado(monkeypatch):
     df = _df_sintetico(n_fechas=60, por_fecha=7, ventaja=60)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "plan", lambda mde=None: {1: (100, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(M, "RUTA_REGISTRO", os.devnull)
     s = M.ejecutar(1)                       # no debe lanzar
@@ -239,6 +248,10 @@ def test_el_acta_no_se_sobrescribe(tmp_path, monkeypatch):
     """
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(sys, "argv", ["mirada", "--mirada", "1", "--escribir"])
     M.main()
@@ -293,7 +306,14 @@ def test_el_mde_sin_firmar_bloquea_la_mirada():
         M.ejecutar(1)
 
 
-@pytest.mark.parametrize("mde,n_final", [(0.07, 3039), (0.10, 1485)])
+# CORRIDA 17: los dos n se movieron DOS veces. Primero con el `p_d` anclado
+# (ver el test de Connor más arriba) y después con el factor secuencial
+# COMPUTADO en vez del 1.0241 cableado, que el script del repo no
+# reproducía. El invariante —que el MDE no toca ninguna frontera— es el
+# mismo y es lo que este test prueba; los n son el pin concreto, y ahora
+# salen de `diseno_secuencial.n_max_del_plan`, el único lugar donde el
+# factor vive.
+@pytest.mark.parametrize("mde,n_final", [(0.07, 2905), (0.10, 1419)])
 def test_el_mde_solo_mueve_n_y_fechas_nunca_umbrales(mde, n_final):
     """Lo que el pre-registro promete: el MDE no toca ninguna frontera."""
     p = M.plan(mde)
@@ -313,6 +333,10 @@ def test_toda_corrida_que_computa_deja_registro(monkeypatch, tmp_path):
     registro = tmp_path / "registro.log"
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     monkeypatch.setattr(M, "DIR_ACTAS", str(tmp_path))
     monkeypatch.setattr(M, "RUTA_REGISTRO", str(registro))
@@ -325,6 +349,10 @@ def test_avisa_cuando_n_excede_el_plan(monkeypatch, tmp_path):
     df = _df_sintetico(n_fechas=400, por_fecha=1, ventaja=210)
     monkeypatch.setattr(M, "MDE_FIRMADO", 0.10)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "RUTA_REGISTRO", str(tmp_path / "r.log"))
     s = M.ejecutar(1)
     assert s["exceso_sobre_plan"] > 0
@@ -373,6 +401,10 @@ def test_varianza_cluster_es_uno_sin_agrupamiento():
 def test_veredicto_cruza_con_efecto_enorme(monkeypatch):
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=140)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 2.024, -1.662, "2026-11-19")})
     s = M.ejecutar(1)
     assert s["z"] > 2.024
@@ -383,6 +415,10 @@ def test_veredicto_cruza_con_efecto_enorme(monkeypatch):
 def test_veredicto_futilidad_cuando_el_modelo_va_peor(monkeypatch):
     df = _df_sintetico(n_fechas=200, por_fecha=1, ventaja=80)   # base gana
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     monkeypatch.setattr(M, "plan", lambda mde=None: {1: (150, 4.048, -1.662, "2026-11-19")})
     s = M.ejecutar(1)
     assert s["z"] < -1.662
@@ -394,9 +430,13 @@ def test_no_computa_si_faltan_filas(monkeypatch):
     df = _df_sintetico(n_fechas=10, por_fecha=7, ventaja=6)
     monkeypatch.setattr(M, "MDE_FIRMADO", 0.10)
     monkeypatch.setattr(M, "cargar_ventana_nueva", lambda: (df, 253))
+    # CORRIDA 17: el segundo candado. Todo test que ejercite el estadístico
+    # tiene que DECLARAR con qué regla de clústeres lo hace; sin eso
+    # `ejecutar` se niega, que es el punto del candado.
+    monkeypatch.setattr(M, "REGLA_DEDUP_ESTIMADOR", "conservar_ambas")
     s = M.ejecutar(1)
     assert s["veredicto"] == "TODAVÍA NO"
-    assert s["faltan"] == 371 - 70
+    assert s["faltan"] == round(0.25 * M._n_max(0.10)) - 70 == 355 - 70
     assert "z" not in s, "no debe computarse el estadístico antes de tiempo"
 
 

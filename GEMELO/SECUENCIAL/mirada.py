@@ -13,11 +13,18 @@ Corre así, en la fecha del calendario y no antes:
     python -m GEMELO.SECUENCIAL.mirada --mirada 1
     python -m GEMELO.SECUENCIAL.mirada --mirada 1 --escribir   # deja el acta
 
-Tres candados estructurales, para que el script no pueda usarse mal:
+CINCO candados, para que el script no pueda usarse mal: tres
+estructurales, más uno por cada parámetro sin firmar.
 
+0. **No computa mientras falte una firma.** `MDE_FIRMADO` y
+   `REGLA_DEDUP_ESTIMADOR` están en `None` y `ejecutar()` aborta con
+   cualquiera de los dos así. El primero fija el n de la mirada; el segundo,
+   cómo se agrupan los clústeres, o sea la varianza — el denominador del
+   estadístico. Los dos tienen test.
 1. **No puede mirar la ventana antecedente.** Descarta por construcción
-   toda fila con `fecha` <= FECHA_CONGELAMIENTO. Las 248 filas de hoy son
-   antecedente y volver a analizarlas es "la trampa de esta etapa".
+   toda fila con `fecha` <= FECHA_CONGELAMIENTO: hoy son las 262 filas de la
+   ventana antecedente anclada, y volver a analizarlas es "la trampa de esta
+   etapa".
 2. **No puede adelantar una mirada.** Si el n acumulado todavía no llegó
    al n de la mirada pedida, NO computa el estadístico: dice cuánto falta
    y termina. Adelantar una mirada es gastar alfa que la frontera no
@@ -49,62 +56,267 @@ from backtest.linea_base import aplicar_convencion, cargar  # noqa: E402
 from evaluacion import comparar_pareado, norm_cdf   # noqa: E402
 
 # ---------------------------------------------------------------------------
-# EL PLAN, CONGELADO. Estas constantes son el pre-registro: si alguna cambia
-# después del 31-ago-2026, el diseño terminó y hay que decirlo con acta.
+# EL PLAN QUE SE PROPONE CONGELAR. Estas constantes son el pre-registro: si
+# alguna cambia DESPUÉS DE LA FIRMA, el diseño terminó y hay que decirlo con
+# acta.
+#
+# OJO con la redacción anterior de este encabezado, que decía «EL PLAN,
+# CONGELADO ... si alguna cambia después del 31-ago-2026». **El documento
+# nunca se congeló**, y el acta de congelamiento llama a esa fecha SIN
+# FIRMAR: el archivo que hace exigible el régimen no puede declarar
+# congelado lo que el acta deja abierto. Lo cazó el `curador-epistemico` en
+# la corrida 17.
 # ---------------------------------------------------------------------------
 
+# La frontera de la población, de §A2. **Es uno de los parámetros SIN
+# FIRMAR** (tarjeta §93: el documento nunca se congeló, así que desde cuándo
+# cuenta la población es una decisión). Está escrita acá porque el candado
+# estructural de `cargar_ventana_nueva` la necesita para poder descartar la
+# ventana antecedente; que esté escrita no la firma.
 FECHA_CONGELAMIENTO = "2026-08-31"
 CONVENCION = "excluir_cero"          # GEMELO/DISEÑO.md §2.8
 
-# EL MDE — el único parámetro del pre-registro que NO está firmado.
-# `DISEÑO.md` §A3.1 lo deriva de V6 y propone 7 pp. Mientras valga None,
-# este script se niega a computar: correr una mirada con un N_max que
-# nadie firmó sería elegir el tamaño de muestra después de ver los datos,
-# que es lo mismo que elegir el umbral después de ver los datos.
+# EL MDE — uno de los DOS parámetros con candado en este archivo (el otro es
+# `REGLA_DEDUP_ESTIMADOR`, más abajo), y uno de los cuatro sin firmar del
+# pre-registro. `DISEÑO.md` §A3.1 lo deriva en la escala del endpoint:
+# **8.51 pp, IC95 [4.94, 13.09]**. Mientras valga None, este script se niega
+# a computar: correr una mirada con un N_max que nadie firmó sería elegir el
+# tamaño de muestra después de ver los datos, que es lo mismo que elegir el
+# umbral después de ver los datos.
 MDE_FIRMADO = None
-# OJO — el 0.07 que esta línea ofrecía antes está **RETIRADO** desde el
-# 31-ago: se derivó en la escala del retorno de sesión cuando el endpoint
-# congelado es `acierto_gap` (`DISEÑO.md`, bloque de rechazo). En la escala
-# del endpoint da 8.96 pp, y el Frente D del 1-sep mostró que **ese
-# intervalo tampoco es del MDE** sino el de E|gap| invertido. **Hoy NO hay
-# número para firmar**, y ofrecer uno acá sería poner el dedo en la balanza.
+# OJO — el valor que esta línea ofrecía antes está **RETIRADO** desde el
+# 31-ago (acta §56): se derivó en la escala del retorno de sesión cuando el
+# endpoint congelado es `acierto_gap`. El que lo reemplazó en la cabecera de
+# la v5 está **a su vez objetado** —su intervalo era el de E|gap| invertido,
+# un insumo de tres, como mostró el Frente D del 1-sep— y la corrida 17 lo
+# recomputó. **NINGÚN valor está firmado**, y ofrecer uno acá sería poner el
+# dedo en la balanza: por eso esta constante queda en None y el número vive
+# en `mde_desde_v6.py`, que lo computa.
 MDE_PROPUESTO = None
 
-# N_max por MDE, de `diseno_secuencial` (Connor × DEFF × 1.0241). Los
+# ---------------------------------------------------------------------------
+# LA REGLA DE DEDUPLICACIÓN DEL ESTIMADOR — el segundo parámetro SIN FIRMAR.
+# ---------------------------------------------------------------------------
+# Hay DOS reglas de deduplicación y la v5 las confundía en una.
+#
+#   1. La regla de FILAS, FIRMADA el 1-sep-2026 (actas §60 y §61):
+#      `backtest.linea_base.deduplicar_por_sesion`, que `cargar()` aplica
+#      por defecto. Dentro de cada grupo `(ticker, sesion_objetivo)`
+#      conserva la fila cuya `sesion_objetivo` corresponde a su
+#      `available_at`. En los pares del defecto de `snapshot.py` eso deja
+#      UNA fila; en los pares de FERIADO las dos corresponden y se
+#      conservan las DOS. `keep="last"` quedó PROHIBIDA por esa acta.
+#      Esta regla ya está vigente y este módulo la hereda de `cargar()`.
+#
+#   2. La regla del ESTIMADOR, que es la que falta: qué hace el estadístico
+#      con los pares que la regla de filas CONSERVA. Es una pregunta
+#      distinta, y es la que el cuarto dictamen señaló como el defecto
+#      descalificante: `contribuciones_por_fecha` agrupa por FECHA DE
+#      EMISIÓN, y las dos filas de un par de feriado tienen fechas de
+#      emisión distintas, así que caen en clústeres distintos aunque
+#      apunten a la misma sesión. Si su resultado está correlacionado —y lo
+#      está, porque es el gap de la MISMA sesión— el bootstrap de fechas
+#      las trata como independientes y `V̂` sale corta.
+#
+# UNA CORRECCIÓN AL CUARTO DICTAMEN, que importa para elegir. El dictamen
+# dice que los pares tienen «resultado idéntico». Es cierto del GAP y no
+# tiene por qué ser cierto del ACIERTO: las dos filas comparten
+# `gap_pct` porque comparten sesión objetivo, pero se emitieron en fechas
+# distintas y por lo tanto con predicciones distintas, así que
+# `acierto_gap` puede diferir. Lo que McNemar puntúa es el acierto, no el
+# gap. Esta corrida NO mide si difieren: medirlo es computar una función del
+# acierto, y el encargo no recomputa ninguna sobre ninguna de las dos
+# ventanas. Queda dicho como lo que es —una posibilidad lógica que la
+# elección tiene que contemplar— y no como un hallazgo.
+#
+# Mientras valga None este módulo se niega a computar, por la misma razón
+# que con el MDE: elegir cómo se agrupan los clústeres después de ver los
+# datos es elegir la varianza después de verlos, y la varianza es el
+# denominador del estadístico.
+REGLA_DEDUP_ESTIMADOR = None
+
+# Las opciones, declaradas ANTES de que ninguna se corra sobre datos reales.
+# `keep_last` está en la lista porque la v5 publicó su p en su cabecera y
+# por lo tanto está a la vista de quien firma; está marcada PROHIBIDA
+# porque el acta §60 la prohibió, y ofrecerla sin la marca sería ofrecer una
+# rama vetada.
+# OJO CON LA PALABRA «PAR», y es la exigencia E8 del quinto dictamen: en la
+# POBLACIÓN los grupos `(ticker, sesion_objetivo)` son **11 de DOS filas y 4
+# de CUATRO** (38 filas en 15 grupos). En la ventana antecedente, **bajo la
+# regla de filas FIRMADA, son 5 grupos de dos** (10 filas); los 15 de dos (30
+# filas) son la rama SIN esa regla, o sea la que D1 derogó, y citarla acá sin
+# decirlo —como hacía este comentario— ponía la cifra de la rama derogada dos
+# líneas arriba de las opciones que hay que elegir, cuando la decisión versa
+# sobre los grupos que la regla de filas CONSERVA. Lo cazó el dictamen de
+# cierre (O-7). Las glosas de abajo hablan de GRUPOS y no de pares porque
+# «el par» es
+# falso en 4 de los 15 grupos, y porque sobre un grupo de cuatro
+# `colapsar_el_par` descarta TRES filas y no una. El acta §60 firmó la rama
+# de feriados razonando sobre DOS emisiones igualmente a tiempo: **cuatro
+# emisiones apuntando a una sesión es un caso que esa acta no decidió.**
+REGLAS_DEDUP_ESTIMADOR = {
+    "conservar_ambas": "todas las filas del grupo entran, clúster por fecha "
+                       "de emisión (lo que el código hace hoy). Sobre un "
+                       "grupo de cuatro, cuatro clústeres distintos con el "
+                       "mismo desenlace",
+    "clusterizar_por_sesion_objetivo": "todas las filas entran, pero el "
+                                       "clúster es la SESIÓN OBJETIVO, así "
+                                       "que el grupo entero cae en UN solo "
+                                       "clúster, sea de dos o de cuatro",
+    "colapsar_el_par": "el grupo se colapsa en UNA observación: descarta "
+                       "una de dos, y TRES de cuatro. COINCIDE con "
+                       "`keep_first` y no es una quinta opción: colapsar "
+                       "exige decir qué fila sobrevive, y la única que no "
+                       "elige por frescura es la más temprana. La otra "
+                       "lectura de «colapsar» —AGREGAR las filas en una— "
+                       "necesitaría una regla de empate para un acierto "
+                       "binario, o sea una convención nueva, y la convención "
+                       "está congelada (§A3.7 cláusula 4)",
+    "keep_first": "se conserva la emisión más temprana de cada grupo "
+                  "(NO es la regla firmada: la firmada arbitra por "
+                  "correspondencia de sesión, no por orden)",
+    "keep_last": "PROHIBIDA por el acta §60 del 1-sep-2026: retira "
+                 "selectivamente errores del modelo",
+}
+REGLAS_PROHIBIDAS = ("keep_last",)
+
+# N_max por MDE, de `diseno_secuencial` (Connor × DEFF × el factor
+# secuencial computado, `diseno_secuencial.factor_secuencial()`). Los
 # umbrales y la futilidad NO dependen del MDE: dependen de la fracción de
 # información y del α, así que valen igual para cualquiera de los dos.
-N_MAX_POR_MDE = {0.07: 3039, 0.10: 1485}
+#
+# CORRIDA 17: este diccionario ya no se usa como tabla cerrada. `N_max` se
+# computa desde `diseno_secuencial` con el `p_d` de la ventana antecedente
+# ANCLADA, porque los dos valores que estaban cableados acá se derivaron con
+# un `p_d` que salía de la rama de filas que la decisión D1 derogó el
+# 3-sep-2026. Se conserva vacío a propósito: un diccionario con dos entradas
+# viejas es una invitación a firmar una de las dos.
+N_MAX_POR_MDE: dict[float, int] = {}
 UMBRALES_OBF = (4.048, 2.862, 2.337, 2.024)
 Z_FUTILIDAD = (-1.662, 0.016, 1.033, None)
 FRACCIONES = (0.25, 0.50, 0.75, 1.00)
 
-# Fechas estimadas al ritmo real de 6.56 filas/día hábil (256/39 al
-# 31-ago). Son estimaciones: **la mirada la dispara el n, no la fecha.**
-FECHAS_POR_MDE = {
-    0.07: ("2027-02-09", "2027-07-21", "2027-12-30", "2028-06-10"),
-    0.10: ("2026-11-19", "2027-02-07", "2027-04-28", "2027-07-17"),
-}
+# Las fechas estimadas ya NO viven en una tabla cableada. La v5 las fijaba
+# al ritmo de la ventana ANTECEDENTE porque la población no existía; hoy el
+# ritmo se mide donde ocurre, por conteo, y la tabla completa la produce
+# `GEMELO/SECUENCIAL/tabla_firma.py`. Dos tuplas de fechas cableadas en este
+# módulo serían dos fechas que envejecen en silencio.
+FECHAS_POR_MDE: dict[float, tuple] = {}
 
 
-def plan(mde: float | None = None) -> dict:
-    """(n de filas, umbral |Z|, Z de futilidad, fecha estimada) por mirada."""
+def _n_max(mde: float, p_d: float | None = None) -> int:
+    """`N_max` del plan, delegado a `diseno_secuencial.n_max_del_plan`.
+
+    Se computa en vez de leerse de una tabla, porque los dos valores que la
+    tabla traía se derivaron con un `p_d` que salía de la rama de filas que
+    la decisión D1 de Nicolás derogó el 3-sep-2026 (acta §78).
+
+    **Y se DELEGA en vez de repetir la cuenta.** Hasta el dictamen de cierre
+    de la corrida 17 esta función multiplicaba por un `1.0241` cableado
+    mientras `tabla_firma.py` ya usaba el factor computado: eso dejó dos
+    respuestas distintas a «¿con qué n se dispara la mirada 1?» —354 acá y
+    355 allá— entre el script que CORRE la mirada y la tabla que se FIRMA.
+    Un pre-registro con dos `N_max` no reproduce el día que se firma, que es
+    la vara del cuarto dictamen. Ahora el factor vive en un solo lugar.
+    """
+    import diseno_secuencial as D
+    return round(D.n_max_del_plan(mde, p_d=p_d))
+
+
+def plan(mde: float | None = None, p_d: float | None = None,
+         fechas: tuple | None = None) -> dict:
+    """(n de filas, umbral |Z|, Z de futilidad, fecha estimada) por mirada.
+
+    `fechas` es opcional: las fechas son una ESTIMACIÓN al ritmo del momento
+    y la mirada la dispara el n, no la fecha. Quien las quiera las pasa
+    (`tabla_firma.py` las computa desde el ritmo medido); sin ellas el plan
+    es igual de válido y la cuarta posición viene en None.
+    """
     mde = mde if mde is not None else MDE_FIRMADO
     if mde is None:
         raise SystemExit(
             "MDE SIN FIRMAR, y hoy NO hay número propuesto.\n"
-            "El 7 pp que este módulo ofrecía quedó RETIRADO el 31-ago (se "
-            "derivó en la escala equivocada), y el 8.96 pp que lo reemplaza "
-            "tiene su propio intervalo en disputa: el Frente D del 1-sep "
-            "mostró que el [6.67, 11.32] publicado es el IC de E|gap| "
-            "invertido, no el del MDE.\n"
+            "El valor que este módulo ofrecía en la escala del retorno de "
+            "sesión quedó RETIRADO el 31-ago, y el que lo reemplazó traía "
+            "como intervalo el de E|gap| invertido —un insumo de tres—, "
+            "que el Frente D del 1-sep ya había objetado.\n"
+            "La corrida 17 (25-oct-2026) dejó el número y su intervalo "
+            "recomputados sobre la ventana antecedente ANCLADA, con dos "
+            "insumos propagados, en `GEMELO/SECUENCIAL/mde_desde_v6.py`, y "
+            "la tabla de la firma —N_max, el n de cada mirada y su fecha al "
+            "ritmo medido— en `GEMELO/SECUENCIAL/tabla_firma.py`. La "
+            "elección sigue siendo de Nicolás.\n"
             "Correr una mirada con un N_max que nadie fijó es elegir el "
             "tamaño de muestra después de ver los datos.\n"
             "Poner `MDE_FIRMADO` cuando la decisión esté escrita y fechada "
-            "en DECISIONES.md, y agregar su N_max a N_MAX_POR_MDE.")
-    n_max = N_MAX_POR_MDE[mde]
-    fechas = FECHAS_POR_MDE[mde]
+            "en DECISIONES.md.")
+    n_max = _n_max(mde, p_d)
+    fechas = fechas if fechas is not None else (None,) * len(FRACCIONES)
     return {k + 1: (round(t * n_max), UMBRALES_OBF[k], Z_FUTILIDAD[k], fechas[k])
             for k, t in enumerate(FRACCIONES)}
+
+
+def _guard_regla_estimador(regla: str | None = None) -> str:
+    """El candado de la regla de deduplicación del ESTIMADOR.
+
+    Mismo argumento que el candado del MDE: elegir cómo se agrupan los
+    clústeres después de ver los datos es elegir la varianza después de
+    verlos, y la varianza es el denominador del estadístico. El cuarto
+    dictamen midió que la elección de la regla de FILAS valía la diferencia
+    entre un veredicto y el contrario; la de clústeres mueve `V̂`, que es
+    exactamente lo mismo un escalón más abajo.
+    """
+    regla = REGLA_DEDUP_ESTIMADOR if regla is None else regla
+    if regla is None:
+        raise SystemExit(
+            "REGLA DE DEDUPLICACIÓN DEL ESTIMADOR SIN FIRMAR.\n"
+            "La regla de FILAS está firmada (actas §60 y §61, 1-sep-2026) y "
+            "`cargar()` la aplica. Lo que falta es qué hace el ESTADÍSTICO "
+            "con los pares que esa regla CONSERVA: hoy `contribuciones()` "
+            "agruparía por fecha de emisión, y las dos filas de un par de "
+            "feriado tienen fechas de emisión distintas y la MISMA sesión "
+            "objetivo, así que caerían en clústeres distintos y `V̂` saldría "
+            "corta.\n"
+            "Las opciones están declaradas en `REGLAS_DEDUP_ESTIMADOR` y la "
+            "tarjeta correspondiente de `GEMELO/resultados/espera_firma.md` "
+            "las pone con su conteo al lado. NO se computa nada hasta que "
+            "haya una firma fechada en DECISIONES.md.")
+    if regla in REGLAS_PROHIBIDAS:
+        raise SystemExit(
+            f"La regla `{regla}` está PROHIBIDA por el acta §60 del "
+            "1-sep-2026: retira selectivamente errores del modelo. Está en "
+            "la lista para que quede constancia de que se consideró, no para "
+            "poder elegirla.")
+    if regla not in REGLAS_DEDUP_ESTIMADOR:
+        raise SystemExit(f"Regla desconocida: {regla}. Las declaradas son "
+                         f"{sorted(REGLAS_DEDUP_ESTIMADOR)}.")
+    return regla
+
+
+def aplicar_regla_estimador(df, regla: str | None = None):
+    """(df, clave de clúster) según la regla del estimador.
+
+    Es PURA: no consulta la base y no depende de la fecha, así que los
+    tests la ejercitan entera sobre datos sintéticos con pares plantados.
+    """
+    regla = _guard_regla_estimador(regla)
+    if regla == "clusterizar_por_sesion_objetivo":
+        return df, "sesion_objetivo"
+    if regla in ("colapsar_el_par", "keep_first"):
+        # Una observación por (ticker, sesión objetivo): la de emisión más
+        # temprana. Las dos reglas comparten rama porque son la MISMA
+        # operación —ver `REGLAS_DEDUP_ESTIMADOR`—, y escribirlas dos veces
+        # habría hecho pasar por distintas dos cosas que no lo son.
+        # El orden es por fecha y no por el orden en que la base devolvió
+        # las filas: un `drop_duplicates` sobre un frame sin ordenar depende
+        # del `ORDER BY` del SQL, que no es parte del pre-registro.
+        orden = df.sort_values(["ticker", "sesion_objetivo", "fecha"],
+                               kind="stable")
+        return (orden.drop_duplicates(["ticker", "sesion_objetivo"],
+                                      keep="first")
+                     .sort_values(["fecha", "ticker"], kind="stable")
+                     .reset_index(drop=True), "fecha")
+    return df, "fecha"          # conservar_ambas
 
 
 # `PLAN` ya no se materializa al importar: con el MDE retirado no hay
@@ -176,17 +388,36 @@ def cargar_ventana_nueva():
     return aplicar_convencion(df, CONVENCION), descartadas
 
 
-def contribuciones_por_fecha(df) -> np.ndarray:
-    """d_j = Σ_i (acierto_modelo − acierto_base) sobre las filas de la fecha j.
+def contribuciones(df, clave: str = "fecha") -> np.ndarray:
+    """d_j = Σ_i (acierto_modelo − acierto_base) sobre las filas del clúster j.
 
     `b − c` se descompone EXACTAMENTE como la suma de estas contribuciones,
-    y por eso la varianza de `b − c` se puede estimar remuestreando fechas.
+    y por eso la varianza de `b − c` se puede estimar remuestreando
+    clústeres.
+
+    `clave` es lo que define el clúster y lo fija la regla del estimador
+    (`REGLA_DEDUP_ESTIMADOR`): `"fecha"` es la fecha de emisión —lo que el
+    código hacía siempre— y `"sesion_objetivo"` la sesión que la predicción
+    anticipa. La diferencia sólo existe para los pares que apuntan a la
+    misma sesión desde fechas de emisión distintas, y es justamente ahí
+    donde el cuarto dictamen dijo que el estimador se rompía.
     """
-    return (df.groupby("fecha")
+    return (df.groupby(clave)
               .apply(lambda g: int((g["acierto_gap"].astype(int)
                                     - g["base_acierto"].astype(int)).sum()),
                      include_groups=False)
               .to_numpy(dtype=float))
+
+
+def contribuciones_por_fecha(df) -> np.ndarray:
+    """Alias histórico de `contribuciones(df, "fecha")`.
+
+    Se conserva porque `diseno_secuencial.ac1_ventana_antecedente` y los
+    tests lo nombran, y porque el clúster por fecha de emisión sigue siendo
+    una de las opciones declaradas. No es el default del estadístico: el
+    default no existe hasta que la regla se firme.
+    """
+    return contribuciones(df, "fecha")
 
 
 def autocorrelacion_lag1(d: np.ndarray) -> tuple[float, float]:
@@ -202,7 +433,7 @@ def autocorrelacion_lag1(d: np.ndarray) -> tuple[float, float]:
     return float((x[:-1] * x[1:]).sum() / den), 1.0 / math.sqrt(m)
 
 
-def varianza_cluster(df) -> dict:
+def varianza_cluster(df, clave: str = "fecha") -> dict:
     """Factor de varianza cluster-robusta V̂, re-estimado con ESTOS datos.
 
     Bajo independencia Var(b−c) = b+c. Se remuestrean FECHAS con el
@@ -220,14 +451,15 @@ def varianza_cluster(df) -> dict:
     reventaba con KeyError. La rama que existe para manejar el caso raro
     era la única que fallaba.
     """
-    d = contribuciones_por_fecha(df)
+    d = contribuciones(df, clave)
     b = int(((df["acierto_gap"] == 1) & (df["base_acierto"] == 0)).sum())
     c = int(((df["acierto_gap"] == 0) & (df["base_acierto"] == 1)).sum())
     var_iid = float(b + c)
     ac1, ac1_ee = autocorrelacion_lag1(d)
 
     base = {
-        "b": b, "c": c, "fechas": len(d), "var_iid": var_iid,
+        "b": b, "c": c, "fechas": len(d), "clave_cluster": clave,
+        "var_iid": var_iid,
         "ac1": ac1, "ac1_ee": ac1_ee,
         "semilla": SEMILLA_BOOTSTRAP, "n_draws": N_DRAWS,
         "bloques": BLOQUES_FECHAS, "regla": REGLA_VARIANZA,
@@ -310,8 +542,11 @@ def ejecutar(k: int) -> dict:
         return {"mirada": k, "corrida_en": ahora, "n": 0,
                 "descartadas_antecedente": 0, "veredicto": problema}
 
-    # Candado del MDE: `plan()` levanta SystemExit si no está firmado.
+    # Los dos candados de parámetros sin firmar, en este orden: el MDE fija
+    # el n de la mirada, así que su ausencia se ve primero. Los dos levantan
+    # SystemExit y ninguno computa nada.
     n_obj, umbral, z_fut, fecha_plan = plan()[k]
+    regla = _guard_regla_estimador()
     salida = {
         "mirada": k, "n_objetivo": n_obj, "umbral": umbral,
         "z_futilidad": z_fut, "fecha_plan": fecha_plan,
@@ -334,9 +569,14 @@ def ejecutar(k: int) -> dict:
     salida["t_real"] = n / _plan[max(_plan)][0]
     salida["exceso_sobre_plan"] = n - n_obj
 
+    df, clave = aplicar_regla_estimador(df, regla)
+    salida["regla_estimador"] = regla
+    salida["clave_cluster"] = clave
+    salida["n_tras_regla_estimador"] = len(df)
+
     cmp = comparar_pareado(df["acierto_gap"].astype(bool),
                            df["base_acierto"].astype(bool))
-    var = varianza_cluster(df)
+    var = varianza_cluster(df, clave)
 
     if var["degenerado"] is not None:
         salida.update({"b": var["b"], "c": var["c"], "fechas": var["fechas"],
@@ -376,9 +616,13 @@ def ejecutar(k: int) -> dict:
 
 
 def _formatear(s: dict) -> str:
+    plan_txt = (f"fecha de plan: {s['fecha_plan']}" if s.get("fecha_plan")
+                else "sin fecha de plan: la mirada la dispara el n, y la "
+                     "fecha estimada la computa `tabla_firma.py` al ritmo "
+                     "medido del momento")
     L = [f"# Mirada {s['mirada']} del diseño secuencial",
          "",
-         f"- Corrida: {s['corrida_en']}  (fecha de plan: {s['fecha_plan']})",
+         f"- Corrida: {s['corrida_en']}  ({plan_txt})",
          f"- Filas nuevas acumuladas (posteriores a {FECHA_CONGELAMIENTO}, "
          f"convención `{CONVENCION}`): **{s['n']}**",
          f"- Filas antecedentes descartadas por construcción: {s['descartadas_antecedente']}",
@@ -410,7 +654,11 @@ def _formatear(s: dict) -> str:
         f"[{100*s['ic_base'][0]:.1f}, {100*s['ic_base'][1]:.1f}] |",
         f"| ventaja | {s['ventaja_pp']:+.1f} pp |",
         f"| discordantes b / c | {s['b']} / {s['c']} |",
-        f"| fechas de emisión (clústeres) | {s['fechas']} |",
+        f"| regla del estimador | `{s.get('regla_estimador')}` "
+        f"(clúster = `{s.get('clave_cluster')}`) |",
+        f"| filas tras la regla del estimador | "
+        f"{s.get('n_tras_regla_estimador')} |",
+        f"| clústeres | {s['fechas']} |",
         f"| Z₀ = (b−c)/√(b+c) | {s['z0']:.4f} |",
         f"| V̂ por bloque | "
         + " · ".join(f"bloque {b}: {v:.3f}" for b, v in sorted(s['v_por_bloque'].items()))

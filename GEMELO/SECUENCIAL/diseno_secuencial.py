@@ -25,6 +25,7 @@ Corre con:  python GEMELO/SECUENCIAL/diseno_secuencial.py
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import math
 import os
 import sys
@@ -49,10 +50,25 @@ SEMILLA = 20260831   # usada por verificacion_mc y por la simulación de correla
 # Parámetros medidos, no elegidos. Cada uno con su procedencia.
 # ---------------------------------------------------------------------------
 
-# Tasa de discordancia observada en la ventana sellada actual (b+c)/n con
-# b=72, c=56, n=248 — `GEMELO/resultados/concentracion.md` §A1, reproducida
-# cuatro veces por vías independientes.
-P_D_OBSERVADA = 128 / 248
+# Tasa de discordancia de la VENTANA ANTECEDENTE, anclada.
+#
+# CORREGIDA EN LA CORRIDA 17 (25-oct-2026). Hasta hoy esta línea valía
+# 128/248: el numerador y el denominador salían de la rama SIN deduplicar,
+# que la decisión D1 de Nicolás derogó el 3-sep-2026 (acta §78) y cuyas
+# cifras están RETIRADAS en `GEMELO/cifras_retiradas.md`. Un parámetro de
+# planificación computado sobre un conjunto de filas que el proyecto retiró
+# es una cifra retirada sobreviviendo dentro del código.
+#
+# El valor de hoy sale de `GEMELO/SECUENCIAL/mde_desde_v6.py` sobre la
+# ventana antecedente anclada (emisión <= 2026-08-31, sello <= 2026-09-02),
+# convención `excluir_cero` y la regla de deduplicación FIRMADA el
+# 1-sep-2026 (actas §60 y §61). Un test comprueba que esta constante y el
+# script dicen lo mismo, para que no pueda volver a derivar en silencio.
+#
+# Se computa `b+c` y nunca `b−c`: la suma es el parámetro de estorbo que
+# §A2 autoriza, la diferencia es la ventaja y el pre-registro prohíbe
+# recomputarla, también en la ventana antecedente.
+P_D_OBSERVADA = 129 / 262
 
 # Efecto de diseño por clustering intra-fecha: los ~7-8 tickers de una misma
 # fecha comparten el signo de la predicción (el modelo sigue el signo del
@@ -78,11 +94,90 @@ DEFF_RANGO = (2.5, 3.6, 4.6, 5.83, 7.26)
 # todas las fechas del calendario se corren. Se deja en el valor sin
 # deduplicar porque es lo que la base contiene hoy, y la alternativa está
 # declarada al lado en vez de escondida.
-FILAS_POR_DIA_HABIL = 256 / 39          # 6.564
-FILAS_POR_DIA_HABIL_DEDUP = 241 / 39    # 6.179, si se resuelve deduplicar
+# CORRIDA 17 (25-oct-2026) — QUÉ SE CORRIGIÓ Y QUÉ NO, dicho acá para que
+# nadie lo deduzca mal:
+#
+#  * Para el CALENDARIO (en qué fecha la población llega al n de una
+#    mirada) estas constantes están SUPERADAS y no se usan más: el ritmo de
+#    la ventana antecedente era un sustituto del ritmo de la población
+#    porque la población no existía. Hoy tiene 38 días hábiles de historia,
+#    así que el ritmo se MIDE donde ocurre —`ventana_antecedente.
+#    ritmo_poblacion()`, por conteo— y el calendario sale de
+#    `tabla_firma.py`. El ritmo real es MAYOR que el planificado, así que
+#    todas las miradas caen ANTES de lo que decía la v5.
+#  * Para `FECHAS_POR_MIRADA` (y a través de ella para la tabla de
+#    exposición residual de §A3.2) siguen valiendo, y NO se tocaron. La
+#    ventana antecedente anclada da 262/37 = 7.081 filas por fecha contra
+#    las 7.314 de acá, lo que movería las fechas por mirada de
+#    (51, 101, 152, 203) a (52, 105, 157, 210). Más fechas es un bootstrap
+#    mejor y por lo tanto un α simulado MÁS BAJO: no recomputar la tabla la
+#    deja PESIMISTA sobre la propia exposición del plan, que es la
+#    dirección honesta de equivocarse. Recomputarla es una corrida de
+#    20.000 réplicas y va a tarjeta en vez de hacerse a medias.
+FILAS_POR_DIA_HABIL = 256 / 39          # 6.564 — ventana antecedente al 31-ago
+FILAS_POR_DIA_HABIL_DEDUP = 241 / 39    # 6.179 — con la dedup de entonces
 FECHAS_POR_DIA_HABIL = 35 / 39
 
 FECHA_CONGELAMIENTO = dt.date(2026, 8, 31)
+
+# EL FACTOR SECUENCIAL, COMPUTADO Y EN UN SOLO LUGAR.
+#
+# §A3.3 paga en N la diferencia entre el umbral final del plan (2.024) y el
+# 1.96 de muestra fija. Hasta la corrida 17 el valor **1.0241 estaba cableado
+# en dos archivos** (`tabla_firma.py` y `mirada._n_max`) y **el script
+# versionado de este repo no lo reproducía**: da 1.026380, y con el cableado
+# la potencia idealizada es 0.7991 y no 0.80.
+#
+# Peor que la magnitud (0.09 pp de potencia) fue la consecuencia que el
+# `guardian-constitucion` midió al cerrar la corrida: corregirlo en un
+# archivo y no en el otro dejó **dos generaciones de `N_max` vivas a la vez**,
+# y por lo tanto dos respuestas distintas a «¿con qué n se dispara la mirada
+# 1?» — 354 si se le preguntaba a `mirada.py`, el script que CORRE la mirada,
+# y 355 si se le preguntaba a `tabla_firma.py`, la tabla que se FIRMA. Es
+# textualmente la vara del cuarto dictamen, fallando sobre la cantidad que
+# más importa.
+#
+# Por eso vive acá y se computa: los dos lo importan y no puede haber dos.
+@functools.lru_cache(maxsize=1)
+def factor_secuencial() -> float:
+    """(drift del plan / drift de muestra fija)², computado.
+
+    Si las fronteras cambian, el factor cambia con ellas en vez de quedar
+    desincronizado. `N_MAX` de cualquier MDE se computa como
+    `n_mcnemar(mde, p_d) * DEFF_PLANIFICACION * factor_secuencial()`.
+
+    **MEMOIZADO, y no es un detalle de rendimiento.** Una llamada cuesta
+    ~6,4 s (bisección de 60 pasos sobre una integración de 2.001 puntos), y
+    `tabla_firma.propagacion_conjunta` computa un `N_max` por cada una de
+    10.000 réplicas: sin caché eso son ~18 horas y la suite no termina. Se
+    puede memoizar porque la función es **pura** y sus insumos —`FRACCIONES`,
+    `UMBRALES_OBF` y el α— son constantes del pre-registro: si alguna
+    cambiara, el diseño terminó y hay que decirlo con acta (§A3.7), no
+    recomputar el factor a mitad de un proceso.
+    """
+    malla = Malla(FRACCIONES, m=2001, ancho=7.0)
+    drift_plan = drift_para_potencia(malla, list(UMBRALES_OBF), objetivo=0.80)
+    drift_fijo = norm_ppf(0.975) + norm_ppf(0.80)
+    return (drift_plan / drift_fijo) ** 2
+
+
+# El valor que estuvo cableado hasta la corrida 17, conservado para que la
+# corrección quede auditable y para que un test pueda comprobar que ya no
+# vale (no reproduce: compra una potencia de 0.7991).
+FACTOR_SECUENCIAL_CABLEADO_HASTA_LA_CORRIDA_17 = 1.0241
+
+
+def n_max_del_plan(delta: float, p_d: float | None = None,
+                   deff: float = None) -> float:
+    """`N_max` del plan: Connor × DEFF × el factor secuencial COMPUTADO.
+
+    **Único lugar donde se computa `N_max`.** `mirada._n_max` y
+    `tabla_firma.n_max` lo llaman; antes cada uno hacía su propia cuenta con
+    el factor cableado y se desincronizaron.
+    """
+    p_d = P_D_OBSERVADA if p_d is None else p_d
+    deff = DEFF_PLANIFICACION if deff is None else deff
+    return n_mcnemar(delta, p_d=p_d) * deff * factor_secuencial()
 
 FRACCIONES = [0.25, 0.50, 0.75, 1.00]
 MDE = 0.10
@@ -307,26 +402,41 @@ def alfa_plan_bajo_correlacion(ac1_objetivo: float, bloques=(1, 5, 10),
 
 
 def ac1_ventana_antecedente() -> dict:
-    """Autocorrelación lag-1 de d_j sobre la ventana sellada de hoy.
+    """Autocorrelación lag-1 de d_j sobre la VENTANA ANTECEDENTE, anclada.
 
     **Es un parámetro de estorbo de VARIANZA, de la misma clase que p_d y
     el DEFF** (`DISEÑO.md` §A2): no dice nada sobre si hay ventaja, y no se
     computa ninguna ventaja acá. Se mide porque el diseño necesita saber si
     el eje al que su bootstrap es ciego está vivo o no.
+
+    CORREGIDO EN LA CORRIDA 17 (25-oct-2026), y era un defecto serio.
+    Hasta hoy esta función llamaba a `cargar()` **sin ancla**, así que leía
+    el track record VIVO. El día que se escribió eso era inocuo —la
+    población del pre-registro tenía un día de vida—, pero `ac1` es una
+    función del acierto, y hoy la población tiene cientos de filas: correr
+    esta función habría computado `ac1` sobre las filas que el estadístico
+    todavía no miró. Es exactamente la mirada furtiva a la que §A3.8 le pone
+    precio (α de 0.05 a 0.094), con el agravante de que no dejaba línea en
+    `miradas/registro.log`, porque ese registro sólo lo escribe `mirada.py`.
+
+    Es la MISMA causa raíz de la condición 4 —un lector de base sin ancla
+    temporal— en un segundo archivo, y acá no movía un parámetro: computaba
+    una cifra prohibida. Desde hoy la ventana la define
+    `ventana_antecedente`, que es el único lugar donde viven los dos cortes.
     """
     try:
-        from backtest.linea_base import aplicar_convencion, cargar
+        from GEMELO.SECUENCIAL import ventana_antecedente as va
         from GEMELO.SECUENCIAL.mirada import (autocorrelacion_lag1,
                                               contribuciones_por_fecha)
     except Exception as exc:                       # pragma: no cover
         return {"error": str(exc)}
-    df = cargar()
+    df = va.cargar_antecedente()
     if df.empty:
         return {"error": "sin filas"}
-    df = aplicar_convencion(df, "excluir_cero")
     d = contribuciones_por_fecha(df)
     ac1, ee = autocorrelacion_lag1(d)
-    return {"ac1": ac1, "ee": ee, "fechas": len(d)}
+    return {"ac1": ac1, "ee": ee, "fechas": len(d),
+            "corte_emision": va.CORTE_EMISION, "corte_sello": va.CORTE_SELLO}
 
 
 def _linea(titulo: str) -> None:

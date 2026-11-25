@@ -1,0 +1,300 @@
+{
+  "hoy": "2026-10-25",
+  "ritmo": {
+    "filas": 288,
+    "fechas": 36,
+    "primera": "2026-09-01",
+    "ultima": "2026-10-22",
+    "dias_habiles": 38,
+    "filas_por_dia_habil": 7.578947368421052,
+    "dedup": true
+  },
+  "p_d": 0.49236641221374045,
+  "mde_critico_ic_pp": [
+    8.927517890930176,
+    12.807139396667477
+  ],
+  "deff_planificacion": 3.6,
+  "factor_secuencial": 1.0263801871775526,
+  "mde": {
+    "punto_pp": 8.512119740846206,
+    "ic_pp": [
+      4.94276793414887,
+      13.089489808019282
+    ],
+    "costo_pb": 25
+  },
+  "conjunta": {
+    "replicas_utiles": 10000,
+    "n_boot": 10000,
+    "semilla": 20260901,
+    "clusteres": 37,
+    "n_max_mediana": 1919.6205143701968,
+    "n_max_ic": [
+      1025.1550261675454,
+      4153.231798062174
+    ],
+    "miradas": [
+      {
+        "fraccion": 0.25,
+        "n_mediana": 479.9051285925492,
+        "n_ic": [
+          256.28875654188636,
+          1038.3079495155434
+        ],
+        "fecha_de_la_mediana": "2026-11-27"
+      },
+      {
+        "fraccion": 0.5,
+        "n_mediana": 959.8102571850984,
+        "n_ic": [
+          512.5775130837727,
+          2076.615899031087
+        ],
+        "fecha_de_la_mediana": "2027-02-24"
+      },
+      {
+        "fraccion": 0.75,
+        "n_mediana": 1439.7153857776477,
+        "n_ic": [
+          768.8662696256591,
+          3114.923848546631
+        ],
+        "fecha_de_la_mediana": "2027-05-24"
+      },
+      {
+        "fraccion": 1.0,
+        "n_mediana": 1919.6205143701968,
+        "n_ic": [
+          1025.1550261675454,
+          4153.231798062174
+        ],
+        "fecha_de_la_mediana": "2027-08-20"
+      }
+    ],
+    "p_mirada1_vencida": 0.0614,
+    "p_vencida_wilson": [
+      0.05686117117938984,
+      0.06627567219136767
+    ],
+    "p_vencida_glosa": "fracción de réplicas en que el MDE derivado dejaría la mirada 1 debida; condicional a firmar la regla del punto derivado, no una probabilidad sobre un MDE firmado"
+  },
+  "mde_critico_pp": 11.091305732727049,
+  "mde_critico_dentro_del_ic": true,
+  "filas": [
+    {
+      "etiqueta": "borde inferior del IC95",
+      "mde_pp": 4.94276793414887,
+      "n_iid": 1579,
+      "n_con_deff": 5686,
+      "n_max": 5836,
+      "miradas": [
+        {
+          "fraccion": 0.25,
+          "n": 1459,
+          "umbral": 4.048,
+          "fecha": "2027-05-27",
+          "dias_desde_hoy": 214,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.5,
+          "n": 2918,
+          "umbral": 2.862,
+          "fecha": "2028-02-22",
+          "dias_desde_hoy": 485,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.75,
+          "n": 4377,
+          "umbral": 2.337,
+          "fecha": "2028-11-16",
+          "dias_desde_hoy": 753,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 1.0,
+          "n": 5836,
+          "umbral": 2.024,
+          "fecha": "2029-08-14",
+          "dias_desde_hoy": 1024,
+          "dentro_de_una_semana": false
+        }
+      ]
+    },
+    {
+      "etiqueta": "punto",
+      "mde_pp": 8.512119740846206,
+      "n_iid": 531,
+      "n_con_deff": 1912,
+      "n_max": 1962,
+      "miradas": [
+        {
+          "fraccion": 0.25,
+          "n": 490,
+          "umbral": 4.048,
+          "fecha": "2026-11-30",
+          "dias_desde_hoy": 36,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.5,
+          "n": 981,
+          "umbral": 2.862,
+          "fecha": "2027-03-01",
+          "dias_desde_hoy": 127,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.75,
+          "n": 1472,
+          "umbral": 2.337,
+          "fecha": "2027-05-31",
+          "dias_desde_hoy": 218,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 1.0,
+          "n": 1962,
+          "umbral": 2.024,
+          "fecha": "2027-08-27",
+          "dias_desde_hoy": 306,
+          "dentro_de_una_semana": false
+        }
+      ]
+    },
+    {
+      "etiqueta": "elección de calendario (§A3.1.d)",
+      "mde_pp": 10.0,
+      "n_iid": 384,
+      "n_con_deff": 1383,
+      "n_max": 1419,
+      "miradas": [
+        {
+          "fraccion": 0.25,
+          "n": 355,
+          "umbral": 4.048,
+          "fecha": "2026-11-04",
+          "dias_desde_hoy": 10,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.5,
+          "n": 710,
+          "umbral": 2.862,
+          "fecha": "2027-01-08",
+          "dias_desde_hoy": 75,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.75,
+          "n": 1064,
+          "umbral": 2.337,
+          "fecha": "2027-03-16",
+          "dias_desde_hoy": 142,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 1.0,
+          "n": 1419,
+          "umbral": 2.024,
+          "fecha": "2027-05-20",
+          "dias_desde_hoy": 207,
+          "dentro_de_una_semana": false
+        }
+      ]
+    },
+    {
+      "etiqueta": "el MDE crítico: la mirada 1 ya vence acá",
+      "mde_pp": 11.091305732727049,
+      "n_iid": 312,
+      "n_con_deff": 1122,
+      "n_max": 1152,
+      "miradas": [
+        {
+          "fraccion": 0.25,
+          "n": 288,
+          "umbral": 4.048,
+          "fecha": "ALCANZADO",
+          "dias_desde_hoy": 0,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.5,
+          "n": 576,
+          "umbral": 2.862,
+          "fecha": "2026-12-15",
+          "dias_desde_hoy": 51,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.75,
+          "n": 864,
+          "umbral": 2.337,
+          "fecha": "2027-02-05",
+          "dias_desde_hoy": 103,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 1.0,
+          "n": 1152,
+          "umbral": 2.024,
+          "fecha": "2027-03-31",
+          "dias_desde_hoy": 157,
+          "dentro_de_una_semana": false
+        }
+      ]
+    },
+    {
+      "etiqueta": "borde superior del IC95",
+      "mde_pp": 13.089489808019284,
+      "n_iid": 223,
+      "n_con_deff": 803,
+      "n_max": 825,
+      "miradas": [
+        {
+          "fraccion": 0.25,
+          "n": 206,
+          "umbral": 4.048,
+          "fecha": "ALCANZADO",
+          "dias_desde_hoy": 0,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.5,
+          "n": 412,
+          "umbral": 2.862,
+          "fecha": "2026-11-16",
+          "dias_desde_hoy": 22,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 0.75,
+          "n": 619,
+          "umbral": 2.337,
+          "fecha": "2026-12-23",
+          "dias_desde_hoy": 59,
+          "dentro_de_una_semana": false
+        },
+        {
+          "fraccion": 1.0,
+          "n": 825,
+          "umbral": 2.024,
+          "fecha": "2027-01-29",
+          "dias_desde_hoy": 96,
+          "dentro_de_una_semana": false
+        }
+      ]
+    }
+  ],
+  "potencia": {
+    "drift_requerido": 2.8382978439331055,
+    "drift_comprado": 2.8382978439331055,
+    "factor_secuencial": 1.0263801871775526,
+    "potencia_idealizada": 0.8000007653286797,
+    "potencia_con_regla_del_maximo": 0.753722989815484,
+    "inflacion_v_hat_supuesta": 0.12
+  },
+  "medido_en": "2026-10-25T22:27:51+00:00"
+}

@@ -3333,3 +3333,443 @@ aplicarlo y dejar la distinción sólo por hash (opción (a) de §79.2, descarta
 etiquetada:** (a), con el dictamen ya APLICABLE CON EXIGENCIAS atendidas, si el sello del 13-oct a las 00:30 salió como
 predice §103.6 y el preflight de R4 de la receta pasa. Lo que se pierde con (a): la mano aplica sin orquestador;
 mitigación, `git apply -R` y la suite real decide. **No se eligió nada.**
+
+---
+
+## 90. El MDE del diseño secuencial: el número para firma, y el plazo que ya corre (corrida 17)
+
+**Es la decisión que bloquea el congelamiento del pre-registro desde el 31-ago-2026, y hoy tiene plazo.**
+
+**Hechos MEDIDOS** (todos de `GEMELO/SECUENCIAL/mde_desde_v6.py` y `tabla_firma.py` sobre la ventana antecedente
+ANCLADA: emisión ≤ 2026-08-31, sello ≤ 2026-09-02, `excluir_cero`, regla de filas firmada el 1-sep; n = 262 en 37
+fechas):
+
+- **MDE a 25 pb (el caso base de V6) = 8.51 pp, IC95 [4.94, 13.09]**, en la escala del endpoint congelado
+  (`acierto_gap`). El intervalo propaga `f` = 0.4924 [0.3190, 0.6565] y `E|gap|` = 2.8921% [2.2250, 3.8368] **juntos**,
+  por bootstrap de clústeres de día (10.000 réplicas, semilla 20260901, 37 días). Propagando sólo `E|gap|` —lo que la v5
+  publicaba como el intervalo del MDE— sale [6.42, 11.06]: un insumo de tres.
+- El tercer eje, la **simetría de magnitudes**, queda declarado FUERA del intervalo con su sensibilidad en
+  `GEMELO/resultados/mde_vs_observado.md` D1c. No se recomputó: estimarla condiciona en el acierto del modelo y esta
+  corrida no recomputa ninguna cifra que dependa del acierto, tampoco en la ventana antecedente.
+- **Ritmo de la población: 7.579 filas/día hábil**, MEDIDO por conteo (288 filas en 38 días hábiles, 2026-09-01 a
+  2026-10-22, 36 fechas). Es 15 % más rápido que las 6.56 que la v5 proyectaba desde la ventana antecedente.
+  **Declarado:** el conteo NO aplica `excluir_cero` (es una función de `gap_pct`, y la población no se mira), así que es
+  un TECHO del n del plan y las fechas que salen de él son más TEMPRANAS que las reales. El sesgo medido donde sí se
+  puede computar —la ventana antecedente— es 1.87 %.
+
+**La tabla, con el plazo de cada opción** (de `tabla_firma.py`; ⛔ = la población ya tiene ese n):
+
+**PRIMERO el intervalo HONESTO de `N_max`**, con `p_d` = `f` dentro de cada réplica — `p_d` **ES** `f`, así que el MDE
+y el `N_max` que lo paga están acoplados por la MISMA estimación (10.000 réplicas de clústeres de día, semilla
+20260901):
+
+| | mediana | IC95 |
+|---|---|---|
+| **`N_max`** | **1.920** | **[1.025, 4.153]** |
+| **mirada 1** | **480 → 2026-11-27** | [256, 1.038] |
+| análisis final | 1.920 → **2027-08-20** | [1.025, 4.153], o sea entre **2027-03-09 y 2028-10-05** |
+
+**P(la mirada 1 ya está vencida, si se firma la regla del punto derivado) = 0.0614, Wilson 95 % [0.0569, 0.0663].**
+
+**SEGUNDO el abanico CONDICIONAL — NO es un intervalo**, y hay que leerlo así: cada fila combina el MDE de una réplica
+con `p_d` del punto, de modo que **las filas de los bordes caen FUERA del intervalo honesto de arriba y no son bordes
+de nada** (⛔ = la población ya tiene ese n):
+
+| Si se firma | qué es (CONDICIONAL) | `N_max` | mirada 1 | mirada 2 | mirada 3 | final |
+|---|---|---|---|---|---|---|
+| **4.94 pp** | borde inferior del IC del MDE | 5.836 | 2027-05-27 | 2028-02-22 | 2028-11-16 | 2029-08-14 |
+| **8.51 pp** | el punto derivado | 1.962 | **2026-11-30** | 2027-03-01 | 2027-05-31 | **2027-08-27** |
+| **10.00 pp** | elección de calendario | 1.419 | **2026-11-04** | 2027-01-08 | 2027-03-16 | 2027-05-20 |
+| **11.09 pp** | el MDE crítico (punto) | 1.152 | **ya vencida ⛔** | 2026-12-15 | 2027-02-05 | 2027-03-31 |
+| **13.09 pp** | borde superior del IC del MDE | 825 | **ya vencida ⛔** | 2026-11-16 | 2026-12-23 | 2027-01-29 |
+
+> **El 2029-08-10 que la primera redacción de esta tarjeta ponía en negrita está RETIRADO** (registro de cifras
+> retiradas, 25-oct-2026): era el artefacto del emparejamiento incoherente, y además esta tarjeta **argumentaba desde
+> él** contra la opción (c). La fecha condicional de la fila de 4.94 pp es 2029-08-14, y el borde honesto del análisis
+> final es **2028-10-05**.
+
+**EL HECHO QUE HACE URGENTE ESTA TARJETA: el MDE crítico es 11.09 pp como PUNTO, IC95 [8.93, 12.81], y cae DENTRO del
+IC95 del MDE.** Por encima de ese valor, el n de la mirada 1 (0.25 · `N_max`) ya es menor que las 288 filas contadas,
+así que **el plan arrancaría con una mirada debida**. Con su intervalo, **cuál opción arranca vencida está
+indeterminado entre 8.93 y 12.81 pp**; lo que SÍ está medido es que por encima de 12.81 pp lo está para todo el
+intervalo de `f`. §A3.8 dice que una mirada saltada no se recupera y que una «omitida» que en realidad
+se hizo es fraude: eso lo convierte en una condición que la firma tiene que conocer antes, no en un detalle de
+calendario. Y con el punto estimado quedan **cinco semanas**; con el valor de calendario, **diez días**.
+
+**Opciones.** (a) **8.51 pp**, el punto derivado: el análisis final cae en ago-2027 y la primera mirada el 30-nov-2026.
+(b) **10 pp**, declarado explícitamente como **elección de calendario** y no como derivación de V6 (lo exige §A3.1.d):
+adelanta el final a may-2027 y la primera mirada al 4-nov-2026, a diez días de hoy. (c) **el borde inferior, 4.94 pp**:
+el diseño detecta efectos más chicos, y el final se va a **ago-2029**, con la cláusula de §A3.7 diciendo que un plan de
+años tiene alta probabilidad de romperse antes. (d) **cualquier valor por encima del MDE crítico** —11.09 pp como punto, IC95 [8.93, 12.81], así que el umbral mismo está indeterminado en ese rango—: arranca con la mirada 1 vencida, y
+hay que decidir en el mismo acto qué se hace con ella (ejecutarla de inmediato, o declararla omitida — omitir sólo puede
+REDUCIR el α, así que es seguro, pero tiene que quedar escrito). (e) **esperar**: cada día hábil que pasa sube el MDE
+crítico, porque la población crece; esperar no es neutral, mueve el conjunto de opciones (d).
+
+**Qué se pierde con cada una.** Con (a), nada del método, y es el único valor que sale de la derivación. Con (b), el
+derecho a decir que el MDE sale de V6 — y se gana un mes y medio. Con (c), el horizonte: la respuesta se va a tres años
+y el proyecto no tiene escrito que vaya a existir en 2029. Con (d), la limpieza del arranque. Con (e), opciones.
+
+**Recomendación etiquetada:** **(a) el punto derivado, 8.51 pp**, y firmarla **antes del 30-nov-2026**. Razones: es el
+único valor que la derivación sostiene; su primera mirada es la más cercana que no está vencida; y el 10 pp de (b) ya no
+tiene a favor el argumento accidental que lo defendía en la v5 —que estaba «por encima de lo que V6 exige»—, porque hoy
+está **por debajo** del punto derivado. Si se prefiere (b) por calendario, la recomendación es que el acta lo diga con
+esas palabras.
+
+**Cruce declarado.** Esta decisión y la de §91 son independientes: el MDE mueve `N_max` y las fechas, la regla del
+estimador mueve la varianza. Las dos bloquean el congelamiento y se pueden firmar por separado. **No se eligió nada.**
+
+---
+
+## 91. La regla de deduplicación del ESTIMADOR del diseño secuencial (corrida 17)
+
+**Es la condición (i) del cuarto rechazo, y la corrida 17 encontró que la pregunta no era la que el documento creía.**
+
+**Hechos MEDIDOS.** Hay **DOS** reglas de deduplicación y la v5 las trataba como una:
+
+1. **La regla de FILAS: está FIRMADA desde el 1-sep-2026** (actas §60 y §61). Es
+   `backtest.linea_base.deduplicar_por_sesion`, que `cargar()` aplica por defecto: dentro de cada grupo
+   `(ticker, sesion_objetivo)` conserva la fila cuya `sesion_objetivo` corresponde a su `available_at`, y cuando las dos
+   corresponden conserva las DOS. **No es ninguna de las dos opciones que la v5 discutía**, y `keep="last"` quedó
+   PROHIBIDA por esa acta. Desde la corrida 17 los dos lados del pre-registro usan esa regla, así que el «defecto
+   descalificante» del cuarto dictamen —parámetro deduplicado contra estimador sin deduplicar— **está cerrado**.
+2. **La regla del ESTIMADOR: es la que falta.** Qué hace el estadístico con los pares que la regla de filas CONSERVA.
+   `mirada.contribuciones()` agrupa por FECHA DE EMISIÓN, y las dos filas de un par de feriado tienen fechas de emisión
+   distintas y la MISMA sesión objetivo, así que caen en clústeres distintos y `V̂` sale corta.
+
+**Los pares, contados** (`ventana_antecedente.pares_misma_sesion`; contar es permitido en las dos ventanas):
+
+| Ventana | filas en pares | grupos | sesiones objetivo | fechas de emisión |
+|---|---|---|---|---|
+| antecedente, antes de la regla de filas | 30 | 15 | 4 (31-jul, 5-ago, 12-ago, 18-ago) | 8 |
+| antecedente, después de la regla de filas | 10 | 5 | 2 (12-ago, 18-ago) | 4 |
+| **población** | **38** (13,2 %) | **15: 11 de DOS filas y 4 de CUATRO** | 5 (24-sep, 28-sep, 6-oct, 12-oct, 13-oct) | 10 |
+
+**El problema es más grande en la población que en la ventana antecedente**: 38 de 288 filas (13.2 %) están en pares, y
+la regla de filas firmada **no retira ninguna** —son todos pares de feriado, las dos filas corresponden—, así que las 38
+llegarían al estadístico repartidas en clústeres distintos. Es el hecho de la tarjeta §87 y del punto (iv) de §82,
+visto desde el estadístico.
+
+**Lo que cada opción hace, por CONTEO** (`tabla_firma.py --reglas`; ninguna ventaja y ningún p, en ninguna ventana):
+
+| Opción | clúster | n población | clústeres | filas/día hábil | n antecedente | clústeres |
+|---|---|---|---|---|---|---|
+| (i) `conservar_ambas` (lo que el código hace hoy) | `fecha` | 288 | 36 | 7.579 | 267 | 37 |
+| (ii) `clusterizar_por_sesion_objetivo` | `sesion_objetivo` | 288 | **38** | 7.579 | 267 | 39 |
+| (iii) `colapsar_el_par` = `keep_first` | `fecha` | **265** | 36 | **6.974** | 262 | 37 |
+| (iv) `keep_last` | — | **PROHIBIDA** (acta §60) | — | — | — | — |
+
+**Las dos columnas de `n` están SIN `excluir_cero`**, porque la convención es una función de `gap_pct` y
+la población no se mira; conviene decirlo porque el 262 de la última fila **no es** el mismo 262 de la ventana
+antecedente con `excluir_cero` y `conservar_ambas` — son dos recetas distintas que dan el mismo entero por
+coincidencia. Receta de cada columna: población = emisión > 2026-08-31, regla de filas firmada, sin convención;
+antecedente = emisión ≤ 2026-08-31 y sello ≤ 2026-09-02, regla de filas firmada, sin convención.
+
+
+**Tres cosas que la corrida 17 estableció y que cambian la pregunta:**
+
+- **Las cinco opciones son CUATRO.** «Colapsar el par en una sola observación» y `keep="first"` son la MISMA operación:
+  colapsar exige decir qué fila sobrevive, y la única que no elige por frescura es la más temprana. La otra lectura de
+  «colapsar» —AGREGAR las dos filas— necesitaría una regla de empate para un acierto binario, o sea una convención
+  nueva, y la convención está congelada (§A3.7 cláusula 4).
+- **La opción (ii) no «junta los pares» sin más: reasigna todos los clústeres.** Agrupar por sesión objetivo fusiona los
+  pares pero PARTE las fechas de emisión en que las bolsas no abren a la vez. El neto es **+2 clústeres**, no menos. Por
+  conteo no se puede saber si eso sube o baja `V̂`: depende de qué correlación domina, la del par o la del movimiento del
+  SOX dentro de la fecha, y medirlo sobre la población es la mirada que §A3.8 cobra.
+- **Sobre datos SINTÉTICOS la dirección sí se puede medir, y se midió** (`tests/test_secuencial_17.py`): con pares cuyas
+  dos filas tienen contribución idéntica, `V̂` por sesión objetivo es **~2×** `V̂` por fecha de emisión. O sea que el
+  clúster por fecha de emisión **subestima la varianza en un factor 2 sobre los pares**. Es la queja del cuarto dictamen,
+  con número, en el único terreno donde se puede medir sin gastar α.
+- **Una corrección al cuarto dictamen.** El dictamen dice que los pares tienen «resultado idéntico». Es cierto del GAP y
+  no tiene por qué serlo del ACIERTO: las dos filas comparten `gap_pct` porque comparten sesión, pero se emitieron en
+  días distintos y con predicciones distintas. Lo que McNemar puntúa es el acierto. **No se midió si difieren** —es una
+  función del acierto— y queda como posibilidad lógica que la elección tiene que contemplar.
+
+**EL PUNTO DE MÉTODO, Y ES EL QUE HAY QUE DECIDIR CON LOS OJOS ABIERTOS.** La v5 **publicó en su cabecera la ventaja y
+el p de `keep="first"` contra `keep="last"` sobre la ventana antecedente** (del orden de 0.18 contra 0.03). Esos dos
+números **ya están a la vista de quien firma**. Esta corrida **no recomputó ni agregó ninguna ventaja ni ningún p por
+opción**, a propósito: elegir mirando esos p sería elegir por resultado, que es exactamente lo que el cuarto dictamen
+llamó «un argumento de una palabra, no declarado, cruza el umbral». El `estadistico-adversario` dictamina en
+`dictamen_17/` qué consecuencia tiene que los p ya se hayan visto, y si queda alguna forma de elegir que sea defendible.
+
+**Opciones.** (a) **(i) `conservar_ambas`**, que es el statu quo del código: no cambia nada y acepta que `V̂` subestime
+la varianza sobre el 13 % de las filas, en la dirección que INFLA `Z` y por lo tanto el α. (b) **(ii)
+`clusterizar_por_sesion_objetivo`**: trata el par como un clúster, al costo de reasignar todos los demás y sin saber por
+conteo si el neto ayuda. (c) **(iii) colapsar / `keep_first`**: retira 23 filas de la población (288 → 265) y baja el
+ritmo a 6.974, lo que **corre todas las fechas de las miradas** y por lo tanto interactúa con §90. (d) Pedirle al
+adversario una cuarta forma que no esté en la lista.
+
+**Qué se pierde con cada una.** Con (a), el control del α en la dirección mala: es la única opción cuyo error conocido
+regala falsos positivos. Con (b), la interpretación limpia del DEFF de planificación, que se midió sobre clústeres de
+fecha de emisión. Con (c), 23 filas y mes y medio de calendario, y queda sin usar información que la regla de filas
+firmada decidió conservar.
+
+**Recomendación etiquetada:** **(b)**, por el principio y no por el resultado: es la única opción que hace coincidir la
+unidad del clúster con la unidad del EVENTO que se puntúa —la sesión objetivo—, y el pre-registro ya declara que su
+estimador es ciego a la correlación entre fechas contiguas. La recomendación es débil y lo digo: la dirección del efecto
+sobre `V̂` en los datos reales no es computable sin mirar, y por eso esta tarjeta espera el dictamen antes que la firma.
+
+**Cruce declarado con §82.1 y §87.** Son decisiones DISTINTAS y conviene que no se confundan. §82.1 decide si la regla
+de FILAS firmada se aplica también a las **cifras vivas publicadas** (hoy no se aplica; firmado el 18-oct que siga así).
+§87 decide qué hacer con las 16 filas selladas en días sin sesión de XNYS. **Ésta** decide cómo agrupa los clústeres el
+estadístico del pre-registro, y no mueve ninguna cifra publicada. **No se eligió nada.**
+
+---
+
+## 92. La potencia del plan secuencial: recomputar `N_max` o declarar la cifra baja (corrida 17)
+
+**Hechos MEDIDOS** (`tabla_firma.potencia_del_plan`, con test). La regla del máximo de §A3.2 —`V̂` es el mayor de los
+bloques (1, 5, 10)— está sesgada hacia arriba: infla `V̂` un ~12 % medido aun cuando no hay nada que corregir. Eso es la
+dirección segura para el α y la dirección cara para la potencia. Propagando esa inflación al drift requerido:
+
+| | |
+|---|---|
+| Potencia con la varianza CONOCIDA (el supuesto con que se eligió `N_max`) | **0.8000** |
+| Potencia descontando el sesgo de la regla del máximo | **0.7537** |
+| Pérdida | **4.6 pp** |
+
+**El «~0.76» que la v5 declaraba era optimista** y no tenía script atrás; hoy tiene los dos números y el test.
+
+**El costo de recuperar 0.80, para CADA MDE de la tabla del §90** (recuperar la potencia exige subir el drift en
+√1,12, o sea multiplicar `N_max` por 1,12; días hábiles al ritmo medido de 7,579 filas/día):
+
+**El rango HONESTO primero:** sobre el IC95 de `N_max` ([1.025, 4.153] filas) recuperar 0,80 cuesta entre **16 y 66
+días hábiles**. El «13 a 92» que la primera redacción de esta tarjeta daba estaba construido sobre los dos extremos del
+emparejamiento incoherente —cifras que no son bordes de nada— y erraba por un factor 1,4 en los dos extremos.
+
+**Y el costo CONDICIONAL a cada valor que se podría firmar**, que es la pregunta de la firma (no es un intervalo):
+
+| Si se firma | `N_max` con ≈0,75 | `N_max` para 0,80 | filas extra | días hábiles | final hoy | final con 0,80 |
+|---|---|---|---|---|---|---|
+| 4,94 pp | 5.836 | 6.536 | +700 | 92 | 2029-08-14 | 2029-12-20 |
+| **8,51 pp** | 1.962 | 2.197 | +235 | 31 | 2027-08-27 | **2027-10-11** |
+| 10,00 pp | 1.419 | 1.589 | +170 | 22 | 2027-05-20 | **2027-06-21** |
+| 11,09 pp | 1.152 | 1.290 | +138 | 18 | 2027-03-31 | **2027-04-27** |
+| 13,09 pp | 825 | 924 | +99 | 13 | 2027-01-29 | **2027-02-17** |
+
+**La columna que decide es la de días hábiles, y no es pareja:** sobre el intervalo honesto va de **16 a 66** días. O
+sea que **el costo de la salida (a) depende del MDE que se firme en §90**, y las dos decisiones están encadenadas en
+esa dirección y no en la otra.
+
+**Opciones.** (a) **Recomputar `N_max`** con el costo de la tabla de arriba. (b) **Declarar que la potencia del plan es 0.7537 y no 0.80**: el diseño detecta su MDE
+**tres de cada cuatro veces** en vez de cuatro de cada cinco, y el calendario no se mueve. (c) Cambiar la regla del
+máximo por una sola longitud de bloque — **descartada en el propio documento**: con bloque 1 el α del plan se va a 0.085
+con una autocorrelación de apenas +0.10, y ése fue el motivo del segundo rechazo.
+
+**Qué se pierde.** Con (a), mes y medio de calendario sobre el final, encadenado a §90. Con (b), el derecho a decir
+«potencia 0.80», que es el estándar que el documento se dio.
+
+**Recomendación etiquetada:** **(b)**. La potencia es una propiedad declarada, no una promesa al lector, y el proyecto
+publica su incertidumbre en todo lo demás; declarar 0.7537 es del mismo estilo que publicar la banda del α en vez de
+subirlo a 0.10. Además (a) empeora lo que §A3.7 identifica como el riesgo real del diseño: que tarde tanto que se rompa
+antes de terminar. **No se eligió nada.**
+
+---
+
+## 93. La población del diseño secuencial: desde cuándo cuenta, y la exposición que acumuló (corrida 17)
+
+**El hecho que abre esta tarjeta:** el documento **nunca se congeló**, y su población —filas con fecha de emisión
+posterior al 2026-08-31— lleva **38 días hábiles y 288 filas** acumulando mientras el proyecto publicaba sobre ella
+todos los días hábiles.
+
+**Lo que NO ocurrió, con evidencia estructural.** Nadie computó la ventaja ni el estadístico del plan sobre la
+población: `GEMELO/SECUENCIAL/miradas/` **no existe**, y con ella no existe `registro.log`, que es la huella que toda
+corrida que computa deja (§A3.8 regla E8); ninguna acta de `DECISIONES.md` registra una mirada; y el candado del MDE
+habría abortado cualquier intento. **Y la corrida 17 encontró y cerró una vía que lo habría hecho sin huella:**
+`diseno_secuencial.ac1_ventana_antecedente()` leía la base VIVA, así que correrlo hoy habría computado `ac1` —una
+función del acierto— sobre la población. Nunca se corrió después del 31-ago; hoy está anclado.
+
+**Lo que SÍ se publica sobre la población, leído del CÓDIGO** (no de los valores):
+
+| Superficie | Qué sirve | Alcance |
+|---|---|---|
+| Reporte de Telegram 18:25, todos los días hábiles | `metricas_apertura(dias=30)`: `n`, acierto del gap %, de sesión %, MAE | ventana de 30 días, hoy toda de la población |
+| `/api/historial`, `/historial`, dashboard | `evolucion_aciertos_apertura()`: acierto del gap y de sesión **por fecha**, con su `N` | toda la historia, fecha por fecha |
+| `/api/historial`, `/historial`, dashboard | `ultimas_predicciones_apertura(limite=100)`: **fila por fila** `Gap real %`, `Acierto gap`, `Estimado %`, `Sesión objetivo`, `Emitida (UTC)` | las **100** más recientes, hoy todas de la población |
+| `/api/historial` | Wilson del acierto del gap y desgloses **por región y por régimen** | toda la historia |
+| `/api/rieles` y `README.md` | ventaja contra la base, intervalo de clúster de día, McNemar, rama R2 | **sólo la ventana antecedente** (`cifras.CORTE_README`) |
+
+**Qué parte del estadístico de McNemar se puede reconstruir con eso, SIN reconstruirlo.** **Todo, sobre las 100 filas
+más recientes.** `ultimas` sirve `Gap real %` y `Acierto gap` por fila: de la primera sale exactamente
+`base_acierto = (gap > 0)` y la convención `excluir_cero`; la segunda es el acierto del modelo. De ahí salen `b` y `c`,
+y con `Fecha` salen los clústeres de día, o sea también `V̂` y `Z`. Sobre el resto de la población **no**: `evolucion` da
+el acierto del modelo por fecha pero no el de la baseline, así que `b − c` no sale.
+
+**Lo que esto cuesta — y el quinto dictamen puso la cifra que esta tarjeta decía no tener (exigencia E5).** Es cierto
+que nadie aplicó la regla de decisión. Lo que es falso es inferir que entonces no hay costo en α, **porque la regla de
+decisión no está COMPLETA**: le faltan cuatro parámetros firmados —cinco con la rama «+ coherencia»— y dos de ellos
+deciden (el MDE fija `n₁`; la regla del estimador fija `V̂`). **Elegir esos dos después de que los desenlaces de la
+población están publicados no es «mirar a escondidas»: es ADAPTAR EL DISEÑO SOBRE DATOS OBSERVADOS**, y la superficie
+que lo permite la lee todos los días hábiles la misma persona que firma.
+
+**Cuánto: del orden de α 0,12–0,14.** El abanico de §A3.1.d pone CINCO primeras miradas sobre la mesa (1.459 / 490 /
+355 / 288 / 206 filas); firmar el MDE después de la exposición es elegir un punto de parada dentro de una familia
+declarada, que es formalmente el mismo acto que la mirada furtiva que §A3.8 ya tarifa (1 → 0,0939; 2 → 0,1214;
+3 → 0,1368). El valor exacto es un máximo sobre cinco planes y lo computa `fronteras.py`; **no está computado**.
+
+**Y la exposición es peor de lo que esta tarjeta declaraba:** `ultimas_predicciones_apertura(100)` sirve también
+**`Estimado %`**, que con la identidad `discordante ⟺ estimado < 0` da `b+c` fila por fila — el estadístico queda
+**sobre-determinado**, con chequeo cruzado interno. *Atenuante que no se reclamaba:* esas filas van **sin** la regla de
+filas firmada (§82.1), así que quien reconstruya cae sobre otro conjunto de filas que el del plan.
+
+**Lo que sigue sin cifra:** la verificabilidad de «nadie miró». El proyecto puede mostrar que no hay registro y que su
+herramienta nunca corrió; no puede mostrar que nadie hizo la resta con lo publicado.
+
+**Opciones.** (a) **La población sigue desde el 2026-09-01**, con la exposición declarada en §A3.8 y, si el adversario
+le pone cifra, su costo en α sumado al pasivo. No cuesta calendario. (b) **La población empieza en la fecha de
+congelamiento**, lo que descarta las 288 filas ya acumuladas: al ritmo medido eso cuesta **38 días hábiles** de
+calendario —la primera mirada del punto derivado se iría de 2026-11-30 a cerca de fin de enero de 2027— y a cambio da
+una población con exposición nula desde el día uno. (c) **(a) con una restricción de publicación hacia adelante**:
+recortar `ultimas` para que no sirva `Gap real %` y `Acierto gap` fila por fila sobre filas de la población, que es la
+única superficie con la que el estadístico es reconstruible; mueve `api/CONTRATO.md` y el frontend, no mueve ninguna
+cifra sellada. (d) La que proponga el adversario.
+
+**Qué se pierde.** Con (a), la garantía fuerte del pre-registro: queda una garantía de registro, no de imposibilidad.
+Con (b), mes y medio y 288 filas selladas que no vuelven. Con (c), transparencia pública —hoy cualquiera puede auditar
+fila por fila— a cambio de la garantía; es un canje entre dos virtudes del proyecto y no una mejora.
+
+**Recomendación etiquetada, CAMBIADA por el quinto dictamen.** La primera redacción de esta tarjeta recomendaba (a)
+con la exposición declarada, razonando que (b) paga calendario por una garantía que no se recupera. **Con la cifra sobre
+la mesa eso ya no se sostiene como recomendación**: (a) significa firmar un plan cuyo α real es del orden de 0,12–0,14 y
+no 0,05, o sea **el doble o el triple del estándar que el proyecto eligió el 31-ago** cuando descartó explícitamente
+subir el α a 0,10 por considerarlo un cambio de estándar científico. Elegir (a) hoy es hacer por omisión, y peor, lo que
+entonces se rechazó por decisión.
+
+**Recomendación etiquetada: (b)** — la población empieza en la fecha de firma. Cuesta **38 días hábiles y 288 filas**
+contados, lleva la primera mirada del punto derivado de fin de noviembre a fines de enero de 2027, y a cambio el α del
+plan vuelve a ser el que el acta declara. La alternativa honesta a (b) **no es (a) a secas: es (a) con «α 0,12–0,14»
+escrito en el acta de congelamiento y en el cuerpo**, y que quien lea el veredicto en 2028 lo vea ahí. Las dos son
+defendibles; la que no es defendible es (a) sin la cifra. Y si se elige (a), vale la pena (c) además, discutido **antes**
+de la primera mirada. **No se eligió nada.**
+
+---
+
+## 94. La razón 1 de §A3.1.b descansa en una descarga en vivo: sellar la serie de SMH o bajarle el estatus (corrida 17)
+
+**Hecho MEDIDO.** `mde_desde_v6.retorno_benchmark()` descarga SMH de Yahoo en el momento de correr. Sobre la misma
+ventana que la v5 usaba (3-jul a 28-ago) hoy mide **−8.47 % en 40 sesiones**; la v5 escribió −5.18 % en 39.
+**La causa está IDENTIFICADA, no supuesta.** (a) **40 es el número correcto de sesiones de XNYS** entre el 3-jul y el
+28-ago de 2026, verificado con `exchange_calendars` (primera el 6-jul, última el 28-ago; el viernes 3-jul no es sesión,
+porque el 4 cae sábado y el feriado se observa el viernes anterior). (b) **Con 39 barras —las mismas 40 menos la
+última— el retorno da −5,1795 %**, que es exactamente el −5,18 % de la v5; y la sesión que falta, la del 28-ago, movió
+**−3,47 %**. O sea que **la fuente no revisó nada**: la v5 midió cuando la última barra de su propia ventana todavía no
+había llegado, y publicó, bajo la etiqueta del retorno de SMH en la ventana, un retorno al que le faltaba el último día de la ventana. No hay
+copia sellada de la serie en el repo (`GEMELO/cache/` guarda cierres de otros censos, no SMH).
+
+**Por qué importa más que una cifra que se movió.** Una razón cuyo insumo se descarga en vivo **no se puede
+pre-registrar**: el documento quedaría citando un número que su propio script devuelve distinto cada vez que la fuente
+revisa. Es la misma familia que el hallazgo de `docs/SEGUNDO_SELLO.md` §0 (acta §69) y la misma causa raíz que la
+condición 4, en un insumo externo en vez de en una consulta.
+
+**Opciones.** (a) **Sellar la serie de SMH** de la ventana en un CSV versionado bajo `GEMELO/SECUENCIAL/`, con su
+`available_at`, y que el script la lea de ahí; la descarga queda como control opcional. (b) **Bajarle el estatus a la
+razón 1**: se cita como ilustración y no como fundamento, y la conclusión de §A3.1.b se apoya sólo en el argumento
+estructural (que V6 compara contra un camino realizado, así que la vara depende de si el benchmark subió o bajó). (c)
+**Retirar la razón 1 entera** y dejar §A3.1.b con el argumento estructural solo.
+
+**Qué se pierde.** Con (a), hay que decidir qué barra es la buena cuando la fuente revise —y eso es una convención
+nueva—; además la serie sellada hoy ya no es la que la v5 vio. Con (b) y (c), una medición que la sección usaba para
+cuantificar, aunque su intervalo ya mostró que no cuantificaba.
+
+**Recomendación etiquetada:** **(b)**, que es además lo que la v6 ya escribió: la razón 1 no se sostiene con intervalo
+y la conclusión sobrevive por el argumento estructural. (a) es trabajo real por una cifra que, con intervalos, no decide
+nada; vale la pena sólo si alguna vez V6 vuelve a usarse para fijar un umbral. **No se eligió nada.**
+
+---
+
+## 95. Que la máquina avise cuando la población se acerque al n de una mirada (corrida 17)
+
+**El hueco.** La v5 lo declaró como deuda: «no se avisa solo cuando se alcanza un n. No hay job ni timer que dispare la
+mirada; la fecha hay que recordarla». Con el ritmo MEDIDO dejó de ser cómodo: la primera mirada del valor de calendario
+cae a **diez días** de hoy, y el MDE crítico (§90) dice que parte del rango plausible **ya está vencido**. Una mirada
+saltada no se recupera (§A3.8 regla 2).
+
+**La forma más chica, usando SÓLO conteos.** Un script de solo lectura en `GEMELO/SECUENCIAL/` que imprime tres cosas:
+las filas contadas de la población, el n de la próxima mirada según el MDE firmado, y los días hábiles que faltan al
+ritmo medido. **No computa ninguna cifra de resultado y no puede**: lee por `ventana_antecedente.cargar_poblacion()`,
+que devuelve las filas sin columnas de resultado. Mientras `MDE_FIRMADO` sea `None` imprime «sin MDE firmado no hay n
+objetivo» y no inventa uno.
+
+**Opciones de dónde se ve.** (a) **Una línea en `./mki estado`**, que Nicolás ya corre: cero jobs nuevos, cero timers,
+cero cambios al vigía; el costo es tocar un script bash que corre en las dos máquinas y tiene que seguir siendo
+bash-3.2-limpio. (b) **Un chequeo del vigía**, que avisaría por Telegram sin que nadie lo pida — **el encargo de esta
+corrida prohíbe tocar el vigía**, y además mezclaría el riel de medición con el riel de emisión. (c) **Un timer propio**
+—`mki-aviso-mirada`— que es operación de Nicolás y nunca de un agente (skill `modo-emision`), y es el único que avisa
+sin que nadie se acuerde de mirar. (d) **Nada**: la fecha se recuerda, y queda escrito que se recuerda.
+
+**Qué se pierde.** Con (a), el aviso depende de que alguien corra `./mki estado`. Con (c), un noveno timer en una
+máquina donde los ocho actuales son el riel de producción, y un cambio de calendario de timer ya tiene su propia fila de
+inventario (§66 C.9). Con (d), la mirada.
+
+**Recomendación etiquetada:** **(a)**, y el script escrito **ahora**, no el día de la mirada — por la misma razón por la
+que `mirada.py` se escribió el día del pre-registro: un script que se escribe el día de la mirada es un script que se
+escribe viendo los datos. **Esta corrida NO lo escribió ni lo instaló**: queda propuesto acá para que la firma decida
+dónde se ve, y porque escribir código nuevo que lee la población sin que la forma esté decidida es empezar por el
+final. **No se eligió nada.**
+
+---
+
+## 96. El pasivo de §A1 admite número, y la maquinaria está en el repo (corrida 17, exigencia E6 del quinto dictamen)
+
+**Lo que el quinto dictamen demostró.** La v6 escribió que la ampliación del pasivo —las cuatro miradas posteriores al
+31-ago que §A1 agrega— «no admite número» porque el modelo browniano no admite dos miradas en la misma fracción de
+información. **El dictamen mostró que eso confunde el modelo:** las cuatro miradas no son miradas secuenciales sobre
+información que crece, son **estadísticos correlacionados medidos en un instante** sobre casi las mismas filas. Lo que
+corresponde no es la recursión de Armitage-McPherson sino **la distribución del máximo bajo H₀** con el ICC medido
+(0,3925), y **el repo tiene las dos piezas**: `GEMELO/simulador/proceso.py` y la matriz de `bifurcaciones.py`. El
+proyecto ya hizo esa cuenta una vez («0 de 192 celdas… la nula lo produce el 75 % de las veces»).
+
+**Y una frase que está escrita al revés, ya corregida en el documento.** La v6 decía que el rango [0,09, 0,18] «es un
+piso más bajo de lo que era». Agregar miradas **sube** el α, lo que hace al 0,09 una cota **más débil**, no más baja.
+
+**Opciones.** (a) **Computar el número**: P(al menos un cruce) sobre la familia de convenciones bajo H₀ con el ICC
+medido, con `simulador/proceso.py`; es una corrida de simulación con su semilla y su intervalo, del tamaño de un frente
+de corrida. (b) **Escribir la línea del acta como cota de un lado**: «**α ≥ 0,09, sin extremo superior establecido**», y
+retirar el rango [0,09, 0,18] como rango. No cuesta cómputo y es honesto. (c) Dejarlo como está — **descartado**: el
+dictamen lo puso como exigencia y la frase invertida ya se corrigió.
+
+**Qué se pierde.** Con (a), una corrida. Con (b), el extremo superior, que es informativo: el «3,6× el nominal» es lo
+que le daba fuerza al argumento de §A1.
+
+**Recomendación etiquetada:** **(b) ahora y (a) cuando haya una corrida que ya esté tocando el simulador.** Razón: el
+acta no puede congelar como rango algo que el propio documento declara incompleto, y (b) arregla eso en una línea; (a)
+mejora la cifra pero no cambia ninguna decisión, porque el pasivo no bloquea el congelamiento. **No se eligió nada.**
+
+---
+
+## 97. Verdad conocida antes que verdad observada: los tres estimadores que deciden no están validados (corrida 17, exigencias E7, E1 y E3 del quinto dictamen)
+
+**Es la exigencia más grande de las no bloqueantes, y la que más vale.** Hoy los tres estimadores de los que depende el
+veredicto **no se verificaron contra nada más que contra sí mismos**:
+
+1. **El `Z` del plan y sus cuatro umbrales.** Nunca se corrió contra `GEMELO/simulador/` con **ventaja verdadera CERO**
+   (para medir el α real) ni con **ventaja verdadera CONOCIDA** (para medir la potencia real), y menos aún con las DOS
+   claves de clúster. Es lo que haría exigible la banda [0,046, 0,079] en vez de declarada.
+2. **La cobertura del intervalo percentil del MDE**, con `f` y E|gap| verdaderos conocidos, el ICC medido y **37
+   clústeres de los que la mitad son degenerados**. El intervalo [4,94, 13,09] es un percentil de bootstrap; que su
+   cobertura sea 95 % sobre una muestra así es un supuesto, no una medición.
+3. **La equivalencia entre el cruce de umbral del plan y el intervalo de clúster de día** que el acta §61 hizo
+   principal. El documento afirma que en sustancia son lo mismo; **no hay artefacto que lo muestre**, y la propia
+   prohibición del pre-registro lo hace imposible de mostrar sobre el único dato real. Esto es lo que falta de E10.
+
+**Y dos piezas de E1 y E3 caen acá, porque son la misma corrida:** recomputar **la tabla de exposición residual de
+§A3.2 para la clave por sesión objetivo** (sin eso, firmar la opción que §91 recomienda invalida la banda), y
+**reconciliar la banda con el hallazgo de que el eje de autocorrelación es inerte** bajo el proceso calibrado — el
+simulador lo midió (φ = 0,3 → AC1 realizado 0,0033) y en el único dato real `V̂` máximo lo alcanza el **bloque 1**
+(3,618 contra 2,517 y 2,652), así que la regla del máximo paga ≈4,6 pp de potencia por un seguro que en esta ventana no
+cubre nada.
+
+**Opciones.** (a) **Una corrida propia**, con su encargo, que haga los tres contra `GEMELO/simulador/` más las dos
+piezas de E1 y E3. Es el camino que convierte la banda y los umbrales de declarados en medidos, y es también el que
+puede **descubrir que la regla del máximo no se justifica** en esta ventana — con consecuencias sobre la potencia y
+sobre §A3.2. (b) **Congelar sin validar**, declarando que los tres estimadores están verificados sólo contra sí mismos.
+(c) Hacer sólo el punto 1 (el α y la potencia del `Z`), que es el que más pesa.
+
+**Qué se pierde.** Con (a), una corrida entera, y el riesgo —que es un beneficio— de que el resultado obligue a rehacer
+§A3.2. Con (b), la única cosa que distingue un pre-registro de una intención: que su instrumento esté medido antes de
+usarse. Con (c), las dos piezas que E1 necesita para que la firma de §91 no invalide la banda.
+
+**Recomendación etiquetada:** **(a), y antes del congelamiento, no después.** Razón: el proyecto ya tiene el simulador,
+ya tiene la lección de haber publicado un instrumento sin calibrar (`dictamen_08/A.md` A4, la potencia que resultó
+optimista en 2,7 pp), y el costo de descubrir después del congelamiento que la banda no describe al estimador es que el
+pre-registro se cae con el diseño entero adentro. Si el calendario no da, la recomendación es (c) **más** la pieza de E1,
+porque sin ella la firma de §91 y la banda son incompatibles. **No se eligió nada.**
